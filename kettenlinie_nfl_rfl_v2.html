@@ -281,17 +281,6 @@ body {
   cursor: not-allowed;
   opacity: .6;
 }
-.btn-dxf {
-  background: rgba(0,0,0,.04);
-  color: var(--muted);
-}
-.btn-dxf:hover { background: rgba(0,0,0,.08); }
-.btn-dxf:disabled {
-  background: rgba(0,0,0,.03);
-  color: var(--tertiary);
-  cursor: not-allowed;
-  opacity: .6;
-}
 .btn-group { display: flex; flex-direction: column; gap: .5rem; margin-top: auto; padding-top: .75rem; }
 
 /* ── Segmented control ── */
@@ -827,6 +816,10 @@ button.header-manual-link:hover {
     <h1 id="app-title">Durchhang N-FL</h1>
     <p id="app-subtitle">Kettenwerk — Seillinie mit Temperatureinfluss</p>
   </div>
+  <button onclick="openReglageModal()" class="header-manual-link" style="background:none;border:none;cursor:pointer;">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="2" rx="1" fill="currentColor"/><rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor"/><rect x="2" y="11" width="8" height="2" rx="1" fill="currentColor"/></svg>
+    <span class="header-manual-text">Reglage</span>
+  </button>
   <button onclick="openHandbuch()" class="header-manual-link" style="background:none;border:none;cursor:pointer;">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2a6 6 0 100 12A6 6 0 008 2zm0 9V7m0-2v.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
     <span class="header-manual-text" id="header-manual-text">Handbuch</span>
@@ -1211,9 +1204,6 @@ button.header-manual-link:hover {
       <button class="btn btn-pdf" id="pdf-btn" onclick="pdfExport()" disabled>
         PDF Berechnungsprotokoll
       </button>
-      <button class="btn btn-dxf" id="dxf-btn" onclick="dxfExport()" disabled>
-        DXF Zeichnungsexport
-      </button>
     </div>
 
     </div><!-- /sidebar-scroll -->
@@ -1301,9 +1291,9 @@ let probeX4 = null; // M4
 
 // ═══════════════════════════════════════════════════════════════
 // MATERIALDATEN
-// Quelle: SBB «Durchhang 2026.xlsm» (Wigger / Gernet / Seifert / Lazaridis)
+// Quelle: SBB «Durchhang 2026.xlsm»
 // H_reglage: Reglagezugkraft bei +10 °C, Lm=45 m, Berechnungsart «Ausgleichend»
-// Quelle: SBB 0161.1013.0001 (31.10.2024, F.Seifert / R.Gernet)
+// Quelle: SBB 0161.1013.0001 (31.10.2024)
 // ═══════════════════════════════════════════════════════════════
 const MATERIALS = {
   cu95:      { name: 'Cu 95 mm²',        q: 8.4239123,  alpha: 17e-6,   E: 108e9,        AK: 94.77e-6,  H_reglage: 3700, basis_kN: 6,  reglage_note: '6 kN Basiskraft (Rückleiter/Speiseleitung)', reglage_note_key: 'mat.rn.6kn.rl'   },
@@ -1488,6 +1478,9 @@ function openHandbuch()  {
   translateHandbuch();
 }
 function closeHandbuch() { document.getElementById('handbuch-modal').classList.remove('open'); }
+
+function openReglageModal()  { document.getElementById('reglage-modal').classList.add('open'); }
+function closeReglageModal() { document.getElementById('reglage-modal').classList.remove('open'); }
 
 // Dropdown mit den zum aktiven Systemmodus passenden Kombinationen befüllen
 function rebuildPresetDropdown(mode) {
@@ -1902,9 +1895,9 @@ function updateSysModeUI(mode) {
   // Systemhöhe sh: nur N-FL und R-FL
   document.getElementById('sh-field').style.display = isEl ? 'none' : '';
 
-  // Temperaturfelder: bei R-FL ausblenden
+  // Temperaturfelder: T1 bei R-FL ausblenden, T2 auch bei R-FL zeigen (für Eislast-Bedingung)
   document.getElementById('t1-field').style.display = isRfl ? 'none' : '';
-  document.getElementById('t2-field').style.display = isRfl ? 'none' : '';
+  document.getElementById('t2-field').style.display = '';
 
   // Eislast: nur N-FL, temperaturabhängig
   updateEislastVisibility();
@@ -1981,14 +1974,12 @@ function onT2Input(val) {
 function updateEislastVisibility() {
   const T2  = parseFloat(document.getElementById('temp2').value);
   const row = document.getElementById('eislast-row');
-  const isRfl = sysMode === 'rfl';
-  const showNfl = sysMode === 'nfl' && T2 === -5;
-  const show = showNfl || isRfl;
+  const show = (sysMode === 'nfl' || sysMode === 'rfl') && T2 === -5;
   row.style.display = show ? '' : 'none';
   if (!show) document.getElementById('zl-eis').value = 0;
-  // Sub-label: hide "(bei T₂ = −5 °C)" for R-FL
+  // Sub-label immer sichtbar (bei T₂ = −5 °C gilt für NFL und RFL)
   const subLbl = document.getElementById('eis-label-sub');
-  if (subLbl) subLbl.style.display = isRfl ? 'none' : '';
+  if (subLbl) subLbl.style.display = '';
 }
 
 // System N-FL / R-FL / Einzelleiter umschalten
@@ -2437,12 +2428,10 @@ function berechnen() {
   const errorBox = document.getElementById('error-box');
   const warnBox  = document.getElementById('warn-box');
   const pdfBtn   = document.getElementById('pdf-btn');
-  const dxfBtn   = document.getElementById('dxf-btn');
   errorBox.classList.add('hidden');
   warnBox.classList.add('hidden');
   calcState = null;
   pdfBtn.disabled = true;
-  dxfBtn.disabled = true;
 
   // Eingabevalidierung — Einzelleiter: kein Fd, kein sh erforderlich
   const isEl = sysMode === 'el';
@@ -2529,7 +2518,6 @@ function berechnen() {
                 LT1_vem: _LT1_vem, q_vem_vem: _q_vem_vem, c2_vem: _c2_vem,
                 matTs: getMaterialNameTs(), matFd: getMaterialNameFd() };
   pdfBtn.disabled = false;
-  dxfBtn.disabled = false;
   updateAllMesspunkte();
 }
 
@@ -3166,8 +3154,9 @@ function updateHighlightCard() {
     const sag     = cIst.sag;                     // Durchhang bleibt Ts (VEM-Wert)
     const subInfo = hasSokH
       ? `<div class="istzustand-row" style="opacity:.6">${f3(y2_raw)} m ${t('dyn.ueber.sok')}</div>` : '';
+    const rflCls = sysMode === 'rfl' ? ' rfl' : '';
     el.innerHTML = `
-      <div class="istzustand-card" style="margin-bottom:.75rem">
+      <div class="istzustand-card${rflCls}" style="margin-bottom:.75rem">
         <div class="istzustand-main">
           <div class="istzustand-label">${seilLabel}${tempLabel} — ${t('res.tiefpunkt.label')}</div>
           <div class="istzustand-value">${f3(y2_disp)}<span class="istzustand-unit">${hasSokH ? t('dyn.ueber.mum') : 'm'}</span></div>
@@ -3203,7 +3192,7 @@ function updateHighlightCard() {
       ? `display:grid;grid-template-columns:${cols};gap:.75rem 1rem;`
       : '';
     el.innerHTML = `
-      <div class="istzustand-card" style="margin-bottom:.75rem;${cardStyle}">
+      <div class="istzustand-card${rflCls}" style="margin-bottom:.75rem;${cardStyle}">
         ${blocks}
         <div class="istzustand-divider" style="${compact ? 'grid-column:1/-1' : ''}"></div>
         <div class="istzustand-secondary" style="${compact ? 'grid-column:1/-1' : ''}">
@@ -3756,13 +3745,9 @@ ${mode3pt && threePtMark ? `
   win.onload = () => win.print();
 }
 
-// ═══════════════════════════════════════════════════════════════
-// DXF-EXPORT — Zeichnungsexport (R2000 / AC1015, Einheit: Meter)
-// Kurven: LWPOLYLINE mit 120 Stützpunkten (glatt, universell kompatibel)
-// Layerstruktur: TS-T1, TS-T2, FD-SOLLLAGE, SOK, MAST, SEHNE,
-//                BEFESTIGUNG, TIEFPUNKT, MESSPUNKTE, TEXT, LEGENDE
-// ═══════════════════════════════════════════════════════════════
-function dxfExport() {
+function dxfExport() { return; } // removed
+
+function dxfExport_disabled() {
   if (!calcState) return;
   const { L, h1, h2, sh, T1, T2, H_Ts, H_Fd, q_ges, c1, c2, matTs, matFd } = calcState;
   const isNFL = sysMode === 'nfl';
@@ -4131,7 +4116,6 @@ const LANG = {
     'par.eislast.hint':     'Zusatzlast durch Eisansatz [N/m] — aktiv bei N-FL und −20 °C ≤ T₂ ≤ −5 °C.',
     // Buttons
     'btn.pdf':              'PDF Berechnungsprotokoll',
-    'btn.dxf':              'DXF Zeichnungsexport',
     // Canvas / Legend
     'canvas.title':         'Diagramm',
     'canvas.drag':          'Ankerpunkte verschiebbar',
@@ -4377,7 +4361,6 @@ const LANG = {
     'par.eislast.hint':     'Charge supplémentaire due au givre [N/m] — active pour N-FL et −20 °C ≤ T₂ ≤ −5 °C.',
     // Buttons
     'btn.pdf':              'Protocole de calcul PDF',
-    'btn.dxf':              'Export DXF',
     // Canvas / Legend
     'canvas.title':         'Diagramme',
     'canvas.drag':          'Points d\'ancrage déplaçables',
@@ -4623,7 +4606,6 @@ const LANG = {
     'par.eislast.hint':     'Carico aggiuntivo da ghiaccio [N/m] — attivo per N-FL e −20 °C ≤ T₂ ≤ −5 °C.',
     // Buttons
     'btn.pdf':              'Protocollo di calcolo PDF',
-    'btn.dxf':              'Esportazione DXF',
     // Canvas / Legend
     'canvas.title':         'Diagramma',
     'canvas.drag':          'Punti di ancoraggio spostabili',
@@ -4932,8 +4914,6 @@ function setLang(lang) {
   // ── Buttons ───────────────────────────────────────────────────
   const pdfBtn = document.getElementById('pdf-btn');
   if (pdfBtn) { const dis = pdfBtn.disabled; pdfBtn.textContent = t('btn.pdf'); pdfBtn.disabled = dis; }
-  const dxfBtn = document.getElementById('dxf-btn');
-  if (dxfBtn) { const dis = dxfBtn.disabled; dxfBtn.textContent = t('btn.dxf'); dxfBtn.disabled = dis; }
 
   // ── Canvas ────────────────────────────────────────────────────
   const canvasTitle = document.getElementById('canvas-title');
@@ -5904,7 +5884,7 @@ function applyCustomPreset(p) {
           <li>SBB Durchhang 2026.xlsm — VBA-Berechnungsmodell (Upro1, DurchhangNFL); NFL-Re!P14 = VEM 7.66</li>
           <li>SBB 0161.1013.0001 — Technische Spezifikation N-FL (Reglagewerte, Materialien)</li>
           <li>SBB 0161.1013.0005.1 — Vorgabe zur Eingabe von c<sub>proj</sub> / c<sub>m</sub> (Mittelspannweite / Einzelspannweite)</li>
-          <li>VEM Handbuch Freileitungen — Formel 7.66 / 7.82 (Frank Seifert); kombiniertes TS+Fd-System</li>
+          <li>VEM Handbuch Freileitungen — Formel 7.66 / 7.82; kombiniertes TS+Fd-System</li>
           <li>Bronštejn/Semendjajev — Mathematisches Handbuch (exakte Kettenlinienformeln)</li>
         </ul>
       </div>
@@ -5913,7 +5893,7 @@ function applyCustomPreset(p) {
           <li>SBB Durchhang 2026.xlsm — Modèle de calcul VBA (Upro1, DurchhangNFL); NFL-Re!P14 = VEM 7.66</li>
           <li>SBB 0161.1013.0001 — Spécification technique N-FL (valeurs de réglage, matériaux)</li>
           <li>SBB 0161.1013.0005.1 — Prescriptions pour la saisie de c<sub>proj</sub> / c<sub>m</sub> (portée équivalente / portée individuelle)</li>
-          <li>VEM Manuel des lignes aériennes — formule 7.66 / 7.82 (Frank Seifert); système combiné CP+FC</li>
+          <li>VEM Manuel des lignes aériennes — formule 7.66 / 7.82; système combiné CP+FC</li>
           <li>Bronštejn/Semendjajev — Manuel de mathématiques (formules caténaires exactes)</li>
         </ul>
       </div>
@@ -5922,7 +5902,7 @@ function applyCustomPreset(p) {
           <li>SBB Durchhang 2026.xlsm — Modello di calcolo VBA (Upro1, DurchhangNFL); NFL-Re!P14 = VEM 7.66</li>
           <li>SBB 0161.1013.0001 — Specifiche tecniche N-FL (valori di regolazione, materiali)</li>
           <li>SBB 0161.1013.0005.1 — Prescrizioni per l'inserimento di c<sub>proj</sub> / c<sub>m</sub> (campata equivalente / campata singola)</li>
-          <li>VEM Manuale delle linee aeree — formula 7.66 / 7.82 (Frank Seifert); sistema combinato FP+FC</li>
+          <li>VEM Manuale delle linee aeree — formula 7.66 / 7.82; sistema combinato FP+FC</li>
           <li>Bronštejn/Semendjajev — Manuale di matematica (formule caténarie esatte)</li>
         </ul>
       </div>
@@ -6003,7 +5983,6 @@ function applyCustomPreset(p) {
           <tr><td>Messpunkt</td><td>point de mesure</td><td>punto di misura</td></tr>
           <tr><td>3-Punkte-Messung</td><td>mesure 3 points</td><td>misura 3 punti</td></tr>
           <tr><td>Berechnungsprotokoll</td><td>protocole de calcul</td><td>protocollo di calcolo</td></tr>
-          <tr><td>Zeichnungsexport (DXF)</td><td>export dessin (DXF)</td><td>esportazione disegno (DXF)</td></tr>
           <tr><td>Handbuch</td><td>manuel</td><td>manuale</td></tr>
         </tbody>
       </table>
@@ -6131,6 +6110,192 @@ function applyCustomPreset(p) {
         <button class="btn btn-secondary" id="cm-cancel-btn" onclick="closeCustomModal()">Abbrechen</button>
         <button class="btn btn-primary"   id="cm-save-btn"   onclick="saveCustomPreset()">Speichern</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Reglagetabelle ── -->
+<div class="modal-overlay" id="reglage-modal" onclick="if(event.target===this)closeReglageModal()" style="align-items:flex-start;padding:2rem 1rem;overflow-y:auto">
+  <div class="modal-card" style="max-width:720px;width:100%;max-height:none">
+    <div class="modal-header">
+      <div class="modal-title">Reglagewerte — Übersicht</div>
+      <button class="modal-close" onclick="closeReglageModal()" title="Schliessen">✕</button>
+    </div>
+    <div style="padding:.5rem 1.25rem 1.25rem">
+
+      <!-- Quelle -->
+      <p style="font-size:.72rem;color:var(--tertiary);margin-bottom:1.1rem">
+        Quelle: SBB 0161.1013.0001 &nbsp;·&nbsp; Berechnungsart: Ausgleichend &nbsp;·&nbsp; Lm = 45 m &nbsp;·&nbsp; T = +10 °C
+      </p>
+
+      <!-- Gemeinsame Tabellenstile -->
+      <style>
+        .rgl-tbl { width:100%; border-collapse:collapse; font-size:.76rem; table-layout:fixed; }
+        .rgl-tbl th { background:#f4f6f8; border-bottom:1px solid #d1d5db; padding:.4rem .55rem; font-weight:600; color:var(--text); white-space:nowrap; }
+        .rgl-tbl td { padding:.42rem .55rem; border-bottom:1px solid #e2e8f0; }
+        .rgl-tbl tr:nth-child(even) td { background:#fafafa; }
+        .rgl-tbl .c-left  { text-align:left; }
+        .rgl-tbl .c-right { text-align:right; font-variant-numeric:tabular-nums; }
+        .rgl-tbl .c-ctr   { text-align:center; }
+        .rgl-section { font-size:.7rem; font-weight:600; color:var(--muted); margin-bottom:.45rem; letter-spacing:.06em; text-transform:uppercase; }
+        .rgl-note { font-size:.68rem; color:var(--tertiary); margin-top:.35rem; }
+      </style>
+
+      <!-- N-FL -->
+      <div style="margin-bottom:1.3rem">
+        <div class="rgl-section">N-FL — Normale Fahrleitung</div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <table class="rgl-tbl" style="min-width:580px">
+          <colgroup>
+            <col style="width:32%">
+            <col style="width:8%">
+            <col style="width:14%">
+            <col style="width:14%">
+            <col style="width:14%">
+            <col style="width:12%">
+          </colgroup>
+          <thead><tr>
+            <th class="c-left">Kombination</th>
+            <th class="c-ctr">sh</th>
+            <th class="c-right">H<sub>Ts</sub> belastet</th>
+            <th class="c-right">H<sub>Ts</sub> unbelastet</th>
+            <th class="c-right">H<sub>Fd</sub></th>
+            <th class="c-right">Abnutzung</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td class="c-left">StCu 50 + Cu 107 <span style="color:var(--tertiary);font-size:.7rem">· 6 kN</span></td>
+              <td class="c-ctr" style="color:var(--muted)">2.40 m</td>
+              <td class="c-right">4'500 N</td>
+              <td class="c-right" style="color:var(--muted)">1'700 N</td>
+              <td class="c-right">8'500 N</td>
+              <td class="c-right" style="color:var(--muted)">30 %</td>
+            </tr>
+            <tr>
+              <td class="c-left">StCu 50 + Cu 107 <span style="color:var(--tertiary);font-size:.7rem">· 8 kN</span></td>
+              <td class="c-ctr" style="color:var(--muted)">1.90 m</td>
+              <td class="c-right">6'100 N</td>
+              <td class="c-right" style="color:var(--muted)">3'500 N</td>
+              <td class="c-right">8'500 N</td>
+              <td class="c-right" style="color:var(--muted)">30 %</td>
+            </tr>
+            <tr>
+              <td class="c-left">StCu 92 + Cu 107 <span style="color:var(--tertiary);font-size:.7rem">· 6 kN</span></td>
+              <td class="c-ctr" style="color:var(--muted)">2.40 m</td>
+              <td class="c-right">4'300 N</td>
+              <td class="c-right" style="color:var(--muted)">2'100 N</td>
+              <td class="c-right">8'500 N</td>
+              <td class="c-right" style="color:var(--muted)">30 %</td>
+            </tr>
+            <tr>
+              <td class="c-left">StCu 92 + Cu 107 <span style="color:var(--tertiary);font-size:.7rem">· 8 kN</span></td>
+              <td class="c-ctr" style="color:var(--muted)">1.90 m</td>
+              <td class="c-right">5'500 N</td>
+              <td class="c-right" style="color:var(--muted)">2'900 N</td>
+              <td class="c-right">8'500 N</td>
+              <td class="c-right" style="color:var(--muted)">30 %</td>
+            </tr>
+            <tr>
+              <td class="c-left">StCu 92 + Cu 150 <span style="color:var(--tertiary);font-size:.7rem">· 10 kN · Gotthard</span></td>
+              <td class="c-ctr" style="color:var(--muted)">2.40 m</td>
+              <td class="c-right">7'100 N</td>
+              <td class="c-right" style="color:var(--muted)">3'500 N</td>
+              <td class="c-right">10'000 N</td>
+              <td class="c-right" style="color:var(--muted)">25 %</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <p class="rgl-note">H<sub>Ts</sub> belastet = mit Fahrdraht &nbsp;·&nbsp; H<sub>Ts</sub> unbelastet = ohne Fahrdraht &nbsp;·&nbsp; bei +10 °C &nbsp;·&nbsp; (SBB 0161.1013.0001)</p>
+      </div>
+
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:0 0 1.1rem">
+
+      <!-- R-FL -->
+      <div style="margin-bottom:1.3rem">
+        <div class="rgl-section">R-FL — Regelfahrleitung</div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <table class="rgl-tbl" style="min-width:580px">
+          <colgroup>
+            <col style="width:32%">
+            <col style="width:8%">
+            <col style="width:14%">
+            <col style="width:14%">
+            <col style="width:14%">
+            <col style="width:12%">
+          </colgroup>
+          <thead><tr>
+            <th class="c-left">Kombination</th>
+            <th class="c-ctr">sh</th>
+            <th class="c-right" colspan="2">H<sub>Ts</sub> konstant</th>
+            <th class="c-right">H<sub>Fd</sub></th>
+            <th class="c-right">Abnutzung</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td class="c-left">StCu 92 + Cu 107</td>
+              <td class="c-ctr" style="color:var(--muted)">1.60 m</td>
+              <td class="c-right" colspan="2">12'000 N</td>
+              <td class="c-right">10'000 N</td>
+              <td class="c-right" style="color:var(--muted)">18 %</td>
+            </tr>
+            <tr>
+              <td class="c-left">StCu 92 + Cu 150</td>
+              <td class="c-ctr" style="color:var(--muted)">1.60 m</td>
+              <td class="c-right" colspan="2">12'000 N</td>
+              <td class="c-right">10'000 N</td>
+              <td class="c-right" style="color:var(--muted)">25 %</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <p class="rgl-note">H<sub>Ts</sub> konstant via Nachspannvorrichtung &nbsp;·&nbsp; temperaturunabhängig &nbsp;·&nbsp; (SBB 0161.1013.0001)</p>
+      </div>
+
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:0 0 1.1rem">
+
+      <!-- Einzelleiter -->
+      <div>
+        <div class="rgl-section">Einzelleiter — Reglagezugkraft</div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <table class="rgl-tbl" style="min-width:380px">
+          <colgroup>
+            <col style="width:32%">
+            <col style="width:16%">
+            <col style="width:14%">
+            <col style="width:38%">
+          </colgroup>
+          <thead><tr>
+            <th class="c-left">Material</th>
+            <th class="c-right">H<sub>Reglage</sub></th>
+            <th class="c-ctr">Basiskraft</th>
+            <th class="c-left">Anmerkung</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td class="c-left">Cu 95 mm²</td>
+              <td class="c-right">3'700 N</td>
+              <td class="c-ctr" style="color:var(--muted)">6 kN</td>
+              <td class="c-left" style="color:var(--muted);font-size:.72rem">Rückleiter / Speiseleitung</td>
+            </tr>
+            <tr>
+              <td class="c-left">Cu 150 mm²</td>
+              <td class="c-right">5'600 N</td>
+              <td class="c-ctr" style="color:var(--muted)">9 kN</td>
+              <td class="c-left" style="color:var(--muted);font-size:.72rem">Normale Zugkraft</td>
+            </tr>
+            <tr>
+              <td class="c-left">Aldrey 300 mm²</td>
+              <td class="c-right">2'900 N</td>
+              <td class="c-ctr" style="color:var(--muted)">6 kN</td>
+              <td class="c-left" style="color:var(--muted);font-size:.72rem">Lm &gt; 35 m</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <p class="rgl-note">Reglagezugkraft bei +10 °C, Lm = 45 m, Berechnungsart «Ausgleichend» &nbsp;·&nbsp; (SBB «Durchhang 2026.xlsm»)</p>
+      </div>
+
     </div>
   </div>
 </div>
