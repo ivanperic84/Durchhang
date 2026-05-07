@@ -2903,7 +2903,7 @@ function readInputs() {
   const flCombo   = FL_COMBINATIONS[matTsKey + '_' + matFdKey] ?? null;
 
   // N-FL Stufe 1: unbelastet → belastet
-  // Bei bekannter FL-Kombination: MFL/MTS aus VBA-Tabelle verwenden (exaktere Gewichte)
+  // Bei bekannter FL-Kombination: MFL/MTS aus VBA-Tabelle verwenden (exaktere Gewichte inkl. Klemmen)
   let H_Ts, q_ges_eff;
   if (sysMode === 'nfl' && flCombo) {
     // Abnutzung: nur Fahrdraht-Eigengewicht (ohne Hänger 0.7061 N/m) wird reduziert
@@ -2913,6 +2913,12 @@ function readInputs() {
     H_Ts = solveLoadingEq(H_Ts_ub, flCombo.MTS, MFL_eff, Lm, EA_fl) ?? H_Ts_ub;
     const el = document.getElementById('tension-belastet');
     if (el) el.value = Math.round(H_Ts);
+  } else if (sysMode === 'rfl' && flCombo) {
+    // R-FL mit bekannter Kombination: MFL aus Tabelle (exakte Gewichte inkl. Klemmen/Hänger)
+    // q_Haenger im manuellen q_ges wäre 0.196 N/m (falsch), FL-Tabelle hat 0.706 N/m
+    const MFL_eff = flCombo.MFL - (flCombo.MFL - flCombo.MTS - 0.7061) * (wearPct / 100);
+    q_ges_eff = MFL_eff;
+    H_Ts = H_Ts_ub;  // R-FL: Zugkraft konstant (Nachspannvorrichtung)
   } else if (sysMode === 'nfl' && EA_Ts !== null && !isNaN(H_Ts_ub)) {
     q_ges_eff = q_ges;
     H_Ts = solveLoadingEq(H_Ts_ub, q_Ts, q_ges, Lm, EA_Ts) ?? H_Ts_ub;
