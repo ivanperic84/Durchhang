@@ -2005,18 +2005,34 @@ function updateSysModeUI(mode) {
 
 // Skala-Labels beim Schieben dynamisch skalieren
 function updateT2Float(v, active) {
-  const labels = document.querySelectorAll('.t2-lbl');
-  // Nächsten Label-Wert finden
-  let nearest = null, minDist = Infinity;
+  const labels   = document.querySelectorAll('.t2-lbl');
+  const allVals  = Array.from(labels).map(el => parseInt(el.dataset.val));
+  const exactHit = allVals.includes(v);
+
+  // Angrenzende Label-Werte bestimmen
+  const lower = allVals.filter(lv => lv <= v);
+  const upper = allVals.filter(lv => lv >= v);
+  const lowerVal = lower.length ? Math.max(...lower) : null;
+  const upperVal = upper.length ? Math.min(...upper) : null;
+
   labels.forEach(el => {
-    const dist = Math.abs(v - parseInt(el.dataset.val));
-    if (dist < minDist) { minDist = dist; nearest = el; }
-  });
-  labels.forEach(el => {
-    if (active && el === nearest) {
-      el.style.fontSize   = '.95rem';
-      el.style.fontWeight = '700';
-      el.style.color      = 'var(--primary)';
+    const lv = parseInt(el.dataset.val);
+    if (active) {
+      if (exactHit && lv === v) {
+        // Exakter Treffer: volles Rot, gross
+        el.style.fontSize   = '.95rem';
+        el.style.fontWeight = '700';
+        el.style.color      = 'var(--primary)';
+      } else if (!exactHit && (lv === lowerVal || lv === upperVal)) {
+        // Zwischen zwei Labels: beide angrenzend in hellerem Rot
+        el.style.fontSize   = '.75rem';
+        el.style.fontWeight = '600';
+        el.style.color      = '#f87171';
+      } else {
+        el.style.fontSize   = '.6rem';
+        el.style.fontWeight = '400';
+        el.style.color      = '#9ca3af';
+      }
     } else {
       el.style.fontSize   = '.6rem';
       el.style.fontWeight = '400';
