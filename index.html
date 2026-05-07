@@ -822,6 +822,46 @@ button.header-manual-link:hover {
   color: #fff;
   font-weight: 600;
 }
+
+/* ── Projekte Modal ── */
+.proj-warning {
+  background: #fffbeb; border: 1px solid #f59e0b;
+  border-radius: 8px; padding: .6rem .85rem;
+  font-size: .75rem; color: #78350f; line-height: 1.5;
+  margin-bottom: 1rem; display: flex; gap: .5rem; align-items: flex-start;
+}
+.proj-warning svg { flex-shrink: 0; margin-top: 1px; }
+.proj-new-row { display: flex; gap: .5rem; margin-bottom: 1rem; }
+.proj-new-row input {
+  flex: 1; border: 1px solid var(--border); border-radius: 8px;
+  padding: .45rem .75rem; font-size: .83rem; font-family: inherit;
+  outline: none; background: #f8f8f9;
+}
+.proj-new-row input:focus { border-color: var(--primary); background: #fff; }
+.proj-list { display: flex; flex-direction: column; gap: .45rem; max-height: 320px; overflow-y: auto; margin-bottom: .75rem; }
+.proj-item {
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: .55rem .8rem; display: flex; align-items: center; gap: .5rem;
+  transition: border-color .15s;
+}
+.proj-item.active-proj { border-color: var(--primary); background: #fff5f5; }
+.proj-item-info { flex: 1; min-width: 0; }
+.proj-item-name { font-size: .83rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.proj-item.active-proj .proj-item-name { color: var(--primary); }
+.proj-item-date { font-size: .68rem; color: var(--muted); margin-top: 1px; }
+.proj-item-actions { display: flex; gap: .3rem; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+.proj-btn {
+  border: 1px solid var(--border); border-radius: 6px; background: none;
+  cursor: pointer; padding: .22rem .5rem; font-size: .7rem; color: var(--muted);
+  font-family: inherit; transition: border-color .15s, color .15s; white-space: nowrap; line-height: 1.4;
+}
+.proj-btn:hover { border-color: var(--primary); color: var(--primary); }
+.proj-btn.danger:hover { border-color: #ef4444; color: #ef4444; }
+.proj-btn.pri { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+.proj-btn.pri:hover { background: #c00; }
+.proj-empty { text-align: center; color: var(--muted); font-size: .8rem; padding: 1.5rem 0; }
+.proj-separator { border: none; border-top: 1px solid var(--border); margin: .85rem 0 .75rem; }
+.proj-footer { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
 </style>
 </head>
 <body>
@@ -866,13 +906,15 @@ button.header-manual-link:hover {
     <h1 id="app-title">Durchhang N-FL</h1>
     <p id="app-subtitle">Kettenwerk — Seillinie mit Temperatureinfluss</p>
   </div>
-  <button onclick="openReglageModal()" class="header-manual-link" style="background:none;border:none;cursor:pointer;">
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="2" rx="1" fill="currentColor"/><rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor"/><rect x="2" y="11" width="8" height="2" rx="1" fill="currentColor"/></svg>
-    <span class="header-manual-text">Reglage</span>
+  <button onclick="openProjectsModal()" class="header-manual-link" title="Projekte" style="background:none;border:none;cursor:pointer;">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+    <span class="header-manual-text">Projekte</span>
   </button>
-  <button onclick="openHandbuch()" class="header-manual-link" style="background:none;border:none;cursor:pointer;">
+  <button onclick="openReglageModal()" class="header-manual-link" title="Reglagetabelle" style="background:none;border:none;cursor:pointer;">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="2" rx="1" fill="currentColor"/><rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor"/><rect x="2" y="11" width="8" height="2" rx="1" fill="currentColor"/></svg>
+  </button>
+  <button onclick="openHandbuch()" class="header-manual-link" title="Handbuch" style="background:none;border:none;cursor:pointer;">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2a6 6 0 100 12A6 6 0 008 2zm0 9V7m0-2v.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-    <span class="header-manual-text" id="header-manual-text">Handbuch</span>
   </button>
   <div class="lang-switcher">
     <button class="lang-btn active" id="lang-de" onclick="setLang('de')">DE</button>
@@ -2307,6 +2349,267 @@ function getEffectiveSpan() {
   if (spanMode === 'single') return getActiveSpan();
   return computeRulingSpan(getSpanLengths());
 }
+
+// ═══════════════════════════════════════════════════════════════
+// PROJEKTVERWALTUNG — localStorage
+// ═══════════════════════════════════════════════════════════════
+const PROJ_META_KEY    = 'dh_projects_meta';
+const PROJ_KEY_PREFIX  = 'dh_project_';
+let currentProjectId   = null; // aktuell geladenes Projekt
+
+// ── State erfassen ──
+function getProjectState() {
+  const FIELD_IDS = [
+    'span','h1','h2','temp1','temp2','tension','tension-fd','sh',
+    'material-ts','material-fd','weight-ts','weight-fd','alpha-ts','alpha-fd',
+    'preset-select','el-material-select',
+    'sok-mum-left','sok-mum-right','zl-eis',
+    'probe-x1','probe-x2','probe-x3','probe-x4','display-span'
+  ];
+  const fields = {};
+  FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) fields[id] = el.value;
+  });
+  const spans = [];
+  for (let i = 0; i < spanCount; i++) {
+    const el = document.getElementById(`span-${i}`);
+    if (el) spans.push(parseFloat(el.value) || 50);
+  }
+  return { sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, fields, spans };
+}
+
+// ── State wiederherstellen ──
+function setProjectState(s) {
+  const flds = s.fields || {};
+  // Globals
+  spanMode       = s.spanMode       ?? 'single';
+  spanCount      = s.spanCount      ?? 3;
+  yCInputMode    = s.yCInputMode    ?? 'sag';
+  elBasiskraftIdx = s.elBasiskraftIdx ?? 0;
+
+  // Span-Modus UI (ohne berechnen)
+  document.getElementById('seg-single').classList.toggle('active', spanMode === 'single');
+  document.getElementById('seg-ruling').classList.toggle('active', spanMode === 'ruling');
+  document.getElementById('panel-single').style.display = spanMode === 'single' ? '' : 'none';
+  document.getElementById('panel-ruling').style.display = spanMode === 'ruling' ? '' : 'none';
+  if (spanMode === 'ruling') {
+    document.getElementById('span-count-val').textContent = spanCount;
+    rebuildSpanList();
+    (s.spans || []).forEach((v, i) => {
+      const el = document.getElementById(`span-${i}`);
+      if (el) el.value = v;
+    });
+    updateLm();
+  }
+
+  // System-Modus
+  sysMode = s.sysMode ?? 'nfl';
+  updateSysModeUI(sysMode);
+
+  // Einfache Felder setzen
+  const FIELDS = ['span','h1','h2','temp1','temp2','tension','tension-fd','sh',
+    'material-ts','material-fd','weight-ts','weight-fd','alpha-ts','alpha-fd',
+    'sok-mum-left','sok-mum-right','zl-eis',
+    'probe-x1','probe-x2','probe-x3','probe-x4','display-span'];
+  FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && flds[id] != null) el.value = flds[id];
+  });
+
+  // Preset / Material
+  if (sysMode !== 'el') {
+    rebuildPresetDropdown(sysMode);
+    const presetKey = flds['preset-select'] ?? '';
+    document.getElementById('preset-select').value = presetKey;
+    const p = KETTENWERK_PRESETS[presetKey];
+    const infoEl = document.getElementById('combo-info');
+    if (p) {
+      activePresetRef = p.H_Ts_ub_table ? { H_Ts_ub_table: p.H_Ts_ub_table } : null;
+      activePresetP   = p;
+      currentWearMax  = p.wear_max || 30;
+      const wearLbl = document.getElementById('wear-max-label');
+      if (wearLbl) wearLbl.textContent = currentWearMax;
+      document.getElementById('wear-row').style.display = '';
+      if (infoEl) {
+        infoEl.style.background = ''; infoEl.style.borderColor = '';
+        document.getElementById('combo-title').style.color = '';
+        document.getElementById('combo-title').textContent = buildPresetTitle(p);
+        const T1c = flds['temp1'] != null ? parseFloat(flds['temp1']) : null;
+        const Hub = flds['tension'] != null ? parseInt(flds['tension']) : null;
+        document.getElementById('combo-note').textContent = buildPresetNote(p, Hub, T1c);
+        infoEl.style.display = '';
+      }
+    } else {
+      activePresetRef = null; activePresetP = null;
+      if (infoEl) infoEl.style.display = 'none';
+    }
+    wearPct = s.wearPct ?? 0;
+    document.getElementById('wear-btn-0')?.classList.toggle('active', wearPct === 0);
+    document.getElementById('wear-btn-max')?.classList.toggle('active', wearPct !== 0);
+    // Tension nach Preset-Logik überschreiben
+    if (flds['tension'] != null) document.getElementById('tension').value = flds['tension'];
+  } else {
+    activePresetRef = null; activePresetP = null;
+    const matKey = flds['el-material-select'] ?? 'cu95';
+    const elSel = document.getElementById('el-material-select');
+    if (elSel) elSel.value = matKey;
+    document.getElementById('material-ts').value = matKey;
+    const mat = MATERIALS[matKey];
+    if (mat) {
+      document.getElementById('weight-ts').value = mat.q.toFixed(5);
+      document.getElementById('alpha-ts').value  = (mat.alpha * 1e6).toFixed(1);
+      const basisRow  = document.getElementById('el-basis-row');
+      const basisBtns = document.getElementById('el-basis-btns');
+      if (mat.H_reglage_variants && mat.H_reglage_variants.length > 1) {
+        basisBtns.innerHTML = mat.H_reglage_variants
+          .map((v,i) => `<button class="seg-btn${i===elBasiskraftIdx?' active':''}" onclick="applyElVariant(${i})">${v.label}</button>`)
+          .join('');
+        basisRow.style.display = '';
+      } else {
+        basisBtns.innerHTML = '';
+        basisRow.style.display = 'none';
+      }
+      const variant = mat.H_reglage_variants ? mat.H_reglage_variants[elBasiskraftIdx] : mat;
+      if (variant) {
+        activePresetRef = variant.H_reglage_table ? { H_Ts_ub_table: variant.H_reglage_table } : null;
+        if (variant.H_reglage != null) {
+          document.getElementById('el-reglage-title').textContent =
+            `H = ${variant.H_reglage.toLocaleString('de-CH')} N  (${t('preset.el.reglage')})`;
+          document.getElementById('el-reglage-note').textContent =
+            variant.reglage_note_key ? t(variant.reglage_note_key) : (variant.reglage_note || '');
+          document.getElementById('el-reglage-info').style.display = '';
+        }
+      }
+    }
+    if (flds['tension'] != null) document.getElementById('tension').value = flds['tension'];
+  }
+  berechnen();
+}
+
+// ── localStorage-Hilfsfunktionen ──
+function getProjMeta()        { try { return JSON.parse(localStorage.getItem(PROJ_META_KEY) || '[]'); } catch { return []; } }
+function saveProjMeta(arr)    { localStorage.setItem(PROJ_META_KEY, JSON.stringify(arr)); }
+function genProjId()          { return 'p' + Date.now() + Math.random().toString(36).slice(2,5); }
+
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('de-CH') + ' ' + d.toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
+}
+
+// ── CRUD ──
+function createProject() {
+  const inp  = document.getElementById('proj-name-input');
+  const name = inp.value.trim();
+  if (!name) { inp.focus(); return; }
+  const id   = genProjId();
+  const now  = new Date().toISOString();
+  const meta = getProjMeta();
+  meta.unshift({ id, name, createdAt: now, updatedAt: now });
+  saveProjMeta(meta);
+  const state = getProjectState();
+  localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...state, name }));
+  currentProjectId = id;
+  inp.value = '';
+  renderProjectList();
+}
+
+function saveToProject(id) {
+  const meta  = getProjMeta();
+  const entry = meta.find(m => m.id === id);
+  if (!entry) return;
+  entry.updatedAt = new Date().toISOString();
+  saveProjMeta(meta);
+  const state = getProjectState();
+  localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...state, name: entry.name }));
+  currentProjectId = id;
+  renderProjectList();
+}
+
+function loadProjectById(id) {
+  try {
+    const raw = localStorage.getItem(PROJ_KEY_PREFIX + id);
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    setProjectState(state);
+    currentProjectId = id;
+    closeProjectsModal();
+  } catch(e) { alert('Fehler beim Laden: ' + e.message); }
+}
+
+function deleteProjectById(id) {
+  const meta  = getProjMeta();
+  const entry = meta.find(m => m.id === id);
+  if (!confirm(`Projekt «${entry?.name ?? id}» löschen?`)) return;
+  saveProjMeta(meta.filter(m => m.id !== id));
+  localStorage.removeItem(PROJ_KEY_PREFIX + id);
+  if (currentProjectId === id) currentProjectId = null;
+  renderProjectList();
+}
+
+function exportProjectById(id) {
+  const raw  = localStorage.getItem(PROJ_KEY_PREFIX + id);
+  if (!raw) return;
+  const meta = getProjMeta().find(m => m.id === id);
+  const name = meta?.name || id;
+  const blob = new Blob([raw], { type: 'application/json' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = name.replace(/[^a-zA-Z0-9_\-]/g,'_') + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importProjectFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const state = JSON.parse(e.target.result);
+      const name  = state.name || file.name.replace(/\.json$/i, '');
+      const id    = genProjId();
+      const now   = new Date().toISOString();
+      const meta  = getProjMeta();
+      meta.unshift({ id, name, createdAt: now, updatedAt: now });
+      saveProjMeta(meta);
+      localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...state, name }));
+      renderProjectList();
+    } catch(err) { alert('Ungültige JSON-Datei: ' + err.message); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// ── Modal ──
+function renderProjectList() {
+  const container = document.getElementById('proj-list-container');
+  if (!container) return;
+  const meta = getProjMeta();
+  if (!meta.length) {
+    container.innerHTML = '<div class="proj-empty">Noch keine Projekte gespeichert</div>';
+    return;
+  }
+  container.innerHTML = meta.map(m => {
+    const isActive = m.id === currentProjectId;
+    return `<div class="proj-item${isActive ? ' active-proj' : ''}">
+      <div class="proj-item-info">
+        <div class="proj-item-name" title="${m.name}">${m.name}${isActive ? ' ✓' : ''}</div>
+        <div class="proj-item-date">Gespeichert: ${fmtDate(m.updatedAt)}</div>
+      </div>
+      <div class="proj-item-actions">
+        <button class="proj-btn pri" onclick="loadProjectById('${m.id}')">Laden</button>
+        <button class="proj-btn" onclick="saveToProject('${m.id}')">Speichern</button>
+        <button class="proj-btn" onclick="exportProjectById('${m.id}')">JSON ↓</button>
+        <button class="proj-btn danger" onclick="deleteProjectById('${m.id}')">Löschen</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openProjectsModal()  { renderProjectList(); document.getElementById('projects-modal').classList.add('open'); }
+function closeProjectsModal() { document.getElementById('projects-modal').classList.remove('open'); }
 
 // ── T1-abhängige H_Ts_ub-Berechnung aus Reglagetabelle ──────────────────────
 // Lineares Interpolieren zwischen Tabellenstützpunkten; ausserhalb klemmen.
@@ -5547,6 +5850,47 @@ function applyCustomPreset(p) {
   berechnen();
 }
 </script>
+
+<!-- ── Modal: Projekte ── -->
+<div class="modal-overlay" id="projects-modal" onclick="if(event.target===this)closeProjectsModal()">
+  <div class="modal-card" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-.15em;margin-right:.4rem"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        Projekte
+      </div>
+      <button class="modal-close" onclick="closeProjectsModal()" title="Schliessen">✕</button>
+    </div>
+
+    <div class="proj-warning">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L14.5 13H1.5L8 1.5z" stroke="#d97706" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.5v.5" stroke="#d97706" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <span><strong>Lokale Speicherung:</strong> Projektdaten werden im Browser-Cache gespeichert und gehen beim Löschen der Browserdaten verloren. Für eine sichere Aufbewahrung Projekte als <strong>JSON-Datei exportieren</strong>.</span>
+    </div>
+
+    <!-- Neues Projekt erstellen -->
+    <div class="proj-new-row">
+      <input type="text" id="proj-name-input" placeholder="Projektname …" maxlength="60"
+             onkeydown="if(event.key==='Enter')createProject()">
+      <button class="proj-btn pri" onclick="createProject()">+ Neu</button>
+    </div>
+
+    <!-- Projektliste -->
+    <div id="proj-list-container" class="proj-list"></div>
+
+    <hr class="proj-separator">
+
+    <div class="proj-footer">
+      <button class="proj-btn" onclick="document.getElementById('proj-import-input').click()">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-.1em;margin-right:.25rem"><path d="M3 10v3h10v-3M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        JSON importieren
+      </button>
+      <input type="file" id="proj-import-input" accept=".json" style="display:none" onchange="importProjectFile(this)">
+      <span style="font-size:.7rem;color:var(--muted);flex:1;text-align:right">
+        Daten werden nur lokal im Browser gespeichert
+      </span>
+    </div>
+  </div>
+</div>
 
 <!-- ── Modal: Handbuch ── -->
 <div class="modal-overlay" id="handbuch-modal" onclick="if(event.target===this)closeHandbuch()" style="align-items:flex-start;padding:2rem 1rem;overflow-y:auto">
