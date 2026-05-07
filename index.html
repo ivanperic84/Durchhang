@@ -3183,15 +3183,12 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.beginPath(); ctx.arc(px, cy(y2), 5, 0, Math.PI * 2);
     ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.stroke();
 
-    // Callout-Box: Label + Höhe (ohne Δh — wird wie f-Annotation angezeigt)
-    const label  = { probe1:'M1', probe2:'M2', probe3:'M3', probe4:'M4' }[which] ?? which;
-    const yLine2 = hasSok ? `${y2.toFixed(2)} ${t('bp.mum.abbrev')}` : `${y2.toFixed(2)} m`;
-    ctx.font = 'bold 9px Segoe UI';
+    // Callout-Box: nur Label (Messwert wird als Δh-Annotation angezeigt)
+    const label = { probe1:'M1', probe2:'M2', probe3:'M3', probe4:'M4' }[which] ?? which;
+    ctx.font = 'bold 14px Segoe UI';
     const labelW = ctx.measureText(label).width;
-    ctx.font = '8px Segoe UI';
-    const line2W = ctx.measureText(yLine2).width;
-    const boxW = Math.max(labelW, line2W) + 16;
-    const boxH = 36, gap = 8;
+    const boxW = labelW + 18;
+    const boxH = 26, gap = 8;
     const onRight = (px + boxW + 16 + gap) <= (padL + plotW);
     const bx = onRight ? px + gap : px - boxW - gap;
     let by = Math.min(Math.max(padT + 4, cy(y2) - boxH / 2), padT + plotH - boxH - 4);
@@ -3214,10 +3211,8 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.fillStyle = 'rgba(255,255,255,.93)'; ctx.closePath(); ctx.fill();
 
     ctx.textAlign = 'left';
-    ctx.font = 'bold 9px Segoe UI'; ctx.fillStyle = dotColor;
-    ctx.fillText(label,  bx + 7, by + 13);
-    ctx.font = '8px Segoe UI'; ctx.fillStyle = '#1e293b';
-    ctx.fillText(yLine2, bx + 7, by + 27);
+    ctx.font = 'bold 14px Segoe UI'; ctx.fillStyle = dotColor;
+    ctx.fillText(label, bx + 8, by + boxH / 2 + 5);
 
     // Δh-Annotation wie f: vertikale Pfeillinie h1 → T2-Draht + Beschriftung
     const refY  = cy(h1d);
