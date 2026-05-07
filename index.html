@@ -3033,7 +3033,13 @@ function berechnen() {
       if (H2 !== null) c2 = computeBase(L, q_ges, H2, h1, h2);
     } catch (e) { errorBox.textContent = 'Zielzustand: ' + e.message; errorBox.classList.remove('hidden'); return; }
   } else {
-    c2 = c1; // R-FL: konstante Zugkraft, kein Temperatureinfluss
+    // R-FL: konstante Zugkraft; ZL (Eislast) teilt sich auf Ts+Fd auf: f_ZL = ZL·c²/(8·(H_Ts+H_Fd))
+    if (ZL > 0 && !isNaN(H_Fd) && H_Fd > 0) {
+      const q_rfl_eff = q_ges + ZL * H_Ts / (H_Ts + H_Fd);
+      c2 = computeBase(L, q_rfl_eff, H_Ts, h1, h2);
+    } else {
+      c2 = c1;
+    }
   }
 
   const warns = [];
@@ -3043,7 +3049,7 @@ function berechnen() {
     warns.push(`T₂: Tiefpunkt außerhalb der Spannweite.`);
   if (warns.length) { warnBox.innerHTML = warns.join('<br>'); warnBox.classList.remove('hidden'); }
 
-  renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, _c2_vem);
+  renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, _c2_vem, ZL);
   drawCanvas(c1, c2, L, h1, h2, sh, false, _c2_vem);
 
   calcState = { L, Lm, spanMode, q_Ts, q_Fd, q_ges, H_Ts, H_Ts_ub, H_Fd, sh, h1, h2, T1, T2,
@@ -3091,14 +3097,20 @@ function quickDraw() {
         ? computeBase(L, q_ges, solveStateEq(q_ges, Lm, H_Ts, EA, alpha, T2 - T1), h1, h2)
         : computeThermal(L, c1.W, c1.s * (1 + alpha * (T2 - T1)), h1, h2);
       drawCanvas(c1, c2, L, h1, h2, sh, true);
-    } else { c2 = c1; drawCanvas(c1, c2, L, h1, h2, sh, true); }
+    } else {
+    // R-FL: ZL anteilig auf Ts+Fd aufteilen
+    c2 = (ZL > 0 && !isNaN(H_Fd) && H_Fd > 0)
+      ? computeBase(L, q_ges + ZL * H_Ts / (H_Ts + H_Fd), H_Ts, h1, h2)
+      : c1;
+    drawCanvas(c1, c2, L, h1, h2, sh, true);
+  }
   } catch (_) {}
 }
 
 // ═══════════════════════════════════════════════════════════════
 // ERGEBNISDARSTELLUNG (DOM)
 // ═══════════════════════════════════════════════════════════════
-function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, c2vem = null) {
+function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, c2vem = null, ZL = 0) {
   const isEl = sysMode === 'el';
   // Für N-FL+flCombo: geometrischen Sehnenwert aus c2vem verwenden (konsistent mit Diagramm)
   const c2Display = (flCombo && c2vem) ? { ...c2, sag: c2vem.sag } : c2;
@@ -3161,7 +3173,19 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
     </div>`;
 
   if (sysMode === 'rfl') {
-    document.getElementById('results').innerHTML = `
+    const hasZL = ZL > 0;
+    document.getElementById('results').innerHTML = hasZL ? `
+      <div class="results-grid">
+        <div>
+          <div class="results-col-title">Ohne Eislast</div>
+          <div class="metric-list">${col(c1, '')}</div>
+        </div>
+        <div>
+          <div class="results-col-title warm">Mit Eislast (ZL = ${ZL.toFixed(2)} N/m)</div>
+          <div class="metric-list">${col(c2, 'warm')}</div>
+          ${fdBlock}
+        </div>
+      </div>` : `
       <div class="results-grid" style="grid-template-columns:1fr">
         <div>
           <div class="results-col-title">${t('res.rfl.title')}</div>
@@ -3379,11 +3403,13 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   // Im NFL/Einzelleiter-Modus: T1 fein gestrichelt (Referenz), T2 durchgehend (Ist-Zustand)
   const cCurveT2 = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
   const t1Dashed = sysMode === 'nfl' || isEl;  // T1 strichliert bei NFL + Einzelleiter
+  const rflHasZL = isRfl && c2 !== c1;         // R-FL mit Eislast: c2 ist der belastete Zustand
   ctx.shadowColor = 'rgba(235,0,0,.15)'; ctx.shadowBlur = 8;
   if (sysMode === 'nfl' || isEl) drawCurve(cCurveT2, '#eb0000', 2.5, .75);
+  if (rflHasZL) drawCurve(c2, '#eb0000', 2.5, .75);  // R-FL Eislast-Zustand (rot)
   ctx.shadowColor = 'transparent';
-  const c1Color = sysMode === 'rfl' ? '#eb0000' : '#b7b7b7';
-  drawCurve(c1, c1Color, t1Dashed ? 1.2 : 3, t1Dashed ? 0.55 : 1, t1Dashed ? [6, 4] : []);
+  const c1Color = (isRfl && !rflHasZL) ? '#eb0000' : '#b7b7b7';
+  drawCurve(c1, c1Color, (t1Dashed || rflHasZL) ? 1.2 : 3, (t1Dashed || rflHasZL) ? 0.55 : 1, (t1Dashed || rflHasZL) ? [6, 4] : []);
 
   // ── Sag annotation ──
   function sagAnnotation(c, color, side) {
@@ -3427,17 +3453,25 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   const anyProbe = probeX1 !== null || probeX2 !== null || probeX3 !== null || probeX4 !== null;
   if (!anyProbe) {
     // Keine Messpunkte: f-Annotation wie gewohnt (Linie + Dreiecke + Label)
-    sagAnnotation(c1, sysMode === 'rfl' ? '#eb0000' : '#b7b7b7', 'right');
+    const c1SagColor = (isRfl && rflHasZL) ? '#b7b7b7' : (isRfl ? '#eb0000' : '#b7b7b7');
+    sagAnnotation(c1, c1SagColor, 'right');
     if ((sysMode === 'nfl' || isEl) && Math.abs(c2.sag - c1.sag) > 0.005) {
       const cSagT2 = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
       sagAnnotation(cSagT2, '#eb0000', 'left');
     }
+    if (rflHasZL && Math.abs(c2.sag - c1.sag) > 0.005) {
+      sagAnnotation(c2, '#eb0000', 'left');
+    }
   } else {
     // Messpunkt aktiv: nur gestrichelte Linien ohne Dreiecke/Label
-    sagLine(c1, sysMode === 'rfl' ? '#eb0000' : '#b7b7b7');
+    const c1SagColor = (isRfl && rflHasZL) ? '#b7b7b7' : (isRfl ? '#eb0000' : '#b7b7b7');
+    sagLine(c1, c1SagColor);
     if ((sysMode === 'nfl' || isEl) && Math.abs(c2.sag - c1.sag) > 0.005) {
       const cSagT2 = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
       sagLine(cSagT2, '#eb0000');
+    }
+    if (rflHasZL && Math.abs(c2.sag - c1.sag) > 0.005) {
+      sagLine(c2, '#eb0000');
     }
     // Messpunkt aktiv: horizontale Referenzlinie auf Höhe linker Ankerpunkt (h1)
     const refY = cy(h1d);
@@ -3743,7 +3777,8 @@ function updateHighlightCard() {
   const yFdSoll = x => (h1 - sh) + (h2 - h1) * x / L;
   const isNfl   = sysMode === 'nfl';
   const isEl    = sysMode === 'el';
-  const cIst    = (isNfl || isEl) ? c2 : c1;
+  const isRfl_h = sysMode === 'rfl';
+  const cIst    = (isNfl || isEl) ? c2 : (isRfl_h && c2 !== c1 ? c2 : c1);
   const useVem  = isNfl && flCombo && c2_vem;             // kombiniertes System verfügbar?
   const cDisp   = useVem ? c2_vem : cIst;                 // für Höhenanzeige: kombiniert oder Ts
   const tempLabel = (isNfl || isEl) ? ` ${t('dyn.bei.t2')}` : '';
