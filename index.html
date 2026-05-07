@@ -6301,7 +6301,7 @@ function applyCustomPreset(p) {
   </div>
 </div>
 
-<!-- ── PDF Button: Desktop = inline in delta-bar, Mobile = fixed bottom-right ── -->
+<!-- ── PDF Button: inline in delta-bar (alle Bildschirmgrössen) ── -->
 <style>
   #pdf-btn {
     display: flex;
@@ -6315,17 +6315,6 @@ function applyCustomPreset(p) {
     transition: background .15s;
   }
   #pdf-btn:hover { background: rgba(0,113,227,.14); }
-  @media (max-width: 860px) {
-    #pdf-btn {
-      position: fixed; bottom: 1.2rem; right: 1.2rem; z-index: 100;
-      grid-column: auto; width: auto;
-      border-radius: 10px; padding: .55rem 1rem;
-      box-shadow: 0 2px 12px rgba(0,113,227,.2);
-      background: rgba(0,113,227,.1);
-    }
-    #pdf-btn:hover { background: rgba(0,113,227,.18); }
-    .delta-bar { grid-template-columns: 1fr 1fr 1fr; }
-  }
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
