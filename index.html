@@ -2422,11 +2422,9 @@ function berechnen() {
 
   const errorBox = document.getElementById('error-box');
   const warnBox  = document.getElementById('warn-box');
-  const pdfBtn   = document.getElementById('pdf-btn');
   errorBox.classList.add('hidden');
   warnBox.classList.add('hidden');
   calcState = null;
-  if (pdfBtn) { pdfBtn.disabled = true; pdfBtn.style.display = 'none'; }
 
   // Eingabevalidierung — Einzelleiter: kein Fd, kein sh erforderlich
   const isEl = sysMode === 'el';
@@ -2512,13 +2510,6 @@ function berechnen() {
                 alpha, EA, EA_Ts, deltaT, c1, c2, flCombo, ZL,
                 LT1_vem: _LT1_vem, q_vem_vem: _q_vem_vem, c2_vem: _c2_vem,
                 matTs: getMaterialNameTs(), matFd: getMaterialNameFd() };
-  if (pdfBtn) {
-    pdfBtn.disabled = false;
-    pdfBtn.style.display = 'flex';
-    // Desktop: Button in delta-bar verschieben (margin-left:auto = rechtsbündig)
-    const deltaBar = document.querySelector('#results .delta-bar');
-    if (deltaBar) deltaBar.appendChild(pdfBtn);
-  }
   updateAllMesspunkte();
 }
 
@@ -2663,6 +2654,10 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         ${chip(t('res.delta.durchhang'), df, 'm', c1.sag)}
         ${chip(t('res.delta.zugkraft'), dH, 'N', c1.H)}
         <div class="delta-chip">α·ΔT = ${(alpha * deltaT * 1e6).toFixed(2)} × 10⁻⁶</div>
+        <button id="pdf-btn" onclick="pdfExport()">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="pdf-btn-label">${t('btn.pdf')}</span>
+        </button>
       </div>`;
   } else {
     const df = c2.sag - c1.sag, dH = c2.H - c1.H;
@@ -2682,6 +2677,10 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         ${chip(t('res.delta.durchhang') + ' ' + t('dyn.ts'), df, 'm', c1.sag)}
         ${chip(t('res.delta.zugkraft') + ' ' + t('dyn.ts'), dH, 'N', c1.H)}
         <div class="delta-chip">α·ΔT = ${(alpha * deltaT * 1e6).toFixed(2)} × 10⁻⁶</div>
+        <button id="pdf-btn" onclick="pdfExport()">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="pdf-btn-label">${t('btn.pdf')}</span>
+        </button>
       </div>`;
   }
   updateHighlightCard();
@@ -6305,7 +6304,7 @@ function applyCustomPreset(p) {
 <!-- ── PDF Button: Desktop = inline in delta-bar, Mobile = fixed bottom-right ── -->
 <style>
   #pdf-btn {
-    display: none;
+    display: flex;
     align-items: center; justify-content: center; gap: .4rem;
     flex: 1;
     padding: .22rem .7rem;
@@ -6328,12 +6327,6 @@ function applyCustomPreset(p) {
     .delta-chip { flex: none; }
   }
 </style>
-<button id="pdf-btn" onclick="pdfExport()" disabled>
-  <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-    <path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  <span id="pdf-btn-label">PDF Berechnungsprotokoll</span>
-</button>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
   Ivan Peric &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span style="opacity:.6">v2.1</span>
