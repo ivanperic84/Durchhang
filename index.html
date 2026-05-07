@@ -3635,6 +3635,7 @@ function mpBlock(xv, badge, cls, compact = false) {
   const yFdSoll = x => (h1 - sh) + (h2 - h1) * x / L;
   const yChord  = x => h1 + (h2 - h1) * x / L;
   const isNfl   = sysMode === 'nfl';
+  const isRfl   = sysMode === 'rfl';
   const isEl    = sysMode === 'el';
   const cIst    = (isNfl || isEl) ? c2 : c1;                // Ts-Katenarie (für H, Fd-Berechnung)
   const useVem  = isNfl && flCombo && c2_vem;               // kombiniertes System verfügbar?
@@ -3648,7 +3649,16 @@ function mpBlock(xv, badge, cls, compact = false) {
         ? q_vem_vem / (2 * (c2.H + calcState.H_Fd)) * xv * (LT1_vem - xv)
         : c2.sag)
     : yChord(xv) - y2;
-  const dhLabel = isNfl ? t('res.sag.ts') + ' ' + t('dyn.bei.t2') : isEl ? t('res.sag') + ' ' + t('dyn.bei.t2') : t('res.sag.ts');
+  // R-FL: Δh = Abstand h1-Horizontale → Tragseil (identisch mit Diagramm-Annotation)
+  const deltaH  = h1 - y2;
+  const dhLabel = isNfl
+    ? t('res.sag.ts') + ' ' + t('dyn.bei.t2')
+    : isEl
+      ? t('res.sag') + ' ' + t('dyn.bei.t2')
+      : isRfl
+        ? 'Δh'
+        : t('res.sag.ts');
+  const dhValue = isRfl ? deltaH : sag;
   const valSize  = compact ? '1.35rem' : '2rem';
   const sagSize  = compact ? '1.1rem'  : '1.35rem';
   const topGap   = compact ? '.5rem'   : '1.2rem';
@@ -3675,7 +3685,7 @@ function mpBlock(xv, badge, cls, compact = false) {
       <div class="istzustand-value" style="font-size:${valSize};color:var(--mp-${cls})">${mainVal}<span class="istzustand-unit">${mainUnit}</span></div>
       <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${subLabel}</div>
       <div class="istzustand-label" style="color:var(--mp-${cls});margin-top:${topGap}">${dhLabel}</div>
-      <div class="istzustand-value" style="font-size:${sagSize};color:var(--mp-${cls})">${f3(sag)}<span class="istzustand-unit">m</span></div>
+      <div class="istzustand-value" style="font-size:${sagSize};color:var(--mp-${cls})">${f3(dhValue)}<span class="istzustand-unit">m</span></div>
       <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${t('res.h.ts')}: ${fN(cIst.H, 0)} N</div>
     </div>`;
 }
