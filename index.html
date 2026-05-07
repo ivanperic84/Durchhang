@@ -1129,6 +1129,20 @@ button.header-manual-link:hover {
                  ontouchend="onT2SliderEnd()">
           <!-- Massstab + Labels: padding = halber Thumb (7px) damit -20° und 80° gleich abstehen -->
           <div style="padding:0 7px">
+            <!-- Beschriftung: HTML-Spans, dynamisch skalierbar -->
+            <div style="position:relative;height:16px;margin-bottom:2px">
+              <span class="t2-lbl" data-val="-20" style="left:0%">−20°</span>
+              <span class="t2-lbl" data-val="-10" style="left:10%">−10°</span>
+              <span class="t2-lbl" data-val="0"   style="left:20%">0°</span>
+              <span class="t2-lbl" data-val="10"  style="left:30%">10°</span>
+              <span class="t2-lbl" data-val="20"  style="left:40%">20°</span>
+              <span class="t2-lbl" data-val="30"  style="left:50%">30°</span>
+              <span class="t2-lbl" data-val="40"  style="left:60%">40°</span>
+              <span class="t2-lbl" data-val="50"  style="left:70%">50°</span>
+              <span class="t2-lbl" data-val="60"  style="left:80%">60°</span>
+              <span class="t2-lbl" data-val="70"  style="left:90%">70°</span>
+              <span class="t2-lbl" data-val="80"  style="left:100%">80°</span>
+            </div>
             <svg width="100%" height="8" viewBox="0 0 200 8" preserveAspectRatio="none"
                  style="display:block;overflow:visible">
               <line x1="0"   y1="0" x2="0"   y2="7" stroke="#9ca3af" stroke-width="1"/>
@@ -1153,20 +1167,6 @@ button.header-manual-link:hover {
               <line x1="190" y1="0" x2="190" y2="4" stroke="#d1d5db" stroke-width="0.8"/>
               <line x1="200" y1="0" x2="200" y2="7" stroke="#9ca3af" stroke-width="1"/>
             </svg>
-            <!-- Beschriftung: HTML-Spans, dynamisch skalierbar -->
-            <div style="position:relative;height:16px;margin-top:2px">
-              <span class="t2-lbl" data-val="-20" style="left:0%">−20°</span>
-              <span class="t2-lbl" data-val="-10" style="left:10%">−10°</span>
-              <span class="t2-lbl" data-val="0"   style="left:20%">0°</span>
-              <span class="t2-lbl" data-val="10"  style="left:30%">10°</span>
-              <span class="t2-lbl" data-val="20"  style="left:40%">20°</span>
-              <span class="t2-lbl" data-val="30"  style="left:50%">30°</span>
-              <span class="t2-lbl" data-val="40"  style="left:60%">40°</span>
-              <span class="t2-lbl" data-val="50"  style="left:70%">50°</span>
-              <span class="t2-lbl" data-val="60"  style="left:80%">60°</span>
-              <span class="t2-lbl" data-val="70"  style="left:90%">70°</span>
-              <span class="t2-lbl" data-val="80"  style="left:100%">80°</span>
-            </div>
           </div>
         </div>
         <!-- Eislast — dynamisch sichtbar bei N-FL und T₂ = −5°C -->
