@@ -2884,13 +2884,9 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   }
   sagAnnotation(c1, sysMode === 'rfl' ? '#eb0000' : '#b7b7b7', 'right');
   if ((sysMode === 'nfl' || isEl) && Math.abs(c2.sag - c1.sag) > 0.005) {
-    // Sag-Annotation: Position aus kombinierter Katenarie, Wert aus VEM-Formel (c2.sag)
+    // Sag-Annotation: geometrischer Sehnenwert (Abstand Sehnenlinie → Tiefpunkt)
     const cSagT2 = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
-    const sagValT2 = c2.sag;  // VEM-Wert (LT1-Formel) beibehalten
-    const origSag = cSagT2.sag;
-    cSagT2.sag = sagValT2;
     sagAnnotation(cSagT2, '#eb0000', 'left');
-    cSagT2.sag = origSag;  // zurücksetzen
   }
 
   // ── Anchor points ──
@@ -4166,7 +4162,7 @@ const LANG = {
     'res.x_low':            'Tiefpunkt x',
     'res.tiefpunkt.label':  'Tiefpunkt',
     'res.tiefpunkt.x0':     'Tiefpunkt x₀',
-    'res.sag.belastet':     'Durchhang f Ts belastet (VEM 7.66)',
+    'res.sag.belastet':     'Durchhang Ts belastet (VEM 7.66)',
     'res.sag.ts.label':     'Durchhang f Ts',
     'res.sag.el.label':     'Durchhang f',
     'res.seillange.ts':     'Seillänge s Ts',
@@ -4411,7 +4407,7 @@ const LANG = {
     'res.x_low':            'Point le plus bas x',
     'res.tiefpunkt.label':  'Point le plus bas',
     'res.tiefpunkt.x0':     'Point le plus bas x₀',
-    'res.sag.belastet':     'Flèche f CP chargé (VEM 7.66)',
+    'res.sag.belastet':     'Flèche CP chargée (VEM 7.66)',
     'res.sag.ts.label':     'Flèche f CP',
     'res.sag.el.label':     'Flèche f',
     'res.seillange.ts':     'Longueur CP s',
@@ -4656,7 +4652,7 @@ const LANG = {
     'res.x_low':            'Punto più basso x',
     'res.tiefpunkt.label':  'Punto più basso',
     'res.tiefpunkt.x0':     'Punto più basso x₀',
-    'res.sag.belastet':     'Freccia f FP caricata (VEM 7.66)',
+    'res.sag.belastet':     'Freccia FP caricata (VEM 7.66)',
     'res.sag.ts.label':     'Freccia f FP',
     'res.sag.el.label':     'Freccia f',
     'res.seillange.ts':     'Lunghezza FP s',
