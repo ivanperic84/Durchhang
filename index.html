@@ -2063,15 +2063,18 @@ function updateSysModeUI(mode) {
   document.getElementById('t1-field').style.display = isRfl ? 'none' : '';
   document.getElementById('t2-field').style.display = '';
   // T2 bei R-FL: auf -5 °C fixieren (nur Eislast relevant), sonst freigeben
-  const t2Input = document.getElementById('temp2');
+  const t2Input  = document.getElementById('temp2');
+  const t2Slider = document.getElementById('temp2-slider');
   if (isRfl) {
     t2Input.value = -5;
     t2Input.disabled = true;
     t2Input.style.opacity = '0.5';
+    if (t2Slider) { t2Slider.value = -5; t2Slider.disabled = true; t2Slider.style.pointerEvents = 'none'; t2Slider.style.opacity = '0.35'; }
     onT2Input(-5);
   } else {
     t2Input.disabled = false;
     t2Input.style.opacity = '';
+    if (t2Slider) { t2Slider.disabled = false; t2Slider.style.pointerEvents = ''; t2Slider.style.opacity = ''; }
   }
   // T2-Label: bei R-FL Hinweis
   const t2Lbl = document.getElementById('t2-label');
