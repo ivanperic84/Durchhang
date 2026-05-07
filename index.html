@@ -2884,11 +2884,14 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.textAlign = side === 'left' ? 'right' : 'left';
     ctx.fillText(`f = ${c.sag.toFixed(2)} m`, bx + (side === 'left' ? -6 : 6), mid + 4);
   }
-  sagAnnotation(c1, sysMode === 'rfl' ? '#eb0000' : '#b7b7b7', 'right');
-  if ((sysMode === 'nfl' || isEl) && Math.abs(c2.sag - c1.sag) > 0.005) {
-    // Sag-Annotation: geometrischer Sehnenwert (Abstand Sehnenlinie → Tiefpunkt)
-    const cSagT2 = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
-    sagAnnotation(cSagT2, '#eb0000', 'left');
+  const anyProbe = probeX1 !== null || probeX2 !== null || probeX3 !== null || probeX4 !== null;
+  if (!anyProbe) {
+    sagAnnotation(c1, sysMode === 'rfl' ? '#eb0000' : '#b7b7b7', 'right');
+    if ((sysMode === 'nfl' || isEl) && Math.abs(c2.sag - c1.sag) > 0.005) {
+      // Sag-Annotation: geometrischer Sehnenwert (Abstand Sehnenlinie → Tiefpunkt)
+      const cSagT2 = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
+      sagAnnotation(cSagT2, '#eb0000', 'left');
+    }
   }
 
   // ── Anchor points ──
@@ -2973,15 +2976,17 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.beginPath(); ctx.arc(px, cy(y2), 5, 0, Math.PI * 2);
     ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.stroke();
 
-    // Callout-Box: Label + Höhe (m ü. M. wenn SOK gesetzt, sonst über SOK)
+    // Callout-Box: Label + Höhe + Durchhang
     const label     = { probe1:'M1', probe2:'M2', probe3:'M3', probe4:'M4' }[which] ?? which;
-    // y2 ist bereits in Zeichenkoordinate (m ü. M. wenn SOK gesetzt)
     const yLine2    = hasSok ? `${y2.toFixed(2)} ${t('bp.mum.abbrev')}` : `${y2.toFixed(2)} m`;
+    const sagLine   = `f = ${sag2.toFixed(3)} m`;
     ctx.font = 'bold 9px Segoe UI';
-    const line2W    = ctx.measureText(yLine2).width;
     const labelW    = ctx.measureText(label).width;
-    const boxW = Math.max(labelW, line2W) + 16;
-    const boxH = 36, gap = 8;
+    ctx.font = '8px Segoe UI';
+    const line2W    = ctx.measureText(yLine2).width;
+    const line3W    = ctx.measureText(sagLine).width;
+    const boxW = Math.max(labelW, line2W, line3W) + 16;
+    const boxH = 50, gap = 8;
     const onRight = (px + boxW + 16 + gap) <= (padL + plotW);
     const bx = onRight ? px + gap : px - boxW - gap;
     let by = Math.min(Math.max(padT + 4, cy(y2) - boxH / 2), padT + plotH - boxH - 4);
@@ -3005,9 +3010,11 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
 
     ctx.textAlign = 'left';
     ctx.font = 'bold 9px Segoe UI'; ctx.fillStyle = dotColor;
-    ctx.fillText(label, bx + 7, by + 13);
+    ctx.fillText(label,   bx + 7, by + 13);
     ctx.font = '8px Segoe UI'; ctx.fillStyle = '#1e293b';
-    ctx.fillText(yLine2, bx + 7, by + 27);
+    ctx.fillText(yLine2,  bx + 7, by + 27);
+    ctx.fillStyle = dotColor;
+    ctx.fillText(sagLine, bx + 7, by + 41);
     return { cx: px, box: { x: bx, y: by, w: boxW, h: boxH } };
   }
 
