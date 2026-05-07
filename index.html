@@ -183,8 +183,19 @@ body {
   line-height: 1;
 }
 
-/* ── T2 + Spannweite + Kombination: rot ── */
-#temp2, #span, #preset-select, #el-material-select { color: var(--primary); }
+/* ── T2 + Spannweite: rot ── */
+#temp2, #span { color: var(--primary); }
+
+/* ── Kombination / Leitermaterial: aktiver Segment-Stil (gleich wie seg-btn.active) ── */
+#preset-select, #el-material-select {
+  color: var(--primary);
+  background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
+  outline: 1.5px solid #eb0000;
+  outline-offset: -1.5px;
+}
+#preset-select:focus, #el-material-select:focus {
+  background: linear-gradient(135deg, #ffeeee 0%, #ffe8e8 100%);
+}
 
 /* ── T2-Slider: nur Thumb, kein Track ── */
 #temp2-slider {
