@@ -461,7 +461,7 @@ body {
   flex-wrap: wrap;
 }
 .istzustand-card.rfl {
-  background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+  background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
   border-color: var(--primary);
 }
 .istzustand-main {
@@ -2844,7 +2844,8 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   ctx.shadowColor = 'rgba(235,0,0,.15)'; ctx.shadowBlur = 8;
   if (sysMode === 'nfl' || isEl) drawCurve(cCurveT2, '#eb0000', 2.5, .75);
   ctx.shadowColor = 'transparent';
-  drawCurve(c1, '#b7b7b7', t1Dashed ? 1.2 : 3, t1Dashed ? 0.55 : 1, t1Dashed ? [6, 4] : []);
+  const c1Color = sysMode === 'rfl' ? '#eb0000' : '#b7b7b7';
+  drawCurve(c1, c1Color, t1Dashed ? 1.2 : 3, t1Dashed ? 0.55 : 1, t1Dashed ? [6, 4] : []);
 
   // ── Sag annotation ──
   function sagAnnotation(c, color, side) {
@@ -2872,7 +2873,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.textAlign = side === 'left' ? 'right' : 'left';
     ctx.fillText(`f = ${c.sag.toFixed(2)} m`, bx + (side === 'left' ? -6 : 6), mid + 4);
   }
-  sagAnnotation(c1, '#b7b7b7', 'right');
+  sagAnnotation(c1, sysMode === 'rfl' ? '#eb0000' : '#b7b7b7', 'right');
   if ((sysMode === 'nfl' || isEl) && Math.abs(c2.sag - c1.sag) > 0.005) {
     // Sag-Annotation: Position aus kombinierter Katenarie, Wert aus VEM-Formel (c2.sag)
     const cSagT2 = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
