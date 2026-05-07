@@ -826,6 +826,28 @@ button.header-manual-link:hover {
 </head>
 <body>
 
+<!-- ── Entwicklungs-Wasserzeichen ── -->
+<div id="dev-badge" style="
+  position: fixed;
+  top: 18px;
+  right: -32px;
+  width: 140px;
+  padding: 5px 0;
+  background: #eb0000;
+  color: #fff;
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-align: center;
+  text-transform: uppercase;
+  transform: rotate(45deg);
+  transform-origin: center;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: .82;
+  box-shadow: 0 2px 6px rgba(0,0,0,.18);
+">In Entwicklung</div>
+
 <div class="header">
   <div class="header-icon">
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -3959,7 +3981,7 @@ ${mode3pt && threePtMark ? `
   </p>
 </div>
 
-<footer>${t('pdf.footer')} &nbsp;·&nbsp; v2.1 &nbsp;|&nbsp; ${new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE')} &nbsp;|&nbsp; Ivan Peric, Fachentwicklung FS &nbsp;|&nbsp; ${t('pdf.quelle')}</footer>
+<footer>${t('pdf.footer')} &nbsp;·&nbsp; v2.1 &nbsp;|&nbsp; ${new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE')} &nbsp;|&nbsp; Statikteam, Fachentwicklung FS &nbsp;|&nbsp; ${t('pdf.quelle')}</footer>
 </body></html>`;
 
   const win = window.open('', '_blank');
@@ -6299,7 +6321,7 @@ function applyCustomPreset(p) {
       </table>
 
       <p style="font-size:.75rem;color:#9ca3af;margin-top:1rem;border-top:1px solid #e5e7eb;padding-top:.75rem">
-        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; v2.1 &nbsp;·&nbsp; Ivan Peric, Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
+        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; v2.1 &nbsp;·&nbsp; Statikteam, Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
         Quelle Reglage: SBB 0161.1013.0001
       </p>
     </div>
@@ -6678,7 +6700,7 @@ function applyCustomPreset(p) {
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
-  Ivan Peric &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span style="opacity:.6">v2.1</span>
+  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span style="opacity:.6">v2.1</span>
 </footer>
 
 </body>
