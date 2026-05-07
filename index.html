@@ -301,6 +301,7 @@ body {
 }
 .seg-btn {
   flex: 1;
+  min-width: 0;
   border: none;
   background: transparent;
   padding: .38rem .4rem;
@@ -311,10 +312,9 @@ body {
   border-radius: 8px;
   cursor: pointer;
   transition: background .15s, color .15s, box-shadow .15s;
-  white-space: normal;
-  overflow-wrap: break-word;
-  word-break: break-word;
-  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .seg-btn.active {
   background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
@@ -652,7 +652,7 @@ button.header-manual-link:hover {
   .seg-btn {
     min-height: 38px;
     padding: .5rem .35rem;
-    font-size: .875rem;
+    font-size: .83rem;
   }
 
   /* Stepper buttons */
