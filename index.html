@@ -2984,32 +2984,15 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.beginPath(); ctx.arc(px, cy(y2), 5, 0, Math.PI * 2);
     ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.stroke();
 
-    // Vertikale Masslinie: h1-Referenz → Tragseil T2 (rechts vom Cursor, gestrichelt)
-    const refY  = cy(h1d);
-    const wireY = cy(y2);
-    const mxOff = 10; // horizontaler Offset vom Cursor
-    ctx.save();
-    ctx.strokeStyle = dotColor; ctx.lineWidth = 1; ctx.setLineDash([3, 2]);
-    ctx.globalAlpha = 0.65;
-    ctx.beginPath(); ctx.moveTo(px + mxOff, refY); ctx.lineTo(px + mxOff, wireY); ctx.stroke();
-    ctx.setLineDash([]); ctx.globalAlpha = 1;
-    // End-Marken (kurze horizontale Striche)
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(px + mxOff - 4, refY);  ctx.lineTo(px + mxOff + 4, refY);  ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(px + mxOff - 4, wireY); ctx.lineTo(px + mxOff + 4, wireY); ctx.stroke();
-    ctx.restore();
-
-    // Callout-Box: Label + Höhe + Abstand zur Referenz
-    const label     = { probe1:'M1', probe2:'M2', probe3:'M3', probe4:'M4' }[which] ?? which;
-    const yLine2    = hasSok ? `${y2.toFixed(2)} ${t('bp.mum.abbrev')}` : `${y2.toFixed(2)} m`;
-    const sagLine   = `Δh = ${distH1.toFixed(3)} m`;
+    // Callout-Box: Label + Höhe (ohne Δh — wird wie f-Annotation angezeigt)
+    const label  = { probe1:'M1', probe2:'M2', probe3:'M3', probe4:'M4' }[which] ?? which;
+    const yLine2 = hasSok ? `${y2.toFixed(2)} ${t('bp.mum.abbrev')}` : `${y2.toFixed(2)} m`;
     ctx.font = 'bold 9px Segoe UI';
-    const labelW    = ctx.measureText(label).width;
+    const labelW = ctx.measureText(label).width;
     ctx.font = '8px Segoe UI';
-    const line2W    = ctx.measureText(yLine2).width;
-    const line3W    = ctx.measureText(sagLine).width;
-    const boxW = Math.max(labelW, line2W, line3W) + 16;
-    const boxH = 50, gap = 8;
+    const line2W = ctx.measureText(yLine2).width;
+    const boxW = Math.max(labelW, line2W) + 16;
+    const boxH = 36, gap = 8;
     const onRight = (px + boxW + 16 + gap) <= (padL + plotW);
     const bx = onRight ? px + gap : px - boxW - gap;
     let by = Math.min(Math.max(padT + 4, cy(y2) - boxH / 2), padT + plotH - boxH - 4);
@@ -3033,11 +3016,31 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
 
     ctx.textAlign = 'left';
     ctx.font = 'bold 9px Segoe UI'; ctx.fillStyle = dotColor;
-    ctx.fillText(label,   bx + 7, by + 13);
+    ctx.fillText(label,  bx + 7, by + 13);
     ctx.font = '8px Segoe UI'; ctx.fillStyle = '#1e293b';
-    ctx.fillText(yLine2,  bx + 7, by + 27);
-    ctx.fillStyle = dotColor;
-    ctx.fillText(sagLine, bx + 7, by + 41);
+    ctx.fillText(yLine2, bx + 7, by + 27);
+
+    // Δh-Annotation wie f: vertikale Pfeillinie h1 → T2-Draht + Beschriftung
+    const refY  = cy(h1d);
+    const wireY = cy(y2);
+    if (Math.abs(refY - wireY) > 4) {
+      const labelSide = onRight ? 'left' : 'right'; // Beschriftung gegenüber Callout
+      ctx.setLineDash([3, 3]); ctx.strokeStyle = dotColor; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(px, refY); ctx.lineTo(px, wireY); ctx.stroke();
+      ctx.setLineDash([]);
+      // Pfeilspitzen
+      ctx.fillStyle = dotColor;
+      ctx.beginPath(); ctx.moveTo(px, wireY - 1);
+      ctx.lineTo(px - 3.5, wireY + 6); ctx.lineTo(px + 3.5, wireY + 6); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(px, refY + 1);
+      ctx.lineTo(px - 3.5, refY - 6); ctx.lineTo(px + 3.5, refY - 6); ctx.closePath(); ctx.fill();
+      // Label
+      const vmid = (refY + wireY) / 2;
+      ctx.fillStyle = dotColor; ctx.font = 'bold 10px Segoe UI';
+      ctx.textAlign = labelSide === 'left' ? 'right' : 'left';
+      ctx.fillText(`Δh = ${distH1.toFixed(2)} m`, px + (labelSide === 'left' ? -6 : 6), vmid + 4);
+    }
+
     return { cx: px, box: { x: bx, y: by, w: boxW, h: boxH } };
   }
 
