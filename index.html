@@ -8,17 +8,17 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #f5f5f7;
+  --bg: #f6f6f6;
   --card: #ffffff;
-  --primary: #0071e3;
-  --primary-dk: #0062c3;
-  --warm: #ff9500;
-  --text: #1d1d1f;
-  --muted: #6e6e73;
-  --tertiary: #86868b;
-  --shadow: 0 2px 8px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.05);
-  --radius: 20px;
-  --border: rgba(0,0,0,.08);
+  --primary: #eb0000;
+  --primary-dk: #c60000;
+  --warm: #eb0000;
+  --text: #212121;
+  --muted: #686868;
+  --tertiary: #767676;
+  --shadow: 0 2px 8px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+  --radius: 8px;
+  --border: #e5e5e5;
   --mp-m1: #6d28d9;
   --mp-m2: #0d9488;
   --mp-m3: #d97706;
@@ -28,7 +28,7 @@
 sub { font-size: .8em; vertical-align: sub; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  font-family: 'SBBWeb', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -36,11 +36,10 @@ body {
 
 /* ── Header ── */
 .header {
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(0,0,0,.08);
-  padding: 1rem 2rem;
+  background: #ffffff;
+  border-bottom: 3px solid #eb0000;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  padding: .85rem 2rem;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -122,12 +121,12 @@ body {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   scrollbar-width: thin;
-  scrollbar-color: #e2e8f0 transparent;
+  scrollbar-color: #d2d2d2 transparent;
 }
 .sidebar-scroll::-webkit-scrollbar { width: 4px; }
 .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
-.sidebar-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 2px; }
-.sidebar-scroll::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: #d2d2d2; border-radius: 2px; }
+.sidebar-scroll::-webkit-scrollbar-thumb:hover { background: #b7b7b7; }
 /* Cards innerhalb der Sidebar: flach, Trennlinie statt Schatten */
 .sidebar-scroll .card {
   background: transparent;
@@ -181,6 +180,9 @@ body {
   line-height: 1;
 }
 
+/* ── T2 + Spannweite + Kombination: rot ── */
+#temp2, #span, #preset-select { color: var(--primary); }
+
 /* ── T2-Slider: nur Thumb, kein Track ── */
 #temp2-slider {
   -webkit-appearance: none; appearance: none;
@@ -228,9 +230,10 @@ body {
   border: none;
   border-radius: 10px;
   font-size: .875rem;
+  font-weight: 500;
   font-family: inherit;
   color: var(--text);
-  background: #f5f5f7;
+  background: #ebebeb;
   outline: none;
   transition: background .15s;
   -moz-appearance: textfield;
@@ -271,10 +274,10 @@ body {
 .btn-primary { background: var(--primary); color: white; }
 .btn-primary:hover { background: var(--primary-dk); }
 .btn-pdf {
-  background: rgba(0,113,227,.09);
+  background: rgba(235,0,0,.07);
   color: var(--primary);
 }
-.btn-pdf:hover { background: rgba(0,113,227,.15); }
+.btn-pdf:hover { background: rgba(235,0,0,.13); }
 .btn-pdf:disabled {
   background: rgba(0,0,0,.03);
   color: var(--tertiary);
@@ -297,7 +300,7 @@ body {
   border: none;
   background: transparent;
   padding: .38rem .5rem;
-  font-size: .78rem;
+  font-size: .875rem;
   font-weight: 500;
   font-family: inherit;
   color: var(--muted);
@@ -307,9 +310,11 @@ body {
   white-space: nowrap;
 }
 .seg-btn.active {
-  background: #fff;
-  color: var(--text);
-  box-shadow: 0 1px 4px rgba(0,0,0,.1);
+  background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
+  color: var(--primary);
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  outline: 1.5px solid #eb0000;
+  outline-offset: -1.5px;
 }
 
 /* ── Span list ── */
@@ -317,7 +322,7 @@ body {
 .span-row { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .5rem; }
 .span-row label { font-size: .72rem; font-weight: 500; color: var(--muted); white-space: nowrap; min-width: 2rem; }
 .lm-display {
-  background: #f0f9ff;
+  background: #fff5f5;
   border-radius: 10px;
   padding: .42rem .75rem;
   font-size: .82rem;
@@ -402,8 +407,8 @@ body {
   font-size: 11px; font-weight: 600; text-transform: uppercase;
   letter-spacing: .06em; padding-bottom: .6rem;
   margin-bottom: .75rem;
-  color: var(--primary);
-  border-bottom: 1.5px solid var(--primary);
+  color: #767676;
+  border-bottom: 1.5px solid #b7b7b7;
 }
 .results-col-title.warm { color: var(--warm); border-bottom-color: var(--warm); }
 .metric-list { display: flex; flex-direction: column; gap: .3rem; }
@@ -417,14 +422,14 @@ body {
 .metric-row:nth-child(odd) { background: var(--bg); }
 .metric-label { color: var(--muted); font-size: .78rem; }
 .metric-value {
-  font-family: 'SF Mono', 'Menlo', monospace;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
   font-weight: 600;
   font-size: 15px;
   color: var(--text);
 }
 .metric-value.warm { color: var(--warm); }
 .metric-unit {
-  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  font-family: 'SBBWeb', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: .68rem; font-weight: 400;
   color: var(--tertiary); margin-left: .2rem;
 }
@@ -447,8 +452,8 @@ body {
 
 /* ── Istzustand Highlight ── */
 .istzustand-card {
-  background: linear-gradient(135deg, #fff7ed 0%, #fffbeb 100%);
-  border: 2px solid #ea580c;
+  background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
+  border: 2px solid #eb0000;
   border-radius: 14px;
   padding: .9rem 1.1rem;
   margin-bottom: 1rem;
@@ -464,17 +469,17 @@ body {
 }
 .istzustand-label {
   font-size: .68rem; font-weight: 600; text-transform: uppercase;
-  letter-spacing: .07em; color: #ea580c; margin-bottom: .15rem;
+  letter-spacing: .07em; color: #eb0000; margin-bottom: .15rem;
 }
 .istzustand-card.rfl .istzustand-label { color: var(--primary); }
 .istzustand-value {
-  font-family: 'SF Mono', 'Menlo', monospace;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
   font-size: 2rem; font-weight: 700; line-height: 1;
-  color: #ea580c;
+  color: #eb0000;
 }
 .istzustand-card.rfl .istzustand-value { color: var(--primary); }
 .istzustand-unit {
-  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  font-family: 'SBBWeb', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: .85rem; font-weight: 400; color: var(--tertiary); margin-left: .3rem;
 }
 .istzustand-divider {
@@ -548,14 +553,14 @@ button.header-manual-link {
   text-decoration: none; color: var(--primary);
   font-size: .82rem; font-weight: 500;
   font-family: inherit;
-  background: rgba(0,113,227,.08);
+  background: rgba(235,0,0,.07);
   padding: .38rem .85rem;
   border-radius: 980px;
   white-space: nowrap;
   flex-shrink: 0;
 }
 button.header-manual-link:hover {
-  background: rgba(0,113,227,.14);
+  background: rgba(235,0,0,.12);
 }
 
 /* ── Tooltip (shown during drag) ── */
@@ -565,7 +570,7 @@ button.header-manual-link:hover {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: white;
-  font-family: 'SF Mono', 'Menlo', monospace;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
   font-size: .72rem;
   font-weight: 500;
   padding: .3rem .65rem;
@@ -640,7 +645,7 @@ button.header-manual-link:hover {
   .seg-btn {
     min-height: 38px;
     padding: .5rem .35rem;
-    font-size: .82rem;
+    font-size: .875rem;
   }
 
   /* Stepper buttons */
@@ -755,8 +760,8 @@ button.header-manual-link:hover {
 /* Gemeinsamer Stil: Reglage-Infobox (N-FL / R-FL Kombination + Einzelleiter) */
 .reglage-info-box {
   padding: .45rem .7rem;
-  background: #f8fafb;
-  border: 1px solid #e2e8f0;
+  background: #f6f6f6;
+  border: 1px solid #d2d2d2;
   border-radius: 10px;
   font-size: .72rem;
   opacity: .75;
@@ -808,9 +813,9 @@ button.header-manual-link:hover {
   <div class="header-icon">
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
       <!-- Tragseil -->
-      <path d="M2 8 Q14 15 26 8" stroke="#0071e3" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M2 8 Q14 15 26 8" stroke="#eb0000" stroke-width="2" stroke-linecap="round" fill="none"/>
       <!-- Fahrdraht -->
-      <path d="M2 13 Q14 20 26 13" stroke="#ea580c" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+      <path d="M2 13 Q14 20 26 13" stroke="#b7b7b7" stroke-width="1.5" stroke-linecap="round" fill="none"/>
     </svg>
   </div>
   <div style="flex:1">
@@ -926,12 +931,12 @@ button.header-manual-link:hover {
         <span id="card-title-span">Spannweite</span>
         <span style="position:relative;display:inline-flex">
           <button id="span-info-btn" onclick="toggleSpanInfo(event)"
-            style="width:14px;height:14px;border-radius:50%;border:1px solid #93c5fd;background:#eff6ff;color:#3b82f6;font-size:.6rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"
+            style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(235,0,0,.3);background:#fff5f5;color:#eb0000;font-size:.6rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"
             title="Hinweis zur Spannweite">i</button>
-          <div id="span-info-popup" style="display:none;position:fixed;z-index:200;width:270px;background:#fff;border:1px solid #bfdbfe;border-radius:10px;padding:.65rem .8rem;box-shadow:0 4px 20px rgba(0,0,0,.11);font-size:.72rem;color:var(--text);text-transform:none;font-weight:400;letter-spacing:0">
+          <div id="span-info-popup" style="display:none;position:fixed;z-index:200;width:270px;background:#fff;border:1px solid rgba(235,0,0,.2);border-radius:10px;padding:.65rem .8rem;box-shadow:0 4px 20px rgba(0,0,0,.11);font-size:.72rem;color:var(--text);text-transform:none;font-weight:400;letter-spacing:0">
             <div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.45rem">
-              <span style="width:18px;height:18px;border-radius:50%;background:#3b82f6;color:#fff;font-size:.65rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">i</span>
-              <span id="span-popup-title" style="font-weight:600;color:#1d4ed8;font-size:.73rem">Zu beachten</span>
+              <span style="width:18px;height:18px;border-radius:50%;background:#eb0000;color:#fff;font-size:.65rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">i</span>
+              <span id="span-popup-title" style="font-weight:600;color:#c60000;font-size:.73rem">Zu beachten</span>
             </div>
             <p id="span-popup-text" style="margin:0;line-height:1.55;color:var(--text)">Bei der Eingabe von c<sub>proj</sub> oder c<sub>m</sub> ist gemäss dem Dokument <strong>0161.1013.0005.1</strong> vorzugehen.</p>
           </div>
@@ -1064,7 +1069,7 @@ button.header-manual-link:hover {
         <div id="three-pt-panel" style="display:none;margin-top:.6rem;padding:.7rem .75rem .65rem;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px">
           <!-- Header: Titel + Untertitel untereinander -->
           <div style="margin-bottom:.55rem">
-            <div style="font-size:.72rem;font-weight:600;color:#0369a1;display:flex;align-items:center;gap:.3rem">
+            <div style="font-size:.72rem;font-weight:600;color:#eb0000;display:flex;align-items:center;gap:.3rem">
               <span>⊕</span> <span id="three-pt-hdr">3-Punkte-Messung</span>
             </div>
             <div id="three-pt-subtitle" style="font-size:.67rem;font-weight:400;color:#0284c7;margin-top:.15rem">Punkt C zwischen den Masten</div>
@@ -1082,7 +1087,7 @@ button.header-manual-link:hover {
             <label id="yC-label">Durchhang y<sub>C</sub> <span style="font-weight:400;color:var(--tertiary)">unter Sehne</span></label>
             <div style="display:flex;gap:.3rem;margin-bottom:.3rem">
               <button id="yc-btn-sag" onclick="setYCMode('sag')"
-                style="flex:1;padding:.22rem .3rem;font-size:.68rem;border-radius:6px;border:1px solid #7dd3fc;background:#e0f2fe;color:#0369a1;cursor:pointer;font-weight:600"><span id="yc-btn-sag-text">Durchhang</span></button>
+                style="flex:1;padding:.22rem .3rem;font-size:.68rem;border-radius:6px;border:1px solid rgba(235,0,0,.3);background:#fff5f5;color:#eb0000;cursor:pointer;font-weight:600"><span id="yc-btn-sag-text">Durchhang</span></button>
               <button id="yc-btn-sok" onclick="setYCMode('sok')"
                 style="flex:1;padding:.22rem .3rem;font-size:.68rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer"><span id="yc-btn-sok-text">Höhe ab SOK</span></button>
               <button id="yc-btn-mum" onclick="setYCMode('mum')"
@@ -1094,7 +1099,7 @@ button.header-manual-link:hover {
               <span class="input-unit">m</span>
             </div>
           </div>
-          <div id="three-pt-result" style="margin-top:.45rem;font-size:.72rem;color:#0369a1;min-height:1.4em"></div>
+          <div id="three-pt-result" style="margin-top:.45rem;font-size:.72rem;color:#eb0000;min-height:1.4em"></div>
         </div>
         <div class="field-row">
           <div class="field" id="t1-field">
@@ -1171,12 +1176,12 @@ button.header-manual-link:hover {
             <span id="eis-label-sub" style="font-weight:400;color:var(--tertiary);font-size:.75em">(bei T₂ = −5 °C)</span>
             <span style="position:relative;display:inline-flex">
               <button id="eis-info-btn" onclick="toggleEislastInfo(event)"
-                style="width:14px;height:14px;border-radius:50%;border:1px solid #93c5fd;background:#eff6ff;color:#3b82f6;font-size:.6rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"
+                style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(235,0,0,.3);background:#fff5f5;color:#eb0000;font-size:.6rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"
                 title="Hinweis zur Eislast / Schneelast">i</button>
-              <div id="eis-info-popup" style="display:none;position:fixed;z-index:200;width:270px;background:#fff;border:1px solid #bfdbfe;border-radius:10px;padding:.65rem .8rem;box-shadow:0 4px 20px rgba(0,0,0,.11);font-size:.72rem;color:var(--text);text-transform:none;font-weight:400;letter-spacing:0">
+              <div id="eis-info-popup" style="display:none;position:fixed;z-index:200;width:270px;background:#fff;border:1px solid rgba(235,0,0,.2);border-radius:10px;padding:.65rem .8rem;box-shadow:0 4px 20px rgba(0,0,0,.11);font-size:.72rem;color:var(--text);text-transform:none;font-weight:400;letter-spacing:0">
                 <div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.45rem">
-                  <span style="width:18px;height:18px;border-radius:50%;background:#3b82f6;color:#fff;font-size:.65rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">i</span>
-                  <span style="font-weight:600;color:#1d4ed8;font-size:.73rem">Hinweis / Remarque / Nota</span>
+                  <span style="width:18px;height:18px;border-radius:50%;background:#eb0000;color:#fff;font-size:.65rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">i</span>
+                  <span style="font-weight:600;color:#c60000;font-size:.73rem">Hinweis / Remarque / Nota</span>
                 </div>
                 <p id="eis-popup-text" style="margin:0;line-height:1.55;color:var(--text)">Zusatzlast durch Eisansatz [N/m] — aktiv bei N-FL und −20 °C ≤ T₂ ≤ −5 °C.</p>
               </div>
@@ -1212,8 +1217,8 @@ button.header-manual-link:hover {
     </div>
     <canvas id="main-canvas" width="700" height="380"></canvas>
     <div class="legend" id="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div><span id="leg-ts1">Ts bei T₁</span></div>
-      <div class="legend-item" id="leg-ts2-item"><div class="legend-dot" style="background:#ea580c"></div><span id="leg-ts2-label">Ts bei T₂</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#b7b7b7"></div><span id="leg-ts1">Ts bei T₁</span></div>
+      <div class="legend-item" id="leg-ts2-item"><div class="legend-dot" style="background:#eb0000"></div><span id="leg-ts2-label">Ts bei T₂</span></div>
       <div class="legend-item" id="leg-fd-item"><div class="legend-dot" style="background:#86868b"></div><span id="leg-fd-label">Fahrdraht (Fd)</span></div>
       <div class="legend-item" id="leg-fd-solllage-item" style="display:none"><div class="legend-dot" style="background:#86868b;opacity:.35"></div><span id="leg-fd-solllage-label">Fd Solllage (T₁)</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:#86868b;opacity:.7"></div><span id="leg-sehne-label">Sehnenlinie</span></div>
@@ -1615,7 +1620,7 @@ function updateSokMumUI() {
       parts.push(`${t('bp.befestigung.li')} = <strong>${(sokL + h1_raw).toFixed(2)} ${t('bp.mum.abbrev')}</strong> &nbsp;(SOK ${sokL.toFixed(2)} + ${h1_raw.toFixed(2)} m)`);
     if (sokR !== null && !isNaN(h2_raw))
       parts.push(`${t('bp.befestigung.re')} = <strong>${(sokR + h2_raw).toFixed(2)} ${t('bp.mum.abbrev')}</strong> &nbsp;(SOK ${sokR.toFixed(2)} + ${h2_raw.toFixed(2)} m)`);
-    info.innerHTML = parts.map(p => `<span style="color:#0369a1">${p}</span>`).join('<br>');
+    info.innerHTML = parts.map(p => `<span style="color:#eb0000">${p}</span>`).join('<br>');
     if (mumBtn) mumBtn.style.display = '';
   } else {
     info.style.display = 'none';
@@ -1673,13 +1678,13 @@ function clearSokMum() {
 function setYCMode(mode) {
   yCInputMode = mode;
   const btns  = { sag: 'yc-btn-sag', sok: 'yc-btn-sok', mum: 'yc-btn-mum' };
-  const active = 'border:1px solid #7dd3fc;background:#e0f2fe;color:#0369a1;font-weight:600';
+  const active = 'border:1px solid rgba(235,0,0,.3);background:#fff5f5;color:#eb0000;font-weight:600';
   const idle   = 'border:1px solid var(--border);background:none;color:var(--muted);font-weight:400';
   Object.entries(btns).forEach(([k, id]) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.style.cssText = el.style.cssText.replace(/border:[^;]+;|background:[^;]+;|color:[^;]+;|font-weight:[^;]+;/g, '');
-    if (k === mode) { el.style.border='1px solid #7dd3fc'; el.style.background='#e0f2fe'; el.style.color='#0369a1'; el.style.fontWeight='600'; }
+    if (k === mode) { el.style.border='1px solid #7dd3fc'; el.style.background='#e0f2fe'; el.style.color='#eb0000'; el.style.fontWeight='600'; }
     else            { el.style.border='1px solid var(--border)'; el.style.background='none'; el.style.color='var(--muted)'; el.style.fontWeight='400'; }
   });
   const labelEl = document.getElementById('yC-label');
@@ -1712,7 +1717,7 @@ function toggle3pt() {
     panel.style.display = '';
     btn.style.background = '#e0f2fe';
     btn.style.borderColor = '#7dd3fc';
-    btn.style.color = '#0369a1';
+    btn.style.color = '#eb0000';
     tensionInput.readOnly = true;
     tensionInput.style.background = 'var(--bg)';
     tensionInput.style.color = 'var(--muted)';
@@ -2610,8 +2615,8 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         <span class="metric-value">${f3(haenger_max)}<span class="metric-unit">m</span></span></div>
       <div class="metric-row"><span class="metric-label">${t('res.haenger.tiefpunkt')}</span>
         <span class="metric-value">${f3(haenger_min)}<span class="metric-unit">m</span></span></div>
-      ${wearPct > 0 ? `<div class="metric-row"><span class="metric-label" style="color:#ea580c">${t('res.abnutzung.fd')} (${wearPct}%)</span>
-        <span class="metric-value" style="color:#ea580c">−${(q_Fd * wearPct / (100 - wearPct)).toFixed(3)}<span class="metric-unit">N/m</span></span></div>` : ''}
+      ${wearPct > 0 ? `<div class="metric-row"><span class="metric-label" style="color:#eb0000">${t('res.abnutzung.fd')} (${wearPct}%)</span>
+        <span class="metric-value" style="color:#eb0000">−${(q_Fd * wearPct / (100 - wearPct)).toFixed(3)}<span class="metric-unit">N/m</span></span></div>` : ''}
       <div class="metric-row"><span class="metric-label">${t('res.q.sum')}</span>
         <span class="metric-value">${q_Ts.toFixed(3)} + ${q_Fd.toFixed(3)} + ${(0.02*9.81).toFixed(3)}<span class="metric-unit">N/m</span></span></div>
       <div class="metric-row"><span class="metric-label">${t('res.gesamtlast')}</span>
@@ -2765,13 +2770,13 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
 
   // ── Background gradient ──
   const bgGrad = ctx.createLinearGradient(0, 0, 0, CH);
-  bgGrad.addColorStop(0, '#fafbff');
-  bgGrad.addColorStop(1, '#f0f4f8');
+  bgGrad.addColorStop(0, '#fafafa');
+  bgGrad.addColorStop(1, '#f0f0f0');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, CW, CH);
 
   // ── Grid ──
-  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+  ctx.strokeStyle = '#d2d2d2'; ctx.lineWidth = 1;
   for (let i = 0; i <= 6; i++) {
     const gx = padL + (i / 6) * plotW;
     ctx.beginPath(); ctx.moveTo(gx, padT); ctx.lineTo(gx, padT + plotH); ctx.stroke();
@@ -2779,13 +2784,13 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
 
   // Y-grid + labels
   const ySteps = 5;
-  ctx.font = '10px Segoe UI'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'right';
+  ctx.font = '10px Segoe UI'; ctx.fillStyle = '#b7b7b7'; ctx.textAlign = 'right';
   for (let i = 0; i <= ySteps; i++) {
     const yVal = yLo + (i / ySteps) * (yHi - yLo);
     const gy = cy(yVal);
-    ctx.strokeStyle = '#e2e8f0';
+    ctx.strokeStyle = '#d2d2d2';
     ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(padL + plotW, gy); ctx.stroke();
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = '#b7b7b7';
     ctx.fillText(yVal.toFixed(1), padL - 5, gy + 3.5);
   }
   // Y-axis label
@@ -2798,24 +2803,24 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   ctx.restore();
 
   // X-axis labels
-  ctx.textAlign = 'center'; ctx.fillStyle = '#94a3b8'; ctx.font = '10px Segoe UI';
+  ctx.textAlign = 'center'; ctx.fillStyle = '#b7b7b7'; ctx.font = '10px Segoe UI';
   [0, .25, .5, .75, 1].forEach(t => {
     const xv = t * L;
     ctx.fillText(xv.toFixed(1), cx(xv), padT + plotH + 18);
   });
-  ctx.fillStyle = '#94a3b8'; ctx.font = '9px Segoe UI';
+  ctx.fillStyle = '#b7b7b7'; ctx.font = '9px Segoe UI';
   ctx.fillText(t('canvas.x.label'), padL + plotW / 2, CH - 4);
 
   // ── Support poles ──
   ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5;
   [[0, h1d], [L, h2d]].forEach(([xv, yv]) => {
-    ctx.strokeStyle = '#cbd5e1';
+    ctx.strokeStyle = '#b7b7b7';
     ctx.beginPath(); ctx.moveTo(cx(xv), cy(yv)); ctx.lineTo(cx(xv), padT + plotH); ctx.stroke();
   });
   ctx.setLineDash([]);
 
   // ── Chord ──
-  ctx.setLineDash([6, 5]); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.globalAlpha = .5;
+  ctx.setLineDash([6, 5]); ctx.strokeStyle = '#b7b7b7'; ctx.lineWidth = 1; ctx.globalAlpha = .5;
   ctx.beginPath(); ctx.moveTo(cx(0), cy(h1d)); ctx.lineTo(cx(L), cy(h2d)); ctx.stroke();
   ctx.globalAlpha = 1; ctx.setLineDash([]);
 
@@ -2837,10 +2842,10 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   // Im NFL/Einzelleiter-Modus: T1 fein gestrichelt (Referenz), T2 durchgehend (Ist-Zustand)
   const cCurveT2 = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
   const t1Dashed = sysMode === 'nfl' || isEl;  // T1 strichliert bei NFL + Einzelleiter
-  ctx.shadowColor = 'rgba(37,99,235,.15)'; ctx.shadowBlur = 8;
-  if (sysMode === 'nfl' || isEl) drawCurve(cCurveT2, '#ea580c', 2.5, .75);
+  ctx.shadowColor = 'rgba(235,0,0,.15)'; ctx.shadowBlur = 8;
+  if (sysMode === 'nfl' || isEl) drawCurve(cCurveT2, '#eb0000', 2.5, .75);
   ctx.shadowColor = 'transparent';
-  drawCurve(c1, '#2563eb', t1Dashed ? 1.2 : 3, t1Dashed ? 0.55 : 1, t1Dashed ? [6, 4] : []);
+  drawCurve(c1, '#b7b7b7', t1Dashed ? 1.2 : 3, t1Dashed ? 0.55 : 1, t1Dashed ? [6, 4] : []);
 
   // ── Sag annotation ──
   function sagAnnotation(c, color, side) {
@@ -2868,14 +2873,14 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.textAlign = side === 'left' ? 'right' : 'left';
     ctx.fillText(`f = ${c.sag.toFixed(2)} m`, bx + (side === 'left' ? -6 : 6), mid + 4);
   }
-  sagAnnotation(c1, '#2563eb', 'right');
+  sagAnnotation(c1, '#b7b7b7', 'right');
   if ((sysMode === 'nfl' || isEl) && Math.abs(c2.sag - c1.sag) > 0.005) {
     // Sag-Annotation: Position aus kombinierter Katenarie, Wert aus VEM-Formel (c2.sag)
     const cSagT2 = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
     const sagValT2 = c2.sag;  // VEM-Wert (LT1-Formel) beibehalten
     const origSag = cSagT2.sag;
     cSagT2.sag = sagValT2;
-    sagAnnotation(cSagT2, '#ea580c', 'left');
+    sagAnnotation(cSagT2, '#eb0000', 'left');
     cSagT2.sag = origSag;  // zurücksetzen
   }
 
@@ -2890,13 +2895,13 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     }
     // Outer ring
     ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2);
-    ctx.fillStyle = hovered ? '#2563eb' : '#1e3a5f';
+    ctx.fillStyle = hovered ? '#eb0000' : '#444444';
     ctx.fill();
     // White inner
     ctx.beginPath(); ctx.arc(px, py, r - 3, 0, Math.PI * 2);
     ctx.fillStyle = 'white'; ctx.fill();
     // Drag indicator
-    ctx.fillStyle = hovered ? '#2563eb' : '#475569';
+    ctx.fillStyle = hovered ? '#eb0000' : '#686868';
     ctx.font = 'bold 9px Segoe UI'; ctx.textAlign = 'center';
     ctx.fillText('↕', px, py + 3.5);
 
@@ -3018,13 +3023,13 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     const CR     = 6;
     // Kreuz
     ctx.save();
-    ctx.strokeStyle = '#0369a1'; ctx.lineWidth = 2; ctx.globalAlpha = 0.9;
+    ctx.strokeStyle = '#eb0000'; ctx.lineWidth = 2; ctx.globalAlpha = 0.9;
     ctx.beginPath(); ctx.moveTo(px - CR, py); ctx.lineTo(px + CR, py); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(px, py - CR); ctx.lineTo(px, py + CR); ctx.stroke();
     // Kreis
     ctx.beginPath(); ctx.arc(px, py, CR, 0, Math.PI * 2);
-    ctx.strokeStyle = '#0369a1'; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.globalAlpha = 0.15; ctx.fillStyle = '#0369a1'; ctx.fill();
+    ctx.strokeStyle = '#eb0000'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.globalAlpha = 0.15; ctx.fillStyle = '#eb0000'; ctx.fill();
     ctx.globalAlpha = 1;
     // Label «C»
     const label = 'C';
@@ -3454,38 +3459,38 @@ function pdfExport() {
 @page { size: A4; margin: 16mm 14mm; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 9.5pt; color: #1e293b; line-height: 1.6; }
-.hdr { background: linear-gradient(135deg,#1e3a5f,#2563eb); color: white; padding: 12px 16px;
+.hdr { background: linear-gradient(135deg,#444444,#212121); color: white; padding: 12px 16px;
        border-radius: 8px; margin-bottom: 14px; }
 .hdr h1 { font-size: 13.5pt; font-weight: 700; }
 .hdr p  { font-size: 8pt; opacity: .8; margin-top: 2px; }
-h2 { font-size: 10pt; font-weight: 700; color: #2563eb; border-left: 3px solid #2563eb;
+h2 { font-size: 10pt; font-weight: 700; color: #eb0000; border-left: 3px solid #eb0000;
      padding-left: 8px; margin: 13px 0 6px; page-break-after: avoid; }
-h2.warm { color: #ea580c; border-left-color: #ea580c; }
+h2.warm { color: #eb0000; border-left-color: #eb0000; }
 h2.green { color: #16a34a; border-left-color: #16a34a; }
-.step { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
+.step { background: #f8fafc; border: 1px solid #d2d2d2; border-radius: 6px;
         padding: 8px 12px; margin-bottom: 7px; page-break-inside: avoid; }
-em   { font-style: italic; color: #2563eb; }
-em.w { color: #ea580c; }
+em   { font-style: italic; color: #eb0000; }
+em.w { color: #eb0000; }
 em.g { color: #16a34a; }
 .sub { margin-left: 14px; color: #475569; font-size: 9pt; margin-top: 3px; }
 .sub2 { margin-left: 14px; color: #6b7280; font-size: 8.5pt; margin-top: 1px; }
-strong.r { color: #1e3a5f; font-weight: 700; }
+strong.r { color: #c60000; font-weight: 700; }
 strong.w { color: #c2410c; font-weight: 700; }
 strong.g { color: #15803d; font-weight: 700; }
 table.inp { border-collapse: collapse; width: 100%; }
 table.inp td { padding: 3px 7px; border-bottom: 1px solid #f1f5f9; font-size: 9pt; }
 table.inp td:first-child { color: #64748b; width: 50%; }
 table.cmp { border-collapse: collapse; width: 100%; margin-top: 5px; font-size: 9pt; }
-table.cmp th { background: #1e3a5f; color: white; padding: 5px 8px; text-align: left; font-size: 8.5pt; }
-table.cmp th.warm { background: #ea580c; }
+table.cmp th { background: #444444; color: white; padding: 5px 8px; text-align: left; font-size: 8.5pt; }
+table.cmp th.warm { background: #686868; }
 table.cmp td { padding: 4px 8px; border-bottom: 1px solid #f1f5f9; }
 table.cmp tr:nth-child(even) td { background: #f8fafc; }
 .pos { color: #16a34a; font-weight: 700; }
 .neg { color: #dc2626; font-weight: 700; }
 .diagram { text-align: center; margin-top: 8px; page-break-inside: avoid; }
-.diagram img { width: 100%; border: 1px solid #e2e8f0; border-radius: 6px; }
-footer { margin-top: 16px; font-size: 7.5pt; color: #94a3b8;
-         border-top: 1px solid #e2e8f0; padding-top: 5px; text-align: right; }
+.diagram img { width: 100%; border: 1px solid #d2d2d2; border-radius: 6px; }
+footer { margin-top: 16px; font-size: 7.5pt; color: #b7b7b7;
+         border-top: 1px solid #d2d2d2; padding-top: 5px; text-align: right; }
 </style></head><body>
 
 <div class="hdr">
@@ -3510,7 +3515,7 @@ footer { margin-top: 16px; font-size: 7.5pt; color: #94a3b8;
        <tr><td>${t('pdf.zugkraft.direkt')}</td><td><strong>H = ${fN(H_Ts,0)} N &nbsp;(bei T₁ = ${T1} °C)</strong></td></tr>
        <tr><td>${t('pdf.temperaturen')}</td><td><strong>T₁ = ${T1} °C &nbsp;→&nbsp; T₂ = ${T2} °C &nbsp;(ΔT = ${sign(deltaT)}${deltaT} K)</strong></td></tr>`
     : `<tr><td>${t('pdf.ts.label')} (Ts)</td><td><strong>${matTs}</strong> &nbsp; q<sub>Ts</sub> = ${q_Ts.toFixed(4)} N/m${EA !== null ? ` &nbsp;|&nbsp; (E·A)${isNFL ? '<sub>kombi</sub>' : ''} = ${(EA/1e6).toFixed(1)} MN &nbsp;|&nbsp; α${isNFL ? '<sub>kombi</sub>' : ''} = ${(alpha*1e6).toFixed(1)}×10⁻⁶ /K` : ''}</td></tr>
-       <tr><td>${t('res.fd.title')}</td><td><strong>${matFd}</strong> &nbsp; q<sub>Fd</sub> = ${q_Fd.toFixed(4)} N/m &nbsp;${wearPct > 0 ? `<em style="color:#ea580c">(${t('pdf.abnutzung')} ${wearPct} %: ${(q_Fd/(1-wearPct/100)).toFixed(4)} N/m)</em>` : `(0 % ${t('pdf.abnutzung')})`} &nbsp;|&nbsp; H<sub>Fd</sub> = ${fN(H_Fd,0)} N</td></tr>
+       <tr><td>${t('res.fd.title')}</td><td><strong>${matFd}</strong> &nbsp; q<sub>Fd</sub> = ${q_Fd.toFixed(4)} N/m &nbsp;${wearPct > 0 ? `<em style="color:#eb0000">(${t('pdf.abnutzung')} ${wearPct} %: ${(q_Fd/(1-wearPct/100)).toFixed(4)} N/m)</em>` : `(0 % ${t('pdf.abnutzung')})`} &nbsp;|&nbsp; H<sub>Fd</sub> = ${fN(H_Fd,0)} N</td></tr>
        <tr><td>${t('pdf.haenger')}</td><td>q<sub>H</sub> = 0.020 kg/m × 9.81 m/s² = ${q_H.toFixed(4)} N/m</td></tr>
        <tr><td>${t('pdf.systemhoehe')}</td><td>sh = ${sh} m</td></tr>
        <tr><td>${t('pdf.befhoehen')}</td><td>h₁ = ${f3(h1)} m &nbsp;|&nbsp; h₂ = ${f3(h2)} m</td></tr>
@@ -3520,7 +3525,7 @@ footer { margin-top: 16px; font-size: 7.5pt; color: #94a3b8;
          ? `<tr><td>${t('pdf.h.ub')}</td><td><strong>H<sub>ub</sub> = ${fN(H_Ts_ub,0)} N &nbsp;(bei T₁ = ${T1} °C)</strong></td></tr>
             <tr><td>${t('pdf.h.b')}</td><td><strong>H<sub>Ts,1</sub> = ${fN(H_Ts,0)} N &nbsp;</strong><em style="color:#6b7280">(via Zustandsgl. unbelastet→belastet, EA<sub>Ts</sub>)</em></td></tr>
             <tr><td>${t('pdf.temperaturen')}</td><td><strong>T₁ = ${T1} °C &nbsp;→&nbsp; T₂ = ${T2} °C &nbsp;(ΔT = ${sign(deltaT)}${deltaT} K)</strong></td></tr>
-            ${ZL > 0 ? `<tr><td>${t('pdf.eislast')}</td><td><strong style="color:#ea580c">Z<sub>L</sub> = ${ZL.toFixed(2)} N/m &nbsp;(T₂ = ${T2} °C)</strong></td></tr>` : ''}`
+            ${ZL > 0 ? `<tr><td>${t('pdf.eislast')}</td><td><strong style="color:#eb0000">Z<sub>L</sub> = ${ZL.toFixed(2)} N/m &nbsp;(T₂ = ${T2} °C)</strong></td></tr>` : ''}`
          : `<tr><td>${t('pdf.zugkraft.const')}</td><td><strong>H<sub>Ts</sub> = ${fN(H_Ts,0)} N</strong></td></tr>
             <tr><td>${t('pdf.betrieb.temp')}</td><td>T = ${T1} °C</td></tr>`}`}
 </table></div>
@@ -3535,7 +3540,7 @@ footer { margin-top: 16px; font-size: 7.5pt; color: #94a3b8;
        <p class="sub">q<sub>ges</sub> = ${q_Ts.toFixed(4)} + ${q_Fd.toFixed(4)} + ${q_H.toFixed(4)}
          = <strong class="r">${q_ges.toFixed(4)} N/m</strong></p>
        <p class="sub2">Die Hängerlast wird als gleichmässig verteilte Last über die Spannweite angesetzt.</p>
-       ${ZL > 0 ? `<p class="sub" style="margin-top:5px"><em style="color:#ea580c">Zielzustand T₂ mit Eislast:</em>
+       ${ZL > 0 ? `<p class="sub" style="margin-top:5px"><em style="color:#eb0000">Zielzustand T₂ mit Eislast:</em>
          q<sub>ges,ZL</sub> = q<sub>ges</sub> + Z<sub>L</sub> = ${q_ges.toFixed(4)} + ${ZL.toFixed(4)}
          = <strong style="color:#c2410c">${(q_ges + ZL).toFixed(4)} N/m</strong></p>` : ''}`}
 </div>
@@ -3625,7 +3630,7 @@ ${isNFL && flCombo ? `
   <p class="sub"><em class="w">q<sub>vem</sub> = MFL × (1 + H<sub>Fd</sub>/F<sub>0</sub>)${ZL > 0 ? ' + Z<sub>L</sub>' : ''}</em> &nbsp;&nbsp;F<sub>0</sub> = H<sub>Ts</sub> bei T₁ (belastet)</p>
   <p class="sub"><em class="w">L<sub>T1</sub> = L + 2·|Δh|·(H<sub>Ts,2</sub>+H<sub>Fd</sub>) / (L·q<sub>vem</sub>)</em> &nbsp;&nbsp;[VEM 7.82] &nbsp;|Δh| = |h₂−h₁| &nbsp;→ L<sub>T1</sub> ≥ L immer</p>
   <p class="sub"><em class="w">f<sub>Fd</sub> = L<sub>T1</sub>² / 8 · q<sub>vem</sub> / (H<sub>Ts,2</sub> + H<sub>Fd</sub>)</em> &nbsp;&nbsp;[VEM 7.66]</p>
-  <p class="sub2" style="color:#0369a1">Die im Diagramm angezeigte Ts-Kurve bei T₂ entspricht der kombinierten Kettenlinie des Ts+Fd-Systems mit den Parametern q<sub>vem</sub> und H<sub>Ts,2</sub>+H<sub>Fd</sub>. Dieser Ansatz stimmt mit der VEM-Parabel überein (Abweichung &lt; 5 mm für übliche Spannweiten).</p>
+  <p class="sub2" style="color:#eb0000">Die im Diagramm angezeigte Ts-Kurve bei T₂ entspricht der kombinierten Kettenlinie des Ts+Fd-Systems mit den Parametern q<sub>vem</sub> und H<sub>Ts,2</sub>+H<sub>Fd</sub>. Dieser Ansatz stimmt mit der VEM-Parabel überein (Abweichung &lt; 5 mm für übliche Spannweiten).</p>
 </div>
 <div class="step">
   <p><strong>${t('pdf.berechn.werte')}</strong></p>
@@ -3644,7 +3649,7 @@ ${isNFL && flCombo ? `
            = <strong class="r">${f3(_LT1)} m</strong> &nbsp;<em style="color:var(--muted);font-size:.82em">(VEM 7.82, L<sub>T1</sub> ≥ L)</em></p>`
       : `<p class="sub">|Δh| = 0 → L<sub>T1</sub> = L = ${fN(L,3)} m</p>`; })()}
   <p class="sub">f<sub>Fd,1</sub> = L² / 8 × q<sub>vem</sub> / (H<sub>Ts,1</sub> + H<sub>Fd</sub>) = <strong class="r">${f3(c1.sag)} m</strong></p>
-  <p class="sub">f<sub>Fd,2</sub> = L<sub>T1</sub>² / 8 × q<sub>vem</sub> / (H<sub>Ts,2</sub> + H<sub>Fd</sub>) = <strong class="w">${f3(c2.sag)} m</strong>${ZL > 0 ? ' &nbsp;<em style="color:#ea580c">(inkl. Eislast)</em>' : ''}</p>
+  <p class="sub">f<sub>Fd,2</sub> = L<sub>T1</sub>² / 8 × q<sub>vem</sub> / (H<sub>Ts,2</sub> + H<sub>Fd</sub>) = <strong class="w">${f3(c2.sag)} m</strong>${ZL > 0 ? ' &nbsp;<em style="color:#eb0000">(inkl. Eislast)</em>' : ''}</p>
 </div>` : ''}
 
 <!-- ── Schritt 4: Kettenlinie T₂ ── -->
@@ -3727,7 +3732,7 @@ ${mode3pt && threePtMark ? `
 <h2>${t('pdf.diagramm.legende')}</h2>
 <div class="diagram">
   <img src="${canvasImg}" alt="Kettenwerk">
-  <p style="font-size:7.5pt;color:#94a3b8;margin-top:4px">
+  <p style="font-size:7.5pt;color:#b7b7b7;margin-top:4px">
     ${isEl
       ? `${t('leg.leiter1')} T₁ = ${T1} °C &nbsp;|&nbsp; ${t('leg.leiter2')} T₂ = ${T2} °C &nbsp;|&nbsp; Y: ${hasSok ? `m ${t('pdf.mum.short')}` : `m ${t('pdf.sok.short')}`}`
       : isNFL
@@ -5206,23 +5211,23 @@ function applyCustomPreset(p) {
       <button class="modal-close" onclick="closeHandbuch()" title="Schliessen">✕</button>
     </div>
     <!-- Inhaltsverzeichnis -->
-    <div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:6px;padding:.6rem 1rem;margin:.75rem 1.25rem .25rem;font-size:.78rem;color:#1d4ed8">
+    <div style="background:#f6f6f6;border:1px solid #e5e5e5;border-radius:6px;padding:.6rem 1rem;margin:.75rem 1.25rem .25rem;font-size:.78rem;color:#444444">
       <strong>Inhalt:</strong>&nbsp;
-      <a href="#hb-uebersicht"   style="color:#1d4ed8;text-decoration:none">1 Übersicht</a> &nbsp;·&nbsp;
-      <a href="#hb-eingabe"      style="color:#1d4ed8;text-decoration:none">2 Eingabe</a> &nbsp;·&nbsp;
-      <a href="#hb-verfahren"    style="color:#1d4ed8;text-decoration:none">3 Verfahren</a> &nbsp;·&nbsp;
-      <a href="#hb-leiter"       style="color:#1d4ed8;text-decoration:none">4 Leiterkennwerte</a> &nbsp;·&nbsp;
-      <a href="#hb-kombinationen" style="color:#1d4ed8;text-decoration:none">5 Kettenwerke</a> &nbsp;·&nbsp;
-      <a href="#hb-werkzeuge"    style="color:#1d4ed8;text-decoration:none">6 Werkzeuge</a> &nbsp;·&nbsp;
-      <a href="#hb-beispiel"     style="color:#1d4ed8;text-decoration:none">7 Beispielrechnung</a> &nbsp;·&nbsp;
-      <a href="#hb-quellen"      style="color:#1d4ed8;text-decoration:none">8 Quellen</a> &nbsp;·&nbsp;
-      <a href="#hb-glossar"      style="color:#1d4ed8;text-decoration:none">9 Glossar</a>
+      <a href="#hb-uebersicht"   style="color:#444444;text-decoration:none">1 Übersicht</a> &nbsp;·&nbsp;
+      <a href="#hb-eingabe"      style="color:#444444;text-decoration:none">2 Eingabe</a> &nbsp;·&nbsp;
+      <a href="#hb-verfahren"    style="color:#444444;text-decoration:none">3 Verfahren</a> &nbsp;·&nbsp;
+      <a href="#hb-leiter"       style="color:#444444;text-decoration:none">4 Leiterkennwerte</a> &nbsp;·&nbsp;
+      <a href="#hb-kombinationen" style="color:#444444;text-decoration:none">5 Kettenwerke</a> &nbsp;·&nbsp;
+      <a href="#hb-werkzeuge"    style="color:#444444;text-decoration:none">6 Werkzeuge</a> &nbsp;·&nbsp;
+      <a href="#hb-beispiel"     style="color:#444444;text-decoration:none">7 Beispielrechnung</a> &nbsp;·&nbsp;
+      <a href="#hb-quellen"      style="color:#444444;text-decoration:none">8 Quellen</a> &nbsp;·&nbsp;
+      <a href="#hb-glossar"      style="color:#444444;text-decoration:none">9 Glossar</a>
     </div>
 
     <div style="padding:0 1.25rem 1.25rem;font-size:.85rem;line-height:1.7;color:#374151">
 
       <!-- ══ 1 Übersicht ══ -->
-      <h3 id="hb-uebersicht" style="font-size:.95rem;font-weight:700;color:#0071e3;margin:1.2rem 0 .4rem;border-bottom:1px solid #e5e7eb;padding-bottom:.25rem">1 &nbsp;<span id="hb-s1">Übersicht</span></h3>
+      <h3 id="hb-uebersicht" style="font-size:.95rem;font-weight:700;color:#212121;margin:1.2rem 0 .4rem;border-bottom:2px solid #e5e5e5;padding-bottom:.25rem">1 &nbsp;<span id="hb-s1">Übersicht</span></h3>
       <div class="hb-lang hb-de">
         <p>Diese Applikation berechnet die Kettenliniengeometrie von SBB-Oberleitungen für drei Systemtypen:</p>
         <ul style="margin:.4rem 0 .5rem 1.2rem">
@@ -5252,7 +5257,7 @@ function applyCustomPreset(p) {
       </div>
 
       <!-- ══ 2 Eingabeparameter ══ -->
-      <h3 id="hb-eingabe" style="font-size:.95rem;font-weight:700;color:#0071e3;margin:1.2rem 0 .4rem;border-bottom:1px solid #e5e7eb;padding-bottom:.25rem">2 &nbsp;<span id="hb-s2">Eingabeparameter</span></h3>
+      <h3 id="hb-eingabe" style="font-size:.95rem;font-weight:700;color:#212121;margin:1.2rem 0 .4rem;border-bottom:2px solid #e5e5e5;padding-bottom:.25rem">2 &nbsp;<span id="hb-s2">Eingabeparameter</span></h3>
 
       <!-- DE -->
       <div class="hb-lang hb-de">
@@ -5342,7 +5347,7 @@ function applyCustomPreset(p) {
       </div><!-- /hb-it -->
 
       <!-- ══ 3 Berechnungsverfahren ══ -->
-      <h3 id="hb-verfahren" style="font-size:.95rem;font-weight:700;color:#0071e3;margin:1.2rem 0 .4rem;border-bottom:1px solid #e5e7eb;padding-bottom:.25rem">3 &nbsp;<span id="hb-s3">Berechnungsverfahren</span></h3>
+      <h3 id="hb-verfahren" style="font-size:.95rem;font-weight:700;color:#212121;margin:1.2rem 0 .4rem;border-bottom:2px solid #e5e5e5;padding-bottom:.25rem">3 &nbsp;<span id="hb-s3">Berechnungsverfahren</span></h3>
 
       <!-- DE -->
       <div class="hb-lang hb-de">
@@ -5435,7 +5440,7 @@ function applyCustomPreset(p) {
       </div><!-- /hb-it -->
 
       <!-- ══ 4 Leiterkennwerte ══ -->
-      <h3 id="hb-leiter" style="font-size:.95rem;font-weight:700;color:#0071e3;margin:1.2rem 0 .4rem;border-bottom:1px solid #e5e7eb;padding-bottom:.25rem">4 &nbsp;<span id="hb-s4">Vordefinierte Leiterkennwerte</span></h3>
+      <h3 id="hb-leiter" style="font-size:.95rem;font-weight:700;color:#212121;margin:1.2rem 0 .4rem;border-bottom:2px solid #e5e5e5;padding-bottom:.25rem">4 &nbsp;<span id="hb-s4">Vordefinierte Leiterkennwerte</span></h3>
       <div class="hb-lang hb-de"><p style="font-size:.8rem;color:#6b7280;margin-bottom:.4rem">Alle Werte gemäss SBB 0161.1013.0001 und Herstellerangaben. E·A = Dehnsteifigkeit.</p></div>
       <div class="hb-lang hb-fr" style="display:none"><p style="font-size:.8rem;color:#6b7280;margin-bottom:.4rem">Toutes les valeurs selon SBB 0161.1013.0001 et données fabricant. E·A = rigidité en extension.</p></div>
       <div class="hb-lang hb-it" style="display:none"><p style="font-size:.8rem;color:#6b7280;margin-bottom:.4rem">Tutti i valori secondo SBB 0161.1013.0001 e dati del produttore. E·A = rigidezza a trazione.</p></div>
@@ -5444,7 +5449,7 @@ function applyCustomPreset(p) {
       <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.6rem 0 .2rem">Fil de contact (FC)</p></div>
       <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.6rem 0 .2rem">Filo di contatto (FC)</p></div>
       <table style="width:100%;border-collapse:collapse;font-size:.8rem">
-        <tr style="background:#1e3a5f;color:white">
+        <tr style="background:#444444;color:white">
           <td style="padding:4px 8px;font-weight:600">Bezeichnung</td>
           <td style="padding:4px 8px;font-weight:600;text-align:right">q [N/m]</td>
           <td style="padding:4px 8px;font-weight:600;text-align:right">E [GPa]</td>
@@ -5464,7 +5469,7 @@ function applyCustomPreset(p) {
       <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">Câble porteur (CP)</p></div>
       <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">Fune portante (FP)</p></div>
       <table style="width:100%;border-collapse:collapse;font-size:.8rem">
-        <tr style="background:#1e3a5f;color:white">
+        <tr style="background:#444444;color:white">
           <td style="padding:4px 8px;font-weight:600">Bezeichnung</td>
           <td style="padding:4px 8px;font-weight:600;text-align:right">q [N/m]</td>
           <td style="padding:4px 8px;font-weight:600;text-align:right">E [GPa]</td>
@@ -5481,7 +5486,7 @@ function applyCustomPreset(p) {
       <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">Conducteur de retour / d'alimentation (R-FL)</p></div>
       <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">Conduttore di ritorno / di alimentazione (R-FL)</p></div>
       <table style="width:100%;border-collapse:collapse;font-size:.8rem">
-        <tr style="background:#1e3a5f;color:white">
+        <tr style="background:#444444;color:white">
           <td style="padding:4px 8px;font-weight:600">Bezeichnung</td>
           <td style="padding:4px 8px;font-weight:600;text-align:right">q [N/m]</td>
           <td style="padding:4px 8px;font-weight:600;text-align:right">E [GPa]</td>
@@ -5497,7 +5502,7 @@ function applyCustomPreset(p) {
       </table>
 
       <!-- ══ 5 Vordefinierte Kettenwerke ══ -->
-      <h3 id="hb-kombinationen" style="font-size:.95rem;font-weight:700;color:#0071e3;margin:1.2rem 0 .4rem;border-bottom:1px solid #e5e7eb;padding-bottom:.25rem">5 &nbsp;<span id="hb-s5">Vordefinierte &amp; benutzerdefinierte Kettenwerke</span></h3>
+      <h3 id="hb-kombinationen" style="font-size:.95rem;font-weight:700;color:#212121;margin:1.2rem 0 .4rem;border-bottom:2px solid #e5e5e5;padding-bottom:.25rem">5 &nbsp;<span id="hb-s5">Vordefinierte &amp; benutzerdefinierte Kettenwerke</span></h3>
 
       <div class="hb-lang hb-de">
         <p>Die App enthält vordefinierte Kettenwerke für N-FL und R-FL. Daneben können über die <strong>＋-Schaltfläche</strong> eigene Kettenwerke erfasst und gespeichert werden (lokaler Browser-Speicher). Benutzerdefinierte Kettenwerke erlauben die freie Eingabe von MFL, E, α, A sowie sh, Zugkräften und Abnutzungsgrenzwert.</p>
@@ -5516,7 +5521,7 @@ function applyCustomPreset(p) {
       <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .25rem">5.1 &nbsp;N-FL — Valori di combinazione (fonte VBA: SBB Durchhang 2026.xlsm)</p>
       <p style="font-size:.8rem;color:#6b7280;margin-bottom:.35rem">MFL = carico totale (FP + FC + morsetti) caricato. MTS = q<sub>FP</sub>. E·A e α = valori combinati della fune portante (conforme VBA).</p></div>
       <table style="width:100%;border-collapse:collapse;font-size:.8rem">
-        <tr style="background:#1e3a5f;color:white">
+        <tr style="background:#444444;color:white">
           <td style="padding:4px 8px;font-weight:600">Kombination</td>
           <td style="padding:4px 8px;font-weight:600;text-align:right">MFL [N/m]</td>
           <td style="padding:4px 8px;font-weight:600;text-align:right">MTS [N/m]</td>
@@ -5533,7 +5538,7 @@ function applyCustomPreset(p) {
       <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.2 &nbsp;N-FL — Valeurs de réglage (source: SBB 0161.1013.0001)</p></div>
       <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.2 &nbsp;N-FL — Valori di regolazione (fonte: SBB 0161.1013.0001)</p></div>
       <table style="width:100%;border-collapse:collapse;font-size:.8rem">
-        <tr style="background:#1e3a5f;color:white">
+        <tr style="background:#444444;color:white">
           <td style="padding:4px 8px;font-weight:600">Kombination / Anwendung</td>
           <td style="padding:4px 8px;font-weight:600;text-align:right">sh [m]</td>
           <td style="padding:4px 8px;font-weight:600;text-align:right">H<sub>Ts,ub</sub> [N]</td>
@@ -5552,7 +5557,7 @@ function applyCustomPreset(p) {
       <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.3 &nbsp;R-FL — Valeurs de réglage</p></div>
       <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.3 &nbsp;R-FL — Valori di regolazione</p></div>
       <table style="width:100%;border-collapse:collapse;font-size:.8rem">
-        <tr style="background:#1e3a5f;color:white">
+        <tr style="background:#444444;color:white">
           <td style="padding:4px 8px;font-weight:600">Kombination</td>
           <td style="padding:4px 8px;font-weight:600;text-align:right">sh [m]</td>
           <td style="padding:4px 8px;font-weight:600;text-align:right">H<sub>Ts</sub> [N]</td>
@@ -5564,7 +5569,7 @@ function applyCustomPreset(p) {
       </table>
 
       <!-- ══ 6 Diagnosewerkzeuge & Sonderfunktionen ══ -->
-      <h3 id="hb-werkzeuge" style="font-size:.95rem;font-weight:700;color:#0071e3;margin:1.2rem 0 .4rem;border-bottom:1px solid #e5e7eb;padding-bottom:.25rem">6 &nbsp;<span id="hb-s6">Diagnosewerkzeuge &amp; Sonderfunktionen</span></h3>
+      <h3 id="hb-werkzeuge" style="font-size:.95rem;font-weight:700;color:#212121;margin:1.2rem 0 .4rem;border-bottom:2px solid #e5e5e5;padding-bottom:.25rem">6 &nbsp;<span id="hb-s6">Diagnosewerkzeuge &amp; Sonderfunktionen</span></h3>
 
       <!-- DE -->
       <div class="hb-lang hb-de">
@@ -5681,7 +5686,7 @@ function applyCustomPreset(p) {
       </div><!-- /hb-it -->
 
       <!-- ══ 7 Beispielberechnung ══ -->
-      <h3 id="hb-beispiel" style="font-size:.95rem;font-weight:700;color:#0071e3;margin:1.2rem 0 .4rem;border-bottom:1px solid #e5e7eb;padding-bottom:.25rem">7 &nbsp;<span id="hb-s7">Schritt-für-Schritt Beispielberechnung (N-FL)</span></h3>
+      <h3 id="hb-beispiel" style="font-size:.95rem;font-weight:700;color:#212121;margin:1.2rem 0 .4rem;border-bottom:2px solid #e5e5e5;padding-bottom:.25rem">7 &nbsp;<span id="hb-s7">Schritt-für-Schritt Beispielberechnung (N-FL)</span></h3>
 
       <!-- DE -->
       <div class="hb-lang hb-de">
@@ -5693,14 +5698,14 @@ function applyCustomPreset(p) {
           <strong>Zugkräfte:</strong> H<sub>Ts,ub</sub> = 1 700 N &nbsp;|&nbsp; H<sub>Fd</sub> = 8 500 N &nbsp;|&nbsp;
           <strong>Temperaturen:</strong> T₁ = +10 °C → T₂ = +40 °C
         </div>
-        <div style="border-left:3px solid #2563eb;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#1e3a5f;margin:0 0 .2rem">Schritt 1 &nbsp;—&nbsp; Gesamtlast (bekannte FL-Kombination)</p>
+        <div style="border-left:3px solid #eb0000;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Schritt 1 &nbsp;—&nbsp; Gesamtlast (bekannte FL-Kombination)</p>
           <p style="margin:.1rem 0">Aus VBA-Tabelle: <strong>MFL = 13.876 N/m</strong> (inkl. Ts + Fd + Klemmen)</p>
           <p style="margin:.1rem 0;color:#6b7280;font-size:.8rem">Einzelwerte: q<sub>Ts</sub> = 4.011 N/m &nbsp;|&nbsp; q<sub>Fd</sub> = 9.517 N/m &nbsp;|&nbsp; q<sub>H</sub> = 0.196 N/m &nbsp;→ Summe = 13.724 N/m (ohne Klemmen). VBA-Wert MFL = 13.876 N/m (mit Klemmen) ist massgebend.</p>
           <p style="margin:.1rem 0">E·A = 159 GPa × 4.945 cm² = <strong>7.862 MN</strong> &nbsp;|&nbsp; α = 11.5×10⁻⁶/K</p>
         </div>
-        <div style="border-left:3px solid #2563eb;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#1e3a5f;margin:0 0 .2rem">Schritt 2 &nbsp;—&nbsp; Zustandsgleichung unbelastet → belastet</p>
+        <div style="border-left:3px solid #eb0000;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Schritt 2 &nbsp;—&nbsp; Zustandsgleichung unbelastet → belastet</p>
           <p style="margin:.1rem 0">Koeffizienten des kubischen Polynoms (C·H³ + K·H² − G = 0):</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#f0f4f8;padding:3px 6px;border-radius:3px">
             G = (MFL × Lm)² / 24 = (13.876 × 50)² / 24 = <strong>20 054 N²·m</strong><br>
@@ -5710,8 +5715,8 @@ function applyCustomPreset(p) {
           </p>
           <p style="margin:.1rem 0">Newton-Raphson (Startwert H<sub>ub</sub> = 1 700 N) → <strong>H<sub>Ts,belastet</sub> = F₀ ≈ 3 860 N</strong></p>
         </div>
-        <div style="border-left:3px solid #2563eb;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#1e3a5f;margin:0 0 .2rem">Schritt 3 &nbsp;—&nbsp; Kettenlinie bei T₁ = +10 °C</p>
+        <div style="border-left:3px solid #eb0000;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Schritt 3 &nbsp;—&nbsp; Kettenlinie bei T₁ = +10 °C</p>
           <p style="margin:.1rem 0">Kettenlinienparameter:</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#f0f4f8;padding:3px 6px;border-radius:3px">a = H<sub>Ts</sub> / MFL = 3 860 / 13.876 = <strong>278.1 m</strong></p>
           <p style="margin:.1rem 0">Ebenes Feld (h₁ = h₂) → Tiefpunkt in Feldmitte: x₀ = 25.000 m</p>
@@ -5723,28 +5728,28 @@ function applyCustomPreset(p) {
           </p>
           <p style="margin:.1rem 0">Ts-Höhe SOK bei T₁: h₁ − f<sub>Fd,1</sub> + sh = 5.50 − 1.123 + 2.40 (Näherung am Tiefpunkt)</p>
         </div>
-        <div style="border-left:3px solid #ea580c;padding:.4rem .8rem;margin:.5rem 0;background:#fff7ed;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#9a3412;margin:0 0 .2rem">Schritt 4 &nbsp;—&nbsp; Zustandsgleichung T₁ → T₂ (ΔT = +30 K)</p>
+        <div style="border-left:3px solid #b7b7b7;padding:.4rem .8rem;margin:.5rem 0;background:#f6f6f6;border-radius:0 4px 4px 0">
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Schritt 4 &nbsp;—&nbsp; Zustandsgleichung T₁ → T₂ (ΔT = +30 K)</p>
           <p style="margin:.1rem 0">VEM Handbuch / VBA Upro1 Gleichung (Newton-Raphson):</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#fff0e6;padding:3px 6px;border-radius:3px">
+          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#ebebeb;padding:3px 6px;border-radius:3px">
             gk₀ = MFL / F₀ = 13.876 / 3860 = 3.594×10⁻³ 1/m<br>
             G &nbsp;= 24/50² + gk₀² = 9.600×10⁻³ + 1.292×10⁻⁵ = 9.613×10⁻³<br>
             A &nbsp;= MFL × (1 + H<sub>Fd</sub>/F₀) = 13.876 × 3.202 = 44.43 N/m<br>
             α·ΔT = 11.5×10⁻⁶ × 30 = 3.450×10⁻⁴<br>
             Iteration → <strong>H<sub>Ts,2</sub> ≈ 2 880 N</strong>
           </p>
-          <p style="margin:.1rem 0;font-size:.8rem;color:#9a3412">Die Zugkraft nimmt bei Erwärmung ab (Ts dehnt sich aus → tiefere Spannung).</p>
+          <p style="margin:.1rem 0;font-size:.8rem;color:#686868">Die Zugkraft nimmt bei Erwärmung ab (Ts dehnt sich aus → tiefere Spannung).</p>
         </div>
-        <div style="border-left:3px solid #ea580c;padding:.4rem .8rem;margin:.5rem 0;background:#fff7ed;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#9a3412;margin:0 0 .2rem">Schritt 5 &nbsp;—&nbsp; Fahrdraht-Durchhang bei T₂ = +40 °C</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#fff0e6;padding:3px 6px;border-radius:3px">
+        <div style="border-left:3px solid #b7b7b7;padding:.4rem .8rem;margin:.5rem 0;background:#f6f6f6;border-radius:0 4px 4px 0">
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Schritt 5 &nbsp;—&nbsp; Fahrdraht-Durchhang bei T₂ = +40 °C</p>
+          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#ebebeb;padding:3px 6px;border-radius:3px">
             f<sub>Fd,2</sub> = 50² / 8 × 44.43 / (2880 + 8500) = 312.5 × 44.43 / 11 380 = <strong>≈ 1.220 m</strong>
           </p>
           <p style="margin:.1rem 0">Ts-Höhe SOK in Feldmitte bei T₂ ≈ 5.50 − 1.220 = <strong>ca. 4.28 m ü. SOK</strong></p>
-          <p style="margin:.1rem 0;font-size:.8rem;color:#9a3412">Kontrolle: Minimale Fahrdrahthöhe ≥ 5.00 m ü. SOK (Fd-Höhe = Ts-Höhe − sh = 4.28 − 2.40 ≈ 5.38 m → Grenzwert eingehalten ✓)</p>
+          <p style="margin:.1rem 0;font-size:.8rem;color:#686868">Kontrolle: Minimale Fahrdrahthöhe ≥ 5.00 m ü. SOK (Fd-Höhe = Ts-Höhe − sh = 4.28 − 2.40 ≈ 5.38 m → Grenzwert eingehalten ✓)</p>
         </div>
-        <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:.5rem .9rem;margin:.6rem 0;font-size:.81rem">
-          <strong style="color:#15803d">Tipp:</strong> Das vollständige Berechnungsprotokoll mit allen Zwischenwerten und der Canvas-Darstellung kann über <em>«PDF Berechnungsprotokoll»</em> exportiert werden. Die Werte entsprechen dem SBB-Referenzmodell Durchhang 2026.xlsm.
+        <div style="background:#f6f6f6;border:1px solid #d2d2d2;border-radius:6px;padding:.5rem .9rem;margin:.6rem 0;font-size:.81rem">
+          <strong style="color:#444444">Tipp:</strong> Das vollständige Berechnungsprotokoll mit allen Zwischenwerten und der Canvas-Darstellung kann über <em>«PDF Berechnungsprotokoll»</em> exportiert werden. Die Werte entsprechen dem SBB-Referenzmodell Durchhang 2026.xlsm.
         </div>
       </div><!-- /hb-de -->
 
@@ -5758,14 +5763,14 @@ function applyCustomPreset(p) {
           <strong>Forces de traction:</strong> H<sub>CP,nc</sub> = 1 700 N &nbsp;|&nbsp; H<sub>FC</sub> = 8 500 N &nbsp;|&nbsp;
           <strong>Températures:</strong> T₁ = +10 °C → T₂ = +40 °C
         </div>
-        <div style="border-left:3px solid #2563eb;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#1e3a5f;margin:0 0 .2rem">Étape 1 &nbsp;—&nbsp; Charge totale (combinaison FL connue)</p>
+        <div style="border-left:3px solid #eb0000;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Étape 1 &nbsp;—&nbsp; Charge totale (combinaison FL connue)</p>
           <p style="margin:.1rem 0">Depuis la table VBA: <strong>MFL = 13.876 N/m</strong> (incl. CP + FC + pinces)</p>
           <p style="margin:.1rem 0;color:#6b7280;font-size:.8rem">Valeurs individuelles: q<sub>CP</sub> = 4.011 N/m &nbsp;|&nbsp; q<sub>FC</sub> = 9.517 N/m &nbsp;|&nbsp; q<sub>p</sub> = 0.196 N/m &nbsp;→ Somme = 13.724 N/m (sans pinces). Valeur VBA MFL = 13.876 N/m (avec pinces) est déterminante.</p>
           <p style="margin:.1rem 0">E·A = 159 GPa × 4.945 cm² = <strong>7.862 MN</strong> &nbsp;|&nbsp; α = 11.5×10⁻⁶/K</p>
         </div>
-        <div style="border-left:3px solid #2563eb;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#1e3a5f;margin:0 0 .2rem">Étape 2 &nbsp;—&nbsp; Équation d'état non chargé → chargé</p>
+        <div style="border-left:3px solid #eb0000;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Étape 2 &nbsp;—&nbsp; Équation d'état non chargé → chargé</p>
           <p style="margin:.1rem 0">Coefficients du polynôme cubique (C·H³ + K·H² − G = 0):</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#f0f4f8;padding:3px 6px;border-radius:3px">
             G = (MFL × Lm)² / 24 = (13.876 × 50)² / 24 = <strong>20 054 N²·m</strong><br>
@@ -5775,8 +5780,8 @@ function applyCustomPreset(p) {
           </p>
           <p style="margin:.1rem 0">Newton-Raphson (valeur de départ H<sub>nc</sub> = 1 700 N) → <strong>H<sub>CP,chargé</sub> = F₀ ≈ 3 860 N</strong></p>
         </div>
-        <div style="border-left:3px solid #2563eb;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#1e3a5f;margin:0 0 .2rem">Étape 3 &nbsp;—&nbsp; Caténaire à T₁ = +10 °C</p>
+        <div style="border-left:3px solid #eb0000;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Étape 3 &nbsp;—&nbsp; Caténaire à T₁ = +10 °C</p>
           <p style="margin:.1rem 0">Paramètre caténaire:</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#f0f4f8;padding:3px 6px;border-radius:3px">a = H<sub>CP</sub> / MFL = 3 860 / 13.876 = <strong>278.1 m</strong></p>
           <p style="margin:.1rem 0">Travée plane (h₁ = h₂) → point le plus bas au milieu de travée: x₀ = 25.000 m</p>
@@ -5788,27 +5793,27 @@ function applyCustomPreset(p) {
           </p>
           <p style="margin:.1rem 0">Hauteur CP DRS à T₁: h₁ − f<sub>FC,1</sub> + sh = 5.50 − 1.123 + 2.40 (approximation au point le plus bas)</p>
         </div>
-        <div style="border-left:3px solid #ea580c;padding:.4rem .8rem;margin:.5rem 0;background:#fff7ed;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#9a3412;margin:0 0 .2rem">Étape 4 &nbsp;—&nbsp; Équation d'état T₁ → T₂ (ΔT = +30 K)</p>
+        <div style="border-left:3px solid #b7b7b7;padding:.4rem .8rem;margin:.5rem 0;background:#f6f6f6;border-radius:0 4px 4px 0">
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Étape 4 &nbsp;—&nbsp; Équation d'état T₁ → T₂ (ΔT = +30 K)</p>
           <p style="margin:.1rem 0">Équation VEM Manuel / VBA Upro1 (Newton-Raphson):</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#fff0e6;padding:3px 6px;border-radius:3px">
+          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#ebebeb;padding:3px 6px;border-radius:3px">
             gk₀ = MFL / F₀ = 13.876 / 3860 = 3.594×10⁻³ 1/m<br>
             G &nbsp;= 24/50² + gk₀² = 9.600×10⁻³ + 1.292×10⁻⁵ = 9.613×10⁻³<br>
             A &nbsp;= MFL × (1 + H<sub>FC</sub>/F₀) = 13.876 × 3.202 = 44.43 N/m<br>
             α·ΔT = 11.5×10⁻⁶ × 30 = 3.450×10⁻⁴<br>
             Itération → <strong>H<sub>CP,2</sub> ≈ 2 880 N</strong>
           </p>
-          <p style="margin:.1rem 0;font-size:.8rem;color:#9a3412">La force de traction diminue lors du réchauffement (le CP se dilate → tension plus faible).</p>
+          <p style="margin:.1rem 0;font-size:.8rem;color:#686868">La force de traction diminue lors du réchauffement (le CP se dilate → tension plus faible).</p>
         </div>
-        <div style="border-left:3px solid #ea580c;padding:.4rem .8rem;margin:.5rem 0;background:#fff7ed;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#9a3412;margin:0 0 .2rem">Étape 5 &nbsp;—&nbsp; Flèche FC à T₂ = +40 °C</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#fff0e6;padding:3px 6px;border-radius:3px">
+        <div style="border-left:3px solid #b7b7b7;padding:.4rem .8rem;margin:.5rem 0;background:#f6f6f6;border-radius:0 4px 4px 0">
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Étape 5 &nbsp;—&nbsp; Flèche FC à T₂ = +40 °C</p>
+          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#ebebeb;padding:3px 6px;border-radius:3px">
             f<sub>FC,2</sub> = 50² / 8 × 44.43 / (2880 + 8500) = 312.5 × 44.43 / 11 380 = <strong>≈ 1.220 m</strong>
           </p>
           <p style="margin:.1rem 0">Hauteur CP DRS au milieu de travée à T₂ ≈ 5.50 − 1.220 = <strong>env. 4.28 m s. DRS</strong></p>
-          <p style="margin:.1rem 0;font-size:.8rem;color:#9a3412">Contrôle: Hauteur minimale FC ≥ 5.00 m s. DRS (hauteur FC = hauteur CP − sh = 4.28 − 2.40 ≈ 5.38 m → valeur limite respectée ✓)</p>
+          <p style="margin:.1rem 0;font-size:.8rem;color:#686868">Contrôle: Hauteur minimale FC ≥ 5.00 m s. DRS (hauteur FC = hauteur CP − sh = 4.28 − 2.40 ≈ 5.38 m → valeur limite respectée ✓)</p>
         </div>
-        <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:.5rem .9rem;margin:.6rem 0;font-size:.81rem">
+        <div style="background:#f6f6f6;border:1px solid #d2d2d2;border-radius:6px;padding:.5rem .9rem;margin:.6rem 0;font-size:.81rem">
           <strong style="color:#15803d">Conseil:</strong> Le protocole de calcul complet avec toutes les valeurs intermédiaires et la représentation Canvas peut être exporté via <em>«Protocole de calcul PDF»</em>. Les valeurs correspondent au modèle de référence SBB Durchhang 2026.xlsm.
         </div>
       </div><!-- /hb-fr -->
@@ -5823,14 +5828,14 @@ function applyCustomPreset(p) {
           <strong>Forze di tiro:</strong> H<sub>FP,nc</sub> = 1 700 N &nbsp;|&nbsp; H<sub>FC</sub> = 8 500 N &nbsp;|&nbsp;
           <strong>Temperature:</strong> T₁ = +10 °C → T₂ = +40 °C
         </div>
-        <div style="border-left:3px solid #2563eb;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#1e3a5f;margin:0 0 .2rem">Passo 1 &nbsp;—&nbsp; Carico totale (combinazione FL nota)</p>
+        <div style="border-left:3px solid #eb0000;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Passo 1 &nbsp;—&nbsp; Carico totale (combinazione FL nota)</p>
           <p style="margin:.1rem 0">Dalla tabella VBA: <strong>MFL = 13.876 N/m</strong> (incl. FP + FC + morsetti)</p>
           <p style="margin:.1rem 0;color:#6b7280;font-size:.8rem">Valori individuali: q<sub>FP</sub> = 4.011 N/m &nbsp;|&nbsp; q<sub>FC</sub> = 9.517 N/m &nbsp;|&nbsp; q<sub>p</sub> = 0.196 N/m &nbsp;→ Somma = 13.724 N/m (senza morsetti). Valore VBA MFL = 13.876 N/m (con morsetti) è determinante.</p>
           <p style="margin:.1rem 0">E·A = 159 GPa × 4.945 cm² = <strong>7.862 MN</strong> &nbsp;|&nbsp; α = 11.5×10⁻⁶/K</p>
         </div>
-        <div style="border-left:3px solid #2563eb;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#1e3a5f;margin:0 0 .2rem">Passo 2 &nbsp;—&nbsp; Equazione di stato non caricato → caricato</p>
+        <div style="border-left:3px solid #eb0000;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Passo 2 &nbsp;—&nbsp; Equazione di stato non caricato → caricato</p>
           <p style="margin:.1rem 0">Coefficienti del polinomio cubico (C·H³ + K·H² − G = 0):</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#f0f4f8;padding:3px 6px;border-radius:3px">
             G = (MFL × Lm)² / 24 = (13.876 × 50)² / 24 = <strong>20 054 N²·m</strong><br>
@@ -5840,8 +5845,8 @@ function applyCustomPreset(p) {
           </p>
           <p style="margin:.1rem 0">Newton-Raphson (valore iniziale H<sub>nc</sub> = 1 700 N) → <strong>H<sub>FP,caricato</sub> = F₀ ≈ 3 860 N</strong></p>
         </div>
-        <div style="border-left:3px solid #2563eb;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#1e3a5f;margin:0 0 .2rem">Passo 3 &nbsp;—&nbsp; Catenaria a T₁ = +10 °C</p>
+        <div style="border-left:3px solid #eb0000;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Passo 3 &nbsp;—&nbsp; Catenaria a T₁ = +10 °C</p>
           <p style="margin:.1rem 0">Parametro catenaria:</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#f0f4f8;padding:3px 6px;border-radius:3px">a = H<sub>FP</sub> / MFL = 3 860 / 13.876 = <strong>278.1 m</strong></p>
           <p style="margin:.1rem 0">Campata piana (h₁ = h₂) → punto più basso al centro campata: x₀ = 25.000 m</p>
@@ -5853,33 +5858,33 @@ function applyCustomPreset(p) {
           </p>
           <p style="margin:.1rem 0">Altezza FP PRF a T₁: h₁ − f<sub>FC,1</sub> + sh = 5.50 − 1.123 + 2.40 (approssimazione al punto più basso)</p>
         </div>
-        <div style="border-left:3px solid #ea580c;padding:.4rem .8rem;margin:.5rem 0;background:#fff7ed;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#9a3412;margin:0 0 .2rem">Passo 4 &nbsp;—&nbsp; Equazione di stato T₁ → T₂ (ΔT = +30 K)</p>
+        <div style="border-left:3px solid #b7b7b7;padding:.4rem .8rem;margin:.5rem 0;background:#f6f6f6;border-radius:0 4px 4px 0">
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Passo 4 &nbsp;—&nbsp; Equazione di stato T₁ → T₂ (ΔT = +30 K)</p>
           <p style="margin:.1rem 0">Equazione VEM Manuale / VBA Upro1 (Newton-Raphson):</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#fff0e6;padding:3px 6px;border-radius:3px">
+          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#ebebeb;padding:3px 6px;border-radius:3px">
             gk₀ = MFL / F₀ = 13.876 / 3860 = 3.594×10⁻³ 1/m<br>
             G &nbsp;= 24/50² + gk₀² = 9.600×10⁻³ + 1.292×10⁻⁵ = 9.613×10⁻³<br>
             A &nbsp;= MFL × (1 + H<sub>FC</sub>/F₀) = 13.876 × 3.202 = 44.43 N/m<br>
             α·ΔT = 11.5×10⁻⁶ × 30 = 3.450×10⁻⁴<br>
             Iterazione → <strong>H<sub>FP,2</sub> ≈ 2 880 N</strong>
           </p>
-          <p style="margin:.1rem 0;font-size:.8rem;color:#9a3412">La forza di tiro diminuisce con il riscaldamento (la FP si dilata → tensione minore).</p>
+          <p style="margin:.1rem 0;font-size:.8rem;color:#686868">La forza di tiro diminuisce con il riscaldamento (la FP si dilata → tensione minore).</p>
         </div>
-        <div style="border-left:3px solid #ea580c;padding:.4rem .8rem;margin:.5rem 0;background:#fff7ed;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#9a3412;margin:0 0 .2rem">Passo 5 &nbsp;—&nbsp; Freccia FC a T₂ = +40 °C</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#fff0e6;padding:3px 6px;border-radius:3px">
+        <div style="border-left:3px solid #b7b7b7;padding:.4rem .8rem;margin:.5rem 0;background:#f6f6f6;border-radius:0 4px 4px 0">
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Passo 5 &nbsp;—&nbsp; Freccia FC a T₂ = +40 °C</p>
+          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#ebebeb;padding:3px 6px;border-radius:3px">
             f<sub>FC,2</sub> = 50² / 8 × 44.43 / (2880 + 8500) = 312.5 × 44.43 / 11 380 = <strong>≈ 1.220 m</strong>
           </p>
           <p style="margin:.1rem 0">Altezza FP PRF al centro campata a T₂ ≈ 5.50 − 1.220 = <strong>ca. 4.28 m s. PRF</strong></p>
-          <p style="margin:.1rem 0;font-size:.8rem;color:#9a3412">Controllo: Altezza minima FC ≥ 5.00 m s. PRF (altezza FC = altezza FP − sh = 4.28 − 2.40 ≈ 5.38 m → valore limite rispettato ✓)</p>
+          <p style="margin:.1rem 0;font-size:.8rem;color:#686868">Controllo: Altezza minima FC ≥ 5.00 m s. PRF (altezza FC = altezza FP − sh = 4.28 − 2.40 ≈ 5.38 m → valore limite rispettato ✓)</p>
         </div>
-        <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:.5rem .9rem;margin:.6rem 0;font-size:.81rem">
+        <div style="background:#f6f6f6;border:1px solid #d2d2d2;border-radius:6px;padding:.5rem .9rem;margin:.6rem 0;font-size:.81rem">
           <strong style="color:#15803d">Suggerimento:</strong> Il protocollo di calcolo completo con tutti i valori intermedi e la rappresentazione Canvas può essere esportato tramite <em>«Protocollo di calcolo PDF»</em>. I valori corrispondono al modello di riferimento SBB Durchhang 2026.xlsm.
         </div>
       </div><!-- /hb-it -->
 
       <!-- ══ 8 Quellen ══ -->
-      <h3 id="hb-quellen" style="font-size:.95rem;font-weight:700;color:#0071e3;margin:1.2rem 0 .4rem;border-bottom:1px solid #e5e7eb;padding-bottom:.25rem">8 &nbsp;<span id="hb-s8">Quellenangaben</span></h3>
+      <h3 id="hb-quellen" style="font-size:.95rem;font-weight:700;color:#212121;margin:1.2rem 0 .4rem;border-bottom:2px solid #e5e5e5;padding-bottom:.25rem">8 &nbsp;<span id="hb-s8">Quellenangaben</span></h3>
       <div class="hb-lang hb-de">
         <ul style="margin:.4rem 0 .4rem 1.2rem;font-size:.82rem;color:#6b7280">
           <li>SBB Durchhang 2026.xlsm — VBA-Berechnungsmodell (Upro1, DurchhangNFL); NFL-Re!P14 = VEM 7.66</li>
@@ -5909,7 +5914,7 @@ function applyCustomPreset(p) {
       </div>
 
       <!-- ══ 9 Glossar ══ -->
-      <h3 id="hb-glossar" style="font-size:.95rem;font-weight:700;color:#0071e3;margin:1.2rem 0 .4rem;border-bottom:1px solid #e5e7eb;padding-bottom:.25rem">9 &nbsp;<span id="hb-s9">Glossar DE / FR / IT</span></h3>
+      <h3 id="hb-glossar" style="font-size:.95rem;font-weight:700;color:#212121;margin:1.2rem 0 .4rem;border-bottom:2px solid #e5e5e5;padding-bottom:.25rem">9 &nbsp;<span id="hb-s9">Glossar DE / FR / IT</span></h3>
       <div class="hb-lang hb-de"><p style="font-size:.8rem;color:#6b7280;margin-bottom:.6rem">Dreisprachige Fachbegriffe gemäss SBB-Norm. Abkürzungen: Ts = Tragseil, Fd = Fahrdraht, SOK = Schienenoberkante.</p></div>
       <div class="hb-lang hb-fr" style="display:none"><p style="font-size:.8rem;color:#6b7280;margin-bottom:.6rem">Termes techniques trilingues selon la norme SBB. Abréviations: CP = câble porteur, FC = fil de contact, DRS = dessus du rail.</p></div>
       <div class="hb-lang hb-it" style="display:none"><p style="font-size:.8rem;color:#6b7280;margin-bottom:.6rem">Terminologia tecnica trilingue secondo la norma FFS. Abbreviazioni: FP = fune portante, FC = filo di contatto, PRF = piano del ferro.</p></div>
@@ -6133,7 +6138,7 @@ function applyCustomPreset(p) {
       <style>
         .rgl-tbl { width:100%; border-collapse:collapse; font-size:.76rem; table-layout:fixed; }
         .rgl-tbl th { background:#f4f6f8; border-bottom:1px solid #d1d5db; padding:.4rem .55rem; font-weight:600; color:var(--text); white-space:nowrap; }
-        .rgl-tbl td { padding:.42rem .55rem; border-bottom:1px solid #e2e8f0; }
+        .rgl-tbl td { padding:.42rem .55rem; border-bottom:1px solid #d2d2d2; }
         .rgl-tbl tr:nth-child(even) td { background:#fafafa; }
         .rgl-tbl .c-left  { text-align:left; }
         .rgl-tbl .c-right { text-align:right; font-variant-numeric:tabular-nums; }
@@ -6210,7 +6215,7 @@ function applyCustomPreset(p) {
         <p class="rgl-note">H<sub>Ts</sub> belastet = mit Fahrdraht &nbsp;·&nbsp; H<sub>Ts</sub> unbelastet = ohne Fahrdraht &nbsp;·&nbsp; bei +10 °C &nbsp;·&nbsp; (SBB 0161.1013.0001)</p>
       </div>
 
-      <hr style="border:none;border-top:1px solid #e2e8f0;margin:0 0 1.1rem">
+      <hr style="border:none;border-top:1px solid #d2d2d2;margin:0 0 1.1rem">
 
       <!-- R-FL -->
       <div style="margin-bottom:1.3rem">
@@ -6253,7 +6258,7 @@ function applyCustomPreset(p) {
         <p class="rgl-note">H<sub>Ts</sub> konstant via Nachspannvorrichtung &nbsp;·&nbsp; temperaturunabhängig &nbsp;·&nbsp; (SBB 0161.1013.0001)</p>
       </div>
 
-      <hr style="border:none;border-top:1px solid #e2e8f0;margin:0 0 1.1rem">
+      <hr style="border:none;border-top:1px solid #d2d2d2;margin:0 0 1.1rem">
 
       <!-- Einzelleiter -->
       <div>
@@ -6308,13 +6313,13 @@ function applyCustomPreset(p) {
     align-items: center; justify-content: center; gap: .4rem;
     grid-column: 1 / -1;   /* Zeile 2, volle Breite */
     padding: .22rem .7rem;
-    border-radius: 980px; border: 1px solid rgba(0,113,227,.35);
-    background: rgba(0,113,227,.07); color: var(--primary);
+    border-radius: 980px; border: 1px solid rgba(235,0,0,.3);
+    background: rgba(235,0,0,.06); color: var(--primary);
     font-size: .76rem; font-weight: 500; font-family: inherit;
     cursor: pointer; white-space: nowrap;
     transition: background .15s;
   }
-  #pdf-btn:hover { background: rgba(0,113,227,.14); }
+  #pdf-btn:hover { background: rgba(235,0,0,.12); }
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
