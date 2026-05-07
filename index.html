@@ -2884,14 +2884,49 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.textAlign = side === 'left' ? 'right' : 'left';
     ctx.fillText(`f = ${c.sag.toFixed(2)} m`, bx + (side === 'left' ? -6 : 6), mid + 4);
   }
-  const anyProbe = probeX1 !== null || probeX2 !== null || probeX3 !== null || probeX4 !== null;
-  if (!anyProbe) {
-    sagAnnotation(c1, sysMode === 'rfl' ? '#eb0000' : '#b7b7b7', 'right');
-    if ((sysMode === 'nfl' || isEl) && Math.abs(c2.sag - c1.sag) > 0.005) {
-      // Sag-Annotation: geometrischer Sehnenwert (Abstand Sehnenlinie → Tiefpunkt)
-      const cSagT2 = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
-      sagAnnotation(cSagT2, '#eb0000', 'left');
+
+  // Sag-Annotation mit horizontaler Referenzlinie vom Ankerpunkt (bei aktiven Messpunkten)
+  function sagAnnotationWithHorizontal(c, color, side) {
+    const x0     = Math.max(0, Math.min(L, c.x_low));
+    const yBot   = catYD(x0, c);
+    const yChord = h1d + (h2d - h1d) * x0 / L;
+    if (Math.abs(yChord - yBot) < 0.001) return;
+    const bx = cx(x0);
+    const by = cy(yBot);
+    const ty = cy(yChord);
+    // Horizontale gestrichelte Linie vom Ankerpunkt bis x0
+    const hStartX = side === 'left' ? cx(0) : cx(L);
+    ctx.setLineDash([5, 4]); ctx.strokeStyle = color; ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.55;
+    ctx.beginPath(); ctx.moveTo(hStartX, ty); ctx.lineTo(bx, ty); ctx.stroke();
+    ctx.globalAlpha = 1;
+    // Vertikale gestrichelte Linie Sehne → Tiefpunkt
+    ctx.setLineDash([3, 3]); ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(bx, ty); ctx.lineTo(bx, by); ctx.stroke();
+    ctx.setLineDash([]);
+    // Pfeilspitzen
+    function arrowHead(px, py, dir) {
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.moveTo(px, py);
+      ctx.lineTo(px - 3.5, py - dir * 7); ctx.lineTo(px + 3.5, py - dir * 7);
+      ctx.closePath(); ctx.fill();
     }
+    arrowHead(bx, by - 1, -1);
+    arrowHead(bx, ty + 1,  1);
+    // Beschriftung
+    const mid = (by + ty) / 2;
+    ctx.fillStyle = color; ctx.font = 'bold 10px Segoe UI';
+    ctx.textAlign = side === 'left' ? 'right' : 'left';
+    ctx.fillText(`f = ${c.sag.toFixed(2)} m`, bx + (side === 'left' ? -6 : 6), mid + 4);
+  }
+
+  const anyProbe = probeX1 !== null || probeX2 !== null || probeX3 !== null || probeX4 !== null;
+  const sagFn = anyProbe ? sagAnnotationWithHorizontal : sagAnnotation;
+  sagFn(c1, sysMode === 'rfl' ? '#eb0000' : '#b7b7b7', 'right');
+  if ((sysMode === 'nfl' || isEl) && Math.abs(c2.sag - c1.sag) > 0.005) {
+    // Sag-Annotation: geometrischer Sehnenwert (Abstand Sehnenlinie → Tiefpunkt)
+    const cSagT2 = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
+    sagFn(cSagT2, '#eb0000', 'left');
   }
 
   // ── Anchor points ──
