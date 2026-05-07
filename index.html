@@ -1490,19 +1490,35 @@ function buildPresetTitle(p) {
   return `${ts}: ${mTs ? mTs.name : p.matTs}  ·  ${fd}: ${mFd ? mFd.name : p.matFd}`;
 }
 
-function buildPresetNote(p) {
+// currentH_Ts_ub / currentT1: optional – überschreiben den Preset-Referenzwert (für T1-Änderung)
+function buildPresetNote(p, currentH_Ts_ub, currentT1) {
   const fmt = n => n.toLocaleString('de-CH');
   const ts = t('preset.ts.abbr'), fd = t('preset.fd.abbr');
   if (p.sysMode === 'nfl') {
     const bel = t('preset.nfl.bel'), ub = t('preset.nfl.ub'), bei = t('preset.bei.t1');
     const ref = p.note_ref ? `  (${p.note_ref})` : '';
-    return `Reglage ${ts}: ${bel} ${fmt(p.H_Ts)} N / ${ub} ${fmt(p.H_Ts_ub)} N ${bei} +${p.T1} °C  ·  H ${fd}: ${fmt(p.H_Fd)} N${ref}`;
+    const H_ub = (currentH_Ts_ub != null) ? currentH_Ts_ub : p.H_Ts_ub;
+    const T1   = (currentT1   != null) ? currentT1   : p.T1;
+    const sign = T1 >= 0 ? '+' : '';
+    return `Reglage ${ts}: ${bel} ${fmt(p.H_Ts)} N / ${ub} ${fmt(H_ub)} N ${bei} ${sign}${T1} °C  ·  H ${fd}: ${fmt(p.H_Fd)} N${ref}`;
   } else if (p.sysMode === 'rfl') {
     const konst = t('preset.hts.konst');
     const abnutzung = t('preset.abnutzung');
     return `H ${ts}: ${fmt(p.H_Ts)} ${konst}  ·  H ${fd}: ${fmt(p.H_Fd)} N  ·  ${abnutzung} ${p.wear_max} % (${100 - p.wear_max} %)`;
   }
   return p.note || '';
+}
+
+// Note der Combo-Infobox mit aktuellem T1 / H_Ts_ub aktualisieren
+function refreshPresetNote() {
+  if (!activePresetP || activePresetP.sysMode !== 'nfl') return;
+  const noteEl = document.getElementById('combo-note');
+  if (!noteEl) return;
+  const T1   = parseFloat(document.getElementById('temp1').value);
+  const H_ub = parseInt(document.getElementById('tension').value);
+  if (!isNaN(T1) && !isNaN(H_ub)) {
+    noteEl.textContent = buildPresetNote(activePresetP, H_ub, T1);
+  }
 }
 
 // ── Handbuch-Modal ──
@@ -1658,8 +1674,10 @@ function applyPreset() {
   // Referenzwerte für T1-abhängige H_Ts_ub-Berechnung speichern
   if (p.sysMode === 'nfl' && p.H_Ts_ub_table != null) {
     activePresetRef = { H_Ts_ub_table: p.H_Ts_ub_table };
+    activePresetP   = p;
   } else {
     activePresetRef = null;
+    activePresetP   = null;
   }
   berechnen();
 }
@@ -1675,6 +1693,7 @@ let yCInputMode = 'sag';  // 'sag' = Durchhang unter Sehne | 'sok' = Höhe ab SO
 let activePresetRef = null; // { H_Ts_ub_table } or null
 let _tensionAutoFilling = false; // Verhindert Zirkel beim Auto-Befüllen
 let elBasiskraftIdx = 0;   // Aktive Basiskraft-Variante im Einzelleiter-Modus
+let activePresetP   = null; // Aktives Preset-Objekt für dynamische Note-Aktualisierung
 
 function getSokMumLeft() {
   const v = parseFloat(document.getElementById('sok-mum-left').value);
@@ -2107,6 +2126,7 @@ function setSysMode(mode) {
   updateSysModeUI(mode);
   if (mode !== 'el') {
     activePresetRef = null; // El-Tabellen-Referenz beim Moduswechsel löschen
+    activePresetP   = null;
     rebuildPresetDropdown(mode);
     document.getElementById('sh').value = mode === 'rfl' ? 1.60 : 2.40;
   } else {
@@ -2295,29 +2315,27 @@ function updateH_Ts_ubFromT1() {
   const T1 = parseFloat(document.getElementById('temp1').value);
   if (isNaN(T1)) return;
   const { temps, vals } = activePresetRef.H_Ts_ub_table;
-  // Klemmen auf Tabellenbereich
+
+  let H_new = null;
   if (T1 <= temps[0]) {
-    _tensionAutoFilling = true;
-    document.getElementById('tension').value = vals[0];
-    _tensionAutoFilling = false;
-    return;
-  }
-  if (T1 >= temps[temps.length - 1]) {
-    _tensionAutoFilling = true;
-    document.getElementById('tension').value = vals[vals.length - 1];
-    _tensionAutoFilling = false;
-    return;
-  }
-  // Intervall suchen und linear interpolieren
-  for (let i = 0; i < temps.length - 1; i++) {
-    if (T1 >= temps[i] && T1 <= temps[i + 1]) {
-      const t = (T1 - temps[i]) / (temps[i + 1] - temps[i]);
-      const H_new = Math.round(vals[i] + t * (vals[i + 1] - vals[i]));
-      _tensionAutoFilling = true;
-      document.getElementById('tension').value = H_new;
-      _tensionAutoFilling = false;
-      return;
+    H_new = vals[0];
+  } else if (T1 >= temps[temps.length - 1]) {
+    H_new = vals[vals.length - 1];
+  } else {
+    for (let i = 0; i < temps.length - 1; i++) {
+      if (T1 >= temps[i] && T1 <= temps[i + 1]) {
+        const frac = (T1 - temps[i]) / (temps[i + 1] - temps[i]);
+        H_new = Math.round(vals[i] + frac * (vals[i + 1] - vals[i]));
+        break;
+      }
     }
+  }
+
+  if (H_new !== null) {
+    _tensionAutoFilling = true;
+    document.getElementById('tension').value = H_new;
+    _tensionAutoFilling = false;
+    refreshPresetNote(); // Infobox-Note mit aktuellem T1 / H_Ts_ub aktualisieren
   }
 }
 
