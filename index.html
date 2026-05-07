@@ -3651,14 +3651,10 @@ function mpBlock(xv, badge, cls, compact = false) {
     : yChord(xv) - y2;
   // R-FL: Δh = Abstand h1-Horizontale → Tragseil (identisch mit Diagramm-Annotation)
   const deltaH  = h1 - y2;
-  const dhLabel = isNfl
-    ? t('res.sag.ts') + ' ' + t('dyn.bei.t2')
-    : isEl
-      ? t('res.sag') + ' ' + t('dyn.bei.t2')
-      : isRfl
-        ? 'Δh'
-        : t('res.sag.ts');
-  const dhValue = isRfl ? deltaH : sag;
+  const dhLabel = isRfl
+    ? t('res.sag.ts')
+    : 'Δh ' + t('dyn.bei.t2');
+  const dhValue = sag;
   const valSize  = compact ? '1.35rem' : '2rem';
   const sagSize  = compact ? '1.1rem'  : '1.35rem';
   const topGap   = compact ? '.5rem'   : '1.2rem';
@@ -3728,7 +3724,7 @@ function updateHighlightCard() {
     const x_ist   = cDisp.x_low;
     const y2_raw  = cDisp.y_low;                  // Tiefpunkt des angezeigten Systems
     const y2_disp = dispH(x_ist, y2_raw);
-    const sag     = cIst.sag;                     // Durchhang bleibt Ts (VEM-Wert)
+    const sag     = cDisp.sag;                     // geometrischer Sehnen-Durchhang (identisch mit Diagramm-f)
     const subInfo = hasSokH
       ? `<div class="istzustand-row" style="opacity:.6">${f3(y2_raw)} m ${t('dyn.ueber.sok')}</div>` : '';
     el.innerHTML = `
