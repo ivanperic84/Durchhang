@@ -875,23 +875,26 @@ button.header-manual-link:hover {
       <div id="el-material-row" style="display:none">
         <div class="field">
           <label id="el-material-label">Leitermaterial</label>
-          <div class="input-wrap">
-            <select id="el-material-select" onchange="elMaterialChanged()" style="padding-right:.75rem">
-              <option value="cu95">Cu 95 mm²</option>
-              <option value="cu107">Cu 107 mm²</option>
-              <option value="cu150">Cu 150 mm²</option>
-              <option value="cu240">Cu 240 mm²</option>
-              <option value="cu300">Cu 300 mm²</option>
-              <option value="cusn95">CuSn 0.1 95 mm²</option>
-              <option value="stcu50">StCu 50 mm²</option>
-              <option value="stcu92">StCu 92 mm²</option>
-              <option value="bziii50">BzIII 50 mm²</option>
-              <option value="aldrey240">Aldrey 240 mm²</option>
-              <option value="aldrey300">Aldrey 300 mm²</option>
-              <option value="aldrey400">Aldrey 400 mm²</option>
-              <option value="aldrey550">Aldrey 550 mm²</option>
-              <option value="alum191">Alumin. 191 mm²</option>
-            </select>
+          <div style="display:flex;gap:.4rem;align-items:stretch">
+            <div class="input-wrap" style="flex:1">
+              <select id="el-material-select" onchange="elMaterialChanged()" style="padding-right:.75rem">
+                <option value="cu95">Cu 95 mm²</option>
+                <option value="cu107">Cu 107 mm²</option>
+                <option value="cu150">Cu 150 mm²</option>
+                <option value="cu240">Cu 240 mm²</option>
+                <option value="cu300">Cu 300 mm²</option>
+                <option value="cusn95">CuSn 0.1 95 mm²</option>
+                <option value="stcu50">StCu 50 mm²</option>
+                <option value="stcu92">StCu 92 mm²</option>
+                <option value="bziii50">BzIII 50 mm²</option>
+                <option value="aldrey240">Aldrey 240 mm²</option>
+                <option value="aldrey300">Aldrey 300 mm²</option>
+                <option value="aldrey400">Aldrey 400 mm²</option>
+                <option value="aldrey550">Aldrey 550 mm²</option>
+                <option value="alum191">Alumin. 191 mm²</option>
+              </select>
+            </div>
+            <button onclick="openElMaterialModal()" title="Eigenes Material definieren" style="flex-shrink:0;background:none;border:1px solid var(--border);border-radius:8px;padding:.2rem .45rem;font-size:.72rem;color:var(--muted);cursor:pointer;line-height:1;transition:border-color .15s,color .15s" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--primary)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">＋</button>
           </div>
         </div>
       </div>
@@ -2035,7 +2038,7 @@ function setWear(pct) {
 
 // ── Materialparameter aus versteckten Eingabefeldern auslesen ──
 function getAlphaTs()        { return parseFloat(document.getElementById('alpha-ts').value) * 1e-6; }
-function getEATs()           { const sel = document.getElementById('material-ts').value; if (sel === 'custom-ts') { const v = parseFloat(document.getElementById('ea-ts').value); return isNaN(v) ? null : v; } return MATERIALS[sel].E * MATERIALS[sel].AK; }
+function getEATs()           { const sel = document.getElementById('material-ts').value; if (sel === 'custom-ts') { const v = parseFloat(document.getElementById('ea-ts').value); return isNaN(v) ? null : v; } const m = MATERIALS[sel]; if (!m || m.E == null || m.AK == null) return null; return m.E * m.AK; }
 function getEAFd()           { const sel = document.getElementById('material-fd').value; if (sel === 'custom-fd') { const v = parseFloat(document.getElementById('ea-fd').value); return isNaN(v) || v === 0 ? null : v; } return MATERIALS[sel].E * MATERIALS[sel].AK; }
 function getAlphaFd()        { const sel = document.getElementById('material-fd').value; if (sel === 'custom-fd') { const v = parseFloat(document.getElementById('alpha-fd').value); return isNaN(v) ? null : v * 1e-6; } return MATERIALS[sel].alpha; }
 function getMaterialNameTs() { const sel = document.getElementById('material-ts').value; return sel === 'custom-ts' ? 'Benutzerdefiniert' : MATERIALS[sel].name; }
@@ -4978,6 +4981,7 @@ function setLang(lang) {
 // ═══════════════════════════════════════════════════════════════
 rebuildPresetDropdown('nfl');
 rebuildSpanList();
+injectCustomElMaterials();
 berechnen();
 // T2-Slider initialisieren
 { const v = parseFloat(document.getElementById('temp2').value) || 40;
@@ -5163,6 +5167,93 @@ function resetCustomPresets() {
   localStorage.removeItem(CUSTOM_KEY);
   closeCustomModal();
   rebuildPresetDropdown(sysMode);
+}
+
+// ── Benutzerdefinierte Einzelleiter-Materialien ──────────────────────────────
+const EL_MAT_KEY = 'customElMaterials';
+let elmEditKey = null;
+
+function loadCustomElMaterials() {
+  try { return JSON.parse(localStorage.getItem(EL_MAT_KEY) || '[]'); } catch { return []; }
+}
+function saveCustomElMaterialsToStorage(list) {
+  localStorage.setItem(EL_MAT_KEY, JSON.stringify(list));
+}
+
+function injectCustomElMaterials() {
+  const sel = document.getElementById('el-material-select');
+  if (!sel) return;
+  const currentVal = sel.value;
+  // Vorherige custom-Optionen entfernen
+  sel.querySelectorAll('option[data-custom]').forEach(o => o.remove());
+  const customs = loadCustomElMaterials();
+  if (!customs.length) return;
+  const sep = document.createElement('option');
+  sep.disabled = true; sep.textContent = '──────────'; sep.dataset.custom = '1';
+  sel.appendChild(sep);
+  customs.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.key; opt.textContent = '★ ' + m.name; opt.dataset.custom = '1';
+    sel.appendChild(opt);
+    // In MATERIALS registrieren
+    MATERIALS[m.key] = {
+      name: m.name, q: m.q, alpha: m.alpha * 1e-6,
+      E: (m.ea != null && !isNaN(m.ea)) ? m.ea * 1e6 : null,
+      AK: (m.ea != null && !isNaN(m.ea)) ? 1.0 : null,
+      H_reglage: null, basis_kN: null, reglage_note: null
+    };
+  });
+  // Auswahl wiederherstellen falls möglich
+  if (currentVal && sel.querySelector(`option[value="${CSS.escape(currentVal)}"]`)) sel.value = currentVal;
+}
+
+function openElMaterialModal() {
+  const sel = document.getElementById('el-material-select');
+  const currentKey = sel ? sel.value : null;
+  const customs = loadCustomElMaterials();
+  const existing = customs.find(m => m.key === currentKey);
+  elmEditKey = existing ? currentKey : null;
+  document.getElementById('elm-modal-title').textContent = existing ? 'Material bearbeiten' : 'Eigenes Leitermaterial';
+  document.getElementById('elm-label').value  = existing ? existing.name  : '';
+  document.getElementById('elm-q').value      = existing ? existing.q     : '';
+  document.getElementById('elm-alpha').value  = existing ? existing.alpha : '';
+  document.getElementById('elm-ea').value     = (existing && existing.ea != null) ? existing.ea : '';
+  document.getElementById('elm-reset-btn').style.display = customs.length ? '' : 'none';
+  document.getElementById('el-material-modal').classList.add('open');
+}
+
+function closeElMaterialModal() {
+  document.getElementById('el-material-modal').classList.remove('open');
+}
+
+function saveCustomElMaterial() {
+  const name  = document.getElementById('elm-label').value.trim();
+  const q     = parseFloat(document.getElementById('elm-q').value);
+  const alpha = parseFloat(document.getElementById('elm-alpha').value);
+  const eaRaw = document.getElementById('elm-ea').value.trim();
+  const ea    = eaRaw !== '' ? parseFloat(eaRaw) : null;
+  if (!name)                    { alert('Bitte eine Bezeichnung eingeben.');       return; }
+  if (isNaN(q)     || q <= 0)  { alert('Bitte ein gültiges Eigengewicht eingeben.'); return; }
+  if (isNaN(alpha) || alpha <= 0) { alert('Bitte eine gültige Wärmedehnzahl eingeben.'); return; }
+  const customs = loadCustomElMaterials();
+  const key = elmEditKey || ('elm_' + Date.now());
+  const mat = { key, name, q, alpha, ea: (ea !== null && !isNaN(ea)) ? ea : null };
+  const idx = customs.findIndex(m => m.key === key);
+  if (idx >= 0) customs[idx] = mat; else customs.push(mat);
+  saveCustomElMaterialsToStorage(customs);
+  injectCustomElMaterials();
+  const sel = document.getElementById('el-material-select');
+  if (sel) { sel.value = key; elMaterialChanged(); }
+  closeElMaterialModal();
+}
+
+function resetCustomElMaterials() {
+  if (!confirm('Alle eigenen Leitermaterialien löschen?')) return;
+  localStorage.removeItem(EL_MAT_KEY);
+  injectCustomElMaterials();
+  const sel = document.getElementById('el-material-select');
+  if (sel) { sel.value = 'cu95'; elMaterialChanged(); }
+  closeElMaterialModal();
 }
 
 function applyCustomPreset(p) {
@@ -6115,6 +6206,56 @@ function applyCustomPreset(p) {
       <div class="modal-footer-actions">
         <button class="btn btn-secondary" id="cm-cancel-btn" onclick="closeCustomModal()">Abbrechen</button>
         <button class="btn btn-primary"   id="cm-save-btn"   onclick="saveCustomPreset()">Speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Benutzerdefiniertes Leitermaterial ── -->
+<div class="modal-overlay" id="el-material-modal" onclick="if(event.target===this)closeElMaterialModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title" id="elm-modal-title">Eigenes Leitermaterial</div>
+      <button class="modal-close" onclick="closeElMaterialModal()" title="Schliessen">✕</button>
+    </div>
+
+    <div class="field">
+      <label>Bezeichnung</label>
+      <div class="input-wrap">
+        <input type="text" id="elm-label" placeholder="z. B. Al 240 mm²" style="font-size:.82rem">
+      </div>
+    </div>
+
+    <div class="modal-section-label">Leiterkennwerte</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Eigengewicht q</label>
+        <div class="input-wrap">
+          <input type="number" id="elm-q" step="0.001" min="0" placeholder="8.424">
+          <span class="input-unit">N/m</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Wärmedehnzahl α</label>
+        <div class="input-wrap">
+          <input type="number" id="elm-alpha" step="0.1" min="0" placeholder="17.0">
+          <span class="input-unit">×10⁻⁶/K</span>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Steifigkeit E·A <span style="font-size:.7em;color:var(--tertiary)">(optional)</span></label>
+      <div class="input-wrap">
+        <input type="number" id="elm-ea" step="0.01" min="0" placeholder="10.24">
+        <span class="input-unit">MN</span>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-danger-text" id="elm-reset-btn" onclick="resetCustomElMaterials()" style="display:none">Alle eigenen löschen</button>
+      <div class="modal-footer-actions">
+        <button class="btn btn-secondary" onclick="closeElMaterialModal()">Abbrechen</button>
+        <button class="btn btn-primary" onclick="saveCustomElMaterial()">Speichern</button>
       </div>
     </div>
   </div>
