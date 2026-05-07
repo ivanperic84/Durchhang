@@ -72,7 +72,7 @@ body {
   margin: 0 auto;
   padding: 1.75rem 1.5rem;
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: 330px 1fr;
   grid-template-rows: auto auto;
   gap: 1.25rem;
 }
@@ -312,9 +312,8 @@ body {
   border-radius: 8px;
   cursor: pointer;
   transition: background .15s, color .15s, box-shadow .15s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  line-height: 1.2;
 }
 .seg-btn.active {
   background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
