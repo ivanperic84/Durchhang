@@ -1054,7 +1054,7 @@ button.header-manual-link:hover {
           <div class="field">
             <label id="tension-label">H Ts unbelastet</label>
             <div class="input-wrap">
-              <input type="number" id="tension" value="2100" min="0.1" step="1" oninput="berechnen()" onchange="berechnen()">
+              <input type="number" id="tension" value="2100" min="0.1" step="1" oninput="if(!_tensionAutoFilling) activePresetRef=null; berechnen()" onchange="berechnen()">
               <span class="input-unit">N</span>
             </div>
             <!-- N-FL: berechnete Belastet-Zugkraft (passiv) -->
@@ -1114,7 +1114,7 @@ button.header-manual-link:hover {
           <div class="field" id="t1-field">
             <label id="t1-label">Temperatur T₁ <span style="font-weight:400;color:var(--tertiary);font-size:.75em">(Montage)</span></label>
             <div class="input-wrap">
-              <input type="number" id="temp1" value="10" step="1" oninput="berechnen()" onchange="berechnen()">
+              <input type="number" id="temp1" value="10" step="1" oninput="updateH_Ts_ubFromT1(); berechnen()" onchange="updateH_Ts_ubFromT1(); berechnen()">
               <span class="input-unit">°C</span>
             </div>
           </div>
@@ -1570,6 +1570,12 @@ function applyPreset() {
     sysMode = p.sysMode;
     updateSysModeUI(sysMode);
   }
+  // Referenzwerte für T1-abhängige H_Ts_ub-Berechnung speichern
+  if (p.sysMode === 'nfl' && p.H_Ts_ub != null) {
+    activePresetRef = { H_Ts_ub: p.H_Ts_ub, T1_ref: p.T1 ?? 10, matKey: p.matTs + '_' + p.matFd };
+  } else {
+    activePresetRef = null;
+  }
   berechnen();
 }
 
@@ -1580,6 +1586,9 @@ let currentWearMax = 30;
 let mode3pt    = false;   // 3-Punkte-Modus aktiv
 let threePtMark = null;   // { xC, yC } — letzter gültiger 3-Pt-Messpunkt für Canvas
 let yCInputMode = 'sag';  // 'sag' = Durchhang unter Sehne | 'sok' = Höhe ab SOK
+// Preset-Referenz für T1-abhängige H_Ts_ub-Berechnung
+let activePresetRef = null; // { H_Ts_ub, T1_ref, matKey, sysMode }
+let _tensionAutoFilling = false; // Verhindert Zirkel beim Auto-Befüllen
 
 function getSokMumLeft() {
   const v = parseFloat(document.getElementById('sok-mum-left').value);
@@ -2133,6 +2142,26 @@ function getActiveSpan() {
 function getEffectiveSpan() {
   if (spanMode === 'single') return getActiveSpan();
   return computeRulingSpan(getSpanLengths());
+}
+
+// ── T1-abhängige H_Ts_ub-Berechnung aus Preset-Referenz ─────────────────────
+// Wenn ein N-FL-Preset aktiv ist, wird H_Ts_ub für die neue T1 via Zustandsgleichung
+// berechnet (Referenz: H_Ts_ub @ T1_ref=10°C aus Reglagetabelle).
+function updateH_Ts_ubFromT1() {
+  if (!activePresetRef) return;
+  const combo = FL_COMBINATIONS[activePresetRef.matKey];
+  if (!combo) return;
+  const T1 = parseFloat(document.getElementById('temp1').value);
+  if (isNaN(T1)) return;
+  const deltaT = T1 - activePresetRef.T1_ref;
+  const Lm     = getEffectiveSpan();
+  const EA     = combo.E * combo.AK;
+  const H_new  = solveStateEq(combo.MTS, Lm, activePresetRef.H_Ts_ub, EA, combo.AL, deltaT);
+  if (H_new > 0) {
+    _tensionAutoFilling = true;
+    document.getElementById('tension').value = Math.round(H_new);
+    _tensionAutoFilling = false;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
