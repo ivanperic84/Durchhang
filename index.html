@@ -2421,12 +2421,11 @@ function berechnen() {
 
   const errorBox = document.getElementById('error-box');
   const warnBox  = document.getElementById('warn-box');
-  const pdfBtn   = document.getElementById('pdf-btn');  // fixed bottom-right button
+  const pdfBtn   = document.getElementById('pdf-btn');
   errorBox.classList.add('hidden');
   warnBox.classList.add('hidden');
   calcState = null;
-  pdfBtn.disabled = true;
-  pdfBtn.style.display = 'none';
+  if (pdfBtn) { pdfBtn.disabled = true; pdfBtn.style.display = 'none'; }
 
   // Eingabevalidierung — Einzelleiter: kein Fd, kein sh erforderlich
   const isEl = sysMode === 'el';
@@ -2512,11 +2511,13 @@ function berechnen() {
                 alpha, EA, EA_Ts, deltaT, c1, c2, flCombo, ZL,
                 LT1_vem: _LT1_vem, q_vem_vem: _q_vem_vem, c2_vem: _c2_vem,
                 matTs: getMaterialNameTs(), matFd: getMaterialNameFd() };
-  pdfBtn.disabled = false;
-  pdfBtn.style.display = '';
-  // Desktop: Button in delta-bar verschieben (margin-left:auto = rechtsbündig)
-  const deltaBar = document.querySelector('#results .delta-bar');
-  if (deltaBar) deltaBar.appendChild(pdfBtn);
+  if (pdfBtn) {
+    pdfBtn.disabled = false;
+    pdfBtn.style.display = 'flex';
+    // Desktop: Button in delta-bar verschieben (margin-left:auto = rechtsbündig)
+    const deltaBar = document.querySelector('#results .delta-bar');
+    if (deltaBar) deltaBar.appendChild(pdfBtn);
+  }
   updateAllMesspunkte();
 }
 
@@ -4913,7 +4914,7 @@ function setLang(lang) {
 
   // ── Buttons ───────────────────────────────────────────────────
   const pdfBtnLabel = document.getElementById('pdf-btn-label');
-  if (pdfBtnLabel) pdfBtnLabel.textContent = t('btn.pdf');
+  if (pdfBtnLabel) { pdfBtnLabel.textContent = t('btn.pdf'); }
 
   // ── Canvas ────────────────────────────────────────────────────
   const canvasTitle = document.getElementById('canvas-title');
