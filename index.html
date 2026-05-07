@@ -905,6 +905,11 @@ button.header-manual-link:hover {
         </div>
       </div>
 
+      <!-- Einzelleiter: Basiskraft-Variante (nur cu95 / cu150) -->
+      <div id="el-basis-row" style="display:none;margin-top:.4rem">
+        <div class="seg-ctrl" id="el-basis-btns" style="width:100%"></div>
+      </div>
+
       <!-- Einzelleiter: Reglagewert-Info -->
       <div id="el-reglage-info" class="reglage-info-box" style="display:none;margin-top:.5rem">
         <div class="info-title" id="el-reglage-title"></div>
@@ -1305,14 +1310,29 @@ let probeX4 = null; // M4
 // ═══════════════════════════════════════════════════════════════
 const MATERIALS = {
   cu95:      { name: 'Cu 95 mm²',        q: 8.4239123,  alpha: 17e-6,   E: 108e9,        AK: 94.77e-6,  H_reglage: 3700, basis_kN: 6,  reglage_note: '6 kN Basiskraft (Rückleiter/Speiseleitung)', reglage_note_key: 'mat.rn.6kn.rl',
-    // H_reglage_table [N] gemäss Reglagetabelle SBB 0161.1013.0001, 6 kN, Einzelleiter
     H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                       vals:  [6000,5500,5000,4600,4200,3900,3700,3400,3200,3100,2900,2800,2600] } },
+                       vals:  [6000,5500,5000,4600,4200,3900,3700,3400,3200,3100,2900,2800,2600] },
+    // Varianten gemäss Reglagetabelle SBB 0161.1013.0001
+    H_reglage_variants: [
+      { label: '6 kN', H_reglage: 3700, reglage_note: '6 kN Basiskraft (Rückleiter/Speiseleitung)', reglage_note_key: 'mat.rn.6kn.rl',
+        H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
+                           vals:  [6000,5500,5000,4600,4200,3900,3700,3400,3200,3100,2900,2800,2600] } },
+      { label: '8 kN', H_reglage: 4700, reglage_note: '8 kN Basiskraft (Westschweiz, bestehende Leitungen)', reglage_note_key: null,
+        H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
+                           vals:  [8000,7300,6700,6100,5600,5100,4700,4300,4000,3700,3500,3300,3100] } },
+    ] },
   cu107:     { name: 'Cu 107 mm²',       q: 9.517,      alpha: 17e-6,   E: 108e9,        AK: 107e-6,    H_reglage: null, basis_kN: null, reglage_note: null, reglage_note_key: null },
   cu150:     { name: 'Cu 150 mm²',       q: 13.4351100, alpha: 17e-6,   E: 108e9,        AK: 149.7e-6,  H_reglage: 5600, basis_kN: 9,  reglage_note: '9 kN Basiskraft (normale Zugkraft)',           reglage_note_key: 'mat.rn.9kn',
-    // H_reglage_table [N] gemäss Reglagetabelle SBB 0161.1013.0001, 9 kN, Einzelleiter
     H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                       vals:  [9000,8200,7500,6900,6400,6000,5600,5300,5000,4700,4500,4300,4100] } },
+                       vals:  [9000,8200,7500,6900,6400,6000,5600,5300,5000,4700,4500,4300,4100] },
+    H_reglage_variants: [
+      { label: '9 kN', H_reglage: 5600, reglage_note: '9 kN Basiskraft (normale Zugkraft)', reglage_note_key: 'mat.rn.9kn',
+        H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
+                           vals:  [9000,8200,7500,6900,6400,6000,5600,5300,5000,4700,4500,4300,4100] } },
+      { label: '6 kN', H_reglage: 4300, reglage_note: '6 kN Basiskraft (reduzierte Zugkraft)', reglage_note_key: null,
+        H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
+                           vals:  [6000,5600,5300,5000,4700,4500,4300,4100,4000,3800,3700,3600,3400] } },
+    ] },
   cu240:     { name: 'Cu 240 mm²',       q: 21.5746300, alpha: 17e-6,   E: 108e9,        AK: 239.4e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
   cu300:     { name: 'Cu 300 mm²',       q: 26.2818220, alpha: 17e-6,   E: 108e9,        AK: 301.3e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
   stcu50:    { name: 'StCu 50 mm²',      q: 4.0109198,  alpha: 11.5e-6, E: 159e9,        AK: 49.48e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
@@ -1604,8 +1624,9 @@ let mode3pt    = false;   // 3-Punkte-Modus aktiv
 let threePtMark = null;   // { xC, yC } — letzter gültiger 3-Pt-Messpunkt für Canvas
 let yCInputMode = 'sag';  // 'sag' = Durchhang unter Sehne | 'sok' = Höhe ab SOK
 // Preset-Referenz für T1-abhängige H_Ts_ub-Berechnung
-let activePresetRef = null; // { H_Ts_ub, T1_ref, matKey, sysMode }
+let activePresetRef = null; // { H_Ts_ub_table } or null
 let _tensionAutoFilling = false; // Verhindert Zirkel beim Auto-Befüllen
+let elBasiskraftIdx = 0;   // Aktive Basiskraft-Variante im Einzelleiter-Modus
 
 function getSokMumLeft() {
   const v = parseFloat(document.getElementById('sok-mum-left').value);
@@ -2037,6 +2058,44 @@ function setSysMode(mode) {
 }
 
 // Einzelleiter: Materialwechsel → material-ts hidden field + Eigengewicht aktualisieren
+// Einzelleiter: Variante (Basiskraft) anwenden
+function applyElVariant(idx) {
+  const sel = document.getElementById('el-material-select').value;
+  const mat = MATERIALS[sel];
+  if (!mat) return;
+  elBasiskraftIdx = idx;
+
+  // Buttons aktualisieren
+  const btns = document.querySelectorAll('#el-basis-btns .seg-btn');
+  btns.forEach((b, i) => b.classList.toggle('active', i === idx));
+
+  // Variante auswählen (fällt auf mat selbst zurück wenn kein Variants-Array)
+  const variant = mat.H_reglage_variants ? mat.H_reglage_variants[idx] : mat;
+  if (!variant) return;
+
+  const infoBox = document.getElementById('el-reglage-info');
+  if (variant.H_reglage !== null && variant.H_reglage !== undefined) {
+    activePresetRef = variant.H_reglage_table
+      ? { H_Ts_ub_table: variant.H_reglage_table }
+      : null;
+    if (activePresetRef) {
+      updateH_Ts_ubFromT1();
+    } else {
+      _tensionAutoFilling = true;
+      document.getElementById('tension').value = variant.H_reglage;
+      _tensionAutoFilling = false;
+    }
+    document.getElementById('el-reglage-title').textContent =
+      `H = ${variant.H_reglage.toLocaleString('de-CH')} N  (${t('preset.el.reglage')})`;
+    document.getElementById('el-reglage-note').textContent =
+      variant.reglage_note_key ? t(variant.reglage_note_key) : (variant.reglage_note || '');
+    infoBox.style.display = '';
+  } else {
+    activePresetRef = null;
+    infoBox.style.display = 'none';
+  }
+}
+
 function elMaterialChanged() {
   const sel = document.getElementById('el-material-select').value;
   document.getElementById('material-ts').value = sel;
@@ -2044,30 +2103,22 @@ function elMaterialChanged() {
   if (mat) {
     document.getElementById('weight-ts').value = mat.q.toFixed(5);
     document.getElementById('alpha-ts').value  = (mat.alpha * 1e6).toFixed(1);
-    // EA für Einzelleiter wird direkt über getEATs() gelesen (MATERIALS[sel].E * .AK)
-    const infoBox = document.getElementById('el-reglage-info');
-    if (mat.H_reglage !== null && mat.H_reglage !== undefined) {
-      // Reglagetabelle-Referenz setzen (ermöglicht T1-abhängige Aktualisierung)
-      activePresetRef = mat.H_reglage_table
-        ? { H_Ts_ub_table: mat.H_reglage_table }
-        : null;
-      // Zugkraft sofort für aktuelle T1 aus Tabelle bestimmen (Fallback: 10 °C-Referenz)
-      if (activePresetRef) {
-        updateH_Ts_ubFromT1();
-      } else {
-        _tensionAutoFilling = true;
-        document.getElementById('tension').value = mat.H_reglage;
-        _tensionAutoFilling = false;
-      }
-      document.getElementById('el-reglage-title').textContent =
-        `H = ${mat.H_reglage.toLocaleString('de-CH')} N  (${t('preset.el.reglage')})`;
-      document.getElementById('el-reglage-note').textContent =
-        mat.reglage_note_key ? t(mat.reglage_note_key) : (mat.reglage_note || '');
-      infoBox.style.display = '';
+
+    // Basiskraft-Varianten-Buttons aufbauen (nur wenn Varianten vorhanden)
+    const basisRow  = document.getElementById('el-basis-row');
+    const basisBtns = document.getElementById('el-basis-btns');
+    if (mat.H_reglage_variants && mat.H_reglage_variants.length > 1) {
+      basisBtns.innerHTML = mat.H_reglage_variants
+        .map((v, i) => `<button class="seg-btn${i === 0 ? ' active' : ''}" onclick="applyElVariant(${i})">${v.label}</button>`)
+        .join('');
+      basisRow.style.display = '';
     } else {
-      activePresetRef = null;
-      infoBox.style.display = 'none';
+      basisBtns.innerHTML = '';
+      basisRow.style.display = 'none';
     }
+
+    elBasiskraftIdx = 0;
+    applyElVariant(0);
   }
   berechnen();
 }
