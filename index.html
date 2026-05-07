@@ -1304,9 +1304,15 @@ let probeX4 = null; // M4
 // Quelle: SBB 0161.1013.0001 (31.10.2024)
 // ═══════════════════════════════════════════════════════════════
 const MATERIALS = {
-  cu95:      { name: 'Cu 95 mm²',        q: 8.4239123,  alpha: 17e-6,   E: 108e9,        AK: 94.77e-6,  H_reglage: 3700, basis_kN: 6,  reglage_note: '6 kN Basiskraft (Rückleiter/Speiseleitung)', reglage_note_key: 'mat.rn.6kn.rl'   },
+  cu95:      { name: 'Cu 95 mm²',        q: 8.4239123,  alpha: 17e-6,   E: 108e9,        AK: 94.77e-6,  H_reglage: 3700, basis_kN: 6,  reglage_note: '6 kN Basiskraft (Rückleiter/Speiseleitung)', reglage_note_key: 'mat.rn.6kn.rl',
+    // H_reglage_table [N] gemäss Reglagetabelle SBB 0161.1013.0001, 6 kN, Einzelleiter
+    H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
+                       vals:  [6000,5500,5000,4600,4200,3900,3700,3400,3200,3100,2900,2800,2600] } },
   cu107:     { name: 'Cu 107 mm²',       q: 9.517,      alpha: 17e-6,   E: 108e9,        AK: 107e-6,    H_reglage: null, basis_kN: null, reglage_note: null, reglage_note_key: null },
-  cu150:     { name: 'Cu 150 mm²',       q: 13.4351100, alpha: 17e-6,   E: 108e9,        AK: 149.7e-6,  H_reglage: 5600, basis_kN: 9,  reglage_note: '9 kN Basiskraft (normale Zugkraft)',           reglage_note_key: 'mat.rn.9kn'      },
+  cu150:     { name: 'Cu 150 mm²',       q: 13.4351100, alpha: 17e-6,   E: 108e9,        AK: 149.7e-6,  H_reglage: 5600, basis_kN: 9,  reglage_note: '9 kN Basiskraft (normale Zugkraft)',           reglage_note_key: 'mat.rn.9kn',
+    // H_reglage_table [N] gemäss Reglagetabelle SBB 0161.1013.0001, 9 kN, Einzelleiter
+    H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
+                       vals:  [9000,8200,7500,6900,6400,6000,5600,5300,5000,4700,4500,4300,4100] } },
   cu240:     { name: 'Cu 240 mm²',       q: 21.5746300, alpha: 17e-6,   E: 108e9,        AK: 239.4e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
   cu300:     { name: 'Cu 300 mm²',       q: 26.2818220, alpha: 17e-6,   E: 108e9,        AK: 301.3e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
   stcu50:    { name: 'StCu 50 mm²',      q: 4.0109198,  alpha: 11.5e-6, E: 159e9,        AK: 49.48e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
@@ -2015,6 +2021,7 @@ function setSysMode(mode) {
   sysMode = mode;
   updateSysModeUI(mode);
   if (mode !== 'el') {
+    activePresetRef = null; // El-Tabellen-Referenz beim Moduswechsel löschen
     rebuildPresetDropdown(mode);
     document.getElementById('sh').value = mode === 'rfl' ? 1.60 : 2.40;
   } else {
@@ -2038,16 +2045,27 @@ function elMaterialChanged() {
     document.getElementById('weight-ts').value = mat.q.toFixed(5);
     document.getElementById('alpha-ts').value  = (mat.alpha * 1e6).toFixed(1);
     // EA für Einzelleiter wird direkt über getEATs() gelesen (MATERIALS[sel].E * .AK)
-    // Reglagezugkraft vorausfüllen wenn vorhanden
     const infoBox = document.getElementById('el-reglage-info');
     if (mat.H_reglage !== null && mat.H_reglage !== undefined) {
-      document.getElementById('tension').value = mat.H_reglage;
+      // Reglagetabelle-Referenz setzen (ermöglicht T1-abhängige Aktualisierung)
+      activePresetRef = mat.H_reglage_table
+        ? { H_Ts_ub_table: mat.H_reglage_table }
+        : null;
+      // Zugkraft sofort für aktuelle T1 aus Tabelle bestimmen (Fallback: 10 °C-Referenz)
+      if (activePresetRef) {
+        updateH_Ts_ubFromT1();
+      } else {
+        _tensionAutoFilling = true;
+        document.getElementById('tension').value = mat.H_reglage;
+        _tensionAutoFilling = false;
+      }
       document.getElementById('el-reglage-title').textContent =
         `H = ${mat.H_reglage.toLocaleString('de-CH')} N  (${t('preset.el.reglage')})`;
       document.getElementById('el-reglage-note').textContent =
         mat.reglage_note_key ? t(mat.reglage_note_key) : (mat.reglage_note || '');
       infoBox.style.display = '';
     } else {
+      activePresetRef = null;
       infoBox.style.display = 'none';
     }
   }
