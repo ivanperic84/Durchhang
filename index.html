@@ -2062,6 +2062,22 @@ function updateSysModeUI(mode) {
   // Temperaturfelder: T1 bei R-FL ausblenden, T2 auch bei R-FL zeigen (für Eislast-Bedingung)
   document.getElementById('t1-field').style.display = isRfl ? 'none' : '';
   document.getElementById('t2-field').style.display = '';
+  // T2 bei R-FL: auf -5 °C fixieren (nur Eislast relevant), sonst freigeben
+  const t2Input = document.getElementById('temp2');
+  if (isRfl) {
+    t2Input.value = -5;
+    t2Input.disabled = true;
+    t2Input.style.opacity = '0.5';
+    onT2Input(-5);
+  } else {
+    t2Input.disabled = false;
+    t2Input.style.opacity = '';
+  }
+  // T2-Label: bei R-FL Hinweis
+  const t2Lbl = document.getElementById('t2-label');
+  if (t2Lbl) t2Lbl.innerHTML = isRfl
+    ? `Temperatur T₂ <span style="font-weight:400;color:var(--muted);font-size:.78em">(fixiert −5 °C für Eislast)</span>`
+    : `Temperatur T₂`;
 
   // Eislast: nur N-FL, temperaturabhängig
   updateEislastVisibility();
@@ -2069,6 +2085,7 @@ function updateSysModeUI(mode) {
   // Kombination (N-FL/R-FL) vs. Material (Einzelleiter)
   document.getElementById('combo-row').style.display    = isEl ? 'none' : '';
   document.getElementById('el-material-row').style.display = isEl ? '' : 'none';
+  document.getElementById('el-basis-row').style.display = isEl ? '' : 'none';
   if (!isEl) document.getElementById('el-reglage-info').style.display = 'none';
   document.getElementById('wear-row').style.display = isEl ? 'none' :
     (document.getElementById('wear-row').style.display);  // behalten wie es war
@@ -3487,9 +3504,27 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   view.h2x = h2px; view.h2y = h2py;
 
   // ── Probe lines ──
-  function drawProbe(probeX, which, color, dotColor, avoidBox) {
-    if (probeX === null) return { cx: null, box: null };
-    const px = cx(probeX);
+  const CLUSTER_PX = 55; // Pixel-Schwelle für "nahe beieinander"
+
+  // Alle aktiven Proben vorberechnen
+  const allProbes = [
+    { xv: probeX1, which: 'probe1', color: '#6d28d9', dotColor: '#a78bfa' },
+    { xv: probeX2, which: 'probe2', color: '#0d9488', dotColor: '#5eead4' },
+    { xv: probeX3, which: 'probe3', color: '#d97706', dotColor: '#fbbf24' },
+    { xv: probeX4, which: 'probe4', color: '#dc2626', dotColor: '#f87171' },
+  ].filter(p => p.xv !== null).map(p => ({ ...p, px: cx(p.xv) }));
+
+  // Cluster-Index: wie viele vorherige Proben sind "nah"?
+  allProbes.forEach((p, i) => {
+    p.clusterPrev = allProbes.slice(0, i).filter(q => Math.abs(q.px - p.px) < CLUSTER_PX);
+    p.clusterIdx  = p.clusterPrev.length;
+  });
+
+  const drawnBoxes = [];
+
+  function drawProbe(probeData) {
+    const { xv, which, color, dotColor, px, clusterPrev, clusterIdx } = probeData;
+    if (xv === null) return { cx: null, box: null };
     const isDragging = drag?.which === which;
     ctx.save();
     ctx.setLineDash([5, 4]);
@@ -3499,9 +3534,9 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.beginPath(); ctx.moveTo(px, padT); ctx.lineTo(px, padT + plotH); ctx.stroke();
     ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.restore();
 
-    const cProbe = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2; // kombiniert bevorzugt
-    const y2     = catYD(probeX, cProbe);  // Zeichenkoordinate (absolut wenn SOK)
-    const distH1 = h1d - y2;              // Abstand T2-Tragseil zur Referenzhorizontalen (h1)
+    const cProbe = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
+    const y2     = catYD(xv, cProbe);
+    const distH1 = h1d - y2;
 
     // Dot on T₂ curve
     ctx.beginPath(); ctx.arc(px, cy(y2), 5, 0, Math.PI * 2);
@@ -3509,22 +3544,33 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.beginPath(); ctx.arc(px, cy(y2), 5, 0, Math.PI * 2);
     ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.stroke();
 
-    // Callout-Box: nur Label (Messwert wird als Δh-Annotation angezeigt)
+    // Callout-Box: Richtung alternieren bei geclusterten Proben
     const label = { probe1:'M1', probe2:'M2', probe3:'M3', probe4:'M4' }[which] ?? which;
     ctx.font = 'bold 14px Segoe UI';
     const labelW = ctx.measureText(label).width;
     const boxW = labelW + 18;
     const boxH = 26, gap = 8;
-    const onRight = (px + boxW + 16 + gap) <= (padL + plotW);
+
+    let onRight;
+    if (clusterIdx > 0) {
+      // Alternieren: letzter naher Probe entgegengesetzt
+      onRight = !clusterPrev[clusterPrev.length - 1].onRight;
+    } else {
+      onRight = (px + boxW + 16 + gap) <= (padL + plotW);
+    }
+    probeData.onRight = onRight; // merken für nachfolgende Proben
+
     const bx = onRight ? px + gap : px - boxW - gap;
     let by = Math.min(Math.max(padT + 4, cy(y2) - boxH / 2), padT + plotH - boxH - 4);
 
-    // Überlappung mit vorheriger Box vermeiden
-    if (avoidBox && bx < avoidBox.x + avoidBox.w && bx + boxW > avoidBox.x) {
-      const overlapBottom = avoidBox.y + avoidBox.h + 6;
-      const overlapTop    = avoidBox.y - boxH - 6;
-      if (overlapBottom + boxH <= padT + plotH - 4) by = overlapBottom;
-      else if (overlapTop >= padT + 4)              by = overlapTop;
+    // Überlappung mit ALLEN vorherigen Boxes vermeiden
+    for (const avoidBox of drawnBoxes) {
+      if (bx < avoidBox.x + avoidBox.w + 2 && bx + boxW > avoidBox.x - 2) {
+        const overlapBottom = avoidBox.y + avoidBox.h + 6;
+        const overlapTop    = avoidBox.y - boxH - 6;
+        if (overlapBottom + boxH <= padT + plotH - 4) by = overlapBottom;
+        else if (overlapTop >= padT + 4)              by = overlapTop;
+      }
     }
 
     ctx.fillStyle = 'rgba(255,255,255,.93)';
@@ -3540,34 +3586,34 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.font = 'bold 14px Segoe UI'; ctx.fillStyle = dotColor;
     ctx.fillText(label, bx + 8, by + boxH / 2 + 5);
 
-    // Δh-Annotation wie f: vertikale Pfeillinie h1 → T2-Draht + Beschriftung
+    // Δh-Annotation: Seite gegenüber Callout, vertikal versetzt bei Cluster
     const refY  = cy(h1d);
     const wireY = cy(y2);
     if (Math.abs(refY - wireY) > 4) {
-      const labelSide = onRight ? 'left' : 'right'; // Beschriftung gegenüber Callout
+      const labelSide = onRight ? 'left' : 'right';
+      // Vertikaler Versatz für geclusterte Labels (je 14px)
+      const vmid = (refY + wireY) / 2 + clusterIdx * 14;
       ctx.setLineDash([3, 3]); ctx.strokeStyle = dotColor; ctx.lineWidth = 1.2;
       ctx.beginPath(); ctx.moveTo(px, refY); ctx.lineTo(px, wireY); ctx.stroke();
       ctx.setLineDash([]);
-      // Pfeilspitzen
       ctx.fillStyle = dotColor;
       ctx.beginPath(); ctx.moveTo(px, wireY - 1);
       ctx.lineTo(px - 3.5, wireY + 6); ctx.lineTo(px + 3.5, wireY + 6); ctx.closePath(); ctx.fill();
       ctx.beginPath(); ctx.moveTo(px, refY + 1);
       ctx.lineTo(px - 3.5, refY - 6); ctx.lineTo(px + 3.5, refY - 6); ctx.closePath(); ctx.fill();
-      // Label
-      const vmid = (refY + wireY) / 2;
       ctx.fillStyle = dotColor; ctx.font = 'bold 10px Segoe UI';
       ctx.textAlign = labelSide === 'left' ? 'right' : 'left';
       ctx.fillText(`Δh = ${distH1.toFixed(2)} m`, px + (labelSide === 'left' ? -6 : 6), vmid + 4);
     }
 
+    drawnBoxes.push({ x: bx, y: by, w: boxW, h: boxH });
     return { cx: px, box: { x: bx, y: by, w: boxW, h: boxH } };
   }
 
-  const r1 = drawProbe(probeX1, 'probe1', '#6d28d9', '#a78bfa', null);
-  const r2 = drawProbe(probeX2, 'probe2', '#0d9488', '#5eead4', r1.box);
-  const r3 = drawProbe(probeX3, 'probe3', '#d97706', '#fbbf24', r2.box);
-  const r4 = drawProbe(probeX4, 'probe4', '#dc2626', '#f87171', r3.box);
+  const r1 = drawProbe(allProbes.find(p => p.which === 'probe1') ?? { xv: null });
+  const r2 = drawProbe(allProbes.find(p => p.which === 'probe2') ?? { xv: null });
+  const r3 = drawProbe(allProbes.find(p => p.which === 'probe3') ?? { xv: null });
+  const r4 = drawProbe(allProbes.find(p => p.which === 'probe4') ?? { xv: null });
   view.probe1CX = r1.cx;
   view.probe2CX = r2.cx;
   view.probe3CX = r3.cx;
@@ -3652,9 +3698,9 @@ function mpBlock(xv, badge, cls, compact = false) {
   // R-FL: Δh = Abstand h1-Horizontale → Tragseil (identisch mit Diagramm-Annotation)
   const deltaH  = h1 - y2;
   const dhLabel = isRfl
-    ? t('res.sag.ts')
+    ? 'Δh'
     : 'Δh ' + t('dyn.bei.t2');
-  const dhValue = sag;
+  const dhValue = isRfl ? deltaH : sag;
   const valSize  = compact ? '1.35rem' : '2rem';
   const sagSize  = compact ? '1.1rem'  : '1.35rem';
   const topGap   = compact ? '.5rem'   : '1.2rem';
