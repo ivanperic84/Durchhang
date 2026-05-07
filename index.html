@@ -1200,12 +1200,6 @@ button.header-manual-link:hover {
       </div>
     </div>
 
-    <div class="btn-group">
-      <button class="btn btn-pdf" id="pdf-btn" onclick="pdfExport()" disabled>
-        PDF Berechnungsprotokoll
-      </button>
-    </div>
-
     </div><!-- /sidebar-scroll -->
   </aside>
 
@@ -2427,11 +2421,12 @@ function berechnen() {
 
   const errorBox = document.getElementById('error-box');
   const warnBox  = document.getElementById('warn-box');
-  const pdfBtn   = document.getElementById('pdf-btn');
+  const pdfBtn   = document.getElementById('pdf-btn');  // fixed bottom-right button
   errorBox.classList.add('hidden');
   warnBox.classList.add('hidden');
   calcState = null;
   pdfBtn.disabled = true;
+  pdfBtn.style.opacity = '0'; pdfBtn.style.pointerEvents = 'none';
 
   // Eingabevalidierung — Einzelleiter: kein Fd, kein sh erforderlich
   const isEl = sysMode === 'el';
@@ -2518,6 +2513,7 @@ function berechnen() {
                 LT1_vem: _LT1_vem, q_vem_vem: _q_vem_vem, c2_vem: _c2_vem,
                 matTs: getMaterialNameTs(), matFd: getMaterialNameFd() };
   pdfBtn.disabled = false;
+  pdfBtn.style.opacity = '1'; pdfBtn.style.pointerEvents = '';
   updateAllMesspunkte();
 }
 
@@ -4913,8 +4909,8 @@ function setLang(lang) {
   if (cmDel) cmDel.textContent = t('cm.delete');
 
   // ── Buttons ───────────────────────────────────────────────────
-  const pdfBtn = document.getElementById('pdf-btn');
-  if (pdfBtn) { const dis = pdfBtn.disabled; pdfBtn.textContent = t('btn.pdf'); pdfBtn.disabled = dis; }
+  const pdfBtnLabel = document.getElementById('pdf-btn-label');
+  if (pdfBtnLabel) pdfBtnLabel.textContent = t('btn.pdf');
 
   // ── Canvas ────────────────────────────────────────────────────
   const canvasTitle = document.getElementById('canvas-title');
@@ -6300,6 +6296,24 @@ function applyCustomPreset(p) {
     </div>
   </div>
 </div>
+
+<!-- ── PDF Button fixed bottom right ── -->
+<button id="pdf-btn" onclick="pdfExport()" disabled
+  style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:100;
+         display:flex;align-items:center;gap:.45rem;
+         padding:.55rem 1rem;border-radius:10px;border:none;cursor:pointer;
+         background:rgba(0,113,227,.1);color:var(--primary);
+         font-size:.78rem;font-weight:500;font-family:inherit;
+         box-shadow:0 2px 12px rgba(0,113,227,.15);
+         transition:background .15s,box-shadow .15s,opacity .2s;
+         opacity:0;pointer-events:none"
+  onmouseover="if(!this.disabled){this.style.background='rgba(0,113,227,.17)';this.style.boxShadow='0 4px 18px rgba(0,113,227,.22)'}"
+  onmouseout="this.style.background='rgba(0,113,227,.1)';this.style.boxShadow='0 2px 12px rgba(0,113,227,.15)'">
+  <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+    <path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <span id="pdf-btn-label">PDF Berechnungsprotokoll</span>
+</button>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
   Ivan Peric &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span style="opacity:.6">v2.1</span>
