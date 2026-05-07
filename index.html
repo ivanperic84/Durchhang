@@ -829,24 +829,29 @@ button.header-manual-link:hover {
 <!-- ── Entwicklungs-Wasserzeichen ── -->
 <div id="dev-badge" style="
   position: fixed;
-  top: 18px;
-  right: -32px;
-  width: 140px;
-  padding: 5px 0;
-  background: #eb0000;
-  color: #fff;
-  font-size: .58rem;
-  font-weight: 700;
-  letter-spacing: .1em;
-  text-align: center;
-  text-transform: uppercase;
-  transform: rotate(45deg);
-  transform-origin: center;
-  z-index: 9999;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
-  opacity: .82;
-  box-shadow: 0 2px 6px rgba(0,0,0,.18);
-">In Entwicklung</div>
+  z-index: 9998;
+  overflow: hidden;
+">
+  <div style="
+    font-size: clamp(3.5rem, 9vw, 8rem);
+    font-weight: 900;
+    font-family: inherit;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: transparent;
+    -webkit-text-stroke: 1.2px rgba(0,0,0,0.07);
+    white-space: nowrap;
+    transform: rotate(-30deg);
+    width: 220%;
+    text-align: center;
+    user-select: none;
+  ">In Entwicklung</div>
+</div>
 
 <div class="header">
   <div class="header-icon">
