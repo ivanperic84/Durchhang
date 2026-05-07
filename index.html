@@ -1931,7 +1931,7 @@ function compute3pt(L, h1, h2) {
     const qFdBase  = parseFloat(document.getElementById('weight-fd').value);
     const qFd      = qFdBase * (1 - wearPct / 100);
     const qTs      = parseFloat(document.getElementById('weight-ts').value);
-    M = combo ? (combo.MFL - qFdBase * (wearPct / 100)) : (qTs + qFd + 0.02 * 9.81);
+    M = combo ? (combo.MFL - (combo.MFL - combo.MTS - 0.7061) * (wearPct / 100)) : (qTs + qFd + 0.02 * 9.81);
   }
 
   if (xC <= 0 || xC >= c) {
@@ -1987,7 +1987,7 @@ function compute3pt(L, h1, h2) {
     let H_ub;
     if (combo) {
       const qFdBase = parseFloat(document.getElementById('weight-fd').value);
-      const MFL_eff = combo.MFL - qFdBase * (wearPct / 100);
+      const MFL_eff = combo.MFL - (combo.MFL - combo.MTS - 0.7061) * (wearPct / 100);
       const EA_fl   = combo.E * combo.AK;
       H_ub = solveLoadingInverse(FH, combo.MTS, MFL_eff, Lm, EA_fl);
     } else {
@@ -2906,8 +2906,8 @@ function readInputs() {
   // Bei bekannter FL-Kombination: MFL/MTS aus VBA-Tabelle verwenden (exaktere Gewichte)
   let H_Ts, q_ges_eff;
   if (sysMode === 'nfl' && flCombo) {
-    // Abnutzung: MFL um den Fd-Gewichtsanteil der Abnutzung reduzieren
-    const MFL_eff = flCombo.MFL - q_Fd_base * (wearPct / 100);
+    // Abnutzung: nur Fahrdraht-Eigengewicht (ohne Hänger 0.7061 N/m) wird reduziert
+    const MFL_eff = flCombo.MFL - (flCombo.MFL - flCombo.MTS - 0.7061) * (wearPct / 100);
     q_ges_eff = MFL_eff;
     const EA_fl = flCombo.E * flCombo.AK;
     H_Ts = solveLoadingEq(H_Ts_ub, flCombo.MTS, MFL_eff, Lm, EA_fl) ?? H_Ts_ub;
