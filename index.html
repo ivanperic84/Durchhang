@@ -2516,7 +2516,7 @@ function berechnen() {
     warns.push(`T₂: Tiefpunkt außerhalb der Spannweite.`);
   if (warns.length) { warnBox.innerHTML = warns.join('<br>'); warnBox.classList.remove('hidden'); }
 
-  renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo);
+  renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, _c2_vem);
   drawCanvas(c1, c2, L, h1, h2, sh, false, _c2_vem);
 
   calcState = { L, Lm, spanMode, q_Ts, q_Fd, q_ges, H_Ts, H_Ts_ub, H_Fd, sh, h1, h2, T1, T2,
@@ -2571,8 +2571,10 @@ function quickDraw() {
 // ═══════════════════════════════════════════════════════════════
 // ERGEBNISDARSTELLUNG (DOM)
 // ═══════════════════════════════════════════════════════════════
-function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo) {
+function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, c2vem = null) {
   const isEl = sysMode === 'el';
+  // Für N-FL+flCombo: geometrischen Sehnenwert aus c2vem verwenden (konsistent mit Diagramm)
+  const c2Display = (flCombo && c2vem) ? { ...c2, sag: c2vem.sag } : c2;
   // Beschriftungen je nach Modus
   const sagLabel  = isEl ? t('res.sag.el.label') : flCombo ? t('res.sag.belastet') : t('res.sag.ts.label');
   const sLabel    = isEl ? t('res.seillange.el') : t('res.seillange.ts');
@@ -2642,7 +2644,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
       </div>`;
   } else if (isEl) {
     // Einzelleiter: zweispaltig mit T1/T2, kein fdBlock
-    const df = c2.sag - c1.sag, dH = c2.H - c1.H;
+    const df = c2Display.sag - c1.sag, dH = c2.H - c1.H;
     const infoBlock = `
       <div style="margin-top:.75rem;padding:.6rem .75rem;background:var(--bg);border:1px solid var(--border);border-radius:10px">
         <div style="font-size:.72rem;font-weight:600;color:var(--muted);margin-bottom:.35rem">${t('res.leiter.label')}</div>
@@ -2659,7 +2661,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         </div>
         <div>
           <div class="results-col-title warm">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
-          <div class="metric-list">${col(c2, 'warm')}</div>
+          <div class="metric-list">${col(c2Display, 'warm')}</div>
         </div>
       </div>
       ${infoBlock}
@@ -2673,7 +2675,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         </button>
       </div>`;
   } else {
-    const df = c2.sag - c1.sag, dH = c2.H - c1.H;
+    const df = c2Display.sag - c1.sag, dH = c2.H - c1.H;
     document.getElementById('results').innerHTML = `
       <div class="results-grid">
         <div>
@@ -2682,7 +2684,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         </div>
         <div>
           <div class="results-col-title warm">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
-          <div class="metric-list">${col(c2, 'warm')}</div>
+          <div class="metric-list">${col(c2Display, 'warm')}</div>
         </div>
       </div>
       ${fdBlock}
@@ -3699,7 +3701,7 @@ ${(isNFL || isEl) ? `
   <tr><th>${t('pdf.cmp.groesse')}</th><th>T₁ = ${T1} °C</th><th class="warm">T₂ = ${T2} °C</th><th>${t('pdf.cmp.aenderung')}</th></tr>
   ${tr(t('pdf.katenlin.param') + ' a', c1.a, c2.a, 'm')}
   ${tr('x₀', c1.x_low, c2.x_low, 'm')}
-  ${tr(flCombo ? t('res.sag.belastet') : t('res.sag.ts.label'), c1.sag, c2.sag, 'm')}
+  ${tr(flCombo ? t('res.sag.belastet') : t('res.sag.ts.label'), c1.sag, (flCombo && calcState.c2_vem) ? calcState.c2_vem.sag : c2.sag, 'm')}
   ${tr(isEl ? t('res.zugkraft.el') : t('res.zugkraft.ts'), c1.H, c2.H, 'N', 1)}
   ${tr('T_max', c1.T_max, c2.T_max, 'N', 1)}
 </table>` : ''}
@@ -4162,7 +4164,7 @@ const LANG = {
     'res.x_low':            'Tiefpunkt x',
     'res.tiefpunkt.label':  'Tiefpunkt',
     'res.tiefpunkt.x0':     'Tiefpunkt x₀',
-    'res.sag.belastet':     'Durchhang Ts belastet (VEM 7.66)',
+    'res.sag.belastet':     'Durchhang Ts belastet',
     'res.sag.ts.label':     'Durchhang f Ts',
     'res.sag.el.label':     'Durchhang f',
     'res.seillange.ts':     'Seillänge s Ts',
@@ -4407,7 +4409,7 @@ const LANG = {
     'res.x_low':            'Point le plus bas x',
     'res.tiefpunkt.label':  'Point le plus bas',
     'res.tiefpunkt.x0':     'Point le plus bas x₀',
-    'res.sag.belastet':     'Flèche CP chargée (VEM 7.66)',
+    'res.sag.belastet':     'Flèche CP chargée',
     'res.sag.ts.label':     'Flèche f CP',
     'res.sag.el.label':     'Flèche f',
     'res.seillange.ts':     'Longueur CP s',
@@ -4652,7 +4654,7 @@ const LANG = {
     'res.x_low':            'Punto più basso x',
     'res.tiefpunkt.label':  'Punto più basso',
     'res.tiefpunkt.x0':     'Punto più basso x₀',
-    'res.sag.belastet':     'Freccia FP caricata (VEM 7.66)',
+    'res.sag.belastet':     'Freccia FP caricata',
     'res.sag.ts.label':     'Freccia f FP',
     'res.sag.el.label':     'Freccia f',
     'res.seillange.ts':     'Lunghezza FP s',
