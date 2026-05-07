@@ -297,13 +297,14 @@ body {
   padding: 3px;
   gap: 0;
   margin-bottom: .75rem;
+  overflow: hidden;
 }
 .seg-btn {
   flex: 1;
   border: none;
   background: transparent;
-  padding: .38rem .5rem;
-  font-size: .875rem;
+  padding: .38rem .4rem;
+  font-size: .8rem;
   font-weight: 500;
   font-family: inherit;
   color: var(--muted);
@@ -311,6 +312,8 @@ body {
   cursor: pointer;
   transition: background .15s, color .15s, box-shadow .15s;
   white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
   line-height: 1.25;
 }
 .seg-btn.active {
