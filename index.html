@@ -1120,13 +1120,7 @@ button.header-manual-link:hover {
           </div>
         </div>
         <!-- T2-Slider — volle Sidebar-Breite -->
-        <div style="margin:.4rem 0 .2rem">
-          <input type="range" id="temp2-slider" min="-20" max="80" step="5" value="40"
-                 style="width:100%;accent-color:var(--primary);cursor:pointer;display:block;margin-bottom:2px"
-                 oninput="onT2Slider(this.value,true)"
-                 onchange="onT2Slider(this.value,false)"
-                 onmouseup="onT2SliderEnd()"
-                 ontouchend="onT2SliderEnd()">
+        <div style="margin:.4rem 0 .8rem">
           <!-- Massstab + Labels: padding = halber Thumb (7px) damit -20° und 80° gleich abstehen -->
           <div style="padding:0 7px">
             <!-- Beschriftung: HTML-Spans, dynamisch skalierbar -->
@@ -1168,6 +1162,12 @@ button.header-manual-link:hover {
               <line x1="200" y1="0" x2="200" y2="7" stroke="#9ca3af" stroke-width="1"/>
             </svg>
           </div>
+          <input type="range" id="temp2-slider" min="-20" max="80" step="5" value="40"
+                 style="width:100%;accent-color:var(--primary);cursor:pointer;display:block;margin-top:6px"
+                 oninput="onT2Slider(this.value,true)"
+                 onchange="onT2Slider(this.value,false)"
+                 onmouseup="onT2SliderEnd()"
+                 ontouchend="onT2SliderEnd()">
         </div>
         <!-- Eislast — dynamisch sichtbar bei N-FL und T₂ = −5°C -->
         <div class="field" id="eislast-row" style="display:none">
