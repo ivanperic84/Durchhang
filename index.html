@@ -232,7 +232,7 @@ body {
   padding-right: 2.6rem;
   border: none;
   border-radius: 10px;
-  font-size: .875rem;
+  font-size: .83rem;
   font-weight: 500;
   font-family: inherit;
   color: var(--text);
@@ -304,7 +304,7 @@ body {
   border: none;
   background: transparent;
   padding: .38rem .4rem;
-  font-size: .8rem;
+  font-size: .83rem;
   font-weight: 500;
   font-family: inherit;
   color: var(--muted);
@@ -867,7 +867,7 @@ button.header-manual-link:hover {
           <label id="combo-label">Kombination</label>
           <div style="display:flex;gap:.4rem;align-items:stretch">
             <div class="input-wrap" style="flex:1">
-              <select id="preset-select" onchange="applyPreset()" style="padding-right:.75rem;font-size:.78rem"></select>
+              <select id="preset-select" onchange="applyPreset()" style="padding-right:.75rem"></select>
             </div>
             <button onclick="openCustomModal()" title="Eigenes Kettenwerk definieren" style="flex-shrink:0;background:none;border:1px solid var(--border);border-radius:8px;padding:.2rem .45rem;font-size:.72rem;color:var(--muted);cursor:pointer;line-height:1;transition:border-color .15s,color .15s" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--primary)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">＋</button>
           </div>
@@ -1342,7 +1342,7 @@ const KETTENWERK_PRESETS = {
 
   // ── N-FL ────────────────────────────────────────────────────────────────────
   nfl_stcu50_cu107_240_6: {
-    label: 'StCu 50 + Cu 107 · sh 2.40 m · 6 kN',
+    label: 'StCu 50 + Cu 107 · sh 2.40 m',
     title: 'Ts: StCu 50 mm²  ·  Fd: Cu 107 mm²',
     note:  'Reglage Ts: belastet 4\'500 N / unbelastet 1\'700 N bei +10 °C  ·  H Fd: 8\'500 N  (SBB 0161.1013.0001)',
     note_ref: 'SBB 0161.1013.0001',
@@ -1350,7 +1350,7 @@ const KETTENWERK_PRESETS = {
     sh: 2.40, H_Ts: 4500, H_Ts_ub: 1700, H_Fd: 8500, T1: 10, wear_max: 30,
   },
   nfl_stcu50_cu107_190_8: {
-    label: 'StCu 50 + Cu 107 · sh 1.90 m · 8 kN',
+    label: 'StCu 50 + Cu 107 · sh 1.90 m',
     title: 'Ts: StCu 50 mm²  ·  Fd: Cu 107 mm²',
     note:  'Reglage Ts: belastet 6\'100 N / unbelastet 3\'500 N bei +10 °C  ·  H Fd: 8\'500 N  (SBB 0161.1013.0001)',
     note_ref: 'SBB 0161.1013.0001',
@@ -1358,7 +1358,7 @@ const KETTENWERK_PRESETS = {
     sh: 1.90, H_Ts: 6100, H_Ts_ub: 3500, H_Fd: 8500, T1: 10, wear_max: 30,
   },
   nfl_stcu92_cu107_240_6: {
-    label: 'StCu 92 + Cu 107 · sh 2.40 m · 6 kN',
+    label: 'StCu 92 + Cu 107 · sh 2.40 m',
     title: 'Ts: StCu 92 mm²  ·  Fd: Cu 107 mm²',
     note:  'Reglage Ts: belastet 4\'300 N / unbelastet 2\'100 N bei +10 °C  ·  H Fd: 8\'500 N  (SBB 0161.1013.0001)',
     note_ref: 'SBB 0161.1013.0001',
@@ -1366,7 +1366,7 @@ const KETTENWERK_PRESETS = {
     sh: 2.40, H_Ts: 4300, H_Ts_ub: 2100, H_Fd: 8500, T1: 10, wear_max: 30,
   },
   nfl_stcu92_cu107_190_8: {
-    label: 'StCu 92 + Cu 107 · sh 1.90 m · 8 kN',
+    label: 'StCu 92 + Cu 107 · sh 1.90 m',
     title: 'Ts: StCu 92 mm²  ·  Fd: Cu 107 mm²',
     note:  'Reglage Ts: belastet 5\'500 N / unbelastet 2\'900 N bei +10 °C  ·  H Fd: 8\'500 N  (SBB 0161.1013.0001)',
     note_ref: 'SBB 0161.1013.0001',
@@ -1374,7 +1374,7 @@ const KETTENWERK_PRESETS = {
     sh: 1.90, H_Ts: 5500, H_Ts_ub: 2900, H_Fd: 8500, T1: 10, wear_max: 30,
   },
   nfl_stcu92_cu150_gotthard: {
-    label: 'StCu 92 + Cu 150 · Gotthard · sh 2.40 m · 10 kN',
+    label: 'StCu 92 + Cu 150 · Gotthard · sh 2.40 m',
     title: 'Ts: StCu 92 mm²  ·  Fd: Cu 150 mm²',
     note:  'Reglage Ts: belastet 7\'100 N / unbelastet 3\'500 N bei +10 °C  ·  H Fd: 10\'000 N  (SBB 0161.1013.0001, 7.2)',
     note_ref: 'SBB 0161.1013.0001, 7.2',
