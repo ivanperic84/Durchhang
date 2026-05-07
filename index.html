@@ -3306,6 +3306,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   // Zeichenkoordinate (m ü. M. wenn SOK gesetzt)
   const catYD = (x, c) => aY(x, catY(x, c));
   const isEl  = sysMode === 'el';
+  const isRfl = sysMode === 'rfl';
 
   // Y-range: nur aus Ts-Kurven (+ Anker), damit Fd die Skala nicht dominiert.
   // Die Fd-Kurve darf unten aus dem sichtbaren Bereich ragen — sie bleibt gezeichnet.
