@@ -6120,17 +6120,24 @@ berechnen();
 { const v = parseFloat(document.getElementById('temp2').value) || 40;
   document.getElementById('temp2-slider').value = v;
   updateT2Float(v, false); }
-// Beta-Wasserzeichen gekachelt
+// Beta-Wasserzeichen gekachelt (DOM-Elemente, kein SVG-Clipping)
 (function(){
-  const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='340' height='190'>" +
-    "<text x='170' y='65' text-anchor='middle' dominant-baseline='middle' font-size='50' font-weight='900' font-family='system-ui,sans-serif' letter-spacing='8' fill='none' stroke='rgba(0,0,0,.08)' stroke-width='1.2' transform='rotate(-30 170 65)'>Beta</text>" +
-    "<text x='340' y='160' text-anchor='middle' dominant-baseline='middle' font-size='50' font-weight='900' font-family='system-ui,sans-serif' letter-spacing='8' fill='none' stroke='rgba(0,0,0,.08)' stroke-width='1.2' transform='rotate(-30 340 160)'>Beta</text>" +
-    "</svg>";
   const b = document.getElementById('dev-badge');
-  if (b) {
-    b.style.backgroundImage = "url('data:image/svg+xml;base64," + btoa(svg) + "')";
-    b.style.backgroundSize  = '340px 190px';
-    b.style.backgroundRepeat = 'repeat';
+  if (!b) return;
+  const colStep = 230, rowStep = 145, offX = 115;
+  const W = window.innerWidth + 400, H = window.innerHeight + 400;
+  const style = 'position:absolute;font-size:58px;font-weight:900;font-family:system-ui,sans-serif;' +
+    'letter-spacing:8px;color:transparent;-webkit-text-stroke:1.2px rgba(0,0,0,0.07);' +
+    'transform:rotate(-30deg);white-space:nowrap;user-select:none;pointer-events:none';
+  for (let row = -1; row * rowStep < H; row++) {
+    for (let col = -1; col * colStep < W; col++) {
+      const x = col * colStep + (row % 2 !== 0 ? offX : 0) - 80;
+      const y = row * rowStep - 60;
+      const el = document.createElement('div');
+      el.style.cssText = style + ';left:' + x + 'px;top:' + y + 'px';
+      el.textContent = 'Beta';
+      b.appendChild(el);
+    }
   }
 })();
 // Apply saved language (after first berechnen so all elements exist)
