@@ -902,9 +902,13 @@ button.header-manual-link:hover {
       <path d="M2 13 Q14 20 26 13" stroke="#b7b7b7" stroke-width="1.5" stroke-linecap="round" fill="none"/>
     </svg>
   </div>
-  <div style="flex:1">
+  <div style="flex:1;min-width:0">
     <h1 id="app-title">Durchhang N-FL</h1>
     <p id="app-subtitle">Kettenwerk — Seillinie mit Temperatureinfluss</p>
+    <p id="proj-name-badge" style="display:none;margin:0;font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+      <svg width="10" height="10" viewBox="0 0 16 16" fill="none" style="vertical-align:-.05em;margin-right:.25rem"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      <span id="proj-name-text"></span>
+    </p>
   </div>
   <button onclick="openProjectsModal()" class="header-manual-link" title="Projekte" style="background:none;border:none;cursor:pointer;">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
@@ -2396,7 +2400,7 @@ function getProjectState() {
     const el = document.getElementById(`span-${i}`);
     if (el) spans.push(parseFloat(el.value) || 50);
   }
-  return { sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, fields, spans };
+  return { sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans };
 }
 
 // ── State wiederherstellen ──
@@ -2407,6 +2411,21 @@ function setProjectState(s) {
   spanCount      = s.spanCount      ?? 3;
   yCInputMode    = s.yCInputMode    ?? 'sag';
   elBasiskraftIdx = s.elBasiskraftIdx ?? 0;
+  mode3pt        = s.mode3pt        ?? false;
+  // 3-Punkte-Modus UI wiederherstellen
+  { const btn = document.getElementById('three-pt-btn');
+    const panel = document.getElementById('three-pt-panel');
+    const ti = document.getElementById('tension');
+    if (mode3pt) {
+      if (panel) panel.style.display = '';
+      if (btn) { btn.style.background='#e0f2fe'; btn.style.borderColor='#7dd3fc'; btn.style.color='#eb0000'; }
+      if (ti) { ti.readOnly=true; ti.style.background='var(--bg)'; ti.style.color='var(--muted)'; ti.style.cursor='default'; }
+    } else {
+      if (panel) panel.style.display = 'none';
+      if (btn) { btn.style.background='none'; btn.style.borderColor='var(--border)'; btn.style.color='var(--muted)'; }
+      if (ti) { ti.readOnly=false; ti.style.background=''; ti.style.color=''; ti.style.cursor=''; }
+    }
+  }
 
   // Span-Modus UI (ohne berechnen)
   document.getElementById('seg-single').classList.toggle('active', spanMode === 'single');
@@ -2436,6 +2455,13 @@ function setProjectState(s) {
     const el = document.getElementById(id);
     if (el && flds[id] != null) el.value = flds[id];
   });
+
+  // Messpunkte: globale JS-Variablen aus gespeicherten Feldwerten wiederherstellen
+  const _pf = v => { const n = parseFloat(v); return isNaN(n) ? null : n; };
+  probeX1 = _pf(flds['probe-x1']);
+  probeX2 = _pf(flds['probe-x2']);
+  probeX3 = _pf(flds['probe-x3']);
+  probeX4 = _pf(flds['probe-x4']);
 
   // Preset / Material
   if (sysMode !== 'el') {
@@ -2512,6 +2538,17 @@ function getProjMeta()        { try { return JSON.parse(localStorage.getItem(PRO
 function saveProjMeta(arr)    { localStorage.setItem(PROJ_META_KEY, JSON.stringify(arr)); }
 function genProjId()          { return 'p' + Date.now() + Math.random().toString(36).slice(2,5); }
 
+function updateProjectBadge() {
+  const badge = document.getElementById('proj-name-badge');
+  const text  = document.getElementById('proj-name-text');
+  if (!badge || !text) return;
+  if (currentProjectId) {
+    const meta = getProjMeta().find(m => m.id === currentProjectId);
+    if (meta) { text.textContent = meta.name; badge.style.display = ''; return; }
+  }
+  badge.style.display = 'none'; text.textContent = '';
+}
+
 function fmtDate(iso) {
   if (!iso) return '';
   const d = new Date(iso);
@@ -2533,6 +2570,7 @@ function createProject() {
   currentProjectId = id;
   inp.value = '';
   renderProjectList();
+  updateProjectBadge();
 }
 
 function saveToProject(id) {
@@ -2545,6 +2583,7 @@ function saveToProject(id) {
   localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...state, name: entry.name }));
   currentProjectId = id;
   renderProjectList();
+  updateProjectBadge();
 }
 
 function loadProjectById(id) {
@@ -2554,6 +2593,7 @@ function loadProjectById(id) {
     const state = JSON.parse(raw);
     setProjectState(state);
     currentProjectId = id;
+    updateProjectBadge();
     closeProjectsModal();
   } catch(e) { alert('Fehler beim Laden: ' + e.message); }
 }
@@ -2566,6 +2606,7 @@ function deleteProjectById(id) {
   localStorage.removeItem(PROJ_KEY_PREFIX + id);
   if (currentProjectId === id) currentProjectId = null;
   renderProjectList();
+  updateProjectBadge();
 }
 
 function exportProjectById(id) {
