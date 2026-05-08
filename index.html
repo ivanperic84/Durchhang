@@ -3180,6 +3180,10 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         <span class="metric-value">${(q_Ts + q_Fd + 0.02*9.81).toFixed(3)}<span class="metric-unit">N/m</span></span></div>
     </div>`;
 
+  const pdfBtn = `<button id="pdf-btn" onclick="pdfExport()">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="pdf-btn-label">${t('btn.pdf')}</span>
+        </button>`;
   if (sysMode === 'rfl') {
     const hasZL = ZL > 0;
     document.getElementById('results').innerHTML = hasZL ? `
@@ -3191,16 +3195,18 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         <div>
           <div class="results-col-title warm">Mit Eislast (ZL = ${ZL.toFixed(2)} N/m)</div>
           <div class="metric-list">${col(c2, 'warm')}</div>
-          ${fdBlock}
         </div>
-      </div>` : `
+      </div>
+      ${fdBlock}
+      <div class="delta-bar">${pdfBtn}</div>` : `
       <div class="results-grid" style="grid-template-columns:1fr">
         <div>
           <div class="results-col-title">${t('res.rfl.title')}</div>
           <div class="metric-list">${col(c1, '')}</div>
-          ${fdBlock}
         </div>
-      </div>`;
+      </div>
+      ${fdBlock}
+      <div class="delta-bar">${pdfBtn}</div>`;
   } else if (isEl) {
     // Einzelleiter: zweispaltig mit T1/T2, kein fdBlock
     const df = c2Display.sag - c1.sag, dH = c2.H - c1.H;
