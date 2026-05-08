@@ -3178,11 +3178,13 @@ function solveStateEq(q, Lm, H1, EA, alpha, deltaT) {
 // Formel: ((MFL+ZL+MFL·HF/F0)/(HF+x))² - (MFL/F0)² - G·(α·ΔT + (x-F0)/(E·A)) = 0
 // Parameter: MFL [N/m], HF = H_Fd [N], F0 = H_Ts_ref [N], L = Lm [m],
 //            AL = α, E, AK, deltaT, ZL = Eislast [N/m] (Standard = 0)
-function solveNFLStateEq(MFL, HF, F0, L, AL, E, AK, deltaT, ZL = 0) {
-  const gk0 = MFL / F0;
+function solveNFLStateEq(MFL, HF, F0, L, AL, E, AK, deltaT, ZL = 0, MFL_init = null) {
+  // gk0 = Ausgangskrümmung im Zustand T1 (NEU, unabgenutzt wenn MFL_init angegeben)
+  const q0  = MFL_init !== null ? MFL_init : MFL;
+  const gk0 = q0 / F0;
   const C   = 1 / (E * AK);
   const G   = 24 / (L * L) + gk0 * gk0;
-  // Mit Eislast ZL: erhöhte Gesamtlast am Zielzustand (T₂)
+  // A beschreibt den Zielzustand T2 (abgenutzt = MFL; gk0 bleibt Ausgangszustand)
   const A   = (MFL + ZL) + MFL * HF / F0;   // = MFL*(1+HF/F0) + ZL
   let x = F0;
   for (let i = 0; i < 300; i++) {
@@ -3369,15 +3371,14 @@ function readInputs() {
   // Bei bekannter FL-Kombination: MFL/MTS aus VBA-Tabelle verwenden (exaktere Gewichte inkl. Klemmen)
   let H_Ts, q_ges_eff;
   if (sysMode === 'nfl' && flCombo) {
-    // Abnutzung: nur reines Fahrdraht-Drahtgewicht (q_Fd_base aus Materialtabelle) wird reduziert
-    // (Klemmen + Hänger bleiben unverändert; q_Fd_base ≠ MFL−MTS−0.706 wegen Klemmenanteil)
+    // Abnutzung: nur reines Fahrdraht-Drahtgewicht (q_Fd_base) wird reduziert
+    // MFL_eff = Gewicht im abgenutzten Zustand (T2-Zielzustand)
     const MFL_eff = flCombo.MFL - q_Fd_base * (wearPct / 100);
     q_ges_eff = MFL_eff;
-    // Stufe 1: parabolische Zustandsgleichung unbelastet→belastet
-    // q_ges²L²/(24H²) = q_Ts²L²/(24H_ub²) + (H−H_ub)/EA
-    // (Ts geht von H_ub mit nur MTS-Last auf H_bel mit voller MFL_eff-Last)
+    // Stufe 1: Draht wird NEU eingebaut → Zustandsgleichung mit originalem MFL (unabgenutzt)
+    // Die Abnutzung tritt erst im Betrieb auf, Stufe 1 bildet den Einbauzustand ab.
     const EA_fl = flCombo.E * flCombo.AK;
-    H_Ts = solveLoadingEq(H_Ts_ub, flCombo.MTS, MFL_eff, Lm, EA_fl) ?? H_Ts_ub;
+    H_Ts = solveLoadingEq(H_Ts_ub, flCombo.MTS, flCombo.MFL, Lm, EA_fl) ?? H_Ts_ub;
     const el = document.getElementById('tension-belastet');
     if (el) el.value = Math.round(H_Ts);
   } else if (sysMode === 'rfl' && flCombo) {
@@ -3464,9 +3465,11 @@ function berechnen() {
       let H2;
       if (flCombo) {
         // Bekannte FL-Kombination: VBA-konforme Zustandsgleichung (Upro1-Äquivalent)
-        // q_ges enthält bereits das abgenutzte MFL_eff
+        // q_ges = MFL_eff (abgenutzt, Zielzustand T2)
+        // MFL_init = flCombo.MFL (neu, Ausgangszustand T1) → korrektes gk0
+        const MFL_init = wearPct > 0 ? flCombo.MFL : null;
         H2 = solveNFLStateEq(q_ges, H_Fd, H_Ts, Lm,
-                             flCombo.AL, flCombo.E, flCombo.AK, deltaT, ZL);
+                             flCombo.AL, flCombo.E, flCombo.AK, deltaT, ZL, MFL_init);
       } else if (EA !== null) {
         H2 = solveStateEq(q_ges + ZL, Lm, H_Ts, EA, alpha, deltaT);
       } else {
