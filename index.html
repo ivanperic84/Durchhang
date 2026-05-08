@@ -1102,14 +1102,14 @@ button.header-manual-link:hover {
         <div class="field">
           <label id="h1-label">Höhe links h₁ <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über SOK</span></label>
           <div class="input-wrap">
-            <input type="number" id="h1" value="7" step="0.1" oninput="onSokMumInput();berechnen()" onchange="onSokMumInput();berechnen()">
+            <input type="text" inputmode="decimal" id="h1" value="7.00" oninput="onSokMumInput();berechnen()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
             <span class="input-unit">m</span>
           </div>
         </div>
         <div class="field">
           <label id="h2-label">Höhe rechts h₂ <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über SOK</span></label>
           <div class="input-wrap">
-            <input type="number" id="h2" value="7" step="0.1" oninput="onSokMumInput();berechnen()" onchange="onSokMumInput();berechnen()">
+            <input type="text" inputmode="decimal" id="h2" value="7.00" oninput="onSokMumInput();berechnen()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
             <span class="input-unit">m</span>
           </div>
         </div>
@@ -2541,8 +2541,8 @@ function setProjectState(s) {
     if (flds['tension'] != null) document.getElementById('tension').value = flds['tension'];
     if (flds['temp1']   != null) document.getElementById('temp1').value   = flds['temp1'];
     if (flds['sh']      != null) document.getElementById('sh').value      = flds['sh'];
-    if (flds['h1']      != null) document.getElementById('h1').value      = flds['h1'];
-    if (flds['h2']      != null) document.getElementById('h2').value      = flds['h2'];
+    if (flds['h1']      != null) document.getElementById('h1').value      = parseFloat(flds['h1']).toFixed(2);
+    if (flds['h2']      != null) document.getElementById('h2').value      = parseFloat(flds['h2']).toFixed(2);
     if (flds['span']    != null) document.getElementById('span').value    = flds['span'];
   } else {
     activePresetRef = null; activePresetP = null;
