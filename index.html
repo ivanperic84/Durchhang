@@ -1339,7 +1339,7 @@ button.header-manual-link:hover {
     <canvas id="main-canvas" width="700" height="380"></canvas>
     <div class="legend" id="legend">
       <div class="legend-item"><div class="legend-dot" style="background:#b7b7b7"></div><span id="leg-ts1">Ts bei T₁</span></div>
-      <div class="legend-item" id="leg-ts2-item"><div class="legend-dot" style="background:#eb0000"></div><span id="leg-ts2-label">Ts bei T₂</span></div>
+      <div class="legend-item" id="leg-ts2-item"><div class="legend-dot"></div><span id="leg-ts2-label">Ts bei T₂</span></div>
       <div class="legend-item" id="leg-fd-solllage-item" style="display:none"><div class="legend-dot" style="background:#86868b;opacity:.35"></div><span id="leg-fd-solllage-label">Fd Solllage (T₁)</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:#86868b;opacity:.7"></div><span id="leg-sehne-label">Sehnenlinie</span></div>
     </div>
@@ -2155,6 +2155,8 @@ function updateT2Float(v, active) {
   if (sldr) sldr.style.setProperty('--t2-clr', clr);
   const inp = document.getElementById('temp2');
   if (inp) inp.style.color = '';
+  const legDot = document.querySelector('#leg-ts2-item .legend-dot');
+  if (legDot) legDot.style.background = clr;
   const labels   = document.querySelectorAll('.t2-lbl');
   const allVals  = Array.from(labels).map(el => parseInt(el.dataset.val));
   const exactHit = allVals.includes(v);
