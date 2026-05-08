@@ -3896,7 +3896,8 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   const cCurveT2 = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
   const t1Dashed = sysMode === 'nfl' || isEl;  // T1 strichliert bei NFL + Einzelleiter
   const rflHasZL = isRfl && c2 !== c1;         // R-FL mit Eislast: c2 ist der belastete Zustand
-  const _t2Val = parseFloat(document.getElementById('temp2')?.value) || 40;
+  const _t2Raw = parseFloat(document.getElementById('temp2')?.value);
+  const _t2Val = isNaN(_t2Raw) ? 40 : _t2Raw;
   const t2Clr = (sysMode === 'nfl' || isEl) ? t2TempColor(_t2Val) : '#eb0000';
   ctx.shadowColor = 'rgba(235,0,0,.15)'; ctx.shadowBlur = 8;
   if (sysMode === 'nfl' || isEl) drawCurve(cCurveT2, t2Clr, 2.5, .75);
