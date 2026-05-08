@@ -2144,8 +2144,6 @@ function updateT2Float(v, active) {
   const clr = t2TempColor(v);
   const sldr = document.getElementById('temp2-slider');
   if (sldr) sldr.style.setProperty('--t2-clr', clr);
-  const inp = document.getElementById('temp2');
-  if (inp) inp.style.color = clr;
   const labels   = document.querySelectorAll('.t2-lbl');
   const allVals  = Array.from(labels).map(el => parseInt(el.dataset.val));
   const exactHit = allVals.includes(v);
@@ -3881,8 +3879,9 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   const cCurveT2 = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
   const t1Dashed = sysMode === 'nfl' || isEl;  // T1 strichliert bei NFL + Einzelleiter
   const rflHasZL = isRfl && c2 !== c1;         // R-FL mit Eislast: c2 ist der belastete Zustand
+  const t2Clr = (sysMode === 'nfl' || isEl) ? t2TempColor(T2) : '#eb0000';
   ctx.shadowColor = 'rgba(235,0,0,.15)'; ctx.shadowBlur = 8;
-  if (sysMode === 'nfl' || isEl) drawCurve(cCurveT2, '#eb0000', 2.5, .75);
+  if (sysMode === 'nfl' || isEl) drawCurve(cCurveT2, t2Clr, 2.5, .75);
   if (rflHasZL) drawCurve(c2, '#eb0000', 2.5, .75);  // R-FL Eislast-Zustand (rot)
   ctx.shadowColor = 'transparent';
   const c1Color = (isRfl && !rflHasZL) ? '#eb0000' : '#b7b7b7';
@@ -3934,7 +3933,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     sagAnnotation(c1, c1SagColor, 'right');
     if ((sysMode === 'nfl' || isEl) && Math.abs(c2.sag - c1.sag) > 0.005) {
       const cSagT2 = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
-      sagAnnotation(cSagT2, '#eb0000', 'left');
+      sagAnnotation(cSagT2, t2Clr, 'left');
     }
     if (rflHasZL && Math.abs(c2.sag - c1.sag) > 0.005) {
       sagAnnotation(c2, '#eb0000', 'left');
@@ -3945,7 +3944,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     sagLine(c1, c1SagColor);
     if ((sysMode === 'nfl' || isEl) && Math.abs(c2.sag - c1.sag) > 0.005) {
       const cSagT2 = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
-      sagLine(cSagT2, '#eb0000');
+      sagLine(cSagT2, t2Clr);
     }
     if (rflHasZL && Math.abs(c2.sag - c1.sag) > 0.005) {
       sagLine(c2, '#eb0000');
