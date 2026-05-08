@@ -336,8 +336,10 @@ body {
 
 /* ── Span list ── */
 .span-list { display: flex; flex-direction: column; gap: .4rem; margin-top: .4rem; }
-.span-row { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .5rem; }
-.span-row label { font-size: .72rem; font-weight: 500; color: var(--muted); white-space: nowrap; min-width: 2rem; }
+.span-row { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .5rem; border-radius: 10px; padding: .15rem .3rem .15rem .1rem; transition: background .15s; }
+.span-row label { font-size: .72rem; font-weight: 500; color: var(--muted); white-space: nowrap; min-width: 2rem; transition: color .15s; }
+.span-row.active-span { background: rgba(235,0,0,.05); }
+.span-row.active-span label { color: var(--primary); font-weight: 700; }
 .lm-display {
   background: #fff5f5;
   border-radius: 10px;
@@ -1087,7 +1089,7 @@ button.header-manual-link:hover {
         <div class="field" style="margin-top:.5rem">
           <label id="span-display-label">Dargestelltes Feld</label>
           <div class="input-wrap">
-            <select id="display-span" onchange="berechnen()" style="padding-right:.75rem"></select>
+            <select id="display-span" onchange="highlightActiveSpan();berechnen()" style="padding-right:.75rem"></select>
           </div>
         </div>
       </div>
@@ -2345,6 +2347,14 @@ function changeSpanCount(delta) {
   berechnen();
 }
 
+function highlightActiveSpan() {
+  const sel = document.getElementById('display-span');
+  const idx = sel ? parseInt(sel.value) : -1;
+  document.querySelectorAll('.span-row').forEach((row, i) => {
+    row.classList.toggle('active-span', i === idx);
+  });
+}
+
 function rebuildSpanList() {
   const list = document.getElementById('spans-list');
   const sel  = document.getElementById('display-span');
@@ -2355,6 +2365,7 @@ function rebuildSpanList() {
     const val = prev[i] ?? 50;
     const row = document.createElement('div');
     row.className = 'span-row';
+    row.setAttribute('data-span-idx', i);
     row.innerHTML = `<label>L<sub>${i+1}</sub></label>
       <div class="input-wrap">
         <input type="number" id="span-${i}" value="${val}" min="0.1" step="0.1" oninput="updateLm();if(!drag)berechnen();" onchange="updateLm();berechnen();">
@@ -2367,6 +2378,7 @@ function rebuildSpanList() {
     sel.appendChild(opt);
   }
   updateLm();
+  highlightActiveSpan();
 }
 
 function getSpanLengths() {
