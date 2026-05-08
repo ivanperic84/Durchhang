@@ -469,8 +469,8 @@ body {
 
 /* ── Istzustand Highlight ── */
 .istzustand-card {
-  background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
-  border: 2px solid #eb0000;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 14px;
   padding: .9rem 1.1rem;
   margin-bottom: 1rem;
@@ -478,23 +478,23 @@ body {
   flex-wrap: wrap;
 }
 .istzustand-card.rfl {
-  background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
-  border-color: var(--primary);
+  background: var(--bg);
+  border-color: var(--border);
 }
 .istzustand-main {
   display: flex; flex-direction: column;
 }
 .istzustand-label {
   font-size: .68rem; font-weight: 600; text-transform: uppercase;
-  letter-spacing: .07em; color: #eb0000; margin-bottom: .15rem;
+  letter-spacing: .07em; color: var(--muted); margin-bottom: .15rem;
 }
-.istzustand-card.rfl .istzustand-label { color: var(--primary); }
+.istzustand-card.rfl .istzustand-label { color: var(--muted); }
 .istzustand-value {
   font-family: 'Cascadia Code', 'Consolas', monospace;
   font-size: 2rem; font-weight: 700; line-height: 1;
-  color: #eb0000;
+  color: var(--text);
 }
-.istzustand-card.rfl .istzustand-value { color: var(--primary); }
+.istzustand-card.rfl .istzustand-value { color: var(--text); }
 .istzustand-unit {
   font-family: 'SBBWeb', 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: .85rem; font-weight: 400; color: var(--tertiary); margin-left: .3rem;
@@ -3685,7 +3685,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
           <div class="metric-list">${col(c1, '')}</div>
         </div>
         <div>
-          <div class="results-col-title warm">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
+          <div class="results-col-title">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
           <div class="metric-list">${col(c2Display, 'warm')}</div>
         </div>
       </div>
@@ -3708,7 +3708,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
           <div class="metric-list">${col(c1, '')}</div>
         </div>
         <div>
-          <div class="results-col-title warm">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
+          <div class="results-col-title">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
           <div class="metric-list">${col(c2Display, 'warm')}</div>
         </div>
       </div>
