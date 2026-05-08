@@ -3189,12 +3189,15 @@ function solveStateEq(q, Lm, H1, EA, alpha, deltaT) {
 // Formel: ((MFL+ZL+MFL·HF/F0)/(HF+x))² - (MFL/F0)² - G·(α·ΔT + (x-F0)/(E·A)) = 0
 // Parameter: MFL [N/m], HF = H_Fd [N], F0 = H_Ts_ref [N], L = Lm [m],
 //            AL = α, E, AK, deltaT, ZL = Eislast [N/m] (Standard = 0)
-function solveNFLStateEq(MFL, HF, F0, L, AL, E, AK, deltaT, ZL = 0) {
-  const gk0 = MFL / F0;
+function solveNFLStateEq(MFL, HF, F0, L, AL, E, AK, deltaT, ZL = 0, MFL_init = null) {
+  // gk0 = Ausgangskrümmung im Einbauzustand (neuer Draht = MFL_init falls angegeben)
+  // VEM S.445: gk0 = gk_neu/Ht0; A = gkx + gk_neu·H_Fd/Ht0
+  const q0  = MFL_init !== null ? MFL_init : MFL;
+  const gk0 = q0 / F0;
   const C   = 1 / (E * AK);
   const G   = 24 / (L * L) + gk0 * gk0;
-  // Mit Eislast ZL: erhöhte Gesamtlast am Zielzustand (T₂)
-  const A   = (MFL + ZL) + MFL * HF / F0;   // = MFL*(1+HF/F0) + ZL
+  // A: Zielzustand-Last (MFL=gkx abgenutzt), aber Fahrdraht-Verhältnis mit q0 (neu)
+  const A   = (MFL + ZL) + q0 * HF / F0;
   let x = F0;
   for (let i = 0; i < 300; i++) {
     const gkx = A / (HF + x);
@@ -3384,7 +3387,8 @@ function readInputs() {
     const MFL_eff = flCombo.MFL - q_Fd_base * (wearPct / 100);
     q_ges_eff = MFL_eff;
     const EA_fl = flCombo.E * flCombo.AK;
-    H_Ts = solveLoadingEq(H_Ts_ub, flCombo.MTS, MFL_eff, Lm, EA_fl) ?? H_Ts_ub;
+    // Stufe 1: Einbauzustand mit neuem Draht (MFL_orig) → Ht0
+    H_Ts = solveLoadingEq(H_Ts_ub, flCombo.MTS, flCombo.MFL, Lm, EA_fl) ?? H_Ts_ub;
     const el = document.getElementById('tension-belastet');
     if (el) el.value = Math.round(H_Ts);
   } else if (sysMode === 'rfl' && flCombo) {
@@ -3471,8 +3475,10 @@ function berechnen() {
       let H2;
       if (flCombo) {
         // Bekannte FL-Kombination: VBA-konforme Zustandsgleichung (Upro1-Äquivalent)
+        // MFL_init = flCombo.MFL (neuer Draht) für gk0 und A-Verhältnis
+        const MFL_init = wearPct > 0 ? flCombo.MFL : null;
         H2 = solveNFLStateEq(q_ges, H_Fd, H_Ts, Lm,
-                             flCombo.AL, flCombo.E, flCombo.AK, deltaT, ZL);
+                             flCombo.AL, flCombo.E, flCombo.AK, deltaT, ZL, MFL_init);
       } else if (EA !== null) {
         H2 = solveStateEq(q_ges + ZL, Lm, H_Ts, EA, alpha, deltaT);
       } else {
