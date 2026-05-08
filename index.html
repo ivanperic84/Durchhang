@@ -887,6 +887,14 @@ button.header-manual-link:hover {
 .proj-bulk-bar { background:#1e293b; color:#fff; border-radius:8px; padding:.4rem .7rem; display:flex; align-items:center; gap:.45rem; margin-bottom:.5rem; flex-wrap:wrap; }
 .proj-bulk-label { font-size:.75rem; flex:1; min-width:60px; }
 .proj-btn.bulk { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.25); color:#fff; }
+.proj-sort-bar { display:flex; align-items:center; gap:.3rem; margin-bottom:.55rem; flex-wrap:wrap; }
+.proj-sort-lbl { font-size:.68rem; color:var(--muted); margin-right:.1rem; }
+.proj-sort-btn { border:1px solid var(--border); border-radius:5px; background:none; cursor:pointer; padding:.16rem .42rem; font-size:.68rem; color:var(--muted); font-family:inherit; transition:all .15s; }
+.proj-sort-btn:hover { border-color:var(--primary); color:var(--primary); }
+.proj-sort-btn.active { border-color:var(--primary); color:var(--primary); background:#fff5f5; font-weight:600; }
+.proj-rename-btn { background:none; border:none; cursor:pointer; padding:.1rem .25rem; color:var(--muted); opacity:.45; transition:opacity .15s,color .15s; flex-shrink:0; line-height:1; }
+.proj-rename-btn:hover { opacity:1; color:var(--primary); }
+.proj-group-date { font-size:.65rem; color:var(--muted); white-space:nowrap; }
 .proj-btn.bulk:hover { background:rgba(255,255,255,.2); border-color:rgba(255,255,255,.5); color:#fff; }
 .proj-btn.bulk.danger:hover { background:rgba(239,68,68,.25); border-color:#ef4444; }
 .proj-move-sel { border:1px solid var(--border); border-radius:5px; font-size:.68rem; padding:.15rem .3rem; background:#fff; color:var(--muted); cursor:pointer; font-family:inherit; max-width:80px; }
@@ -1399,6 +1407,7 @@ button.header-manual-link:hover {
 let calcState = null; // Letztes Berechnungsergebnis (für PDF-Export und Messpunkte)
 let selectedIds     = new Set();   // IDs der selektierten Berechnungen
 let collapsedGroups = new Set();   // IDs der eingeklappten Gruppen
+let projSortMode    = 'date_desc'; // Sortierung: date_desc | date_asc | name_asc | name_desc
 
 // Canvas-Koordinatensystem — wird bei jedem Zeichnen aktualisiert
 const view = {
@@ -2630,6 +2639,24 @@ function saveCurrentCalc() {
 }
 function saveProjMeta(arr)    { localStorage.setItem(PROJ_META_KEY, JSON.stringify(arr)); }
 function genProjId()          { return 'p' + Date.now() + Math.random().toString(36).slice(2,5); }
+function setProjSort(mode)    { projSortMode = mode; renderProjectList(); }
+
+function renameEntry(id) {
+  const meta  = getProjMeta();
+  const entry = meta.find(m => m.id === id);
+  if (!entry) return;
+  const newName = prompt('Umbenennen:', entry.name);
+  if (!newName || !newName.trim() || newName.trim() === entry.name) return;
+  entry.name = newName.trim();
+  entry.updatedAt = new Date().toISOString();
+  saveProjMeta(meta);
+  if (!entry.isGroup) {
+    const raw = localStorage.getItem(PROJ_KEY_PREFIX + id);
+    if (raw) { try { const s = JSON.parse(raw); s.name = entry.name; localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify(s)); } catch(e) {} }
+  }
+  updateProjectBadge();
+  renderProjectList();
+}
 
 function updateProjectBadge() {
   const badge   = document.getElementById('proj-name-badge');
@@ -2937,6 +2964,8 @@ function importProjectFile(input) {
 }
 
 // ── Modal ──
+const _penSvg = `<svg width="10" height="10" viewBox="0 0 16 16" fill="none" style="vertical-align:-.05em"><path d="M11.5 2.5l2 2-8 8H3.5v-2l8-8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+
 function renderProjectList() {
   const container = document.getElementById('proj-list-container');
   if (!container) return;
@@ -2949,13 +2978,30 @@ function renderProjectList() {
     return;
   }
 
+  // Sort helper
+  const sortFn = (a, b) => {
+    if (projSortMode === 'name_asc')  return a.name.localeCompare(b.name, 'de');
+    if (projSortMode === 'name_desc') return b.name.localeCompare(a.name, 'de');
+    if (projSortMode === 'date_asc')  return new Date(a.updatedAt) - new Date(b.updatedAt);
+    return new Date(b.updatedAt) - new Date(a.updatedAt);
+  };
+
+  // Sort bar
+  const sortBar = `<div class="proj-sort-bar">
+    <span class="proj-sort-lbl">Sortierung:</span>
+    <button class="proj-sort-btn${projSortMode==='date_desc'?' active':''}" onclick="setProjSort('date_desc')">Datum ↓</button>
+    <button class="proj-sort-btn${projSortMode==='date_asc'?' active':''}" onclick="setProjSort('date_asc')">Datum ↑</button>
+    <button class="proj-sort-btn${projSortMode==='name_asc'?' active':''}" onclick="setProjSort('name_asc')">Name A–Z</button>
+    <button class="proj-sort-btn${projSortMode==='name_desc'?' active':''}" onclick="setProjSort('name_desc')">Name Z–A</button>
+  </div>`;
+
   // Helper: render a calc item row (child or ungrouped)
   const calcRow = (m, isChild) => {
     const isActive = m.id === currentProjectId;
     const checked = selectedIds.has(m.id);
     const childCls = isChild ? 'proj-child-item' : '';
     const moveOptions = groups.length > 0
-      ? `<select class="proj-move-sel" title="Zu Gruppe verschieben"
+      ? `<select class="proj-move-sel" title="Zu Projekt verschieben"
            onchange="moveToGroup('${m.id}',this.value);this.value=''"
            onclick="event.stopPropagation()">
            <option value="">→ Projekt</option>
@@ -2969,6 +3015,7 @@ function renderProjectList() {
         <div class="proj-item-date">Gespeichert: ${fmtDate(m.updatedAt)}</div>
       </div>
       <div class="proj-item-actions">
+        <button class="proj-rename-btn" onclick="renameEntry('${m.id}')" title="Umbenennen">${_penSvg}</button>
         <button class="proj-btn pri" onclick="loadProjectById('${m.id}')">Laden</button>
         <button class="proj-btn" onclick="saveToProject('${m.id}')">Speichern</button>
         <button class="proj-btn" onclick="exportProjectById('${m.id}')">JSON ↓</button>
@@ -2978,9 +3025,10 @@ function renderProjectList() {
     </div>`;
   };
 
-  // Render groups
-  const groupHtml = groups.map(g => {
-    const children = meta.filter(m => m.parentId === g.id && !m.isGroup);
+  // Render groups (sorted)
+  const sortedGroups = [...groups].sort(sortFn);
+  const groupHtml = sortedGroups.map(g => {
+    const children = [...meta.filter(m => m.parentId === g.id && !m.isGroup)].sort(sortFn);
     const collapsed = collapsedGroups.has(g.id);
     const hasActive = children.some(c => c.id === currentProjectId);
     const allChildrenSelected = children.length > 0 && children.every(c => selectedIds.has(c.id));
@@ -2999,19 +3047,21 @@ function renderProjectList() {
         <span class="proj-collapse-icon" style="transform:rotate(${collapsed ? '0' : '90'}deg)">▶</span>
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;color:#6b7280"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
         <span class="proj-group-name">${g.name}</span>
+        <span class="proj-group-date">${fmtDate(g.updatedAt)}</span>
         <span class="proj-group-count">${children.length} Berechnung${children.length !== 1 ? 'en' : ''}</span>
         <div class="proj-item-actions" onclick="event.stopPropagation()">
-          <button class="proj-btn pri" onclick="saveToGroup('${g.id}')" title="Aktuelle Berechnung unter dieser Gruppe speichern">+ Speichern</button>
+          <button class="proj-rename-btn" onclick="renameEntry('${g.id}')" title="Projekt umbenennen">${_penSvg}</button>
+          <button class="proj-btn pri" onclick="saveToGroup('${g.id}')" title="Aktuelle Berechnung unter diesem Projekt speichern">+ Speichern</button>
           <button class="proj-btn danger" onclick="deleteProjectById('${g.id}')">Löschen</button>
         </div>
       </div>
       ${!collapsed && children.length > 0 ? `<div class="proj-group-children">${childrenHtml}</div>` : ''}
-      ${!collapsed && children.length === 0 ? `<div style="padding:.4rem 1.5rem .5rem;font-size:.72rem;color:var(--muted);font-style:italic">Keine Berechnungen in dieser Gruppe</div>` : ''}
+      ${!collapsed && children.length === 0 ? `<div style="padding:.4rem 1.5rem .5rem;font-size:.72rem;color:var(--muted);font-style:italic">Keine Berechnungen in diesem Projekt</div>` : ''}
     </div>`;
   }).join('');
 
-  // Ungrouped calcs
-  const ungrouped = meta.filter(m => !m.isGroup && !m.parentId);
+  // Ungrouped calcs (sorted)
+  const ungrouped = [...meta.filter(m => !m.isGroup && !m.parentId)].sort(sortFn);
   const ungroupedHtml = ungrouped.map(m => calcRow(m, false)).join('');
 
   // Bulk bar
@@ -3026,9 +3076,9 @@ function renderProjectList() {
       <button class="proj-btn bulk danger" onclick="batchDelete()">Löschen</button>
     </div>` : '';
 
-  container.innerHTML = bulkBar +
+  container.innerHTML = sortBar + bulkBar +
     (groupHtml ? `<div style="display:flex;flex-direction:column;gap:.4rem">${groupHtml}</div>` : '') +
-    (groupHtml && ungroupedHtml ? '<div style="font-size:.68rem;color:var(--muted);margin:.5rem 0 .2rem;padding-left:.1rem">Ohne Gruppe</div>' : '') +
+    (groupHtml && ungroupedHtml ? '<div style="font-size:.68rem;color:var(--muted);margin:.5rem 0 .2rem;padding-left:.1rem">Ohne Projekt</div>' : '') +
     (ungroupedHtml ? `<div style="display:flex;flex-direction:column;gap:.35rem">${ungroupedHtml}</div>` : '');
 }
 
