@@ -3905,9 +3905,10 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   const _t2Raw = parseFloat(document.getElementById('temp2')?.value);
   const _t2Val = isNaN(_t2Raw) ? 40 : _t2Raw;
   const t2Clr = (sysMode === 'nfl' || isEl) ? t2TempColor(_t2Val) : '#eb0000';
-  ctx.shadowColor = 'rgba(235,0,0,.15)'; ctx.shadowBlur = 8;
-  if (sysMode === 'nfl' || isEl) drawCurve(cCurveT2, t2Clr, 2.5, .75);
-  if (rflHasZL) drawCurve(c2, '#eb0000', 2.5, .75);  // R-FL Eislast-Zustand (rot)
+  const t2Shadow = t2Clr.startsWith('hsl(') ? t2Clr.replace('hsl(', 'hsla(').replace(')', ',.18)') : 'rgba(235,0,0,.15)';
+  ctx.shadowBlur = 8;
+  if (sysMode === 'nfl' || isEl) { ctx.shadowColor = t2Shadow; drawCurve(cCurveT2, t2Clr, 2.5, .75); }
+  if (rflHasZL) { ctx.shadowColor = 'rgba(235,0,0,.15)'; drawCurve(c2, '#eb0000', 2.5, .75); }
   ctx.shadowColor = 'transparent';
   const c1Color = (isRfl && !rflHasZL) ? '#eb0000' : '#b7b7b7';
   drawCurve(c1, c1Color, (t1Dashed || rflHasZL) ? 1.2 : 3, (t1Dashed || rflHasZL) ? 0.55 : 1, (t1Dashed || rflHasZL) ? [6, 4] : []);
@@ -6140,7 +6141,7 @@ rebuildSpanList();
 injectCustomElMaterials();
 berechnen();
 // T2-Slider initialisieren + Farbe setzen
-{ const v = parseFloat(document.getElementById('temp2').value) || 40;
+{ const v = (v => isNaN(v) ? 40 : v)(parseFloat(document.getElementById('temp2').value));
   document.getElementById('temp2-slider').value = v;
   updateT2Float(v, false); }
 // Beta-Wasserzeichen gekachelt (DOM-Elemente, kein SVG-Clipping)
