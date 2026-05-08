@@ -2909,10 +2909,11 @@ function readInputs() {
     // Abnutzung: nur Fahrdraht-Eigengewicht (ohne Hänger 0.7061 N/m) wird reduziert
     const MFL_eff = flCombo.MFL - (flCombo.MFL - flCombo.MTS - 0.7061) * (wearPct / 100);
     q_ges_eff = MFL_eff;
-    // Stufe 1: VEM-Zustandsgleichung (wie Excel NFL-Tab Z39/Z40)
-    // (MTS/H_bel)² - (MTS/H_ub)² = G*(H_bel-H_ub)/EA  mit G=24/L²+(MTS/H_ub)²
-    // → solveNFLStateEq mit HF=0, deltaT=0 entspricht exakt dieser Formel
-    H_Ts = solveNFLStateEq(flCombo.MTS, 0, H_Ts_ub, Lm, flCombo.AL, flCombo.E, flCombo.AK, 0) ?? H_Ts_ub;
+    // Stufe 1: parabolische Zustandsgleichung unbelastet→belastet
+    // q_ges²L²/(24H²) = q_Ts²L²/(24H_ub²) + (H−H_ub)/EA
+    // (Ts geht von H_ub mit nur MTS-Last auf H_bel mit voller MFL_eff-Last)
+    const EA_fl = flCombo.E * flCombo.AK;
+    H_Ts = solveLoadingEq(H_Ts_ub, flCombo.MTS, MFL_eff, Lm, EA_fl) ?? H_Ts_ub;
     const el = document.getElementById('tension-belastet');
     if (el) el.value = Math.round(H_Ts);
   } else if (sysMode === 'rfl' && flCombo) {
