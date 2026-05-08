@@ -1293,7 +1293,7 @@ button.header-manual-link:hover {
             <span id="eis-label-sub" style="font-weight:400;color:var(--tertiary);font-size:.75em">(bei T₂ = −5 °C)</span>
             <span style="position:relative;display:inline-flex">
               <button id="eis-info-btn" onclick="toggleEislastInfo(event)"
-                style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(235,0,0,.3);background:#fff5f5;color:#eb0000;font-size:.6rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"
+                style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.2);background:none;color:var(--muted);font-size:.6rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"
                 title="Hinweis zur Eislast / Schneelast">i</button>
               <div id="eis-info-popup" style="display:none;position:fixed;z-index:200;width:270px;background:#fff;border:1px solid rgba(235,0,0,.2);border-radius:10px;padding:.65rem .8rem;box-shadow:0 4px 20px rgba(0,0,0,.11);font-size:.72rem;color:var(--text);text-transform:none;font-weight:400;letter-spacing:0">
                 <div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.45rem">
@@ -1305,6 +1305,10 @@ button.header-manual-link:hover {
             </span>
           </div>
           <div style="display:flex;gap:.35rem;margin-bottom:.3rem">
+            <button onclick="document.getElementById('zl-eis').value=0;berechnen()"
+              style="flex:1;padding:.2rem 0;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:.7rem;cursor:pointer;line-height:1;transition:background .15s,color .15s"
+              onmouseover="this.style.background='#f1f5f9';this.style.color='var(--text)'"
+              onmouseout="this.style.background='none';this.style.color='var(--muted)'">0 N/m</button>
             <button onclick="document.getElementById('zl-eis').value=7;berechnen()"
               style="flex:1;padding:.2rem 0;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:.7rem;cursor:pointer;line-height:1;transition:background .15s,color .15s"
               onmouseover="this.style.background='#f1f5f9';this.style.color='var(--text)'"
@@ -2146,7 +2150,7 @@ function t2TempColor(temp) {
 
 // Skala-Labels beim Schieben dynamisch skalieren
 function updateT2Float(v, active) {
-  const clr = t2TempColor(v);
+  const clr = (typeof sysMode !== 'undefined' && sysMode === 'rfl') ? '#6b7280' : t2TempColor(v);
   const sldr = document.getElementById('temp2-slider');
   if (sldr) sldr.style.setProperty('--t2-clr', clr);
   const inp = document.getElementById('temp2');
