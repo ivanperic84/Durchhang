@@ -841,18 +841,18 @@ button.header-manual-link:hover {
 .proj-list { display: flex; flex-direction: column; gap: .45rem; max-height: 320px; overflow-y: auto; margin-bottom: .75rem; }
 .proj-item {
   border: 1px solid var(--border); border-radius: 10px;
-  padding: .5rem .8rem; display: flex; flex-direction: column; gap: .3rem;
+  padding: .38rem .65rem; display: flex; flex-direction: column; gap: .22rem;
   transition: border-color .15s;
 }
 .proj-item.active-proj { border-color: var(--primary); background: #fff5f5; }
-.proj-item-top { display: flex; align-items: center; gap: .4rem; min-width: 0; }
-.proj-item-info { flex: 1; min-width: 0; }
-.proj-item-name { font-size: .83rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.proj-item-top { display: flex; align-items: center; gap: .3rem; min-width: 0; }
+.proj-item-info { flex: 1; min-width: 0; display: flex; align-items: center; gap: .2rem; }
+.proj-item-name { font-size: .82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .proj-item.active-proj .proj-item-name { color: var(--primary); }
-.proj-item-bottom { display: flex; flex-direction: column; gap: .22rem; }
-.proj-item-date { font-size: .68rem; color: var(--muted); }
-.proj-item-actions { display: flex; flex-direction: column; gap: .22rem; }
-.proj-btn-row { display: flex; gap: .3rem; }
+.proj-item-bottom { display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; }
+.proj-item-date { font-size: .67rem; color: var(--muted); flex: 1; white-space: nowrap; }
+.proj-item-actions { display: flex; gap: .25rem; flex-wrap: wrap; }
+.proj-btn-row { display: flex; gap: .25rem; }
 .proj-btn {
   border: 1px solid var(--border); border-radius: 6px; background: none;
   cursor: pointer; padding: .22rem .5rem; font-size: .7rem; color: var(--muted);
@@ -2967,7 +2967,7 @@ function importProjectFile(input) {
 }
 
 // ── Modal ──
-const _penSvg = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-.1em"><path d="M11.5 2.5l2 2-8 8H3.5v-2l8-8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+const _penSvg = `<svg width="11" height="11" viewBox="0 0 16 16" fill="none" style="vertical-align:-.08em"><path d="M11.5 2.5l2 2-8 8H3.5v-2l8-8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
 
 function renderProjectList() {
   const container = document.getElementById('proj-list-container');
@@ -3016,21 +3016,17 @@ function renderProjectList() {
           onclick="event.stopPropagation();toggleSelectCalc('${m.id}')">
         <div class="proj-item-info">
           <div class="proj-item-name" title="${m.name}">${m.name}${isActive ? ' ✓' : ''}</div>
+          <button class="proj-rename-btn" onclick="renameEntry('${m.id}')" title="Umbenennen">${_penSvg}</button>
         </div>
-        <button class="proj-rename-btn" onclick="renameEntry('${m.id}')" title="Umbenennen">${_penSvg}</button>
       </div>
       <div class="proj-item-bottom">
         <div class="proj-item-date">Gespeichert: ${fmtDate(m.updatedAt)}</div>
         <div class="proj-item-actions">
-          <div class="proj-btn-row">
-            <button class="proj-btn pri" onclick="loadProjectById('${m.id}')">Laden</button>
-            <button class="proj-btn" onclick="saveToProject('${m.id}')">Speichern</button>
-          </div>
-          <div class="proj-btn-row">
-            <button class="proj-btn" onclick="exportProjectById('${m.id}')">JSON ↓</button>
-            ${moveOptions}
-            <button class="proj-btn danger" onclick="deleteProjectById('${m.id}')">Löschen</button>
-          </div>
+          <button class="proj-btn pri" onclick="loadProjectById('${m.id}')">Laden</button>
+          <button class="proj-btn" onclick="saveToProject('${m.id}')">Speichern</button>
+          <button class="proj-btn" onclick="exportProjectById('${m.id}')">JSON ↓</button>
+          ${moveOptions}
+          <button class="proj-btn danger" onclick="deleteProjectById('${m.id}')">Löschen</button>
         </div>
       </div>
     </div>`;
@@ -3060,7 +3056,7 @@ function renderProjectList() {
         <span class="proj-group-name">${g.name}</span>
         <span class="proj-group-date">${fmtDate(g.updatedAt)}</span>
         <span class="proj-group-count">${children.length} Berechnung${children.length !== 1 ? 'en' : ''}</span>
-        <div class="proj-item-actions" onclick="event.stopPropagation()">
+        <div class="proj-item-actions" style="flex-wrap:nowrap" onclick="event.stopPropagation()">
           <button class="proj-rename-btn" onclick="renameEntry('${g.id}')" title="Projekt umbenennen">${_penSvg}</button>
           <button class="proj-btn pri" onclick="saveToGroup('${g.id}')" title="Aktuelle Berechnung unter diesem Projekt speichern">+ Speichern</button>
           <button class="proj-btn danger" onclick="deleteProjectById('${g.id}')">Löschen</button>
