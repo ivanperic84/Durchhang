@@ -3729,7 +3729,7 @@ function mpBlock(xv, badge, cls, compact = false) {
   const isNfl   = sysMode === 'nfl';
   const isRfl   = sysMode === 'rfl';
   const isEl    = sysMode === 'el';
-  const cIst    = (isNfl || isEl) ? c2 : c1;                // Ts-Katenarie (für H, Fd-Berechnung)
+  const cIst    = (isNfl || isEl) ? c2 : (isRfl && c2 && c2 !== c1 ? c2 : c1); // R-FL mit ZL: c2, sonst c1
   const useVem  = isNfl && flCombo && c2_vem;               // kombiniertes System verfügbar?
   const y2_ts   = catY(xv, cIst);                           // Ts-Position (für Fd-Verschiebung)
   const y2      = useVem ? catY(xv, c2_vem) : y2_ts;       // Anzeigewert: kombiniert oder Ts
