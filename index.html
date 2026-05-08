@@ -244,7 +244,7 @@ body {
   width: 14px; height: 14px;
   border-radius: 50%;
   background: var(--t3-clr, #6b7280);
-  border: 2px solid white;
+  cursor: pointer;
   margin-top: 0;
   box-shadow: 0 1px 4px rgba(0,0,0,.25);
 }
@@ -252,7 +252,8 @@ body {
   width: 14px; height: 14px;
   border-radius: 50%;
   background: var(--t3-clr, #6b7280);
-  border: 2px solid white;
+  border: none;
+  cursor: pointer;
   box-shadow: 0 1px 4px rgba(0,0,0,.25);
 }
 
@@ -1363,7 +1364,9 @@ button.header-manual-link:hover {
                display:flex;align-items:center;justify-content:center;gap:.35rem;transition:all .15s"
         onmouseover="this.style.background='#f1f5f9'"
         onmouseout="this.style.background='none'">
-        <span id="t3-toggle-icon" style="font-size:.8rem;line-height:1">＋</span>
+        <svg id="t3-toggle-icon" width="22" height="8" viewBox="0 0 22 8" style="flex-shrink:0">
+          <line x1="0" y1="4" x2="22" y2="4" stroke="currentColor" stroke-width="1.8" stroke-dasharray="5,3" stroke-linecap="round"/>
+        </svg>
         <span id="t3-toggle-txt">T₃ Vergleichskurve einblenden</span>
       </button>
       <div id="t3-section" style="display:none;margin-top:.55rem">
@@ -2333,7 +2336,6 @@ function toggleT3() {
   const txt     = document.getElementById('t3-toggle-txt');
   const legItem = document.getElementById('leg-ts3-item');
   section.style.display = showT3 ? '' : 'none';
-  if (icon) icon.textContent = showT3 ? '−' : '＋';
   if (txt)  txt.textContent  = showT3 ? 'T₃ Vergleichskurve ausblenden' : 'T₃ Vergleichskurve einblenden';
   if (legItem) legItem.style.display = showT3 ? '' : 'none';
   if (showT3) {
