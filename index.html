@@ -22,10 +22,10 @@
   --shadow: 0 2px 8px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
   --radius: 8px;
   --border: #e5e5e5;
-  --mp-m1: #6d28d9;
+  --mp-m1: #0d9488;
   --mp-m2: #0d9488;
-  --mp-m3: #d97706;
-  --mp-m4: #dc2626;
+  --mp-m3: #0d9488;
+  --mp-m4: #0d9488;
 }
 
 sub { font-size: .8em; vertical-align: sub; }
@@ -536,10 +536,10 @@ body {
   letter-spacing: .06em; padding: .15rem .45rem;
   border-radius: 6px; white-space: nowrap; flex-shrink: 0;
 }
-.probe-mp-badge.m1 { background: rgba(109,40,217,.12); color: #6d28d9; }
+.probe-mp-badge.m1 { background: rgba(13,148,136,.12); color: #0d9488; }
 .probe-mp-badge.m2 { background: rgba(13,148,136,.12); color: #0d9488; }
-.probe-mp-badge.m3 { background: rgba(217,119,6,.12);  color: #d97706; }
-.probe-mp-badge.m4 { background: rgba(220,38,38,.12);  color: #dc2626; }
+.probe-mp-badge.m3 { background: rgba(13,148,136,.12); color: #0d9488; }
+.probe-mp-badge.m4 { background: rgba(13,148,136,.12); color: #0d9488; }
 .probe-mp-xinput {
   font-family: 'SF Mono','Menlo',monospace;
   font-size: .82rem; font-weight: 600;
@@ -557,8 +557,10 @@ body {
   font-family: 'SF Mono','Menlo',monospace;
   font-weight: 600; font-size: .82rem; color: var(--text);
 }
-.probe-mp-kvalue.m1 { color: #6d28d9; }
+.probe-mp-kvalue.m1 { color: #0d9488; }
 .probe-mp-kvalue.m2 { color: #0d9488; }
+.probe-mp-kvalue.m3 { color: #0d9488; }
+.probe-mp-kvalue.m4 { color: #0d9488; }
 .probe-hint-small {
   font-size: .72rem; color: var(--tertiary); font-style: italic;
 }
@@ -4024,10 +4026,10 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
 
   // Alle aktiven Proben vorberechnen
   const allProbes = [
-    { xv: probeX1, which: 'probe1', color: '#6d28d9', dotColor: '#a78bfa' },
+    { xv: probeX1, which: 'probe1', color: '#0d9488', dotColor: '#5eead4' },
     { xv: probeX2, which: 'probe2', color: '#0d9488', dotColor: '#5eead4' },
-    { xv: probeX3, which: 'probe3', color: '#d97706', dotColor: '#fbbf24' },
-    { xv: probeX4, which: 'probe4', color: '#dc2626', dotColor: '#f87171' },
+    { xv: probeX3, which: 'probe3', color: '#0d9488', dotColor: '#5eead4' },
+    { xv: probeX4, which: 'probe4', color: '#0d9488', dotColor: '#5eead4' },
   ].filter(p => p.xv !== null).map(p => ({ ...p, px: cx(p.xv) }));
 
   // Cluster-Index: wie viele vorherige Proben sind "nah"?
