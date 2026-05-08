@@ -2144,7 +2144,7 @@ function updateSysModeUI(mode) {
 function t2TempColor(temp) {
   const t = Math.max(0, Math.min(1, (temp + 20) / 100));
   const hue = Math.round(220 * (1 - t));
-  const lit = Math.round(52 - 5 * t);
+  const lit = Math.round(42 - 5 * t);
   return `hsl(${hue},85%,${lit}%)`;
 }
 
@@ -3905,11 +3905,8 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   const _t2Raw = parseFloat(document.getElementById('temp2')?.value);
   const _t2Val = isNaN(_t2Raw) ? 40 : _t2Raw;
   const t2Clr = (sysMode === 'nfl' || isEl) ? t2TempColor(_t2Val) : '#eb0000';
-  const t2Shadow = t2Clr.startsWith('hsl(') ? t2Clr.replace('hsl(', 'hsla(').replace(')', ',.18)') : 'rgba(235,0,0,.15)';
-  ctx.shadowBlur = 8;
-  if (sysMode === 'nfl' || isEl) { ctx.shadowColor = t2Shadow; drawCurve(cCurveT2, t2Clr, 2.5, .75); }
-  if (rflHasZL) { ctx.shadowColor = 'rgba(235,0,0,.15)'; drawCurve(c2, '#eb0000', 2.5, .75); }
-  ctx.shadowColor = 'transparent';
+  if (sysMode === 'nfl' || isEl) drawCurve(cCurveT2, t2Clr, 2.5, .85);
+  if (rflHasZL) drawCurve(c2, '#eb0000', 2.5, .85);
   const c1Color = (isRfl && !rflHasZL) ? '#eb0000' : '#b7b7b7';
   drawCurve(c1, c1Color, (t1Dashed || rflHasZL) ? 1.2 : 3, (t1Dashed || rflHasZL) ? 0.55 : 1, (t1Dashed || rflHasZL) ? [6, 4] : []);
 
