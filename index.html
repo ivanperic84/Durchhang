@@ -849,9 +849,10 @@ button.header-manual-link:hover {
 .proj-item-info { flex: 1; min-width: 0; }
 .proj-item-name { font-size: .83rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .proj-item.active-proj .proj-item-name { color: var(--primary); }
-.proj-item-bottom { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
-.proj-item-date { font-size: .68rem; color: var(--muted); flex: 1; white-space: nowrap; }
-.proj-item-actions { display: flex; gap: .3rem; flex-wrap: wrap; justify-content: flex-end; }
+.proj-item-bottom { display: flex; flex-direction: column; gap: .22rem; }
+.proj-item-date { font-size: .68rem; color: var(--muted); }
+.proj-item-actions { display: flex; flex-direction: column; gap: .22rem; }
+.proj-btn-row { display: flex; gap: .3rem; }
 .proj-btn {
   border: 1px solid var(--border); border-radius: 6px; background: none;
   cursor: pointer; padding: .22rem .5rem; font-size: .7rem; color: var(--muted);
@@ -3021,11 +3022,15 @@ function renderProjectList() {
       <div class="proj-item-bottom">
         <div class="proj-item-date">Gespeichert: ${fmtDate(m.updatedAt)}</div>
         <div class="proj-item-actions">
-          <button class="proj-btn pri" onclick="loadProjectById('${m.id}')">Laden</button>
-          <button class="proj-btn" onclick="saveToProject('${m.id}')">Speichern</button>
-          <button class="proj-btn" onclick="exportProjectById('${m.id}')">JSON ↓</button>
-          ${moveOptions}
-          <button class="proj-btn danger" onclick="deleteProjectById('${m.id}')">Löschen</button>
+          <div class="proj-btn-row">
+            <button class="proj-btn pri" onclick="loadProjectById('${m.id}')">Laden</button>
+            <button class="proj-btn" onclick="saveToProject('${m.id}')">Speichern</button>
+          </div>
+          <div class="proj-btn-row">
+            <button class="proj-btn" onclick="exportProjectById('${m.id}')">JSON ↓</button>
+            ${moveOptions}
+            <button class="proj-btn danger" onclick="deleteProjectById('${m.id}')">Löschen</button>
+          </div>
         </div>
       </div>
     </div>`;
