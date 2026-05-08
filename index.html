@@ -3656,7 +3656,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         </div>
         <div>
           <div class="results-col-title warm">Mit Eislast (ZL = ${ZL.toFixed(2)} N/m)</div>
-          <div class="metric-list">${col(c2, 'warm')}</div>
+          <div class="metric-list">${col(c2, '')}</div>
         </div>
       </div>
       ${fdBlock}
@@ -3688,7 +3688,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         </div>
         <div>
           <div class="results-col-title">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
-          <div class="metric-list">${col(c2Display, 'warm')}</div>
+          <div class="metric-list">${col(c2Display, '')}</div>
         </div>
       </div>
       ${infoBlock}
@@ -3711,7 +3711,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         </div>
         <div>
           <div class="results-col-title">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
-          <div class="metric-list">${col(c2Display, 'warm')}</div>
+          <div class="metric-list">${col(c2Display, '')}</div>
         </div>
       </div>
       ${fdBlock}
