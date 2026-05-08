@@ -862,6 +862,31 @@ button.header-manual-link:hover {
 .proj-empty { text-align: center; color: var(--muted); font-size: .8rem; padding: 1.5rem 0; }
 .proj-separator { border: none; border-top: 1px solid var(--border); margin: .85rem 0 .75rem; }
 .proj-footer { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+
+/* ── Projekt-Hierarchie ─────────────────────────────── */
+.proj-create-row { display:flex; gap:.4rem; margin-bottom:.3rem; flex-wrap:wrap; }
+.proj-create-row input { flex:1; min-width:120px; border:1px solid var(--border); border-radius:8px; padding:.45rem .75rem; font-size:.83rem; font-family:inherit; outline:none; background:#f8f8f9; }
+.proj-create-row input:focus { border-color:var(--primary); background:#fff; }
+.proj-parent-row { display:flex; align-items:center; gap:.5rem; margin-bottom:.85rem; min-height:1.6rem; }
+.proj-parent-label { font-size:.72rem; color:var(--muted); white-space:nowrap; }
+.proj-parent-sel { border:1px solid var(--border); border-radius:6px; font-size:.72rem; padding:.2rem .4rem; background:#f8f8f9; color:var(--text); font-family:inherit; cursor:pointer; }
+.proj-group-wrap { border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.proj-group-wrap.has-active { border-color:var(--primary); }
+.proj-group-header { padding:.48rem .8rem; display:flex; align-items:center; gap:.45rem; background:#f4f5f7; cursor:pointer; user-select:none; }
+.proj-group-header:hover { background:#eceff4; }
+.proj-collapse-icon { font-size:.6rem; color:var(--muted); flex-shrink:0; transition:transform .15s; }
+.proj-group-name { flex:1; font-size:.83rem; font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.proj-group-count { font-size:.68rem; color:var(--muted); white-space:nowrap; }
+.proj-group-children { padding:.3rem .35rem .35rem 1.5rem; display:flex; flex-direction:column; gap:.3rem; background:#fff; }
+.proj-child-item { border:1px solid #e8eaed; border-radius:8px; background:#fff; }
+.proj-child-item.active-proj { border-color:var(--primary); background:#fff8f8; }
+.proj-check { accent-color:var(--primary); cursor:pointer; flex-shrink:0; width:14px; height:14px; margin-right:1px; }
+.proj-bulk-bar { background:#1e293b; color:#fff; border-radius:8px; padding:.4rem .7rem; display:flex; align-items:center; gap:.45rem; margin-bottom:.5rem; flex-wrap:wrap; }
+.proj-bulk-label { font-size:.75rem; flex:1; min-width:60px; }
+.proj-btn.bulk { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.25); color:#fff; }
+.proj-btn.bulk:hover { background:rgba(255,255,255,.2); border-color:rgba(255,255,255,.5); color:#fff; }
+.proj-btn.bulk.danger:hover { background:rgba(239,68,68,.25); border-color:#ef4444; }
+.proj-move-sel { border:1px solid var(--border); border-radius:5px; font-size:.68rem; padding:.15rem .3rem; background:#fff; color:var(--muted); cursor:pointer; font-family:inherit; max-width:80px; }
 </style>
 </head>
 <body>
@@ -1370,6 +1395,8 @@ button.header-manual-link:hover {
 // GLOBALER ZUSTAND
 // ═══════════════════════════════════════════════════════════════
 let calcState = null; // Letztes Berechnungsergebnis (für PDF-Export und Messpunkte)
+let selectedIds     = new Set();   // IDs der selektierten Berechnungen
+let collapsedGroups = new Set();   // IDs der eingeklappten Gruppen
 
 // Canvas-Koordinatensystem — wird bei jedem Zeichnen aktualisiert
 const view = {
@@ -2556,14 +2583,29 @@ function fmtDate(iso) {
 }
 
 // ── CRUD ──
-function createProject() {
-  const inp  = document.getElementById('proj-name-input');
+function createGroup() {
+  const inp = document.getElementById('proj-name-input');
   const name = inp.value.trim();
   if (!name) { inp.focus(); return; }
-  const id   = genProjId();
-  const now  = new Date().toISOString();
+  const id = 'g' + Date.now() + Math.random().toString(36).slice(2,5);
+  const now = new Date().toISOString();
   const meta = getProjMeta();
-  meta.unshift({ id, name, createdAt: now, updatedAt: now });
+  meta.unshift({ id, name, isGroup: true, parentId: null, createdAt: now, updatedAt: now });
+  saveProjMeta(meta);
+  inp.value = '';
+  renderProjectList();
+}
+
+function createProject() {
+  const inp = document.getElementById('proj-name-input');
+  const name = inp.value.trim();
+  if (!name) { inp.focus(); return; }
+  const id = genProjId();
+  const now = new Date().toISOString();
+  const meta = getProjMeta();
+  const parentSel = document.getElementById('proj-parent-select');
+  const parentId = (parentSel && parentSel.value) ? parentSel.value : null;
+  meta.unshift({ id, name, isGroup: false, parentId, createdAt: now, updatedAt: now });
   saveProjMeta(meta);
   const state = getProjectState();
   localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...state, name }));
@@ -2574,7 +2616,7 @@ function createProject() {
 }
 
 function saveToProject(id) {
-  const meta  = getProjMeta();
+  const meta = getProjMeta();
   const entry = meta.find(m => m.id === id);
   if (!entry) return;
   entry.updatedAt = new Date().toISOString();
@@ -2599,12 +2641,181 @@ function loadProjectById(id) {
 }
 
 function deleteProjectById(id) {
-  const meta  = getProjMeta();
+  const meta = getProjMeta();
   const entry = meta.find(m => m.id === id);
-  if (!confirm(`Projekt «${entry?.name ?? id}» löschen?`)) return;
-  saveProjMeta(meta.filter(m => m.id !== id));
-  localStorage.removeItem(PROJ_KEY_PREFIX + id);
-  if (currentProjectId === id) currentProjectId = null;
+  if (!entry) return;
+  if (entry.isGroup) {
+    const children = meta.filter(m => m.parentId === id);
+    const msg = children.length > 0
+      ? `Gruppe «${entry.name}» und ${children.length} Berechnung(en) löschen?`
+      : `Gruppe «${entry.name}» löschen?`;
+    if (!confirm(msg)) return;
+    children.forEach(c => {
+      localStorage.removeItem(PROJ_KEY_PREFIX + c.id);
+      selectedIds.delete(c.id);
+      if (currentProjectId === c.id) currentProjectId = null;
+    });
+    saveProjMeta(meta.filter(m => m.id !== id && m.parentId !== id));
+  } else {
+    if (!confirm(`Berechnung «${entry.name}» löschen?`)) return;
+    saveProjMeta(meta.filter(m => m.id !== id));
+    localStorage.removeItem(PROJ_KEY_PREFIX + id);
+    selectedIds.delete(id);
+    if (currentProjectId === id) currentProjectId = null;
+  }
+  renderProjectList();
+  updateProjectBadge();
+}
+
+function moveToGroup(calcId, groupId) {
+  const meta = getProjMeta();
+  const entry = meta.find(m => m.id === calcId);
+  if (!entry) return;
+  entry.parentId = groupId || null;
+  entry.updatedAt = new Date().toISOString();
+  saveProjMeta(meta);
+  renderProjectList();
+}
+
+function toggleGroupCollapse(id) {
+  if (collapsedGroups.has(id)) collapsedGroups.delete(id);
+  else collapsedGroups.add(id);
+  renderProjectList();
+}
+
+function toggleSelectCalc(id) {
+  if (selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  renderProjectList();
+}
+
+function batchDelete() {
+  if (selectedIds.size === 0) return;
+  const meta = getProjMeta();
+  const names = [...selectedIds].map(id => meta.find(m => m.id === id)?.name).filter(Boolean);
+  if (!confirm(`${selectedIds.size} Berechnung(en) löschen?\n${names.slice(0,5).join('\n')}${names.length > 5 ? '\n…' : ''}`)) return;
+  [...selectedIds].forEach(id => {
+    localStorage.removeItem(PROJ_KEY_PREFIX + id);
+    if (currentProjectId === id) currentProjectId = null;
+  });
+  saveProjMeta(meta.filter(m => !selectedIds.has(m.id)));
+  selectedIds.clear();
+  renderProjectList();
+  updateProjectBadge();
+}
+
+function batchJsonExport() {
+  if (selectedIds.size === 0) return;
+  const meta = getProjMeta();
+  [...selectedIds].forEach(id => {
+    const raw = localStorage.getItem(PROJ_KEY_PREFIX + id);
+    if (!raw) return;
+    const entry = meta.find(m => m.id === id);
+    const name = entry?.name || id;
+    const blob = new Blob([raw], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name.replace(/[^a-zA-Z0-9_\-]/g,'_') + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+}
+
+async function batchPdfExport() {
+  if (selectedIds.size === 0) return;
+  const meta = getProjMeta();
+  const ids = [...selectedIds];
+
+  // Save original project ID to restore later
+  const origId = currentProjectId;
+
+  // Show progress indicator in modal
+  const listEl = document.getElementById('proj-list-container');
+  const origHtml = listEl ? listEl.innerHTML : '';
+  if (listEl) listEl.innerHTML = `<div class="proj-empty" style="padding:2rem 0">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="display:block;margin:0 auto .6rem;opacity:.4"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    PDF wird generiert… (${ids.length} Berechnung${ids.length>1?'en':''})</div>`;
+
+  const sections = [];
+
+  for (let i = 0; i < ids.length; i++) {
+    const id = ids[i];
+    const raw = localStorage.getItem(PROJ_KEY_PREFIX + id);
+    if (!raw) continue;
+    try {
+      const state = JSON.parse(raw);
+      const projName = meta.find(m => m.id === id)?.name || '';
+      // Update progress
+      if (listEl) { const pe = listEl.querySelector('.proj-empty'); if(pe) pe.textContent = `PDF wird generiert… ${i+1}/${ids.length}: ${projName}`; }
+      // Load state (runs berechnen() internally)
+      setProjectState(state);
+      // Wait for canvas render
+      await new Promise(r => setTimeout(r, 80));
+      // Capture canvas
+      const canvasImg = document.getElementById('main-canvas')?.toDataURL('image/png') || '';
+      // Build this section's HTML body content
+      const sectionHtml = buildPdfSectionHtml(projName, canvasImg);
+      sections.push(sectionHtml);
+    } catch(e) { console.error('PDF gen error for', id, e); }
+  }
+
+  // Restore list
+  if (listEl) listEl.innerHTML = origHtml;
+
+  // Restore original project
+  if (origId) {
+    const origRaw = localStorage.getItem(PROJ_KEY_PREFIX + origId);
+    if (origRaw) { try { setProjectState(JSON.parse(origRaw)); currentProjectId = origId; updateProjectBadge(); } catch(e){} }
+  }
+
+  if (sections.length === 0) return;
+
+  const combinedHtml = `<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>Serienbericht — Kettenwerk</title>
+<style>
+  body{font-family:Arial,sans-serif;font-size:9pt;margin:0;padding:0}
+  .pdf-section{padding:15mm 18mm 12mm;page-break-after:always}
+  .pdf-section:last-child{page-break-after:avoid}
+  h1{font-size:13pt;margin:0 0 4px;color:#111}
+  h2{font-size:10pt;margin:12px 0 4px;border-bottom:1px solid #ddd;padding-bottom:2px;color:#222}
+  table{border-collapse:collapse;width:100%;font-size:8.5pt}
+  td,th{border:1px solid #ddd;padding:3px 6px}
+  th{background:#f5f5f5;font-weight:600;text-align:left}
+  .warm{color:#b45309} .r{color:#b91c1c} .green{color:#15803d}
+  .cmp th{background:#f5f5f5} .cmp .warm{color:#b45309}
+  .step{margin-bottom:8px} .sub{margin:2px 0 2px 12px;font-size:8pt}
+  img.diagram{max-width:100%;height:auto}
+  footer{margin-top:12px;font-size:7pt;color:#aaa;border-top:1px solid #eee;padding-top:4px}
+  @media print{body{margin:0}@page{margin:0}}
+</style></head><body>
+${sections.map(s => `<div class="pdf-section">${s}</div>`).join('\n')}
+</body></html>`;
+
+  const win = window.open('', '_blank');
+  if (!win) { alert('Pop-up blockiert – bitte Pop-ups für diese Seite erlauben.'); return; }
+  win.document.write(combinedHtml);
+  win.document.close();
+  win.onload = () => win.print();
+}
+
+function saveToGroup(groupId) {
+  const meta = getProjMeta();
+  const group = meta.find(m => m.id === groupId);
+  if (!group) return;
+  const inp = document.getElementById('proj-name-input');
+  let name = inp.value.trim();
+  if (!name) {
+    const children = meta.filter(m => m.parentId === groupId);
+    name = `Berechnung ${children.length + 1}`;
+  }
+  const id = genProjId();
+  const now = new Date().toISOString();
+  meta.push({ id, name, isGroup: false, parentId: groupId, createdAt: now, updatedAt: now });
+  saveProjMeta(meta);
+  const state = getProjectState();
+  localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...state, name }));
+  currentProjectId = id;
+  inp.value = '';
   renderProjectList();
   updateProjectBadge();
 }
@@ -2648,13 +2859,42 @@ function renderProjectList() {
   const container = document.getElementById('proj-list-container');
   if (!container) return;
   const meta = getProjMeta();
+
+  // Update parent group dropdown in create form
+  const groups = meta.filter(m => m.isGroup);
+  const parentRow = document.getElementById('proj-parent-row');
+  const parentSel = document.getElementById('proj-parent-select');
+  if (parentRow && parentSel) {
+    if (groups.length > 0) {
+      parentRow.style.display = '';
+      parentSel.innerHTML = '<option value="">— (keine)</option>' +
+        groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+    } else {
+      parentRow.style.display = 'none';
+    }
+  }
+
   if (!meta.length) {
-    container.innerHTML = '<div class="proj-empty">Noch keine Projekte gespeichert</div>';
+    container.innerHTML = '<div class="proj-empty">Noch keine Einträge gespeichert</div>';
     return;
   }
-  container.innerHTML = meta.map(m => {
+
+  // Helper: render a calc item row (child or ungrouped)
+  const calcRow = (m, isChild) => {
     const isActive = m.id === currentProjectId;
-    return `<div class="proj-item${isActive ? ' active-proj' : ''}">
+    const checked = selectedIds.has(m.id);
+    const childCls = isChild ? 'proj-child-item' : '';
+    const moveOptions = groups.length > 0
+      ? `<select class="proj-move-sel" title="Zu Gruppe verschieben"
+           onchange="moveToGroup('${m.id}',this.value);this.value=''"
+           onclick="event.stopPropagation()">
+           <option value="">→ Gruppe</option>
+           ${groups.filter(g => g.id !== m.parentId).map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
+           ${m.parentId ? '<option value="">— Entfernen</option>' : ''}
+         </select>` : '';
+    return `<div class="proj-item ${childCls}${isActive ? ' active-proj' : ''}">
+      <input type="checkbox" class="proj-check" ${checked ? 'checked' : ''}
+        onclick="event.stopPropagation();toggleSelectCalc('${m.id}')">
       <div class="proj-item-info">
         <div class="proj-item-name" title="${m.name}">${m.name}${isActive ? ' ✓' : ''}</div>
         <div class="proj-item-date">Gespeichert: ${fmtDate(m.updatedAt)}</div>
@@ -2663,13 +2903,67 @@ function renderProjectList() {
         <button class="proj-btn pri" onclick="loadProjectById('${m.id}')">Laden</button>
         <button class="proj-btn" onclick="saveToProject('${m.id}')">Speichern</button>
         <button class="proj-btn" onclick="exportProjectById('${m.id}')">JSON ↓</button>
+        ${moveOptions}
         <button class="proj-btn danger" onclick="deleteProjectById('${m.id}')">Löschen</button>
       </div>
     </div>`;
+  };
+
+  // Render groups
+  const groupHtml = groups.map(g => {
+    const children = meta.filter(m => m.parentId === g.id && !m.isGroup);
+    const collapsed = collapsedGroups.has(g.id);
+    const hasActive = children.some(c => c.id === currentProjectId);
+    const allChildrenSelected = children.length > 0 && children.every(c => selectedIds.has(c.id));
+    const someSelected = children.some(c => selectedIds.has(c.id));
+    const childrenHtml = children.map(c => calcRow(c, true)).join('');
+
+    const toggleFn = `toggleGroupCollapse('${g.id}')`;
+    const childIds = children.map(c => c.id);
+    const checkFn = `(function(e){e.stopPropagation();var ch=${JSON.stringify(childIds)};var all=${allChildrenSelected};ch.forEach(function(id){if(all)selectedIds.delete(id);else selectedIds.add(id);});renderProjectList();})(event)`;
+
+    return `<div class="proj-group-wrap${hasActive ? ' has-active' : ''}">
+      <div class="proj-group-header" onclick="${toggleFn}">
+        <input type="checkbox" class="proj-check" ${allChildrenSelected ? 'checked' : ''}
+          style="${someSelected && !allChildrenSelected ? 'opacity:.5' : ''}"
+          onclick="${checkFn}">
+        <span class="proj-collapse-icon" style="transform:rotate(${collapsed ? '0' : '90'}deg)">▶</span>
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;color:#6b7280"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        <span class="proj-group-name">${g.name}</span>
+        <span class="proj-group-count">${children.length} Berechnung${children.length !== 1 ? 'en' : ''}</span>
+        <div class="proj-item-actions" onclick="event.stopPropagation()">
+          <button class="proj-btn pri" onclick="saveToGroup('${g.id}')" title="Aktuelle Berechnung unter dieser Gruppe speichern">+ Speichern</button>
+          <button class="proj-btn danger" onclick="deleteProjectById('${g.id}')">Löschen</button>
+        </div>
+      </div>
+      ${!collapsed && children.length > 0 ? `<div class="proj-group-children">${childrenHtml}</div>` : ''}
+      ${!collapsed && children.length === 0 ? `<div style="padding:.4rem 1.5rem .5rem;font-size:.72rem;color:var(--muted);font-style:italic">Keine Berechnungen in dieser Gruppe</div>` : ''}
+    </div>`;
   }).join('');
+
+  // Ungrouped calcs
+  const ungrouped = meta.filter(m => !m.isGroup && !m.parentId);
+  const ungroupedHtml = ungrouped.map(m => calcRow(m, false)).join('');
+
+  // Bulk bar
+  const bulkBar = selectedIds.size > 0 ? `
+    <div class="proj-bulk-bar">
+      <span class="proj-bulk-label">${selectedIds.size} ausgewählt</span>
+      <button class="proj-btn bulk" onclick="batchPdfExport()">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style="vertical-align:-.1em;margin-right:.2rem"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        PDF Serienbericht
+      </button>
+      <button class="proj-btn bulk" onclick="batchJsonExport()">JSON Export</button>
+      <button class="proj-btn bulk danger" onclick="batchDelete()">Löschen</button>
+    </div>` : '';
+
+  container.innerHTML = bulkBar +
+    (groupHtml ? `<div style="display:flex;flex-direction:column;gap:.4rem">${groupHtml}</div>` : '') +
+    (groupHtml && ungroupedHtml ? '<div style="font-size:.68rem;color:var(--muted);margin:.5rem 0 .2rem;padding-left:.1rem">Ohne Gruppe</div>' : '') +
+    (ungroupedHtml ? `<div style="display:flex;flex-direction:column;gap:.35rem">${ungroupedHtml}</div>` : '');
 }
 
-function openProjectsModal()  { renderProjectList(); document.getElementById('projects-modal').classList.add('open'); }
+function openProjectsModal()  { selectedIds.clear(); renderProjectList(); document.getElementById('projects-modal').classList.add('open'); }
 function closeProjectsModal() { document.getElementById('projects-modal').classList.remove('open'); }
 
 // ── T1-abhängige H_Ts_ub-Berechnung aus Reglagetabelle ──────────────────────
@@ -4089,15 +4383,14 @@ document.querySelectorAll('input, select').forEach(el => {
 // ═══════════════════════════════════════════════════════════════
 // PDF-EXPORT — Berechnungsprotokoll (druckfertig, A4)
 // ═══════════════════════════════════════════════════════════════
-function pdfExport() {
-  if (!calcState) return;
+function buildPdfSectionHtml(projName, canvasImg) {
+  if (!calcState) return '';
   const { L, Lm, spanMode, q_Ts, q_Fd, q_ges, H_Ts, H_Ts_ub, H_Fd, sh,
           h1, h2, T1, T2, alpha, EA, EA_Ts, deltaT, c1, c2, matTs, matFd, flCombo, ZL = 0 } = calcState;
   const q_H   = 0.02 * 9.81;
   const dh    = h2 - h1;
   const isNFL = sysMode === 'nfl';
   const isEl  = sysMode === 'el';
-  const canvasImg = document.getElementById('main-canvas').toDataURL('image/png');
 
   // ── SOK m ü. M. ──
   const sokL   = getSokMumLeft();
@@ -4161,47 +4454,7 @@ function pdfExport() {
     ? yFdSollPdf(x_ist_pdf) + (c2.y_low - catY_c1Pdf(x_ist_pdf))
     : yFdSollPdf(x_ist_pdf);
 
-  const html = `<!DOCTYPE html><html lang="${currentLang}"><head><meta charset="UTF-8">
-<title>${t('pdf.title')}</title>
-<style>
-@page { size: A4; margin: 16mm 14mm; }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 9.5pt; color: #1e293b; line-height: 1.6; }
-.hdr { background: linear-gradient(135deg,#444444,#212121); color: white; padding: 12px 16px;
-       border-radius: 8px; margin-bottom: 14px; }
-.hdr h1 { font-size: 13.5pt; font-weight: 700; }
-.hdr p  { font-size: 8pt; opacity: .8; margin-top: 2px; }
-h2 { font-size: 10pt; font-weight: 700; color: #eb0000; border-left: 3px solid #eb0000;
-     padding-left: 8px; margin: 13px 0 6px; page-break-after: avoid; }
-h2.warm { color: #eb0000; border-left-color: #eb0000; }
-h2.green { color: #16a34a; border-left-color: #16a34a; }
-.step { background: #f8fafc; border: 1px solid #d2d2d2; border-radius: 6px;
-        padding: 8px 12px; margin-bottom: 7px; page-break-inside: avoid; }
-em   { font-style: italic; color: #eb0000; }
-em.w { color: #eb0000; }
-em.g { color: #16a34a; }
-.sub { margin-left: 14px; color: #475569; font-size: 9pt; margin-top: 3px; }
-.sub2 { margin-left: 14px; color: #6b7280; font-size: 8.5pt; margin-top: 1px; }
-strong.r { color: #c60000; font-weight: 700; }
-strong.w { color: #c2410c; font-weight: 700; }
-strong.g { color: #15803d; font-weight: 700; }
-table.inp { border-collapse: collapse; width: 100%; }
-table.inp td { padding: 3px 7px; border-bottom: 1px solid #f1f5f9; font-size: 9pt; }
-table.inp td:first-child { color: #64748b; width: 50%; }
-table.cmp { border-collapse: collapse; width: 100%; margin-top: 5px; font-size: 9pt; }
-table.cmp th { background: #444444; color: white; padding: 5px 8px; text-align: left; font-size: 8.5pt; }
-table.cmp th.warm { background: #686868; }
-table.cmp td { padding: 4px 8px; border-bottom: 1px solid #f1f5f9; }
-table.cmp tr:nth-child(even) td { background: #f8fafc; }
-.pos { color: #16a34a; font-weight: 700; }
-.neg { color: #dc2626; font-weight: 700; }
-.diagram { text-align: center; margin-top: 8px; page-break-inside: avoid; }
-.diagram img { width: 100%; border: 1px solid #d2d2d2; border-radius: 6px; }
-footer { margin-top: 16px; font-size: 7.5pt; color: #b7b7b7;
-         border-top: 1px solid #d2d2d2; padding-top: 5px; text-align: right; }
-</style></head><body>
-
-<div class="hdr">
+  const bodyHtml = `<div class="hdr">
   <h1>${t('pdf.title')} &nbsp;(${isEl ? 'Einzelleiter' : isNFL ? 'N-FL' : 'R-FL'})</h1>
   <p>${t('pdf.erstellt')}: ${new Date().toLocaleString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE')} &nbsp;|&nbsp;
      ${isEl ? matTs : matTs + ' + ' + matFd} &nbsp;|&nbsp;
@@ -4450,7 +4703,57 @@ ${mode3pt && threePtMark ? `
   </p>
 </div>
 
-<footer>${t('pdf.footer')} &nbsp;·&nbsp; v2.1 &nbsp;|&nbsp; ${new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE')} &nbsp;|&nbsp; Statikteam, Fachentwicklung FS &nbsp;|&nbsp; ${t('pdf.quelle')}</footer>
+<footer>${t('pdf.footer')} &nbsp;·&nbsp; v2.1 &nbsp;|&nbsp; ${new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE')} &nbsp;|&nbsp; Statikteam, Fachentwicklung FS &nbsp;|&nbsp; ${t('pdf.quelle')}</footer>`;
+  return bodyHtml;
+}
+
+function pdfExport() {
+  if (!calcState) return;
+  const canvasImg = document.getElementById('main-canvas').toDataURL('image/png');
+  const projName = currentProjectId ? (getProjMeta().find(m => m.id === currentProjectId)?.name || '') : '';
+  const bodyContent = buildPdfSectionHtml(projName, canvasImg);
+  if (!bodyContent) return;
+
+  const html = `<!DOCTYPE html><html lang="${currentLang}"><head><meta charset="UTF-8">
+<title>${t('pdf.title')}</title>
+<style>
+@page { size: A4; margin: 16mm 14mm; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 9.5pt; color: #1e293b; line-height: 1.6; }
+.hdr { background: linear-gradient(135deg,#444444,#212121); color: white; padding: 12px 16px;
+       border-radius: 8px; margin-bottom: 14px; }
+.hdr h1 { font-size: 13.5pt; font-weight: 700; }
+.hdr p  { font-size: 8pt; opacity: .8; margin-top: 2px; }
+h2 { font-size: 10pt; font-weight: 700; color: #eb0000; border-left: 3px solid #eb0000;
+     padding-left: 8px; margin: 13px 0 6px; page-break-after: avoid; }
+h2.warm { color: #eb0000; border-left-color: #eb0000; }
+h2.green { color: #16a34a; border-left-color: #16a34a; }
+.step { background: #f8fafc; border: 1px solid #d2d2d2; border-radius: 6px;
+        padding: 8px 12px; margin-bottom: 7px; page-break-inside: avoid; }
+em   { font-style: italic; color: #eb0000; }
+em.w { color: #eb0000; }
+em.g { color: #16a34a; }
+.sub { margin-left: 14px; color: #475569; font-size: 9pt; margin-top: 3px; }
+.sub2 { margin-left: 14px; color: #6b7280; font-size: 8.5pt; margin-top: 1px; }
+strong.r { color: #c60000; font-weight: 700; }
+strong.w { color: #c2410c; font-weight: 700; }
+strong.g { color: #15803d; font-weight: 700; }
+table.inp { border-collapse: collapse; width: 100%; }
+table.inp td { padding: 3px 7px; border-bottom: 1px solid #f1f5f9; font-size: 9pt; }
+table.inp td:first-child { color: #64748b; width: 50%; }
+table.cmp { border-collapse: collapse; width: 100%; margin-top: 5px; font-size: 9pt; }
+table.cmp th { background: #444444; color: white; padding: 5px 8px; text-align: left; font-size: 8.5pt; }
+table.cmp th.warm { background: #686868; }
+table.cmp td { padding: 4px 8px; border-bottom: 1px solid #f1f5f9; }
+table.cmp tr:nth-child(even) td { background: #f8fafc; }
+.pos { color: #16a34a; font-weight: 700; }
+.neg { color: #dc2626; font-weight: 700; }
+.diagram { text-align: center; margin-top: 8px; page-break-inside: avoid; }
+.diagram img { width: 100%; border: 1px solid #d2d2d2; border-radius: 6px; }
+footer { margin-top: 16px; font-size: 7.5pt; color: #b7b7b7;
+         border-top: 1px solid #d2d2d2; padding-top: 5px; text-align: right; }
+</style></head><body>
+${bodyContent}
 </body></html>`;
 
   const win = window.open('', '_blank');
@@ -6001,11 +6304,11 @@ function applyCustomPreset(p) {
 
 <!-- ── Modal: Projekte ── -->
 <div class="modal-overlay" id="projects-modal" onclick="if(event.target===this)closeProjectsModal()">
-  <div class="modal-card" style="max-width:520px">
+  <div class="modal-card" style="max-width:560px">
     <div class="modal-header">
       <div class="modal-title">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-.15em;margin-right:.4rem"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-        Projekte
+        Datei
       </div>
       <button class="modal-close" onclick="closeProjectsModal()" title="Schliessen">✕</button>
     </div>
@@ -6015,15 +6318,25 @@ function applyCustomPreset(p) {
       <span><strong>Lokale Speicherung:</strong> Projektdaten werden im Browser-Cache gespeichert und gehen beim Löschen der Browserdaten verloren. Für eine sichere Aufbewahrung Projekte als <strong>JSON-Datei exportieren</strong>.</span>
     </div>
 
-    <!-- Neues Projekt erstellen -->
-    <div class="proj-new-row">
-      <input type="text" id="proj-name-input" placeholder="Projektname …" maxlength="60"
+    <!-- Neue Berechnung / Gruppe erstellen -->
+    <div class="proj-create-row">
+      <input type="text" id="proj-name-input" placeholder="Name …" maxlength="60"
              onkeydown="if(event.key==='Enter')createProject()">
-      <button class="proj-btn pri" onclick="createProject()">+ Neu</button>
+      <button class="proj-btn pri" onclick="createProject()">+ Berechnung</button>
+      <button class="proj-btn" onclick="createGroup()" title="Leere Gruppe erstellen">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style="vertical-align:-.1em;margin-right:.2rem"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        + Gruppe
+      </button>
+    </div>
+    <div class="proj-parent-row" id="proj-parent-row" style="display:none">
+      <span class="proj-parent-label">Unter Gruppe:</span>
+      <select id="proj-parent-select" class="proj-parent-sel">
+        <option value="">— (keine)</option>
+      </select>
     </div>
 
     <!-- Projektliste -->
-    <div id="proj-list-container" class="proj-list"></div>
+    <div id="proj-list-container" class="proj-list" style="max-height:360px"></div>
 
     <hr class="proj-separator">
 
