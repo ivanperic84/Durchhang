@@ -213,7 +213,7 @@ body {
   -webkit-appearance: none;
   width: 14px; height: 14px;
   border-radius: 50%;
-  background: var(--primary);
+  background: var(--t2-clr, var(--primary));
   cursor: pointer;
   margin-top: 0;
   box-shadow: 0 1px 4px rgba(0,0,0,.25);
@@ -221,7 +221,7 @@ body {
 #temp2-slider::-moz-range-thumb {
   width: 14px; height: 14px;
   border-radius: 50%;
-  background: var(--primary);
+  background: var(--t2-clr, var(--primary));
   border: none;
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(0,0,0,.25);
@@ -2156,8 +2156,17 @@ function updateSysModeUI(mode) {
   if (isRfl && spanMode === 'ruling') setSpanMode('single');
 }
 
+function t2TempColor(temp) {
+  const t = Math.max(0, Math.min(1, (temp + 20) / 100));
+  const hue = Math.round(220 * (1 - t));
+  const lit = Math.round(52 - 5 * t);
+  return `hsl(${hue},85%,${lit}%)`;
+}
+
 // Skala-Labels beim Schieben dynamisch skalieren
 function updateT2Float(v, active) {
+  const sldr = document.getElementById('temp2-slider');
+  if (sldr) sldr.style.setProperty('--t2-clr', t2TempColor(v));
   const labels   = document.querySelectorAll('.t2-lbl');
   const allVals  = Array.from(labels).map(el => parseInt(el.dataset.val));
   const exactHit = allVals.includes(v);
@@ -3699,7 +3708,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
           <div class="metric-list">${col(c1, '')}</div>
         </div>
         <div>
-          <div class="results-col-title warm">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
+          <div class="results-col-title" style="color:${t2TempColor(T2)}">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
           <div class="metric-list">${col(c2Display, 'warm')}</div>
         </div>
       </div>
@@ -3722,7 +3731,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
           <div class="metric-list">${col(c1, '')}</div>
         </div>
         <div>
-          <div class="results-col-title warm">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
+          <div class="results-col-title" style="color:${t2TempColor(T2)}">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
           <div class="metric-list">${col(c2Display, 'warm')}</div>
         </div>
       </div>
@@ -6128,9 +6137,10 @@ rebuildPresetDropdown('nfl');
 rebuildSpanList();
 injectCustomElMaterials();
 berechnen();
-// T2-Slider initialisieren
+// T2-Slider initialisieren + Farbe setzen
 { const v = parseFloat(document.getElementById('temp2').value) || 40;
-  document.getElementById('temp2-slider').value = v; }
+  document.getElementById('temp2-slider').value = v;
+  updateT2Float(v, false); }
 // Apply saved language (after first berechnen so all elements exist)
 if (currentLang !== 'de') setLang(currentLang);
 
