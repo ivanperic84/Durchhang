@@ -4259,7 +4259,6 @@ function mpBlock(xv, badge, cls, compact = false) {
       <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${subLabel}</div>
       <div class="istzustand-label" style="color:var(--mp-${cls});margin-top:${topGap}">${dhLabel}</div>
       <div class="istzustand-value" style="font-size:${sagSize};color:var(--mp-${cls})">${f3(dhValue)}<span class="istzustand-unit">m</span></div>
-      <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${t('res.h.ts')}: ${fN(cIst.H, 0)} N</div>
     </div>`;
 }
 
@@ -4344,7 +4343,7 @@ function updateHighlightCard() {
     el.innerHTML = `
       <div class="istzustand-card${rflCls}" style="margin-bottom:.75rem;${cardStyle}">
         ${blocks}
-        <div class="istzustand-divider" style="${compact ? 'grid-column:1/-1' : ''}"></div>
+        <div style="${compact ? 'grid-column:1/-1;' : ''}height:1px;background:rgba(0,0,0,.08);width:100%;margin:.25rem 0"></div>
         <div class="istzustand-secondary" style="${compact ? 'grid-column:1/-1' : ''}">
           <div class="istzustand-row">${t('res.h.ts')}: <strong>${fN(cIst.H, 0)} N</strong></div>
         </div>
