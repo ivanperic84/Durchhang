@@ -1935,7 +1935,7 @@ function compute3pt(L, h1, h2) {
     const qFdBase  = parseFloat(document.getElementById('weight-fd').value);
     const qFd      = qFdBase * (1 - wearPct / 100);
     const qTs      = parseFloat(document.getElementById('weight-ts').value);
-    M = combo ? (combo.MFL - (combo.MFL - combo.MTS - 0.7061) * (wearPct / 100)) : (qTs + qFd + 0.02 * 9.81);
+    M = combo ? (combo.MFL - qFdBase * (wearPct / 100)) : (qTs + qFd + 0.02 * 9.81);
   }
 
   if (xC <= 0 || xC >= c) {
@@ -1991,7 +1991,7 @@ function compute3pt(L, h1, h2) {
     let H_ub;
     if (combo) {
       const qFdBase = parseFloat(document.getElementById('weight-fd').value);
-      const MFL_eff = combo.MFL - (combo.MFL - combo.MTS - 0.7061) * (wearPct / 100);
+      const MFL_eff = combo.MFL - qFdBase * (wearPct / 100);
       const EA_fl   = combo.E * combo.AK;
       H_ub = solveLoadingInverse(FH, combo.MTS, MFL_eff, Lm, EA_fl);
     } else {
@@ -2947,8 +2947,9 @@ function readInputs() {
   // Bei bekannter FL-Kombination: MFL/MTS aus VBA-Tabelle verwenden (exaktere Gewichte inkl. Klemmen)
   let H_Ts, q_ges_eff;
   if (sysMode === 'nfl' && flCombo) {
-    // Abnutzung: nur Fahrdraht-Eigengewicht (ohne Hänger 0.7061 N/m) wird reduziert
-    const MFL_eff = flCombo.MFL - (flCombo.MFL - flCombo.MTS - 0.7061) * (wearPct / 100);
+    // Abnutzung: nur reines Fahrdraht-Drahtgewicht (q_Fd_base aus Materialtabelle) wird reduziert
+    // (Klemmen + Hänger bleiben unverändert; q_Fd_base ≠ MFL−MTS−0.706 wegen Klemmenanteil)
+    const MFL_eff = flCombo.MFL - q_Fd_base * (wearPct / 100);
     q_ges_eff = MFL_eff;
     // Stufe 1: parabolische Zustandsgleichung unbelastet→belastet
     // q_ges²L²/(24H²) = q_Ts²L²/(24H_ub²) + (H−H_ub)/EA
@@ -2960,7 +2961,7 @@ function readInputs() {
   } else if (sysMode === 'rfl' && flCombo) {
     // R-FL mit bekannter Kombination: MFL aus Tabelle (exakte Gewichte inkl. Klemmen/Hänger)
     // q_Haenger im manuellen q_ges wäre 0.196 N/m (falsch), FL-Tabelle hat 0.706 N/m
-    const MFL_eff = flCombo.MFL - (flCombo.MFL - flCombo.MTS - 0.7061) * (wearPct / 100);
+    const MFL_eff = flCombo.MFL - q_Fd_base * (wearPct / 100);
     q_ges_eff = MFL_eff;
     H_Ts = H_Ts_ub;  // R-FL: Zugkraft konstant (Nachspannvorrichtung)
   } else if (sysMode === 'nfl' && EA_Ts !== null && !isNaN(H_Ts_ub)) {
