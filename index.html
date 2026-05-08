@@ -3486,9 +3486,10 @@ function berechnen() {
       // VEM Handbuch Formel 7.66 + 7.82: Fahrdraht-Durchhang mit effektiver Spannweite
       // LT1 = c_proj + 2·Δh·(H₂+H_Fd) / (c_proj·q_vem)   [VEM 7.82, Δh-Korrektur]
       // f   = LT1² / 8 · q_vem / (H₂+H_Fd)                [VEM 7.66 mit LT1]
-      // q_vem = MFL·(1 + H_Fd/F₀)  [F₀ = H_Ts belastet bei T₁ — NICHT H₂!]
+      // q_vem = gkx + gk0_neu × H_Fd / Ht0   [VEM S.445: gk0 = neuer Draht, gkx = abgenutzt]
       if (flCombo && H2 !== null && c2) {
-        const q_vem  = q_ges * (1 + H_Fd / H_Ts) + ZL;   // F₀ = H_Ts bei T₁
+        const gk0_vem = wearPct > 0 ? flCombo.MFL : q_ges;  // neues MFL für H_Fd-Ratio
+        const q_vem  = q_ges + gk0_vem * H_Fd / H_Ts + ZL;  // gkx + gk0·H_Fd/Ht0
         const absDH  = Math.abs(h2 - h1);                 // |Δh| — symmetrisch (VEM 7.82)
         const LT1    = absDH > 1e-9
           ? L + 2 * absDH * (H2 + H_Fd) / (L * q_vem)    // VEM 7.82: immer LT1 ≥ L
