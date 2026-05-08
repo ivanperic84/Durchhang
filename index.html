@@ -227,6 +227,35 @@ body {
   box-shadow: 0 1px 4px rgba(0,0,0,.25);
 }
 
+/* ── T3-Slider: gleich wie T2 ── */
+#temp3-slider {
+  -webkit-appearance: none; appearance: none;
+  background: transparent; border: none; outline: none;
+  height: 20px;
+}
+#temp3-slider::-webkit-slider-runnable-track {
+  background: transparent; height: 0;
+}
+#temp3-slider::-moz-range-track {
+  background: transparent; height: 0; border: none;
+}
+#temp3-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--t3-clr, #6b7280);
+  border: 2px solid white;
+  margin-top: 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,.25);
+}
+#temp3-slider::-moz-range-thumb {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--t3-clr, #6b7280);
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,.25);
+}
+
 /* ── Fields ── */
 .field-group { display: flex; flex-direction: column; gap: .6rem; }
 .field { display: flex; flex-direction: column; gap: .28rem; }
@@ -1326,6 +1355,76 @@ button.header-manual-link:hover {
       </div>
     </div>
 
+    <!-- T3 — Vergleichskurve -->
+    <div style="margin:.4rem 0 0;border-top:1px solid var(--border);padding:.55rem 1rem .4rem">
+      <button id="t3-toggle-btn" onclick="toggleT3()"
+        style="width:100%;padding:.28rem .6rem;border-radius:7px;border:1px solid var(--border);
+               background:none;color:var(--muted);font-size:.74rem;font-weight:500;cursor:pointer;
+               display:flex;align-items:center;justify-content:center;gap:.35rem;transition:all .15s"
+        onmouseover="this.style.background='#f1f5f9'"
+        onmouseout="this.style.background='none'">
+        <span id="t3-toggle-icon" style="font-size:.8rem;line-height:1">＋</span>
+        <span id="t3-toggle-txt">T₃ Vergleichskurve einblenden</span>
+      </button>
+      <div id="t3-section" style="display:none;margin-top:.55rem">
+        <div class="field">
+          <label>Temperatur T₃</label>
+          <div class="input-wrap">
+            <input type="number" id="temp3" value="80" min="-20" max="80" step="1"
+                   oninput="onT3Input(this.value)"
+                   onchange="onT3Input(this.value)">
+            <span class="input-unit">°C</span>
+          </div>
+        </div>
+        <div style="margin:.4rem 0 .2rem">
+          <div style="padding:0 7px">
+            <div style="position:relative;height:16px;margin-bottom:2px">
+              <span class="t3-lbl" data-val="-20" style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:#9ca3af;white-space:nowrap;left:0%">−20°</span>
+              <span class="t3-lbl" data-val="-10" style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:#9ca3af;white-space:nowrap;left:10%">−10°</span>
+              <span class="t3-lbl" data-val="0"   style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:#9ca3af;white-space:nowrap;left:20%">0°</span>
+              <span class="t3-lbl" data-val="10"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:#9ca3af;white-space:nowrap;left:30%">10°</span>
+              <span class="t3-lbl" data-val="20"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:#9ca3af;white-space:nowrap;left:40%">20°</span>
+              <span class="t3-lbl" data-val="30"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:#9ca3af;white-space:nowrap;left:50%">30°</span>
+              <span class="t3-lbl" data-val="40"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:#9ca3af;white-space:nowrap;left:60%">40°</span>
+              <span class="t3-lbl" data-val="50"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:#9ca3af;white-space:nowrap;left:70%">50°</span>
+              <span class="t3-lbl" data-val="60"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:#9ca3af;white-space:nowrap;left:80%">60°</span>
+              <span class="t3-lbl" data-val="70"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:#9ca3af;white-space:nowrap;left:90%">70°</span>
+              <span class="t3-lbl" data-val="80"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:#9ca3af;white-space:nowrap;left:100%">80°</span>
+            </div>
+            <svg width="100%" height="8" viewBox="0 0 200 8" preserveAspectRatio="none" style="display:block;overflow:visible">
+              <line x1="0"   y1="0" x2="0"   y2="7" stroke="#9ca3af" stroke-width="1"/>
+              <line x1="10"  y1="0" x2="10"  y2="4" stroke="#d1d5db" stroke-width="0.8"/>
+              <line x1="20"  y1="0" x2="20"  y2="7" stroke="#9ca3af" stroke-width="1"/>
+              <line x1="30"  y1="0" x2="30"  y2="4" stroke="#d1d5db" stroke-width="0.8"/>
+              <line x1="40"  y1="0" x2="40"  y2="7" stroke="#9ca3af" stroke-width="1"/>
+              <line x1="50"  y1="0" x2="50"  y2="4" stroke="#d1d5db" stroke-width="0.8"/>
+              <line x1="60"  y1="0" x2="60"  y2="7" stroke="#9ca3af" stroke-width="1"/>
+              <line x1="70"  y1="0" x2="70"  y2="4" stroke="#d1d5db" stroke-width="0.8"/>
+              <line x1="80"  y1="0" x2="80"  y2="7" stroke="#9ca3af" stroke-width="1"/>
+              <line x1="90"  y1="0" x2="90"  y2="4" stroke="#d1d5db" stroke-width="0.8"/>
+              <line x1="100" y1="0" x2="100" y2="7" stroke="#9ca3af" stroke-width="1"/>
+              <line x1="110" y1="0" x2="110" y2="4" stroke="#d1d5db" stroke-width="0.8"/>
+              <line x1="120" y1="0" x2="120" y2="7" stroke="#9ca3af" stroke-width="1"/>
+              <line x1="130" y1="0" x2="130" y2="4" stroke="#d1d5db" stroke-width="0.8"/>
+              <line x1="140" y1="0" x2="140" y2="7" stroke="#9ca3af" stroke-width="1"/>
+              <line x1="150" y1="0" x2="150" y2="4" stroke="#d1d5db" stroke-width="0.8"/>
+              <line x1="160" y1="0" x2="160" y2="7" stroke="#9ca3af" stroke-width="1"/>
+              <line x1="170" y1="0" x2="170" y2="4" stroke="#d1d5db" stroke-width="0.8"/>
+              <line x1="180" y1="0" x2="180" y2="7" stroke="#9ca3af" stroke-width="1"/>
+              <line x1="190" y1="0" x2="190" y2="4" stroke="#d1d5db" stroke-width="0.8"/>
+              <line x1="200" y1="0" x2="200" y2="7" stroke="#9ca3af" stroke-width="1"/>
+            </svg>
+          </div>
+          <input type="range" id="temp3-slider" min="-20" max="80" step="5" value="80"
+                 style="width:100%;cursor:pointer;display:block;margin-top:2px"
+                 oninput="onT3Slider(this.value,true)"
+                 onchange="onT3Slider(this.value,false)"
+                 onmouseup="onT3SliderEnd()"
+                 ontouchend="onT3SliderEnd()">
+        </div>
+      </div>
+    </div>
+
     </div><!-- /sidebar-scroll -->
   </aside>
 
@@ -1339,6 +1438,7 @@ button.header-manual-link:hover {
     <div class="legend" id="legend">
       <div class="legend-item"><div class="legend-dot" style="background:#b7b7b7"></div><span id="leg-ts1">Ts bei T₁</span></div>
       <div class="legend-item" id="leg-ts2-item"><div class="legend-dot"></div><span id="leg-ts2-label">Ts bei T₂</span></div>
+      <div class="legend-item" id="leg-ts3-item" style="display:none"><div class="legend-dot" id="leg-ts3-dot" style="border:2px dashed #6b7280;background:transparent"></div><span id="leg-ts3-label">Ts bei T₃</span></div>
       <div class="legend-item" id="leg-fd-solllage-item" style="display:none"><div class="legend-dot" style="background:#86868b;opacity:.35"></div><span id="leg-fd-solllage-label">Fd Solllage (T₁)</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:#86868b;opacity:.7"></div><span id="leg-sehne-label">Sehnenlinie</span></div>
     </div>
@@ -1410,6 +1510,7 @@ let probeX1 = null; // M1: Realwelt-x-Position, null = nicht gesetzt
 let probeX2 = null; // M2: Realwelt-x-Position, null = nicht gesetzt
 let probeX3 = null; // M3
 let probeX4 = null; // M4
+let showT3 = false;
 
 // ═══════════════════════════════════════════════════════════════
 // MATERIALDATEN
@@ -2223,6 +2324,71 @@ function updateEislastVisibility() {
   // Sub-label immer sichtbar (bei T₂ = −5 °C gilt für NFL und RFL)
   const subLbl = document.getElementById('eis-label-sub');
   if (subLbl) subLbl.style.display = '';
+}
+
+function toggleT3() {
+  showT3 = !showT3;
+  const section = document.getElementById('t3-section');
+  const icon    = document.getElementById('t3-toggle-icon');
+  const txt     = document.getElementById('t3-toggle-txt');
+  const legItem = document.getElementById('leg-ts3-item');
+  section.style.display = showT3 ? '' : 'none';
+  if (icon) icon.textContent = showT3 ? '−' : '＋';
+  if (txt)  txt.textContent  = showT3 ? 'T₃ Vergleichskurve ausblenden' : 'T₃ Vergleichskurve einblenden';
+  if (legItem) legItem.style.display = showT3 ? '' : 'none';
+  if (showT3) {
+    const v = (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3').value));
+    updateT3Float(v, false);
+  }
+  berechnen();
+}
+
+function updateT3Float(v, active) {
+  const clr = t2TempColor(v);
+  const sldr = document.getElementById('temp3-slider');
+  if (sldr) sldr.style.setProperty('--t3-clr', clr);
+  const legDot = document.getElementById('leg-ts3-dot');
+  if (legDot) { legDot.style.borderColor = clr; legDot.style.background = 'transparent'; }
+  const labels  = document.querySelectorAll('.t3-lbl');
+  const allVals = Array.from(labels).map(el => parseInt(el.dataset.val));
+  const exactHit = allVals.includes(v);
+  const lower = allVals.filter(lv => lv <= v);
+  const upper = allVals.filter(lv => lv >= v);
+  const lowerVal = lower.length ? Math.max(...lower) : null;
+  const upperVal = upper.length ? Math.min(...upper) : null;
+  labels.forEach(el => {
+    const lv = parseInt(el.dataset.val);
+    if (active) {
+      if (exactHit && lv === v) {
+        el.style.fontSize = '.95rem'; el.style.fontWeight = '700'; el.style.color = 'var(--primary)';
+      } else if (!exactHit && (lv === lowerVal || lv === upperVal)) {
+        el.style.fontSize = '.75rem'; el.style.fontWeight = '600'; el.style.color = '#f87171';
+      } else {
+        el.style.fontSize = '.6rem'; el.style.fontWeight = '400'; el.style.color = '#9ca3af';
+      }
+    } else {
+      el.style.fontSize = '.6rem'; el.style.fontWeight = '400'; el.style.color = '#9ca3af';
+    }
+  });
+}
+
+function onT3SliderEnd() { updateT3Float(parseFloat(document.getElementById('temp3').value), false); }
+
+function onT3Slider(val, active = false) {
+  const v = Math.round(parseFloat(val));
+  document.getElementById('temp3').value = v;
+  document.getElementById('temp3-slider').value = v;
+  updateT3Float(v, active);
+  berechnen();
+}
+
+function onT3Input(val) {
+  let v = parseFloat(val);
+  if (isNaN(v)) return;
+  v = Math.max(-20, Math.min(80, Math.round(v)));
+  document.getElementById('temp3-slider').value = v;
+  updateT3Float(v, false);
+  berechnen();
 }
 
 // System N-FL / R-FL / Einzelleiter umschalten
@@ -3539,12 +3705,41 @@ function berechnen() {
     warns.push(`T₂: Tiefpunkt außerhalb der Spannweite.`);
   if (warns.length) { warnBox.innerHTML = warns.join('<br>'); warnBox.classList.remove('hidden'); }
 
+  // T3 — Vergleichskurve (optional)
+  let _c3 = null;
+  if (showT3) {
+    const _t3Raw = parseFloat(document.getElementById('temp3')?.value);
+    const T3 = isNaN(_t3Raw) ? 80 : _t3Raw;
+    const deltaT3 = T3 - T1;
+    try {
+      if (sysMode === 'nfl') {
+        if (flCombo) {
+          const MFL_init3 = wearPct > 0 ? flCombo.MFL : null;
+          const H3 = solveNFLStateEq(q_ges, H_Fd, H_Ts, Lm, flCombo.AL, flCombo.E, flCombo.AK, deltaT3, ZL, MFL_init3);
+          _c3 = computeBase(L, q_ges + ZL, H3, h1, h2);
+        } else if (EA !== null) {
+          _c3 = computeBase(L, q_ges + ZL, solveStateEq(q_ges + ZL, Lm, H_Ts, EA, alpha, deltaT3), h1, h2);
+        } else {
+          const s3 = c1.s * (1 + alpha * deltaT3);
+          _c3 = computeThermal(L, c1.W, s3, h1, h2);
+        }
+      } else if (isEl) {
+        if (EA !== null) {
+          _c3 = computeBase(L, q_ges, solveStateEq(q_ges, Lm, H_Ts, EA, alpha, deltaT3), h1, h2);
+        } else {
+          const s3 = c1.s * (1 + alpha * deltaT3);
+          _c3 = computeThermal(L, c1.W, s3, h1, h2);
+        }
+      }
+    } catch (_) {}
+  }
+
   renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, _c2_vem, ZL);
-  drawCanvas(c1, c2, L, h1, h2, sh, false, _c2_vem);
+  drawCanvas(c1, c2, L, h1, h2, sh, false, _c2_vem, _c3);
 
   calcState = { L, Lm, spanMode, q_Ts, q_Fd, q_ges, H_Ts, H_Ts_ub, H_Fd, sh, h1, h2, T1, T2,
                 alpha, EA, EA_Ts, deltaT, c1, c2, flCombo, ZL,
-                LT1_vem: _LT1_vem, q_vem_vem: _q_vem_vem, c2_vem: _c2_vem,
+                LT1_vem: _LT1_vem, q_vem_vem: _q_vem_vem, c2_vem: _c2_vem, c3: _c3,
                 matTs: getMaterialNameTs(), matFd: getMaterialNameFd() };
   updateAllMesspunkte();
 }
@@ -3562,6 +3757,15 @@ function quickDraw() {
   try {
     const c1 = computeBase(L, q_ges, H_Ts, h1, h2);
     let c2;
+    let _qc3 = null;
+    if (showT3) {
+      const _t3v = parseFloat(document.getElementById('temp3')?.value);
+      const _dT3 = (isNaN(_t3v) ? 80 : _t3v) - T1;
+      try {
+        if (sysMode === 'nfl' && EA !== null) _qc3 = computeBase(L, q_ges + ZL, solveStateEq(q_ges + ZL, Lm, H_Ts, EA, alpha, _dT3), h1, h2);
+        else if (isEl && EA !== null) _qc3 = computeBase(L, q_ges, solveStateEq(q_ges, Lm, H_Ts, EA, alpha, _dT3), h1, h2);
+      } catch(_) {}
+    }
     if (sysMode === 'nfl') {
       if (flCombo) {
         const H2 = solveNFLStateEq(flCombo.MFL, H_Fd, H_Ts, Lm,
@@ -3574,25 +3778,25 @@ function quickDraw() {
           : L;
         c2.sag = LT1_qd * LT1_qd / 8 * q_vem / (H2 + H_Fd);
         const c2_vem_qd = computeBase(L, q_vem, H2 + H_Fd, h1, h2);
-        drawCanvas(c1, c2, L, h1, h2, sh, true, c2_vem_qd);
+        drawCanvas(c1, c2, L, h1, h2, sh, true, c2_vem_qd, _qc3);
       } else {
         c2 = EA !== null
           ? computeBase(L, q_ges + ZL, solveStateEq(q_ges + ZL, Lm, H_Ts, EA, alpha, T2 - T1), h1, h2)
           : computeThermal(L, c1.W, c1.s * (1 + alpha * (T2 - T1)), h1, h2);
-        drawCanvas(c1, c2, L, h1, h2, sh, true);
+        drawCanvas(c1, c2, L, h1, h2, sh, true, null, _qc3);
       }
     } else if (isEl) {
       // Einzelleiter: einfache Zustandsgleichung
       c2 = EA !== null
         ? computeBase(L, q_ges, solveStateEq(q_ges, Lm, H_Ts, EA, alpha, T2 - T1), h1, h2)
         : computeThermal(L, c1.W, c1.s * (1 + alpha * (T2 - T1)), h1, h2);
-      drawCanvas(c1, c2, L, h1, h2, sh, true);
+      drawCanvas(c1, c2, L, h1, h2, sh, true, null, _qc3);
     } else {
     // R-FL: ZL anteilig auf Ts+Fd aufteilen
     c2 = (ZL > 0 && !isNaN(H_Fd) && H_Fd > 0)
       ? computeBase(L, q_ges + ZL * H_Ts / (H_Ts + H_Fd), H_Ts, h1, h2)
       : c1;
-    drawCanvas(c1, c2, L, h1, h2, sh, true);
+    drawCanvas(c1, c2, L, h1, h2, sh, true, null, _qc3);
   }
   } catch (_) {}
 }
@@ -3755,7 +3959,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
 // ═══════════════════════════════════════════════════════════════
 // CANVAS-ZEICHNUNG
 // ═══════════════════════════════════════════════════════════════
-function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null) {
+function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null, c3 = null) {
   // ── SOK-Koordinatensystem ──────────────────────────────────────
   // h1/h2 sind immer "über SOK". Wenn SOK gesetzt, werden alle
   // Zeichenkoordinaten in absolute Höhen (m ü. M.) umgerechnet.
@@ -3908,6 +4112,14 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   if (rflHasZL) drawCurve(c2, '#eb0000', 2.5, .85);
   const c1Color = (isRfl && !rflHasZL) ? '#eb0000' : '#b7b7b7';
   drawCurve(c1, c1Color, (t1Dashed || rflHasZL) ? 1.2 : 3, (t1Dashed || rflHasZL) ? 0.55 : 1, (t1Dashed || rflHasZL) ? [6, 4] : []);
+
+  // ── T3 Vergleichskurve (gestrichelt) ──
+  if (showT3 && c3) {
+    const _t3Raw = parseFloat(document.getElementById('temp3')?.value);
+    const _t3Val = isNaN(_t3Raw) ? 80 : _t3Raw;
+    const t3Clr = t2TempColor(_t3Val);
+    drawCurve(c3, t3Clr, 1.8, .7, [8, 5]);
+  }
 
   // ── Sag annotation ──
   function sagAnnotation(c, color, side) {
