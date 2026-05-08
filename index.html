@@ -864,12 +864,15 @@ button.header-manual-link:hover {
 .proj-footer { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
 
 /* ── Projekt-Hierarchie ─────────────────────────────── */
-.proj-create-row { display:flex; gap:.4rem; margin-bottom:.3rem; flex-wrap:wrap; }
-.proj-create-row input { flex:1; min-width:120px; border:1px solid var(--border); border-radius:8px; padding:.45rem .75rem; font-size:.83rem; font-family:inherit; outline:none; background:#f8f8f9; }
-.proj-create-row input:focus { border-color:var(--primary); background:#fff; }
-.proj-parent-row { display:flex; align-items:center; gap:.5rem; margin-bottom:.85rem; min-height:1.6rem; }
-.proj-parent-label { font-size:.72rem; color:var(--muted); white-space:nowrap; }
-.proj-parent-sel { border:1px solid var(--border); border-radius:6px; font-size:.72rem; padding:.2rem .4rem; background:#f8f8f9; color:var(--text); font-family:inherit; cursor:pointer; }
+.proj-save-block { background:#f9fafb; border:1px solid var(--border); border-radius:10px; padding:.7rem .9rem; margin-bottom:.85rem; }
+.proj-save-section-title { font-size:.67rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.55rem; }
+.proj-save-grid { display:grid; grid-template-columns:1fr 1fr; gap:.45rem .6rem; margin-bottom:.45rem; }
+.proj-save-label { font-size:.7rem; color:var(--muted); margin-bottom:.18rem; }
+.proj-save-inp { width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:7px; padding:.38rem .6rem; font-size:.8rem; font-family:inherit; background:#fff; outline:none; }
+.proj-save-inp:focus { border-color:var(--primary); }
+.proj-new-grp-row { display:flex; align-items:center; gap:.4rem; margin-top:.35rem; padding-top:.35rem; border-top:1px solid var(--border); }
+.proj-new-grp-inp { flex:1; border:1px solid #fca5a5; border-radius:7px; padding:.35rem .6rem; font-size:.78rem; font-family:inherit; background:#fff8f8; outline:none; }
+.proj-new-grp-inp:focus { border-color:var(--primary); background:#fff; }
 .proj-group-wrap { border:1px solid var(--border); border-radius:10px; overflow:hidden; }
 .proj-group-wrap.has-active { border-color:var(--primary); }
 .proj-group-header { padding:.48rem .8rem; display:flex; align-items:center; gap:.45rem; background:#f4f5f7; cursor:pointer; user-select:none; }
@@ -930,9 +933,8 @@ button.header-manual-link:hover {
   <div style="flex:1;min-width:0">
     <h1 id="app-title">Durchhang N-FL</h1>
     <p id="app-subtitle">Kettenwerk — Seillinie mit Temperatureinfluss</p>
-    <p id="proj-name-badge" style="display:none;margin:0;font-size:.82rem;font-weight:600;color:#eb0000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-      <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style="vertical-align:-.05em;margin-right:.25rem"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="#eb0000" stroke-width="1.4" stroke-linejoin="round"/></svg>
-      <span id="proj-name-text"></span>
+    <p id="proj-name-badge" style="display:none;margin:0;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">
+      <span style="color:var(--muted);font-weight:500">Projekt: </span><span id="proj-name-group" style="color:#eb0000;font-weight:700"></span><span id="proj-name-sep" style="color:var(--muted);font-weight:400"> / </span><span id="proj-name-text" style="color:#eb0000;font-weight:700"></span>
     </p>
   </div>
   <button onclick="openProjectsModal()" class="header-manual-link" title="Datei" style="background:none;border:none;cursor:pointer;">
@@ -2578,18 +2580,92 @@ function setProjectState(s) {
 
 // ── localStorage-Hilfsfunktionen ──
 function getProjMeta()        { try { return JSON.parse(localStorage.getItem(PROJ_META_KEY) || '[]'); } catch { return []; } }
+
+// ── Auto-Benennung ──
+function nextProjectName() {
+  const names = new Set(getProjMeta().filter(m => m.isGroup).map(g => g.name));
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for (const ch of letters) { const n = `Projekt ${ch}`; if (!names.has(n)) return n; }
+  for (const a of letters) for (const b of letters) { const n = `Projekt ${a}${b}`; if (!names.has(n)) return n; }
+  return `Projekt ${Date.now()}`;
+}
+function nextCalcName(parentId) {
+  const count = getProjMeta().filter(m => !m.isGroup && m.parentId === parentId).length;
+  const lbl = sysMode === 'nfl' ? 'N-FL' : sysMode === 'rfl' ? 'R-FL' : 'Einzelleiter';
+  return `${lbl} ${count + 1}`;
+}
+
+// ── Neues Projekt-Feld ein-/ausblenden ──
+function onProjGroupSelChange() {
+  const val = document.getElementById('proj-group-sel')?.value;
+  const row = document.getElementById('proj-new-grp-row');
+  if (row) row.style.display = val === '__new__' ? '' : 'none';
+}
+
+// ── Hauptspeicher-Funktion ──
+function saveCurrentCalc() {
+  const meta = getProjMeta();
+  const sel  = document.getElementById('proj-group-sel');
+  let groupId;
+
+  if (!sel || sel.value === '__new__') {
+    // Neues Projekt anlegen
+    const nameInp = document.getElementById('proj-new-grp-name');
+    const gName   = nameInp?.value.trim() || nextProjectName();
+    groupId = 'g' + Date.now() + Math.random().toString(36).slice(2,5);
+    meta.unshift({ id: groupId, name: gName, isGroup: true, parentId: null,
+                   createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    if (nameInp) nameInp.value = '';
+  } else {
+    groupId = sel.value;
+  }
+
+  // Berechnung anlegen
+  const calcInp  = document.getElementById('proj-calc-name');
+  const calcName = calcInp?.value.trim() || nextCalcName(groupId);
+  const id = genProjId();
+  const now = new Date().toISOString();
+  meta.unshift({ id, name: calcName, isGroup: false, parentId: groupId, createdAt: now, updatedAt: now });
+  saveProjMeta(meta);
+  localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...getProjectState(), name: calcName }));
+  currentProjectId = id;
+  if (calcInp) calcInp.value = '';
+  // Gruppe aufklappen damit der neue Eintrag sichtbar ist
+  collapsedGroups.delete(groupId);
+  renderProjectList();
+  updateProjectBadge();
+}
 function saveProjMeta(arr)    { localStorage.setItem(PROJ_META_KEY, JSON.stringify(arr)); }
 function genProjId()          { return 'p' + Date.now() + Math.random().toString(36).slice(2,5); }
 
 function updateProjectBadge() {
-  const badge = document.getElementById('proj-name-badge');
-  const text  = document.getElementById('proj-name-text');
-  if (!badge || !text) return;
+  const badge   = document.getElementById('proj-name-badge');
+  const grpSpan = document.getElementById('proj-name-group');
+  const sepSpan = document.getElementById('proj-name-sep');
+  const txtSpan = document.getElementById('proj-name-text');
+  if (!badge || !txtSpan) return;
   if (currentProjectId) {
-    const meta = getProjMeta().find(m => m.id === currentProjectId);
-    if (meta) { text.textContent = meta.name; badge.style.display = ''; return; }
+    const allMeta = getProjMeta();
+    const meta = allMeta.find(m => m.id === currentProjectId);
+    if (meta) {
+      const group = meta.parentId ? allMeta.find(m => m.id === meta.parentId) : null;
+      if (group && grpSpan && sepSpan) {
+        grpSpan.textContent = group.name;
+        sepSpan.style.display = '';
+        grpSpan.style.display = '';
+      } else if (grpSpan && sepSpan) {
+        grpSpan.textContent = '';
+        sepSpan.style.display = 'none';
+        grpSpan.style.display = 'none';
+      }
+      txtSpan.textContent = meta.name;
+      badge.style.display = '';
+      return;
+    }
   }
-  badge.style.display = 'none'; text.textContent = '';
+  badge.style.display = 'none';
+  if (txtSpan) txtSpan.textContent = '';
+  if (grpSpan) grpSpan.textContent = '';
 }
 
 function fmtDate(iso) {
@@ -2818,12 +2894,8 @@ function saveToGroup(groupId) {
   const meta = getProjMeta();
   const group = meta.find(m => m.id === groupId);
   if (!group) return;
-  const inp = document.getElementById('proj-name-input');
-  let name = inp.value.trim();
-  if (!name) {
-    const children = meta.filter(m => m.parentId === groupId);
-    name = `Berechnung ${children.length + 1}`;
-  }
+  const calcInp = document.getElementById('proj-calc-name');
+  const name = (calcInp && calcInp.value.trim()) || nextCalcName(groupId);
   const id = genProjId();
   const now = new Date().toISOString();
   meta.push({ id, name, isGroup: false, parentId: groupId, createdAt: now, updatedAt: now });
@@ -2831,7 +2903,8 @@ function saveToGroup(groupId) {
   const state = getProjectState();
   localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...state, name }));
   currentProjectId = id;
-  inp.value = '';
+  if (calcInp) calcInp.value = '';
+  collapsedGroups.delete(groupId);
   renderProjectList();
   updateProjectBadge();
 }
@@ -2876,18 +2949,16 @@ function renderProjectList() {
   if (!container) return;
   const meta = getProjMeta();
 
-  // Update parent group dropdown in create form
+  // Update project group dropdown in save form
   const groups = meta.filter(m => m.isGroup);
-  const parentRow = document.getElementById('proj-parent-row');
-  const parentSel = document.getElementById('proj-parent-select');
-  if (parentRow && parentSel) {
-    if (groups.length > 0) {
-      parentRow.style.display = '';
-      parentSel.innerHTML = '<option value="">— (keine)</option>' +
-        groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
-    } else {
-      parentRow.style.display = 'none';
-    }
+  const groupSel = document.getElementById('proj-group-sel');
+  if (groupSel) {
+    const prevVal = groupSel.value;
+    groupSel.innerHTML = '<option value="__new__">★ Neues Projekt …</option>' +
+      groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+    if (prevVal && [...groupSel.options].some(o => o.value === prevVal))
+      groupSel.value = prevVal;
+    onProjGroupSelChange();
   }
 
   if (!meta.length) {
@@ -2904,9 +2975,8 @@ function renderProjectList() {
       ? `<select class="proj-move-sel" title="Zu Gruppe verschieben"
            onchange="moveToGroup('${m.id}',this.value);this.value=''"
            onclick="event.stopPropagation()">
-           <option value="">→ Gruppe</option>
+           <option value="">→ Projekt</option>
            ${groups.filter(g => g.id !== m.parentId).map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
-           ${m.parentId ? '<option value="">— Entfernen</option>' : ''}
          </select>` : '';
     return `<div class="proj-item ${childCls}${isActive ? ' active-proj' : ''}">
       <input type="checkbox" class="proj-check" ${checked ? 'checked' : ''}
@@ -2979,7 +3049,16 @@ function renderProjectList() {
     (ungroupedHtml ? `<div style="display:flex;flex-direction:column;gap:.35rem">${ungroupedHtml}</div>` : '');
 }
 
-function openProjectsModal()  { selectedIds.clear(); renderProjectList(); document.getElementById('projects-modal').classList.add('open'); }
+function openProjectsModal() {
+  selectedIds.clear();
+  renderProjectList();
+  // Reset save form fields
+  const calcInp = document.getElementById('proj-calc-name');
+  const grpInp  = document.getElementById('proj-new-grp-name');
+  if (calcInp) calcInp.value = '';
+  if (grpInp)  grpInp.value  = '';
+  document.getElementById('projects-modal').classList.add('open');
+}
 function closeProjectsModal() { document.getElementById('projects-modal').classList.remove('open'); }
 
 // ── T1-abhängige H_Ts_ub-Berechnung aus Reglagetabelle ──────────────────────
@@ -6334,21 +6413,26 @@ function applyCustomPreset(p) {
       <span><strong>Lokale Speicherung:</strong> Projektdaten werden im Browser-Cache gespeichert und gehen beim Löschen der Browserdaten verloren. Für eine sichere Aufbewahrung Projekte als <strong>JSON-Datei exportieren</strong>.</span>
     </div>
 
-    <!-- Neue Berechnung / Gruppe erstellen -->
-    <div class="proj-create-row">
-      <input type="text" id="proj-name-input" placeholder="Name …" maxlength="60"
-             onkeydown="if(event.key==='Enter')createProject()">
-      <button class="proj-btn pri" onclick="createProject()">+ Berechnung</button>
-      <button class="proj-btn" onclick="createGroup()" title="Leere Gruppe erstellen">
-        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style="vertical-align:-.1em;margin-right:.2rem"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-        + Gruppe
-      </button>
-    </div>
-    <div class="proj-parent-row" id="proj-parent-row" style="display:none">
-      <span class="proj-parent-label">Unter Gruppe:</span>
-      <select id="proj-parent-select" class="proj-parent-sel">
-        <option value="">— (keine)</option>
-      </select>
+    <!-- Berechnung speichern -->
+    <div class="proj-save-block">
+      <div class="proj-save-section-title">Aktuelle Berechnung speichern</div>
+      <div class="proj-save-grid">
+        <div>
+          <div class="proj-save-label">Projekt</div>
+          <select id="proj-group-sel" class="proj-save-inp" onchange="onProjGroupSelChange()"></select>
+        </div>
+        <div>
+          <div class="proj-save-label">Bezeichnung (optional)</div>
+          <input type="text" id="proj-calc-name" class="proj-save-inp" placeholder="N-FL 1"
+                 onkeydown="if(event.key==='Enter')saveCurrentCalc()">
+        </div>
+      </div>
+      <div id="proj-new-grp-row" class="proj-new-grp-row" style="display:none">
+        <span class="proj-save-label" style="white-space:nowrap">Projektname:</span>
+        <input type="text" id="proj-new-grp-name" class="proj-new-grp-inp" placeholder="Projekt A"
+               onkeydown="if(event.key==='Enter')saveCurrentCalc()">
+      </div>
+      <button class="proj-btn pri" onclick="saveCurrentCalc()" style="width:100%;margin-top:.5rem">Speichern</button>
     </div>
 
     <!-- Projektliste -->
