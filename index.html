@@ -905,32 +905,8 @@ button.header-manual-link:hover {
 </head>
 <body>
 
-<!-- ── Entwicklungs-Wasserzeichen ── -->
-<div id="dev-badge" style="
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 9998;
-  overflow: hidden;
-">
-  <div style="
-    font-size: clamp(3.5rem, 9vw, 8rem);
-    font-weight: 900;
-    font-family: inherit;
-    letter-spacing: .18em;
-    text-transform: uppercase;
-    color: transparent;
-    -webkit-text-stroke: 1.2px rgba(0,0,0,0.07);
-    white-space: nowrap;
-    transform: rotate(-30deg);
-    width: 220%;
-    text-align: center;
-    user-select: none;
-  ">In Entwicklung</div>
-</div>
+<!-- ── Beta-Wasserzeichen ── -->
+<div id="dev-badge" style="position:fixed;inset:0;pointer-events:none;z-index:9998;overflow:hidden"></div>
 
 <div class="header">
   <div class="header-icon">
@@ -6141,6 +6117,19 @@ berechnen();
 { const v = parseFloat(document.getElementById('temp2').value) || 40;
   document.getElementById('temp2-slider').value = v;
   updateT2Float(v, false); }
+// Beta-Wasserzeichen gekachelt
+(function(){
+  const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='340' height='190'>" +
+    "<text x='170' y='65' text-anchor='middle' dominant-baseline='middle' font-size='50' font-weight='900' font-family='system-ui,sans-serif' letter-spacing='8' fill='none' stroke='rgba(0,0,0,.08)' stroke-width='1.2' transform='rotate(-30 170 65)'>Beta</text>" +
+    "<text x='340' y='160' text-anchor='middle' dominant-baseline='middle' font-size='50' font-weight='900' font-family='system-ui,sans-serif' letter-spacing='8' fill='none' stroke='rgba(0,0,0,.08)' stroke-width='1.2' transform='rotate(-30 340 160)'>Beta</text>" +
+    "</svg>";
+  const b = document.getElementById('dev-badge');
+  if (b) {
+    b.style.backgroundImage = "url('data:image/svg+xml;base64," + btoa(svg) + "')";
+    b.style.backgroundSize  = '340px 190px';
+    b.style.backgroundRepeat = 'repeat';
+  }
+})();
 // Apply saved language (after first berechnen so all elements exist)
 if (currentLang !== 'de') setLang(currentLang);
 
