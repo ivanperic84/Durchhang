@@ -2605,20 +2605,14 @@ function onProjGroupSelChange() {
 // ── Hauptspeicher-Funktion ──
 function saveCurrentCalc() {
   const meta = getProjMeta();
-  const sel  = document.getElementById('proj-group-sel');
-  let groupId;
 
-  if (!sel || sel.value === '__new__') {
-    // Neues Projekt anlegen
-    const nameInp = document.getElementById('proj-new-grp-name');
-    const gName   = nameInp?.value.trim() || nextProjectName();
-    groupId = 'g' + Date.now() + Math.random().toString(36).slice(2,5);
-    meta.unshift({ id: groupId, name: gName, isGroup: true, parentId: null,
-                   createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
-    if (nameInp) nameInp.value = '';
-  } else {
-    groupId = sel.value;
-  }
+  // Immer neues Projekt anlegen
+  const nameInp = document.getElementById('proj-new-grp-name');
+  const gName   = nameInp?.value.trim() || nextProjectName();
+  const groupId = 'g' + Date.now() + Math.random().toString(36).slice(2,5);
+  meta.unshift({ id: groupId, name: gName, isGroup: true, parentId: null,
+                 createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+  if (nameInp) nameInp.value = '';
 
   // Berechnung anlegen
   const calcInp  = document.getElementById('proj-calc-name');
@@ -2630,7 +2624,6 @@ function saveCurrentCalc() {
   localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...getProjectState(), name: calcName }));
   currentProjectId = id;
   if (calcInp) calcInp.value = '';
-  // Gruppe aufklappen damit der neue Eintrag sichtbar ist
   collapsedGroups.delete(groupId);
   renderProjectList();
   updateProjectBadge();
@@ -2949,17 +2942,7 @@ function renderProjectList() {
   if (!container) return;
   const meta = getProjMeta();
 
-  // Update project group dropdown in save form
   const groups = meta.filter(m => m.isGroup);
-  const groupSel = document.getElementById('proj-group-sel');
-  if (groupSel) {
-    const prevVal = groupSel.value;
-    groupSel.innerHTML = '<option value="__new__">★ Neues Projekt …</option>' +
-      groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
-    if (prevVal && [...groupSel.options].some(o => o.value === prevVal))
-      groupSel.value = prevVal;
-    onProjGroupSelChange();
-  }
 
   if (!meta.length) {
     container.innerHTML = '<div class="proj-empty">Noch keine Einträge gespeichert</div>';
@@ -6415,22 +6398,18 @@ function applyCustomPreset(p) {
 
     <!-- Berechnung speichern -->
     <div class="proj-save-block">
-      <div class="proj-save-section-title">Aktuelle Berechnung speichern</div>
+      <div class="proj-save-section-title">Neues Projekt erstellen</div>
       <div class="proj-save-grid">
         <div>
-          <div class="proj-save-label">Projekt</div>
-          <select id="proj-group-sel" class="proj-save-inp" onchange="onProjGroupSelChange()"></select>
+          <div class="proj-save-label">Projektname (optional)</div>
+          <input type="text" id="proj-new-grp-name" class="proj-save-inp" placeholder="Projekt A"
+                 onkeydown="if(event.key==='Enter')saveCurrentCalc()">
         </div>
         <div>
           <div class="proj-save-label">Bezeichnung (optional)</div>
           <input type="text" id="proj-calc-name" class="proj-save-inp" placeholder="N-FL 1"
                  onkeydown="if(event.key==='Enter')saveCurrentCalc()">
         </div>
-      </div>
-      <div id="proj-new-grp-row" class="proj-new-grp-row" style="display:none">
-        <span class="proj-save-label" style="white-space:nowrap">Projektname:</span>
-        <input type="text" id="proj-new-grp-name" class="proj-new-grp-inp" placeholder="Projekt A"
-               onkeydown="if(event.key==='Enter')saveCurrentCalc()">
       </div>
       <button class="proj-btn pri" onclick="saveCurrentCalc()" style="width:100%;margin-top:.5rem">Speichern</button>
     </div>
