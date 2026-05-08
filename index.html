@@ -2520,8 +2520,14 @@ function setProjectState(s) {
     wearPct = s.wearPct ?? 0;
     document.getElementById('wear-btn-0')?.classList.toggle('active', wearPct === 0);
     document.getElementById('wear-btn-max')?.classList.toggle('active', wearPct !== 0);
-    // Tension nach Preset-Logik überschreiben
+    // Benutzerwerte nach applyPreset() wiederherstellen
+    // (applyPreset überschreibt temp1, sh, tension mit Preset-Defaults)
     if (flds['tension'] != null) document.getElementById('tension').value = flds['tension'];
+    if (flds['temp1']   != null) document.getElementById('temp1').value   = flds['temp1'];
+    if (flds['sh']      != null) document.getElementById('sh').value      = flds['sh'];
+    if (flds['h1']      != null) document.getElementById('h1').value      = flds['h1'];
+    if (flds['h2']      != null) document.getElementById('h2').value      = flds['h2'];
+    if (flds['span']    != null) document.getElementById('span').value    = flds['span'];
   } else {
     activePresetRef = null; activePresetP = null;
     const matKey = flds['el-material-select'] ?? 'cu95';
@@ -2557,6 +2563,16 @@ function setProjectState(s) {
     }
     if (flds['tension'] != null) document.getElementById('tension').value = flds['tension'];
   }
+  // T2-Slider synchronisieren und Eislast-Sichtbarkeit aktualisieren
+  if (flds['temp2'] != null) {
+    const t2v = parseFloat(flds['temp2']);
+    if (!isNaN(t2v)) {
+      const sl = document.getElementById('temp2-slider');
+      if (sl) sl.value = t2v;
+      updateT2Float(t2v, false);
+    }
+  }
+  updateEislastVisibility();
   berechnen();
 }
 
