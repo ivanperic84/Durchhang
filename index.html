@@ -1182,10 +1182,10 @@ button.header-manual-link:hover {
         </div>
 
         <!-- 3-Punkte-Eingabe (ausgeklappt) -->
-        <div id="three-pt-panel" style="display:none;margin-top:.6rem;padding:.7rem .75rem .65rem;background:#fff5f5;border:1px solid rgba(235,0,0,.2);border-radius:10px">
+        <div id="three-pt-panel" style="display:none;margin-top:.6rem;padding:.7rem .75rem .65rem;background:var(--bg);border:1px solid var(--border);border-radius:10px">
           <!-- Header: Titel + Untertitel untereinander -->
           <div style="margin-bottom:.55rem">
-            <div style="font-size:.72rem;font-weight:600;color:#eb0000;display:flex;align-items:center;gap:.3rem">
+            <div style="font-size:.72rem;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:.3rem">
               <span>⊕</span> <span id="three-pt-hdr">3-Punkte-Messung</span>
             </div>
             <div id="three-pt-subtitle" style="font-size:.67rem;font-weight:400;color:var(--tertiary);margin-top:.15rem">Punkt C zwischen den Masten</div>
@@ -1203,7 +1203,7 @@ button.header-manual-link:hover {
             <label id="yC-label">Durchhang y<sub>C</sub> <span style="font-weight:400;color:var(--tertiary)">unter Sehne</span></label>
             <div style="display:flex;gap:.3rem;margin-bottom:.3rem">
               <button id="yc-btn-sag" onclick="setYCMode('sag')"
-                style="flex:1;padding:.22rem .3rem;font-size:.68rem;border-radius:6px;border:1px solid rgba(235,0,0,.3);background:#fff5f5;color:#eb0000;cursor:pointer;font-weight:600"><span id="yc-btn-sag-text">Durchhang</span></button>
+                style="flex:1;padding:.22rem .3rem;font-size:.68rem;border-radius:6px;border:1px solid var(--border);background:#ebebeb;color:var(--text);cursor:pointer;font-weight:600"><span id="yc-btn-sag-text">Durchhang</span></button>
               <button id="yc-btn-sok" onclick="setYCMode('sok')"
                 style="flex:1;padding:.22rem .3rem;font-size:.68rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer"><span id="yc-btn-sok-text">Höhe ab SOK</span></button>
               <button id="yc-btn-mum" onclick="setYCMode('mum')"
@@ -1215,7 +1215,7 @@ button.header-manual-link:hover {
               <span class="input-unit">m</span>
             </div>
           </div>
-          <div id="three-pt-result" style="margin-top:.45rem;font-size:.72rem;color:#eb0000;min-height:1.4em"></div>
+          <div id="three-pt-result" style="margin-top:.45rem;font-size:.72rem;color:var(--text);min-height:1.4em"></div>
         </div>
         <div class="field-row">
           <div class="field" id="t1-field">
@@ -1873,7 +1873,7 @@ function setYCMode(mode) {
     const el = document.getElementById(id);
     if (!el) return;
     el.style.cssText = el.style.cssText.replace(/border:[^;]+;|background:[^;]+;|color:[^;]+;|font-weight:[^;]+;/g, '');
-    if (k === mode) { el.style.border='1px solid #7dd3fc'; el.style.background='#e0f2fe'; el.style.color='#eb0000'; el.style.fontWeight='600'; }
+    if (k === mode) { el.style.border='1px solid var(--border)'; el.style.background='#ebebeb'; el.style.color='var(--text)'; el.style.fontWeight='600'; }
     else            { el.style.border='1px solid var(--border)'; el.style.background='none'; el.style.color='var(--muted)'; el.style.fontWeight='400'; }
   });
   const labelEl = document.getElementById('yC-label');
@@ -1904,9 +1904,9 @@ function toggle3pt() {
   const tensionInput = document.getElementById('tension');
   if (mode3pt) {
     panel.style.display = '';
-    btn.style.background = '#e0f2fe';
-    btn.style.borderColor = '#7dd3fc';
-    btn.style.color = '#eb0000';
+    btn.style.background = '#ebebeb';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.color = 'var(--text)';
     tensionInput.readOnly = true;
     tensionInput.style.background = 'var(--bg)';
     tensionInput.style.color = 'var(--muted)';
