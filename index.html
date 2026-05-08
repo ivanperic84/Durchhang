@@ -2141,8 +2141,11 @@ function t2TempColor(temp) {
 
 // Skala-Labels beim Schieben dynamisch skalieren
 function updateT2Float(v, active) {
+  const clr = t2TempColor(v);
   const sldr = document.getElementById('temp2-slider');
-  if (sldr) sldr.style.setProperty('--t2-clr', t2TempColor(v));
+  if (sldr) sldr.style.setProperty('--t2-clr', clr);
+  const inp = document.getElementById('temp2');
+  if (inp) inp.style.color = clr;
   const labels   = document.querySelectorAll('.t2-lbl');
   const allVals  = Array.from(labels).map(el => parseInt(el.dataset.val));
   const exactHit = allVals.includes(v);
@@ -3684,7 +3687,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
           <div class="metric-list">${col(c1, '')}</div>
         </div>
         <div>
-          <div class="results-col-title" style="color:${t2TempColor(T2)}">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
+          <div class="results-col-title warm">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
           <div class="metric-list">${col(c2Display, 'warm')}</div>
         </div>
       </div>
@@ -3707,7 +3710,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
           <div class="metric-list">${col(c1, '')}</div>
         </div>
         <div>
-          <div class="results-col-title" style="color:${t2TempColor(T2)}">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
+          <div class="results-col-title warm">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
           <div class="metric-list">${col(c2Display, 'warm')}</div>
         </div>
       </div>
