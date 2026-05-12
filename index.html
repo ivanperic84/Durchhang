@@ -506,6 +506,31 @@ body {
   position: relative;
   flex-shrink: 0;
 }
+#drawing-legend-overlay {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  background: rgba(255,255,255,.9);
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: .3rem .6rem;
+  font-size: .68rem;
+  color: #444;
+  display: none;
+  flex-direction: column;
+  gap: .22rem;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  box-shadow: 0 1px 6px rgba(0,0,0,.08);
+}
+#drawing-legend-overlay .dl-item {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  white-space: nowrap;
+  line-height: 1;
+}
 #scale-svg-container {
   width: 100%;
   aspect-ratio: 267 / 180;
@@ -691,7 +716,7 @@ body {
 .istzustand-card.rfl .istzustand-value { color: var(--text); }
 .istzustand-unit {
   font-family: 'SBBWeb', 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: .85rem; font-weight: 400; color: var(--tertiary); margin-left: .3rem;
+  font-size: .85rem; font-weight: 400; color: inherit; margin-left: .3rem;
 }
 .istzustand-divider {
   width: 1px; height: 2.5rem; background: rgba(0,0,0,.1); flex-shrink: 0;
@@ -737,21 +762,28 @@ body {
 .probe-mp-xinput {
   font-family: 'SF Mono','Menlo',monospace;
   font-size: .82rem; font-weight: 600;
-  width: 5.5rem; padding: .2rem .4rem;
+  width: 100%; min-width: 0; flex: 1;
+  padding: .2rem .4rem;
   border: 1px solid var(--border); border-radius: 7px;
   background: var(--bg); color: var(--text);
   text-align: right;
 }
 .probe-mp-xinput:focus { outline: none; border-color: var(--primary); }
-.probe-mp-unit { font-size: .7rem; color: var(--tertiary); margin-left: -.25rem; }
+.probe-mp-unit { font-size: .7rem; color: var(--tertiary); flex-shrink: 0; }
 .probe-mp-sep { width: 1px; height: 1.1rem; background: rgba(0,0,0,.1); margin: 0 .1rem; }
 /* H-Punkte (Hindernishöhe pro Messpunkt) — Monochrom, eindeutig verschieden von T2-Rot und T3-Blau */
 :root { --h-clr: #3a3a3a; --h-bg: #f4f4f4; --h-border: #c8c8c8; }
 .probe-m-group {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  column-gap: .4rem;
+  column-gap: .35rem;
+  min-width: 0;
+}
+.probe-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
   min-width: 0;
 }
 .probe-h-badge {
@@ -763,12 +795,13 @@ body {
 .probe-h-input {
   font-family: 'SF Mono','Menlo',monospace;
   font-size: .78rem; font-weight: 500;
-  width: 100%; padding: .18rem .4rem; text-align: right;
+  width: 100%; min-width: 0; flex: 1;
+  padding: .18rem .4rem; text-align: right;
   border: 1px solid var(--h-border); border-radius: 7px;
   background: var(--h-bg); color: var(--text);
 }
 .probe-h-input:focus { outline: none; border-color: var(--h-clr); }
-.probe-h-unit { font-size: .65rem; color: var(--h-clr); white-space: nowrap; }
+.probe-h-unit { font-size: .65rem; color: var(--h-clr); white-space: nowrap; flex-shrink: 0; }
 /* Hindernispunkte (standalone — veraltet, ausgeblendet) */
 .obs-section { display: none; }
 .obs-row { display: flex; align-items: center; gap: .4rem; margin-bottom: .3rem; }
@@ -934,7 +967,7 @@ button.header-manual-link:hover {
   .probe-mp-sep { display: none; }
   .probe-mp-badge { font-size: .63rem; padding: .12rem .4rem; }
   .probe-mp-xinput {
-    width: 5rem; min-height: 36px;
+    width: 100%; min-height: 36px;
     font-size: 15px;
     padding: .15rem .4rem;
   }
@@ -1667,9 +1700,21 @@ button.header-manual-link:hover {
   <!-- ── Canvas ── -->
   <div class="canvas-card">
     <div class="canvas-header">
-      <div class="seg-ctrl canvas-view-seg">
-        <button class="seg-btn active" id="view-seg-diagramm"  onclick="setCanvasView('diagramm')">Diagramm</button>
-        <button class="seg-btn"        id="view-seg-zeichnung" onclick="setCanvasView('zeichnung')">Zeichnung</button>
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <div class="seg-ctrl canvas-view-seg">
+          <button class="seg-btn active" id="view-seg-diagramm"  onclick="setCanvasView('diagramm')">Diagramm</button>
+          <button class="seg-btn"        id="view-seg-zeichnung" onclick="setCanvasView('zeichnung')">Zeichnung</button>
+        </div>
+        <div id="vex-header-ctrl" style="display:none;align-items:center;gap:.35rem;font-size:.7rem;color:var(--muted)">
+          <span style="white-space:nowrap">Überhöhung</span>
+          <select id="vex-select" onchange="setDrawingVEx(this.value)"
+            style="font-size:.72rem;padding:.15rem .3rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer">
+            <option value="1">1:1</option>
+            <option value="2">2×</option>
+            <option value="5">5×</option>
+            <option value="10">10×</option>
+          </select>
+        </div>
       </div>
       <span class="drag-hint" id="canvas-drag-hint">Ankerpunkte verschiebbar</span>
     </div>
@@ -1683,16 +1728,6 @@ button.header-manual-link:hover {
           <span class="zoom-level-lbl" id="drawing-zoom-label">100%</span>
           <button class="zoom-reset-btn" onclick="adjustDrawingZoom(1)" title="Zoom zurücksetzen">↺</button>
         </div>
-        <div style="display:flex;align-items:center;gap:.35rem;font-size:.7rem;color:var(--muted)">
-          <span style="white-space:nowrap">Überhöhung</span>
-          <select id="vex-select" onchange="setDrawingVEx(this.value)"
-            style="font-size:.72rem;padding:.15rem .3rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer">
-            <option value="1">1:1</option>
-            <option value="2">2×</option>
-            <option value="5">5×</option>
-            <option value="10">10×</option>
-          </select>
-        </div>
         <button class="pdf-draw-btn" onclick="pdfExportDrawing()">
           <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           PDF
@@ -1702,10 +1737,11 @@ button.header-manual-link:hover {
         <div id="scale-svg-container"></div>
         <div id="edge-indicators-left"  class="edge-strip edge-left"></div>
         <div id="edge-indicators-right" class="edge-strip edge-right"></div>
+        <div id="drawing-legend-overlay"></div>
       </div>
       <div id="scale-data-strip" style="display:none"></div>
-      <div id="scale-sok-note" style="display:none;padding:.3rem .7rem;font-size:.65rem;font-style:italic;border-top:1px solid #ececec;background:#fafafa;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
-        <span style="color:#b0b0b0">ⓘ SOK linear interpoliert (li./re. Mast). Trassee ggf. konkav/konvex — Absolute Koten (m ü.M.) empfohlen.</span>
+      <div id="scale-sok-note" style="display:none;padding:.3rem .7rem;font-size:.65rem;font-style:italic;border-top:1px solid #ececec;background:#fafafa;flex-direction:column;align-items:flex-start;gap:.2rem">
+        <span style="color:#b0b0b0">ⓘ SOK zwischen den Eingabepunkten wird interpoliert<br>und entspricht nicht der effektiven Höhenlage.</span>
         <span id="scale-min-clearance-note" style="display:none;color:#5a6a7a;font-weight:600;white-space:nowrap"></span>
       </div>
     </div>
@@ -1728,23 +1764,31 @@ button.header-manual-link:hover {
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem">
         <div class="probe-m-group">
           <span class="probe-mp-badge m1">M1</span>
-          <input type="number" id="probe-x1" class="probe-mp-xinput" placeholder="x₁" step="0.5" min="0">
-          <span class="probe-mp-unit">m</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-x1" class="probe-mp-xinput" placeholder="x₁" step="0.5" min="0">
+            <span class="probe-mp-unit">m</span>
+          </div>
         </div>
         <div class="probe-m-group">
           <span class="probe-mp-badge m2">M2</span>
-          <input type="number" id="probe-x2" class="probe-mp-xinput" placeholder="x₂" step="0.5" min="0">
-          <span class="probe-mp-unit">m</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-x2" class="probe-mp-xinput" placeholder="x₂" step="0.5" min="0">
+            <span class="probe-mp-unit">m</span>
+          </div>
         </div>
         <div class="probe-m-group">
           <span class="probe-mp-badge m3">M3</span>
-          <input type="number" id="probe-x3" class="probe-mp-xinput" placeholder="x₃" step="0.5" min="0">
-          <span class="probe-mp-unit">m</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-x3" class="probe-mp-xinput" placeholder="x₃" step="0.5" min="0">
+            <span class="probe-mp-unit">m</span>
+          </div>
         </div>
         <div class="probe-m-group">
           <span class="probe-mp-badge m4">M4</span>
-          <input type="number" id="probe-x4" class="probe-mp-xinput" placeholder="x₄" step="0.5" min="0">
-          <span class="probe-mp-unit">m</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-x4" class="probe-mp-xinput" placeholder="x₄" step="0.5" min="0">
+            <span class="probe-mp-unit">m</span>
+          </div>
         </div>
       </div>
       <!-- H-Eingaben (nur wenn SOK aktiv) -->
@@ -1755,23 +1799,31 @@ button.header-manual-link:hover {
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem">
           <div class="probe-m-group">
             <span class="probe-h-badge">H1</span>
-            <input type="number" id="probe-h1" class="probe-h-input" placeholder="Höhe" step="0.01" oninput="setProbeH(1,this.value)">
-            <span class="probe-h-unit">m ü.M.</span>
+            <div class="probe-input-wrap">
+              <input type="number" id="probe-h1" class="probe-h-input" placeholder="Höhe" step="0.01" oninput="setProbeH(1,this.value)">
+              <span class="probe-h-unit">m ü.M.</span>
+            </div>
           </div>
           <div class="probe-m-group">
             <span class="probe-h-badge">H2</span>
-            <input type="number" id="probe-h2" class="probe-h-input" placeholder="Höhe" step="0.01" oninput="setProbeH(2,this.value)">
-            <span class="probe-h-unit">m ü.M.</span>
+            <div class="probe-input-wrap">
+              <input type="number" id="probe-h2" class="probe-h-input" placeholder="Höhe" step="0.01" oninput="setProbeH(2,this.value)">
+              <span class="probe-h-unit">m ü.M.</span>
+            </div>
           </div>
           <div class="probe-m-group">
             <span class="probe-h-badge">H3</span>
-            <input type="number" id="probe-h3" class="probe-h-input" placeholder="Höhe" step="0.01" oninput="setProbeH(3,this.value)">
-            <span class="probe-h-unit">m ü.M.</span>
+            <div class="probe-input-wrap">
+              <input type="number" id="probe-h3" class="probe-h-input" placeholder="Höhe" step="0.01" oninput="setProbeH(3,this.value)">
+              <span class="probe-h-unit">m ü.M.</span>
+            </div>
           </div>
           <div class="probe-m-group">
             <span class="probe-h-badge">H4</span>
-            <input type="number" id="probe-h4" class="probe-h-input" placeholder="Höhe" step="0.01" oninput="setProbeH(4,this.value)">
-            <span class="probe-h-unit">m ü.M.</span>
+            <div class="probe-input-wrap">
+              <input type="number" id="probe-h4" class="probe-h-input" placeholder="Höhe" step="0.01" oninput="setProbeH(4,this.value)">
+              <span class="probe-h-unit">m ü.M.</span>
+            </div>
           </div>
         </div>
       </div>
@@ -2967,7 +3019,8 @@ function getProjectState() {
     'material-ts','material-fd','weight-ts','weight-fd','alpha-ts','alpha-fd',
     'preset-select','el-material-select',
     'sok-mum-left','sok-mum-right','zl-eis',
-    'probe-x1','probe-x2','probe-x3','probe-x4','display-span'
+    'probe-x1','probe-x2','probe-x3','probe-x4','display-span',
+    'probe-h1','probe-h2','probe-h3','probe-h4','min-clearance-input'
   ];
   const fields = {};
   FIELD_IDS.forEach(id => {
@@ -2979,7 +3032,7 @@ function getProjectState() {
     const el = document.getElementById(`span-${i}`);
     if (el) spans.push(parseFloat(el.value) || 50);
   }
-  return { sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans };
+  return { sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx };
 }
 
 // ── State wiederherstellen ──
@@ -3041,6 +3094,17 @@ function setProjectState(s) {
   probeX2 = _pf(flds['probe-x2']);
   probeX3 = _pf(flds['probe-x3']);
   probeX4 = _pf(flds['probe-x4']);
+  probeH1 = _pf(flds['probe-h1']);
+  probeH2 = _pf(flds['probe-h2']);
+  probeH3 = _pf(flds['probe-h3']);
+  probeH4 = _pf(flds['probe-h4']);
+  minClearance = _pf(flds['min-clearance-input']);
+  { const mcInp = document.getElementById('min-clearance-input');
+    if (mcInp) mcInp.value = minClearance !== null ? minClearance : ''; }
+  // Zeichnungs-Einstellungen
+  drawingVEx = s.drawingVEx || 1;
+  { const vexSel = document.getElementById('vex-select');
+    if (vexSel) vexSel.value = drawingVEx; }
 
   // Preset / Material
   if (sysMode !== 'el') {
@@ -4979,27 +5043,33 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b72
     ? `${t(tsHoeheKey)} &nbsp;<span style="opacity:.6">(${f3(y2)} m ${t('dyn.ueber.sok')})</span>`
     : `${t(tsHoeheKey)} ${t('dyn.ueber.sok')}`;
 
-  // T3-Vergleichswerte
+  // T3-Vergleichswerte — gleiche Struktur wie T2 (Δh groß, Ts-Höhe klein)
   let t3Row = '';
   if (c3Curve) {
-    const y3     = catY(xv, c3Curve);
+    const y3      = catY(xv, c3Curve);
     const y3_disp = hasSok ? f3(y3 + sokAtX) : f3(y3);
-    const sag3   = h1 - y3;
+    const sag3    = h1 - y3;
+    const t3hKey  = isEl ? 'res.seil.hoehe' : 'res.ts.hoehe';
+    const y3SubLbl = hasSok
+      ? `${t(t3hKey)} &nbsp;<span style="opacity:.6">(${f3(y3)} m ${t('dyn.ueber.sok')})</span>`
+      : `${t(t3hKey)} ${t('dyn.ueber.sok')}`;
     t3Row = `
       <div style="margin-top:.5rem;padding-top:.4rem;border-top:1px dashed rgba(0,0,0,.12)">
         <div style="font-size:.65rem;font-weight:600;color:${t3Clr};letter-spacing:.02em">${badge}' &nbsp;T₃</div>
-        <div style="font-size:${compact?'1.05rem':'1.35rem'};font-weight:700;color:${t3Clr}">${y3_disp}<span style="font-size:.72rem;margin-left:.2rem">${mainUnit}</span></div>
-        <div style="font-size:.72rem;color:${t3Clr};margin-top:.1rem">Δh: ${f3(sag3)} m</div>
+        <div style="font-size:${compact?'1.05rem':'1.35rem'};font-weight:700;color:${t3Clr}">${f3(sag3)}<span style="font-size:.72rem;margin-left:.2rem">m</span></div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:.1rem">Δh T₃</div>
+        <div style="font-size:.7rem;color:var(--muted);opacity:.8;margin-top:.3rem">${y3SubLbl}</div>
+        <div style="font-size:${compact?'.9rem':'1.1rem'};font-weight:600;color:${t3Clr}">${y3_disp}<span style="font-size:.72rem;margin-left:.2rem">${mainUnit}</span></div>
       </div>`;
   }
 
   return `
     <div class="istzustand-main">
       <div class="istzustand-label" style="color:var(--mp-${cls})">${badge} · x = ${xv.toFixed(2)} m</div>
-      <div class="istzustand-value" style="font-size:${valSize};color:var(--mp-${cls})">${mainVal}<span class="istzustand-unit">${mainUnit}</span></div>
-      <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${subLabel}</div>
-      <div class="istzustand-label" style="color:var(--mp-${cls});margin-top:${topGap}">${dhLabel}</div>
-      <div class="istzustand-value" style="font-size:${sagSize};color:var(--mp-${cls})">${f3(dhValue)}<span class="istzustand-unit">m</span></div>
+      <div class="istzustand-value" style="font-size:${valSize};color:var(--mp-${cls})">${f3(dhValue)}<span class="istzustand-unit">m</span></div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${dhLabel}</div>
+      <div style="font-size:.7rem;color:var(--muted);opacity:.8;margin-top:${topGap}">${subLabel}</div>
+      <div class="istzustand-value" style="font-size:${sagSize};color:var(--mp-${cls})">${mainVal}<span class="istzustand-unit">${mainUnit}</span></div>
       ${t3Row}
     </div>`;
 }
@@ -5054,22 +5124,18 @@ function updateHighlightCard() {
     el.innerHTML = `
       <div class="istzustand-card${rflCls}" style="margin-bottom:.75rem">
         <div class="istzustand-main">
-          <div class="istzustand-label" style="color:${curveClr}">${seilLabel}${tempLabel} — ${t('res.tiefpunkt.label')}</div>
-          <div class="istzustand-value" style="color:${curveClr}">${f3(y2_disp)}<span class="istzustand-unit">${hasSokH ? t('dyn.ueber.mum') : 'm'}</span></div>
+          <div class="istzustand-label" style="color:${curveClr}">${t('res.tiefpunkt.label')} — ${t('res.tiefpunkt.x0')}: ${f3(x_ist)} m</div>
+          <div class="istzustand-value" style="color:${curveClr}">${f3(sag)}<span class="istzustand-unit">m</span></div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${dhLabel}${tempLabel}</div>
+          <div style="font-size:.7rem;color:var(--muted);opacity:.8;margin-top:.6rem">${seilLabel}${tempLabel}${hasSokH ? ` &nbsp;<span style="opacity:.6">(${f3(y2_raw)} m ${t('dyn.ueber.sok')})</span>` : ` ${t('dyn.ueber.sok')}`}</div>
+          <div class="istzustand-value" style="font-size:1.35rem;color:${curveClr}">${f3(y2_disp)}<span class="istzustand-unit">${hasSokH ? t('dyn.ueber.mum') : 'm'}</span></div>
         </div>
-        <div class="istzustand-divider"></div>
-        <div class="istzustand-main">
-          <div class="istzustand-label" style="color:${curveClr}">${dhLabel}${tempLabel}</div>
-          <div class="istzustand-value" style="font-size:1.35rem;color:${curveClr}">${f3(sag)}<span class="istzustand-unit">m</span></div>
+        <div style="display:flex;align-items:center;gap:.5rem;margin:.35rem 0;width:100%">
+          <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
+          <span style="font-size:.6rem;color:#c0c0c0;font-style:italic;white-space:nowrap">ⓘ SOK zwischen den Eingabepunkten wird interpoliert und entspricht nicht der effektiven Höhenlage.</span>
+          <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
         </div>
-        <div class="istzustand-divider"></div>
-        <div class="istzustand-secondary" style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;flex-wrap:wrap">
-          <div>
-            ${subInfo}
-            <div class="istzustand-row">${t('res.tiefpunkt.x0')}: <strong>${f3(x_ist)} m</strong></div>
-            <div class="istzustand-row">${t('res.h.ts')}: <strong>${fN(cIst.H, 0)} N</strong></div>
-          </div>
-        </div>
+        <div class="istzustand-row">${t('res.h.ts')}: <strong>${fN(cIst.H, 0)} N</strong></div>
       </div>`;
   } else {
     const points = [
@@ -5092,8 +5158,12 @@ function updateHighlightCard() {
     el.innerHTML = `
       <div class="istzustand-card${rflCls}" style="margin-bottom:.75rem;${cardStyle}">
         ${blocks}
-        <div style="${compact ? 'grid-column:1/-1;' : ''}height:1px;background:rgba(0,0,0,.08);width:100%;margin:.25rem 0"></div>
-        <div class="istzustand-secondary" style="${compact ? 'grid-column:1/-1;' : ''}display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;flex-wrap:wrap">
+        <div style="${compact ? 'grid-column:1/-1;' : ''}display:flex;align-items:center;gap:.5rem;margin:.35rem 0;width:100%">
+          <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
+          <span style="font-size:.6rem;color:#c0c0c0;font-style:italic;white-space:nowrap">ⓘ SOK zwischen den Eingabepunkten wird interpoliert und entspricht nicht der effektiven Höhenlage.</span>
+          <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
+        </div>
+        <div style="${compact ? 'grid-column:1/-1;' : ''}display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
           <div class="istzustand-row">${t('res.h.ts')}: <strong>${fN(cIst.H, 0)} N</strong></div>
         </div>
       </div>`;
@@ -5772,6 +5842,16 @@ function buildScaleDrawingPage(stripInSvg = false) {
   const xOff = drawX0 + (drawW - dW) / 2;
   const yOff = drawY0 + (drawH - dH) / 2;
 
+  // Store content bounds for auto-fit (interactive only)
+  if (!stripInSvg) {
+    _drawingContentBounds = {
+      x: xOff - 6,          // left mast + Y-axis label space
+      y: yOff - 5,          // above curves (anchor labels)
+      w: dW + 12,            // curve width + margins both sides
+      h: dH + 18,            // curves + space for span dim line below
+    };
+  }
+
   // Coordinate transforms
   const sx = x => xOff + x * ppm;
   const sy = y => yOff + (yMax - y) * ppm_v;
@@ -5782,7 +5862,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
   const t3clr = c3data
     ? t2TempColor((v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value)))
     : '#6b7280';
-  const fdClr = '#525252';
+  const fdClr = '#888888';
 
   // Path helpers
   const makePath = (fn, dash='', sw='0.55') => {
@@ -5796,6 +5876,12 @@ function buildScaleDrawingPage(stripInSvg = false) {
   };
   const catPath = (c, dash='', sw='0.55') => makePath(x => absY(x, catY(x, c)), dash, sw);
 
+  // Strip dimensions — declared early so grid and spanDim can reference them
+  const _probesEarlyCount = [probeX1, probeX2, probeX3, probeX4].filter(x => x !== null).length;
+  const _stripRowH_early  = 4.2;
+  const _stripNRows_early = 2 + 1 + (c3data ? 1 : 0) + (hasSok ? 2 : 0) + (hasSok && c3data ? 1 : 0);
+  const _stripH_early     = _stripNRows_early * _stripRowH_early + 0.5;
+
   // Grid lines
   const rawStep = yRange / 5;
   const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
@@ -5805,7 +5891,8 @@ function buildScaleDrawingPage(stripInSvg = false) {
   let gridSvg = '';
   for (let y = gridStart; y <= yMax + 1e-9; y = Math.round((y + gridStep) * 1e6) / 1e6) {
     const gy = sy(y);
-    if (gy < drawY0 - 0.1 || gy > drawY1 + 0.1) continue;
+    const _gridBottom = (stripInSvg && _probesEarlyCount > 0) ? drawY1 - _stripH_early : drawY1;
+    if (gy < drawY0 - 0.1 || gy > _gridBottom + 0.1) continue;
     gridSvg += `<line x1="${drawX0}" y1="${gy.toFixed(2)}" x2="${drawX1}" y2="${gy.toFixed(2)}" stroke="#ebebeb" stroke-width="0.2"/>`;
     const lbl = hasSok ? y.toFixed(y < 10 ? 2 : 1) : y.toFixed(2);
     gridSvg += `<text x="${(drawX0-1).toFixed(2)}" y="${(gy+0.9).toFixed(2)}" font-size="2.4" text-anchor="end" fill="#bbb">${lbl}</text>`;
@@ -5816,29 +5903,43 @@ function buildScaleDrawingPage(stripInSvg = false) {
   // SOK line
   const sokSvg = `
   <line x1="${sx(0).toFixed(2)}" y1="${sy(sokYL).toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${sy(sokYR).toFixed(2)}"
-    stroke="#aaa" stroke-width="0.3" stroke-dasharray="2.5,1.2"/>
+    stroke="#aaa" stroke-width="${(0.3*symSc).toFixed(3)}" stroke-dasharray="${(2.5*symSc).toFixed(2)},${(1.2*symSc).toFixed(2)}"/>
   <text x="${(sx(0)-1).toFixed(2)}" y="${(sy(sokYL)+0.9).toFixed(2)}" font-size="2.2" text-anchor="end" fill="#bbb">SOK</text>`;
 
   // Masts — dashed thin lines, no circles
   const mastSvg = `
   <line x1="${sx(0).toFixed(2)}" y1="${sy(sokYL).toFixed(2)}" x2="${sx(0).toFixed(2)}" y2="${sy(h1abs).toFixed(2)}"
-    stroke="#666" stroke-width="0.3" stroke-dasharray="1.8,1.2"/>
+    stroke="#666" stroke-width="${(0.28*symSc).toFixed(3)}" stroke-dasharray="${(1.8*symSc).toFixed(2)},${(1.2*symSc).toFixed(2)}"/>
   <line x1="${sx(L).toFixed(2)}" y1="${sy(sokYR).toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${sy(h2abs).toFixed(2)}"
-    stroke="#666" stroke-width="0.3" stroke-dasharray="1.8,1.2"/>`;
+    stroke="#666" stroke-width="${(0.28*symSc).toFixed(3)}" stroke-dasharray="${(1.8*symSc).toFixed(2)},${(1.2*symSc).toFixed(2)}"/>`;
 
   // Anchor labels
-  const anchLbl = `
+  let anchLbl = '';
+  if (hasSok) {
+    // Absolute kote at anchor point (above curve)
+    anchLbl += `
+  <text x="${(sx(0)+2).toFixed(2)}" y="${(sy(h1abs)-2).toFixed(2)}" font-size="2.3" fill="#555">${h1abs.toFixed(3)} m ü.M.</text>
+  <text x="${(sx(L)-2).toFixed(2)}" y="${(sy(h2abs)-2).toFixed(2)}" font-size="2.3" text-anchor="end" fill="#555">${h2abs.toFixed(3)} m ü.M.</text>`;
+    // Relative height h= at midpoint of each mast line
+    const mastMidYL = (sy(sokYL) + sy(h1abs)) / 2;
+    const mastMidYR = (sy(sokYR) + sy(h2abs)) / 2;
+    anchLbl += `
+  <text x="${(sx(0)+1.5).toFixed(2)}" y="${(mastMidYL+0.8).toFixed(2)}" font-size="2.0" fill="#888">h₁ = ${h1.toFixed(3)} m</text>
+  <text x="${(sx(L)-1.5).toFixed(2)}" y="${(mastMidYR+0.8).toFixed(2)}" font-size="2.0" text-anchor="end" fill="#888">h₂ = ${h2.toFixed(3)} m</text>`;
+  } else {
+    anchLbl = `
   <text x="${(sx(0)+2).toFixed(2)}" y="${(sy(h1abs)-2).toFixed(2)}" font-size="2.3" fill="#555">h₁ = ${h1.toFixed(3)} m</text>
   <text x="${(sx(L)-2).toFixed(2)}" y="${(sy(h2abs)-2).toFixed(2)}" font-size="2.3" text-anchor="end" fill="#555">h₂ = ${h2.toFixed(3)} m</text>`;
+  }
 
-  // Probe list and strip dimensions — declared here so spanDim can reference them
+  // Probe list and strip dimensions — reuse early-computed values
   const _probesEarly = [
     { xv: probeX1 }, { xv: probeX2 }, { xv: probeX3 }, { xv: probeX4 },
   ].filter(p => p.xv !== null);
-  const _stripRowH   = 4.2;
-  const _stripNRows  = 2 + 1 + (c3data ? 1 : 0) + (hasSok ? 2 : 0);
-  // Zeilen: Punkt + x [m] + T2-SOK [m] [+ T3-SOK [m]] [+ Ts [m ü.M.] + SOK [m ü.M.]]
-  const _stripH      = _stripNRows * _stripRowH + 0.5;
+  const _stripRowH   = _stripRowH_early;
+  const _stripNRows  = _stripNRows_early;
+  // Zeilen: Punkt + x [m] + T2-SOK [m] [+ T3-SOK [m]] [+ T2 [m ü.M.] [+ T3 [m ü.M.]] + SOK [m ü.M.]]
+  const _stripH      = _stripH_early;
 
   // Span dimension line — segmented between probes, or full L if no probes
   const _stripY0ref = drawY1 - _stripH;
@@ -5850,11 +5951,11 @@ function buildScaleDrawingPage(stripInSvg = false) {
     // Segments: mast A → M1 → M2 → … → mast B
     const dimPts = [0, ..._probesEarly.map(p => p.xv), L];
     // Draw the full baseline once
-    spanDim += `<line x1="${sx(0).toFixed(2)}" y1="${spanDimY.toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${spanDimY.toFixed(2)}" stroke="#bbb" stroke-width="0.25"/>`;
+    spanDim += `<line x1="${sx(0).toFixed(2)}" y1="${spanDimY.toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${spanDimY.toFixed(2)}" stroke="#bbb" stroke-width="${(0.25*symSc).toFixed(3)}"/>`;
     dimPts.forEach((xv, i) => {
       const px = sx(xv).toFixed(2);
       // Tick at each point
-      spanDim += `<line x1="${px}" y1="${(spanDimY-1.5).toFixed(2)}" x2="${px}" y2="${(spanDimY+1.5).toFixed(2)}" stroke="#aaa" stroke-width="0.35"/>`;
+      spanDim += `<line x1="${px}" y1="${(spanDimY-1.5*symSc).toFixed(2)}" x2="${px}" y2="${(spanDimY+1.5*symSc).toFixed(2)}" stroke="#aaa" stroke-width="${(0.35*symSc).toFixed(3)}"/>`;
       // Distance label between this and next point
       if (i < dimPts.length - 1) {
         const xNext  = dimPts[i + 1];
@@ -5866,9 +5967,9 @@ function buildScaleDrawingPage(stripInSvg = false) {
   } else {
     // No probes: show total span L
     spanDim = `
-  <line x1="${sx(0).toFixed(2)}" y1="${(spanDimY-1.5).toFixed(2)}" x2="${sx(0).toFixed(2)}" y2="${(spanDimY+1.5).toFixed(2)}" stroke="#aaa" stroke-width="0.3"/>
-  <line x1="${sx(0).toFixed(2)}" y1="${spanDimY.toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${spanDimY.toFixed(2)}" stroke="#aaa" stroke-width="0.3"/>
-  <line x1="${sx(L).toFixed(2)}" y1="${(spanDimY-1.5).toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${(spanDimY+1.5).toFixed(2)}" stroke="#aaa" stroke-width="0.3"/>
+  <line x1="${sx(0).toFixed(2)}" y1="${(spanDimY-1.5*symSc).toFixed(2)}" x2="${sx(0).toFixed(2)}" y2="${(spanDimY+1.5*symSc).toFixed(2)}" stroke="#aaa" stroke-width="${(0.28*symSc).toFixed(3)}"/>
+  <line x1="${sx(0).toFixed(2)}" y1="${spanDimY.toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${spanDimY.toFixed(2)}" stroke="#aaa" stroke-width="${(0.28*symSc).toFixed(3)}"/>
+  <line x1="${sx(L).toFixed(2)}" y1="${(spanDimY-1.5*symSc).toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${(spanDimY+1.5*symSc).toFixed(2)}" stroke="#aaa" stroke-width="${(0.28*symSc).toFixed(3)}"/>
   <text x="${((sx(0)+sx(L))/2).toFixed(2)}" y="${(spanDimY-1.5).toFixed(2)}" font-size="2.4" text-anchor="middle" fill="#666">L = ${L.toFixed(2)} m</text>`;
   }
 
@@ -5879,9 +5980,34 @@ function buildScaleDrawingPage(stripInSvg = false) {
   const sagVal   = cDisp.sag;
   const sagSvg   = sagVal > 0.01 ? `
   <line x1="${sx(x0T2).toFixed(2)}" y1="${sy(yChordT2).toFixed(2)}" x2="${sx(x0T2).toFixed(2)}" y2="${sy(y0T2).toFixed(2)}"
-    stroke="${t2clr}" stroke-width="0.25" stroke-dasharray="1.2,0.8" opacity="0.7"/>
+    stroke="${t2clr}" stroke-width="${(0.25*symSc).toFixed(3)}" stroke-dasharray="${(1.2*symSc).toFixed(2)},${(0.8*symSc).toFixed(2)}" opacity="0.7"/>
   <text x="${(sx(x0T2)+1.5).toFixed(2)}" y="${((sy(yChordT2)+sy(y0T2))/2+0.9).toFixed(2)}"
     font-size="2.2" fill="${t2clr}" opacity="0.85">f = ${sagVal.toFixed(3)} m</text>` : '';
+
+  // Mindestabstand-Kurven (parallel zur T2-Kurve, versetzt)
+  let minClearSvg = '';
+  const _minC = minClearance;
+  if (_minC !== null && _minC > 0) {
+    const _mcOffsets = (sysMode === 'el') ? [+_minC, -_minC] : [+_minC];
+    const _mcSw   = (0.38 * symSc).toFixed(3);
+    const _mcDash = `${(2.8*symSc).toFixed(2)},${(2.2*symSc).toFixed(2)}`;
+    _mcOffsets.forEach(off => {
+      // T2 offset curve
+      minClearSvg += makePath(x => absY(x, catY(x, cDisp)) + off, _mcDash, _mcSw) +
+        ` stroke="${t2clr}" opacity="0.3"/>`;
+      // T3 offset curve (wenn vorhanden)
+      if (c3data) {
+        minClearSvg += makePath(x => absY(x, catY(x, c3data)) + off, _mcDash, _mcSw) +
+          ` stroke="${t3clr}" opacity="0.25"/>`;
+      }
+    });
+    // Label am rechten Rand der oberen Kurve
+    const _xLbl   = L * 0.97;
+    const _yLblAbs = absY(_xLbl, catY(_xLbl, cDisp)) + _minC;
+    const _fsLbl  = (2.0 * symSc).toFixed(2);
+    minClearSvg += `<text x="${(sx(_xLbl)-1).toFixed(2)}" y="${(sy(_yLblAbs)-1.2).toFixed(2)}"
+      font-size="${_fsLbl}" text-anchor="end" fill="${t2clr}" opacity="0.55">⌀ ${_minC.toFixed(2)} m</text>`;
+  }
 
   // Measurement points — Längsprofil style
   const probes = [
@@ -5894,7 +6020,9 @@ function buildScaleDrawingPage(stripInSvg = false) {
   const stripRowLabels = [
     'Punkt', 'x [m]', 'T2-SOK [m]',
     ...(c3data ? ['T3-SOK [m]'] : []),
-    ...(hasSok ? ['Ts [m ü.M.]', 'SOK [m ü.M.]'] : []),
+    ...(hasSok ? ['T2 [m ü.M.]'] : []),
+    ...(hasSok && c3data ? ['T3 [m ü.M.]'] : []),
+    ...(hasSok ? ['SOK [m ü.M.]'] : []),
   ];
   const stripNRows   = _stripNRows;
   const stripH       = _stripH;
@@ -5922,7 +6050,8 @@ function buildScaleDrawingPage(stripInSvg = false) {
       probesSvg += `<line x1="${divX}" y1="${stripY0.toFixed(2)}" x2="${divX}" y2="${drawY1.toFixed(2)}" stroke="#d0d0d0" stroke-width="0.2"/>`;
       stripRowLabels.forEach((lbl, r) => {
         const ty = (stripY0 + r * stripRowH + stripRowH * 0.68).toFixed(2);
-        probesSvg += `<text x="${(drawX0 + 1.2).toFixed(2)}" y="${ty}" font-size="2.1" fill="#bbb">${lbl}</text>`;
+        const lblClr = lbl.includes('T2') ? t2clr : lbl.includes('T3') ? t3clr : '#bbb';
+        probesSvg += `<text x="${(drawX0 + 1.2).toFixed(2)}" y="${ty}" font-size="2.1" fill="${lblClr}">${lbl}</text>`;
       });
     }
 
@@ -5941,7 +6070,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
       // Dashed plumb line
       probesSvg += `
     <line x1="${px.toFixed(2)}" y1="${(py + 1.3*symSc).toFixed(2)}" x2="${px.toFixed(2)}" y2="${plumbEndY.toFixed(2)}"
-      stroke="${t2clr}" stroke-width="${(0.22*symSc).toFixed(3)}" stroke-dasharray="${(1.5*symSc).toFixed(2)},${(1.2*symSc).toFixed(2)}" opacity="0.4"/>`;
+      stroke="${t2clr}" stroke-width="${(0.5*symSc).toFixed(3)}" stroke-dasharray="${(2.0*symSc).toFixed(2)},${(1.5*symSc).toFixed(2)}" opacity="0.45"/>`;
 
       // Tick cross on SOK reference line
       const tkS = (1.4 * symSc).toFixed(2);
@@ -5953,23 +6082,29 @@ function buildScaleDrawingPage(stripInSvg = false) {
       probesSvg += `
     <circle cx="${px.toFixed(2)}" cy="${py.toFixed(2)}" r="${(1.2*symSc).toFixed(2)}" fill="${t2clr}" stroke="white" stroke-width="${(0.35*symSc).toFixed(3)}"/>`;
 
-      // Zellwerte (für SVG-Strip und HTML-Tabelle)
+      // Zellwerte (für SVG-Strip und HTML-Tabelle) [val, fontSize, fontWeight, color]
       const cellVals = [
-        [badge,               '2.4', '700'],
-        [xv.toFixed(2),       '2.0', '400'],
-        [tsHeight.toFixed(3), '2.0', '400'],
+        [badge,               '2.4', '700', t2clr],
+        [xv.toFixed(2),       '2.0', '400', '#666'],
+        [tsHeight.toFixed(3), '2.0', '400', t2clr],
       ];
-      if (c3data) cellVals.push([catY(xv, c3data).toFixed(3), '2.0', '400']);
+      if (c3data) cellVals.push([catY(xv, c3data).toFixed(3), '2.0', '400', t3clr]);
       if (hasSok) {
-        cellVals.push([y2abs.toFixed(3),   '2.0', '400']);
-        cellVals.push([sokKote.toFixed(3), '2.0', '400']);
+        cellVals.push([y2abs.toFixed(3), '2.0', '400', t2clr]);
+      }
+      if (hasSok && c3data) {
+        const y3abs = absY(xv, catY(xv, c3data));
+        cellVals.push([y3abs.toFixed(3), '2.0', '400', t3clr]);
+      }
+      if (hasSok) {
+        cellVals.push([sokKote.toFixed(3), '2.0', '400', '#888']);
       }
 
       // SVG-Texte nur im PDF-Modus
       if (stripInSvg) {
-        cellVals.forEach(([val, fs, fw], r) => {
+        cellVals.forEach(([val, fs, fw, clr], r) => {
           const ty = (stripY0 + r * stripRowH + stripRowH * 0.68).toFixed(2);
-          probesSvg += `<text x="${px.toFixed(2)}" y="${ty}" font-size="${fs}" font-weight="${fw}" text-anchor="middle" fill="${t2clr}">${val}</text>`;
+          probesSvg += `<text x="${px.toFixed(2)}" y="${ty}" font-size="${fs}" font-weight="${fw}" text-anchor="middle" fill="${clr}">${val}</text>`;
         });
       }
 
@@ -6000,7 +6135,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
     const plumbEndY = drawY1;
     probesSvg += `
     <line x1="${px.toFixed(2)}" y1="${(py + 1.3).toFixed(2)}" x2="${px.toFixed(2)}" y2="${plumbEndY.toFixed(2)}"
-      stroke="${t2clr}" stroke-width="0.22" stroke-dasharray="1.5,1.2" opacity="0.4"/>`;
+      stroke="${t2clr}" stroke-width="0.5" stroke-dasharray="2.0,1.5" opacity="0.45"/>`;
     probesSvg += `
     <circle cx="${px.toFixed(2)}" cy="${py.toFixed(2)}" r="1.2" fill="${t2clr}" stroke="white" stroke-width="0.35"/>`;
     if (c3data) {
@@ -6072,45 +6207,32 @@ function buildScaleDrawingPage(stripInSvg = false) {
     obstSvg += `<polygon points="${ox.toFixed(2)},${(oy + tDir*ta).toFixed(2)} ${(ox-tb).toFixed(2)},${(oy - tDir*0.2*symSc).toFixed(2)} ${(ox+tb).toFixed(2)},${(oy - tDir*0.2*symSc).toFixed(2)}" fill="${obsClr}" opacity="0.85"/>`;
     // Abstandslinie zwischen H-Punkt und Leiter
     const ac = 3 * symSc;
-    obstSvg += `<line x1="${(ox+ac).toFixed(2)}" y1="${oy.toFixed(2)}" x2="${(ox+ac).toFixed(2)}" y2="${ty.toFixed(2)}" stroke="${obsClr}" stroke-width="${(0.3*symSc).toFixed(3)}" stroke-dasharray="${(1.0*symSc).toFixed(2)},${(0.8*symSc).toFixed(2)}" opacity="0.5"/>`;
+    obstSvg += `<line x1="${(ox+ac).toFixed(2)}" y1="${oy.toFixed(2)}" x2="${(ox+ac).toFixed(2)}" y2="${ty.toFixed(2)}" stroke="${obsClr}" stroke-width="${(0.5*symSc).toFixed(3)}" stroke-dasharray="${(1.5*symSc).toFixed(2)},${(1.1*symSc).toFixed(2)}" opacity="0.55"/>`;
     // Ticks an Leiter und H-Punkt
-    obstSvg += `<line x1="${(ox+1.5).toFixed(2)}" y1="${ty.toFixed(2)}" x2="${(ox+4.5).toFixed(2)}" y2="${ty.toFixed(2)}" stroke="${obsClr}" stroke-width="0.4"/>`;
-    obstSvg += `<line x1="${(ox+1.5).toFixed(2)}" y1="${oy.toFixed(2)}" x2="${(ox+4.5).toFixed(2)}" y2="${oy.toFixed(2)}" stroke="${obsClr}" stroke-width="0.4"/>`;
+    obstSvg += `<line x1="${(ox+1.5*symSc).toFixed(2)}" y1="${ty.toFixed(2)}" x2="${(ox+4.5*symSc).toFixed(2)}" y2="${ty.toFixed(2)}" stroke="${obsClr}" stroke-width="${(0.4*symSc).toFixed(3)}"/>`;
+    obstSvg += `<line x1="${(ox+1.5*symSc).toFixed(2)}" y1="${oy.toFixed(2)}" x2="${(ox+4.5*symSc).toFixed(2)}" y2="${oy.toFixed(2)}" stroke="${obsClr}" stroke-width="${(0.4*symSc).toFixed(3)}"/>`;
     const minC   = minClearance;
     const vio    = minC !== null && (sysMode === 'el' ? Math.abs(clear) < minC : clear < minC);
 
     _drawingObstData.push({ xFrac: ox / VW, name: lbl, badge, h: obsAbsH, xVal: xv, clear: parseFloat(clear.toFixed(3)), nearLbl, violated: vio });
   });
 
-  // Scale bar — subtle, larger label
-  const sbY  = VH - footH + 4;
-  const sb10 = 10 * ppm;
-  const sbX  = drawX0;
-  // Massbalken nur im PDF-Export (bei interaktiver Ansicht irrelevant)
-  const scalebar = stripInSvg ? `
-  <rect x="${sbX.toFixed(2)}" y="${sbY.toFixed(2)}" width="${sb10.toFixed(2)}" height="1.5" fill="#aaa"/>
-  <rect x="${(sbX+sb10).toFixed(2)}" y="${sbY.toFixed(2)}" width="${sb10.toFixed(2)}" height="1.5" fill="white" stroke="#aaa" stroke-width="0.25"/>
-  <text x="${sbX.toFixed(2)}"          y="${(sbY+4).toFixed(2)}" font-size="2.1" text-anchor="middle" fill="#aaa">0</text>
-  <text x="${(sbX+sb10).toFixed(2)}"   y="${(sbY+4).toFixed(2)}" font-size="2.1" text-anchor="middle" fill="#aaa">10</text>
-  <text x="${(sbX+sb10*2).toFixed(2)}" y="${(sbY+4).toFixed(2)}" font-size="2.1" text-anchor="middle" fill="#aaa">20 m</text>
-  <text x="${sbX.toFixed(2)}" y="${(sbY+8).toFixed(2)}" font-size="4" font-weight="600" fill="#555">1 : ${scale}</text>` : '';
+  const scalebar = '';
 
-  // Legend
-  const lgY = sbY + 0.9;
-  const lgX = drawX1 - 110;
-  let legendSvg = `
-  <line x1="${lgX}" y1="${lgY}" x2="${(lgX+8).toFixed(2)}" y2="${lgY}" stroke="#c0c0c0" stroke-width="0.6"/>
-  <text x="${(lgX+9.5).toFixed(2)}" y="${(lgY+0.9).toFixed(2)}" font-size="2.3" fill="#999">Ts bei T₁ = ${T1}°C</text>
-  <line x1="${(lgX+40).toFixed(2)}" y1="${lgY}" x2="${(lgX+48).toFixed(2)}" y2="${lgY}" stroke="${t2clr}" stroke-width="0.8"/>
-  <text x="${(lgX+49.5).toFixed(2)}" y="${(lgY+0.9).toFixed(2)}" font-size="2.3" fill="${t2clr}">Ts bei T₂ = ${T2}°C</text>`;
-  if (showFd) legendSvg += `
-  <line x1="${(lgX+80).toFixed(2)}" y1="${lgY}" x2="${(lgX+88).toFixed(2)}" y2="${lgY}" stroke="${fdClr}" stroke-width="0.8"/>
-  <text x="${(lgX+89.5).toFixed(2)}" y="${(lgY+0.9).toFixed(2)}" font-size="2.3" fill="${fdClr}">Fd bei T₂</text>`;
-  if (c3data) {
-    const t3v = (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value));
-    legendSvg += `
-  <line x1="${(lgX+(showFd?110:80)).toFixed(2)}" y1="${lgY}" x2="${(lgX+(showFd?118:88)).toFixed(2)}" y2="${lgY}" stroke="${t3clr}" stroke-width="0.6" stroke-dasharray="2,1.2"/>
-  <text x="${(lgX+(showFd?119.5:89.5)).toFixed(2)}" y="${(lgY+0.9).toFixed(2)}" font-size="2.3" fill="${t3clr}">T₃ = ${t3v}°C</text>`;
+  // Legend — HTML overlay (nur bei interaktiver Ansicht; PDF bekommt eigene Legende im Titel)
+  if (!stripInSvg) {
+    const _legLine = (clr, dash = '', thick = false, thin = false) => {
+      const sw = thick ? 2.2 : thin ? 0.9 : 1.3;
+      const da = dash ? ` stroke-dasharray="${dash}"` : '';
+      return `<svg width="24" height="9" style="flex-shrink:0;display:block"><line x1="1" y1="4.5" x2="23" y2="4.5" stroke="${clr}" stroke-width="${sw}"${da} stroke-linecap="round"/></svg>`;
+    };
+    const t3v = c3data ? (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value)) : null;
+    let legHtml = `<div class="dl-item">${_legLine('#c0c0c0', '5 3')} <span style="color:#999">Ts bei T₁ = ${T1}°C</span></div>`;
+    legHtml += `<div class="dl-item">${_legLine(t2clr, '', true)} <span style="color:${t2clr};font-weight:600">Ts bei T₂ = ${T2}°C</span></div>`;
+    if (showFd) legHtml += `<div class="dl-item">${_legLine(fdClr, '', false, true)} <span>Fd bei T₂</span></div>`;
+    if (c3data) legHtml += `<div class="dl-item">${_legLine(t3clr, '4 2.5')} <span style="color:${t3clr}">Ts bei T₃ = ${t3v}°C</span></div>`;
+    const legEl = document.getElementById('drawing-legend-overlay');
+    if (legEl) { legEl.style.display = 'flex'; legEl.innerHTML = legHtml; }
   }
 
   const sokNoteSvg = ''; // Note moved to HTML strip footer
@@ -6120,11 +6242,28 @@ function buildScaleDrawingPage(stripInSvg = false) {
   const dateS  = new Date().toLocaleDateString('de-DE');
   const sysLbl = isNFL ? 'N-FL' : isRFL ? 'R-FL' : 'Einzelleiter';
   const mainTitle = `${sysLbl}  ·  L = ${L} m`;
+  // PDF legend line helper (SVG)
+  const _pdfLeg = (x, clr, dash='', sw=0.7) => {
+    const da = dash ? ` stroke-dasharray="${dash}"` : '';
+    return `<line x1="${x}" y1="${(titleH/2).toFixed(1)}" x2="${(x+8).toFixed(1)}" y2="${(titleH/2).toFixed(1)}" stroke="${clr}" stroke-width="${sw}"${da}/>`;
+  };
+  const _pdfLegTxt = (x, clr, txt) =>
+    `<text x="${(x+9.5).toFixed(1)}" y="${(titleH/2+1).toFixed(1)}" font-size="2.3" fill="${clr}">${txt}</text>`;
+  const t3v_pdf = c3data ? (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value)) : null;
+  let pdfLegSvg = '';
+  if (stripInSvg) {
+    let lx = VW * 0.38;
+    pdfLegSvg += _pdfLeg(lx, '#c0c0c0', '5 3', 0.5) + _pdfLegTxt(lx, '#999', `T₁ = ${T1}°C`); lx += 34;
+    pdfLegSvg += _pdfLeg(lx, t2clr, '', 0.8) + _pdfLegTxt(lx, t2clr, `T₂ = ${T2}°C`); lx += 34;
+    if (showFd) { pdfLegSvg += _pdfLeg(lx, fdClr, '', 0.5) + _pdfLegTxt(lx, fdClr, 'Fd'); lx += 22; }
+    if (c3data) { pdfLegSvg += _pdfLeg(lx, t3clr, '3 2', 0.6) + _pdfLegTxt(lx, t3clr, `T₃ = ${t3v_pdf}°C`); }
+  }
   const titleSvg = stripInSvg ? `
   <rect x="0" y="0" width="${VW}" height="${titleH}" fill="#f8f9fa"/>
   <line x1="0" y1="${titleH}" x2="${VW}" y2="${titleH}" stroke="#d2d2d2" stroke-width="0.3"/>
   <text x="3" y="8.5" font-size="5.5" font-weight="700" fill="#212121">${mainTitle}</text>
   ${projN ? `<text x="3" y="12" font-size="2.5" fill="#888">Projekt: ${projN}</text>` : ''}
+  ${pdfLegSvg}
   <text x="${VW-3}" y="6.5" font-size="2.4" text-anchor="end" fill="#888">T₁ = ${T1}°C  ·  T₂ = ${T2}°C${hasSok ? `  ·  SOK li = ${sokLv.toFixed(2)} m ü.M.` : ''}</text>
   <text x="${VW-3}" y="11.5" font-size="2.3" text-anchor="end" fill="#bbb">${dateS}</text>` : '';
 
@@ -6142,17 +6281,17 @@ function buildScaleDrawingPage(stripInSvg = false) {
   ${yAxisSvg}
   ${sokSvg}
   ${mastSvg}
-  ${catPath(c1, '', '0.4')} stroke="#c8c8c8"/>
-  ${catPath(cDisp, '', '0.6')} stroke="${t2clr}"/>
-  ${showFd ? makePath(fdY, '', '0.5') + ` stroke="${fdClr}"/>` : ''}
-  ${c3data ? catPath(c3data, '2.5,1.5', '0.45') + ` stroke="${t3clr}"/>` : ''}
+  ${catPath(c1, `${(5.5*symSc).toFixed(2)},${(3.5*symSc).toFixed(2)}`, (0.5*symSc).toFixed(3))} stroke="#c0c0c0" opacity="0.7"/>
+  ${catPath(cDisp, '', (1.0*symSc).toFixed(3))} stroke="${t2clr}"/>
+  ${showFd ? makePath(fdY, '', (0.55*symSc).toFixed(3)) + ` stroke="${fdClr}"/>` : ''}
+  ${c3data ? catPath(c3data, `${(2.5*symSc).toFixed(2)},${(1.5*symSc).toFixed(2)}`, (0.65*symSc).toFixed(3)) + ` stroke="${t3clr}"/>` : ''}
+  ${minClearSvg}
   ${anchLbl}
   ${sagSvg}
   ${probesSvg}
   ${obstSvg}
   ${spanDim}
   ${scalebar}
-  ${legendSvg}
   ${sokNoteSvg}
 </svg>`;
 
@@ -6166,6 +6305,7 @@ let drawingZoom       = 1.0;
 let drawingVEx        = 1;   // Überhöhungsfaktor (1 = keine Überhöhung)
 let _panX             = 0;   // viewBox origin X (SVG units, 0–267)
 let _panY             = 0;   // viewBox origin Y (SVG units, 0–180)
+let _drawingContentBounds = null; // {x,y,w,h} content bounds in SVG units
 
 // Strip / probe data
 let _drawingCenterXFrac = 0.5;
@@ -6190,9 +6330,13 @@ function adjustDrawingZoom(newZoom) {
   const prevZoom = drawingZoom;
   drawingZoom = Math.round(Math.max(0.5, Math.min(4.0, newZoom)) * 4) / 4;
 
-  if (drawingZoom === 1.0) {
-    // Full reset — show entire drawing
-    _panX = 0; _panY = 0;
+  if (newZoom === 1.0 && _drawingContentBounds) {
+    // Reset → auto-fit to content (same as initial view)
+    const { x: cx, y: cy, w: cw, h: ch } = _drawingContentBounds;
+    const fzX = 267 / cw, fzY = 180 / ch;
+    const fz  = Math.max(0.5, Math.min(4.0, Math.min(fzX, fzY)));
+    drawingZoom = Math.round(fz * 4) / 4;
+    _panX = cx; _panY = cy;
   } else {
     // Zoom around current view centre
     const cx = _panX + (267 / prevZoom) / 2;
@@ -6302,7 +6446,9 @@ function updateStripVisibility() {
   const mcNote = document.getElementById('scale-min-clearance-note');
   if (mcNote) {
     if (minClearance !== null) {
+      const anyVio = (_drawingObstData || []).some(o => o.violated);
       mcNote.textContent = `Mindestabstand zu Leiter: ${minClearance.toFixed(2)} m`;
+      mcNote.style.color  = anyVio ? '#dc2626' : '#5a6a7a';
       mcNote.style.display = '';
     } else {
       mcNote.style.display = 'none';
@@ -6378,8 +6524,26 @@ function setCanvasView(view) {
     const sokNote = document.getElementById('scale-sok-note');
     if (sokNote) sokNote.style.display = 'flex';
 
-    // Initial state: full 1:1 view
+    // Auto-fit: zoom so drawing content fills the viewport width
     drawingZoom = 1.0; _panX = 0; _panY = 0;
+    if (_drawingContentBounds) {
+      const { x: cx, y: cy, w: cw, h: ch } = _drawingContentBounds;
+      const fzX = 267 / cw;                   // fit to width
+      const fzY = 180 / ch;                    // fit to height
+      const fz  = Math.max(0.5, Math.min(4.0, Math.min(fzX, fzY)));
+      drawingZoom = Math.round(fz * 4) / 4;    // snap to 25% steps
+      _panX = cx;
+      _panY = cy;
+      // Rebuild SVG with correct symSc for this zoom
+      const svgFit = buildScaleDrawingPage();
+      if (svgFit && svgCont) svgCont.innerHTML = svgFit;
+    }
+    // Sync UI
+    { const pct = Math.round(drawingZoom * 100);
+      const lbl = document.getElementById('drawing-zoom-label');
+      const sl  = document.getElementById('zoom-slider');
+      if (lbl) lbl.textContent = pct + '%';
+      if (sl)  sl.value = pct; }
     applyViewBox();
     buildInteractiveStrip();
     updateEdgeIndicators();
@@ -6438,6 +6602,8 @@ function setCanvasView(view) {
   }
   if (segDiag)  segDiag.classList.toggle('active', !isScale);
   if (segZeich) segZeich.classList.toggle('active',  isScale);
+  const vexCtrl = document.getElementById('vex-header-ctrl');
+  if (vexCtrl) vexCtrl.style.display = isScale ? 'flex' : 'none';
 }
 
 function _onDrawingWheel(e) {
