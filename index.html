@@ -2215,6 +2215,19 @@ function updateSysModeUI(mode) {
     ? `Temperatur T₂ <span style="font-weight:400;color:var(--muted);font-size:.78em">(fixiert −5 °C für Eislast)</span>`
     : `Temperatur T₂`;
 
+  // T3-Vergleichskurve: bei R-FL ausblenden (keine Temperaturabhängigkeit)
+  const t3wrap = document.getElementById('t3-toggle-btn')?.closest('div[style*="border-top"]');
+  if (t3wrap) t3wrap.style.display = isRfl ? 'none' : '';
+  if (isRfl && showT3) {
+    showT3 = false;
+    const s = document.getElementById('t3-section');
+    const txt = document.getElementById('t3-toggle-txt');
+    const leg = document.getElementById('leg-ts3-item');
+    if (s) s.style.display = 'none';
+    if (txt) txt.textContent = 'T₃ Vergleichskurve einblenden';
+    if (leg) leg.style.display = 'none';
+  }
+
   // Eislast: nur N-FL, temperaturabhängig
   updateEislastVisibility();
 
