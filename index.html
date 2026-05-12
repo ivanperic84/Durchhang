@@ -404,12 +404,70 @@ body {
   text-align: center;
 }
 
+/* ── Canvas scroll area ── */
+#canvas-scroll-area {
+  overflow-y: auto;
+  max-height: 38vh;
+  flex-shrink: 0;
+  position: relative;
+}
+#canvas-scroll-area::after {
+  content: '';
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 32px;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,.85));
+  pointer-events: none;
+  margin-top: -32px;
+}
+.canvas-card.canvas-fullscreen #canvas-scroll-area {
+  max-height: none;
+}
+.canvas-card.canvas-fullscreen #canvas-scroll-area::after { display: none; }
+.canvas-card.canvas-fullscreen #main-canvas { flex-shrink: 0; }
+
 /* ── Canvas card ── */
 .canvas-card {
   background: var(--card);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   overflow: hidden;
+}
+.canvas-card.canvas-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 1.25em;
+}
+.canvas-card.canvas-fullscreen .canvas-header { padding: .75rem 1.5rem; }
+.canvas-card.canvas-fullscreen #scale-toolbar { padding: .55rem 1.2rem; }
+.canvas-card.canvas-fullscreen .strip-row { height: 34px; }
+.canvas-card.canvas-fullscreen .strip-label { font-size: 14px; width: 175px; min-width: 175px; max-width: 175px; }
+.canvas-card.canvas-fullscreen .strip-val { font-size: 13px; }
+.canvas-card.canvas-fullscreen .strip-val.bold { font-size: 15px; }
+.canvas-card.canvas-fullscreen #drawing-legend-overlay { font-size: .78rem; padding: .4rem .8rem; gap: .3rem; }
+.canvas-card.canvas-fullscreen #scale-sok-note { font-size: .72rem; padding: .4rem .9rem; }
+.canvas-card.canvas-fullscreen #scale-view {
+  flex: 1;
+  min-height: 0;
+}
+.canvas-card.canvas-fullscreen #drawing-viewport {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.canvas-card.canvas-fullscreen #scale-svg-container {
+  flex: 1;
+  max-height: none;
+  aspect-ratio: unset;
+  height: 100%;
 }
 .canvas-header {
   padding: .65rem 1.375rem;
@@ -478,7 +536,7 @@ body {
   border: 2px solid #fff;
 }
 .zoom-reset-btn {
-  font-size: .68rem; color: var(--muted);
+  font-size: 1.05rem; color: var(--muted);
   background: none; border: none;
   cursor: pointer; padding: 0 .2rem;
   font-family: inherit;
@@ -562,14 +620,15 @@ body {
 .edge-strip.edge-left  { left: 0;  background: linear-gradient(to right, rgba(255,255,255,.75) 60%, transparent); }
 .edge-strip.edge-right { right: 0; background: linear-gradient(to left,  rgba(255,255,255,.75) 60%, transparent); }
 .edge-badge {
-  background: rgba(235,0,0,.82);
+  background: rgba(80,80,80,.55);
   color: #fff;
-  font-size: 7.5px;
-  font-weight: 700;
+  font-size: 7px;
+  font-weight: 600;
   font-family: inherit;
-  padding: 2px 4px;
+  padding: 2px 5px;
   border-radius: 3px;
   white-space: nowrap;
+  letter-spacing: .01em;
 }
 /* Data strip — static table, shows only currently visible probes */
 /* Data strip — values positioned at screen-fraction matching the plumb line */
@@ -1145,6 +1204,7 @@ button.header-manual-link:hover {
 .proj-btn:hover { border-color: var(--primary); color: var(--primary); background: #fff8f8; }
 .proj-btn.danger { color: #888; }
 .proj-btn.danger:hover { border-color: #ef4444; color: #ef4444; background: #fff8f8; }
+.proj-btn.icon-only { padding: .22rem .4rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
 .proj-btn.pri { background: #fff; border-color: #f0a0a0; color: var(--primary); font-weight: 600; }
 .proj-btn.pri:hover { background: #fff5f5; border-color: var(--primary); }
 .proj-btn.cta { background: #d64040; border-color: #d64040; color: #fff; font-weight: 600; width: 100%; margin-top: .5rem; padding: .42rem .55rem; }
@@ -1206,7 +1266,7 @@ button.header-manual-link:hover {
   </div>
   <div style="flex:1;min-width:0">
     <h1 id="app-title">Durchhang N-FL</h1>
-    <p id="app-subtitle">Kettenwerk — Seillinie mit Temperatureinfluss</p>
+    <p id="app-subtitle" style="display:none">Kettenwerk — Seillinie mit Temperatureinfluss</p>
     <p id="proj-name-badge" style="display:none;margin:0;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">
       <span style="color:var(--muted);font-weight:500">Projekt: </span><span id="proj-name-group" style="color:#eb0000;font-weight:700"></span><span id="proj-name-sep" style="color:var(--muted);font-weight:400"> / </span><span id="proj-name-text" style="color:#eb0000;font-weight:700"></span>
     </p>
@@ -1718,7 +1778,21 @@ button.header-manual-link:hover {
           </select>
         </div>
       </div>
-      <span class="drag-hint" id="canvas-drag-hint">Ankerpunkte verschiebbar</span>
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <span class="drag-hint" id="canvas-drag-hint" style="display:none"></span>
+        <button id="fullscreen-btn" onclick="toggleCanvasFullscreen()"
+          title="Vollbild"
+          style="padding:.25rem .4rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s"
+          onmouseover="this.style.background='#f1f5f9';this.style.color='var(--text)'"
+          onmouseout="this.style.background='none';this.style.color='var(--muted)'">
+          <svg id="fullscreen-icon-enter" width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M1 6V1h5M15 6V1h-5M1 10v5h5M15 10v5h-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <svg id="fullscreen-icon-exit" width="14" height="14" viewBox="0 0 16 16" fill="none" style="display:none">
+            <path d="M6 1v5H1M10 1v5h5M6 15v-5H1M10 15v-5h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
     </div>
     <canvas id="main-canvas" width="700" height="380"></canvas>
     <div id="scale-view">
@@ -1754,6 +1828,7 @@ button.header-manual-link:hover {
       <div class="legend-item" id="leg-fd-solllage-item" style="display:none"><div class="legend-dot" style="background:#86868b;opacity:.35"></div><span id="leg-fd-solllage-label">Fd Solllage (T₁)</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:#86868b;opacity:.7"></div><span id="leg-sehne-label">Sehnenlinie</span></div>
     </div>
+    <div id="canvas-scroll-area">
     <div class="probe-readout">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.4rem">
         <div class="probe-hint-small" id="probe-hint">Messpunkte: ins Diagramm klicken / ziehen oder x-Wert eingeben</div>
@@ -1846,6 +1921,8 @@ button.header-manual-link:hover {
       </div>
     </div>
     <div class="obs-section" id="obs-section" style="display:none"></div>
+    <div id="highlight-card-fs" style="display:none;padding:.75rem 1rem .5rem;border-top:1px solid rgba(0,0,0,.06)"></div>
+    </div><!-- /canvas-scroll-area -->
   </div>
 
   <!-- ── Results ── -->
@@ -3110,6 +3187,12 @@ function setProjectState(s) {
   probeH2 = _pf(flds['probe-h2']);
   probeH3 = _pf(flds['probe-h3']);
   probeH4 = _pf(flds['probe-h4']);
+  // Restore H-Punkt DOM inputs
+  [1,2,3,4].forEach(i => {
+    const el = document.getElementById(`probe-h${i}`);
+    const v  = flds[`probe-h${i}`];
+    if (el) el.value = (v != null && v !== '') ? v : '';
+  });
   minClearance = _pf(flds['min-clearance-input']);
   { const mcInp = document.getElementById('min-clearance-input');
     if (mcInp) mcInp.value = minClearance !== null ? minClearance : ''; }
@@ -3578,20 +3661,60 @@ function exportProjectById(id) {
   URL.revokeObjectURL(a.href);
 }
 
+function exportWholeProject(groupId) {
+  const meta = getProjMeta();
+  const group = meta.find(m => m.id === groupId);
+  if (!group) return;
+  const children = meta.filter(m => !m.isGroup && m.parentId === groupId);
+  const calculations = children.map(m => {
+    const raw = localStorage.getItem(PROJ_KEY_PREFIX + m.id);
+    return { meta: m, state: raw ? JSON.parse(raw) : null };
+  }).filter(c => c.state !== null);
+  const payload = JSON.stringify({
+    type: 'durchhang_project',
+    version: 1,
+    group,
+    calculations
+  }, null, 2);
+  const blob = new Blob([payload], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = group.name.replace(/[^a-zA-Z0-9_\-]/g,'_') + '_projekt.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 function importProjectFile(input) {
   const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
     try {
-      const state = JSON.parse(e.target.result);
-      const name  = state.name || file.name.replace(/\.json$/i, '');
-      const id    = genProjId();
-      const now   = new Date().toISOString();
-      const meta  = getProjMeta();
+      const parsed = JSON.parse(e.target.result);
+      const now  = new Date().toISOString();
+      const meta = getProjMeta();
+
+      // Whole-project format
+      if (parsed.type === 'durchhang_project' && parsed.group && parsed.calculations) {
+        const groupId = genProjId();
+        meta.unshift({ ...parsed.group, id: groupId, createdAt: now, updatedAt: now, isGroup: true });
+        [...parsed.calculations].reverse().forEach(c => {
+          const calcId = genProjId();
+          const state  = { ...c.state, name: c.meta.name };
+          meta.unshift({ ...c.meta, id: calcId, parentId: groupId, createdAt: now, updatedAt: now, isGroup: false });
+          localStorage.setItem(PROJ_KEY_PREFIX + calcId, JSON.stringify(state));
+        });
+        saveProjMeta(meta);
+        renderProjectList();
+        return;
+      }
+
+      // Single calculation format (legacy)
+      const name = parsed.name || file.name.replace(/\.json$/i, '');
+      const id   = genProjId();
       meta.unshift({ id, name, createdAt: now, updatedAt: now });
       saveProjMeta(meta);
-      localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...state, name }));
+      localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...parsed, name }));
       renderProjectList();
     } catch(err) { alert('Ungültige JSON-Datei: ' + err.message); }
   };
@@ -3657,9 +3780,9 @@ function renderProjectList() {
         <div class="proj-item-actions">
           <button class="proj-btn pri" onclick="loadProjectById('${m.id}')">Laden</button>
           <button class="proj-btn" onclick="saveToProject('${m.id}')">Speichern</button>
-          <button class="proj-btn" onclick="exportProjectById('${m.id}')">JSON ↓</button>
+          <button class="proj-btn" onclick="exportProjectById('${m.id}')">JSON</button>
           ${moveOptions}
-          <button class="proj-btn danger" onclick="deleteProjectById('${m.id}')">Löschen</button>
+          <button class="proj-btn danger icon-only" onclick="deleteProjectById('${m.id}')" title="Löschen"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </div>
       </div>
     </div>`;
@@ -3692,7 +3815,8 @@ function renderProjectList() {
         <div class="proj-item-actions" style="flex-wrap:nowrap" onclick="event.stopPropagation()">
           <button class="proj-rename-btn" onclick="renameEntry('${g.id}')" title="Projekt umbenennen">${_penSvg}</button>
           <button class="proj-btn pri" onclick="saveToGroup('${g.id}')" title="Aktuelle Berechnung unter diesem Projekt speichern">+ Speichern</button>
-          <button class="proj-btn danger" onclick="deleteProjectById('${g.id}')">Löschen</button>
+          <button class="proj-btn" onclick="exportWholeProject('${g.id}')" title="Gesamtes Projekt als JSON exportieren">JSON</button>
+          <button class="proj-btn danger icon-only" onclick="deleteProjectById('${g.id}')" title="Löschen"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </div>
       </div>
       ${!collapsed && children.length > 0 ? `<div class="proj-group-children">${childrenHtml}</div>` : ''}
@@ -5176,6 +5300,18 @@ function updateHighlightCard() {
         </div>
       </div>`;
   }
+  // Mirror to fullscreen overlay
+  const elFs = document.getElementById('highlight-card-fs');
+  if (elFs) elFs.innerHTML = el.innerHTML;
+}
+
+function _syncHighlightFsVisibility() {
+  const elFs = document.getElementById('highlight-card-fs');
+  if (!elFs) return;
+  const isFs = !!document.querySelector('.canvas-card.canvas-fullscreen');
+  const isDiagr = !!document.getElementById('main-canvas') &&
+    document.getElementById('main-canvas').style.display !== 'none';
+  elFs.style.display = (isFs && isDiagr) ? '' : 'none';
 }
 
 function clearMesspunkte() {
@@ -5849,6 +5985,9 @@ function buildScaleDrawingPage(stripInSvg = false) {
 
   // Symbol scale: in interactive view divide by zoom so symbols stay constant size
   const symSc = stripInSvg ? 1 : (1 / (drawingZoom || 1));
+  const isFs = !stripInSvg && !!document.querySelector('.canvas-card.canvas-fullscreen');
+  const lblSc = isFs ? 1.3 : 1.0;
+  const fs = n => (n * lblSc).toFixed(2);
 
   // Drawing proper centred in available area
   const dW   = L * ppm;
@@ -5859,10 +5998,10 @@ function buildScaleDrawingPage(stripInSvg = false) {
   // Store content bounds for auto-fit (interactive only)
   if (!stripInSvg) {
     _drawingContentBounds = {
-      x: xOff - 6,          // left mast + Y-axis label space
-      y: yOff - 5,          // above curves (anchor labels)
-      w: dW + 12,            // curve width + margins both sides
-      h: dH + 18,            // curves + space for span dim line below
+      x: 1,                           // include y-axis label area
+      y: yOff - 5,
+      w: xOff + L * ppm + 7,          // y-axis area to right mast + margin
+      h: dH + 18,
     };
   }
 
@@ -5892,7 +6031,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
 
   // Strip dimensions — declared early so grid and spanDim can reference them
   const _probesEarlyCount = [probeX1, probeX2, probeX3, probeX4].filter(x => x !== null).length;
-  const _stripRowH_early  = 4.2;
+  const _stripRowH_early  = 5.5;
   const _stripNRows_early = 2 + 1 + (c3data ? 1 : 0) + (hasSok ? 2 : 0) + (hasSok && c3data ? 1 : 0);
   const _stripH_early     = _stripNRows_early * _stripRowH_early + 0.5;
 
@@ -5909,7 +6048,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
     if (gy < drawY0 - 0.1 || gy > _gridBottom + 0.1) continue;
     gridSvg += `<line x1="${drawX0}" y1="${gy.toFixed(2)}" x2="${drawX1}" y2="${gy.toFixed(2)}" stroke="#ebebeb" stroke-width="0.2"/>`;
     const lbl = hasSok ? y.toFixed(y < 10 ? 2 : 1) : y.toFixed(2);
-    gridSvg += `<text x="${(drawX0-1).toFixed(2)}" y="${(gy+0.9).toFixed(2)}" font-size="2.4" text-anchor="end" fill="#bbb">${lbl}</text>`;
+    gridSvg += `<text x="${(drawX0-1).toFixed(2)}" y="${(gy+0.9).toFixed(2)}" font-size="${fs(2.4)}" text-anchor="end" fill="#bbb">${lbl}</text>`;
   }
 
   const yAxisLbl = hasSok ? 'Höhe [m ü.M.]' : 'Höhe [m ü.SOK]';
@@ -5917,33 +6056,34 @@ function buildScaleDrawingPage(stripInSvg = false) {
   // SOK line
   const sokSvg = `
   <line x1="${sx(0).toFixed(2)}" y1="${sy(sokYL).toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${sy(sokYR).toFixed(2)}"
-    stroke="#aaa" stroke-width="${(0.3*symSc).toFixed(3)}" stroke-dasharray="${(2.5*symSc).toFixed(2)},${(1.2*symSc).toFixed(2)}"/>
-  <text x="${(sx(0)-1).toFixed(2)}" y="${(sy(sokYL)+0.9).toFixed(2)}" font-size="2.2" text-anchor="end" fill="#bbb">SOK</text>`;
+    stroke="#aaa" stroke-width="${(0.65*symSc).toFixed(3)}"/>
+  <text x="${(sx(0)-1).toFixed(2)}" y="${(sy(sokYL)+0.9).toFixed(2)}" font-size="${fs(2.2)}" text-anchor="end" fill="#bbb">SOK</text>
+  <text x="${(sx(L)+1).toFixed(2)}" y="${(sy(sokYR)+0.9).toFixed(2)}" font-size="${fs(2.2)}" text-anchor="start" fill="#bbb">SOK</text>`;
 
-  // Masts — dashed thin lines, no circles
+  // Masts — solid thin lines, no circles
   const mastSvg = `
   <line x1="${sx(0).toFixed(2)}" y1="${sy(sokYL).toFixed(2)}" x2="${sx(0).toFixed(2)}" y2="${sy(h1abs).toFixed(2)}"
-    stroke="#666" stroke-width="${(0.28*symSc).toFixed(3)}" stroke-dasharray="${(1.8*symSc).toFixed(2)},${(1.2*symSc).toFixed(2)}"/>
+    stroke="#666" stroke-width="${(0.28*symSc).toFixed(3)}"/>
   <line x1="${sx(L).toFixed(2)}" y1="${sy(sokYR).toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${sy(h2abs).toFixed(2)}"
-    stroke="#666" stroke-width="${(0.28*symSc).toFixed(3)}" stroke-dasharray="${(1.8*symSc).toFixed(2)},${(1.2*symSc).toFixed(2)}"/>`;
+    stroke="#666" stroke-width="${(0.28*symSc).toFixed(3)}"/>`;
 
   // Anchor labels
   let anchLbl = '';
   if (hasSok) {
     // Absolute kote at anchor point (above curve)
     anchLbl += `
-  <text x="${(sx(0)+2).toFixed(2)}" y="${(sy(h1abs)-2).toFixed(2)}" font-size="2.3" fill="#555">${h1abs.toFixed(3)} m ü.M.</text>
-  <text x="${(sx(L)-2).toFixed(2)}" y="${(sy(h2abs)-2).toFixed(2)}" font-size="2.3" text-anchor="end" fill="#555">${h2abs.toFixed(3)} m ü.M.</text>`;
+  <text x="${(sx(0)+2).toFixed(2)}" y="${(sy(h1abs)-2).toFixed(2)}" font-size="${fs(2.3)}" fill="#555">${h1abs.toFixed(3)} m ü.M.</text>
+  <text x="${(sx(L)-2).toFixed(2)}" y="${(sy(h2abs)-2).toFixed(2)}" font-size="${fs(2.3)}" text-anchor="end" fill="#555">${h2abs.toFixed(3)} m ü.M.</text>`;
     // Relative height h= at midpoint of each mast line
     const mastMidYL = (sy(sokYL) + sy(h1abs)) / 2;
     const mastMidYR = (sy(sokYR) + sy(h2abs)) / 2;
     anchLbl += `
-  <text x="${(sx(0)+1.5).toFixed(2)}" y="${(mastMidYL+0.8).toFixed(2)}" font-size="2.0" fill="#888">h₁ = ${h1.toFixed(3)} m</text>
-  <text x="${(sx(L)-1.5).toFixed(2)}" y="${(mastMidYR+0.8).toFixed(2)}" font-size="2.0" text-anchor="end" fill="#888">h₂ = ${h2.toFixed(3)} m</text>`;
+  <text x="${(sx(0)+1.5).toFixed(2)}" y="${(mastMidYL+0.8).toFixed(2)}" font-size="${fs(2.0)}" fill="#888">h₁ = ${h1.toFixed(3)} m</text>
+  <text x="${(sx(L)-1.5).toFixed(2)}" y="${(mastMidYR+0.8).toFixed(2)}" font-size="${fs(2.0)}" text-anchor="end" fill="#888">h₂ = ${h2.toFixed(3)} m</text>`;
   } else {
     anchLbl = `
-  <text x="${(sx(0)+2).toFixed(2)}" y="${(sy(h1abs)-2).toFixed(2)}" font-size="2.3" fill="#555">h₁ = ${h1.toFixed(3)} m</text>
-  <text x="${(sx(L)-2).toFixed(2)}" y="${(sy(h2abs)-2).toFixed(2)}" font-size="2.3" text-anchor="end" fill="#555">h₂ = ${h2.toFixed(3)} m</text>`;
+  <text x="${(sx(0)+2).toFixed(2)}" y="${(sy(h1abs)-2).toFixed(2)}" font-size="${fs(2.3)}" fill="#555">h₁ = ${h1.toFixed(3)} m</text>
+  <text x="${(sx(L)-2).toFixed(2)}" y="${(sy(h2abs)-2).toFixed(2)}" font-size="${fs(2.3)}" text-anchor="end" fill="#555">h₂ = ${h2.toFixed(3)} m</text>`;
   }
 
   // Probe list and strip dimensions — reuse early-computed values
@@ -5975,7 +6115,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
         const xNext  = dimPts[i + 1];
         const midPx  = ((sx(xv) + sx(xNext)) / 2).toFixed(2);
         const distM  = (xNext - xv).toFixed(2);
-        spanDim += `<text x="${midPx}" y="${(spanDimY - 2).toFixed(2)}" font-size="2.2" text-anchor="middle" fill="#888">${distM} m</text>`;
+        spanDim += `<text x="${midPx}" y="${(spanDimY - 2).toFixed(2)}" font-size="${fs(2.2)}" text-anchor="middle" fill="#888">${distM} m</text>`;
       }
     });
   } else {
@@ -5984,7 +6124,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
   <line x1="${sx(0).toFixed(2)}" y1="${(spanDimY-1.5*symSc).toFixed(2)}" x2="${sx(0).toFixed(2)}" y2="${(spanDimY+1.5*symSc).toFixed(2)}" stroke="#aaa" stroke-width="${(0.28*symSc).toFixed(3)}"/>
   <line x1="${sx(0).toFixed(2)}" y1="${spanDimY.toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${spanDimY.toFixed(2)}" stroke="#aaa" stroke-width="${(0.28*symSc).toFixed(3)}"/>
   <line x1="${sx(L).toFixed(2)}" y1="${(spanDimY-1.5*symSc).toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${(spanDimY+1.5*symSc).toFixed(2)}" stroke="#aaa" stroke-width="${(0.28*symSc).toFixed(3)}"/>
-  <text x="${((sx(0)+sx(L))/2).toFixed(2)}" y="${(spanDimY-1.5).toFixed(2)}" font-size="2.4" text-anchor="middle" fill="#666">L = ${L.toFixed(2)} m</text>`;
+  <text x="${((sx(0)+sx(L))/2).toFixed(2)}" y="${(spanDimY-1.5).toFixed(2)}" font-size="${fs(2.4)}" text-anchor="middle" fill="#666">L = ${L.toFixed(2)} m</text>`;
   }
 
   // Sag annotation at T2 lowest point
@@ -5996,7 +6136,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
   <line x1="${sx(x0T2).toFixed(2)}" y1="${sy(yChordT2).toFixed(2)}" x2="${sx(x0T2).toFixed(2)}" y2="${sy(y0T2).toFixed(2)}"
     stroke="${t2clr}" stroke-width="${(0.25*symSc).toFixed(3)}" stroke-dasharray="${(1.2*symSc).toFixed(2)},${(0.8*symSc).toFixed(2)}" opacity="0.7"/>
   <text x="${(sx(x0T2)+1.5).toFixed(2)}" y="${((sy(yChordT2)+sy(y0T2))/2+0.9).toFixed(2)}"
-    font-size="2.2" fill="${t2clr}" opacity="0.85">f = ${sagVal.toFixed(3)} m</text>` : '';
+    font-size="${fs(2.2)}" fill="${t2clr}" opacity="0.85">f = ${sagVal.toFixed(3)} m</text>` : '';
 
   // Mindestabstand-Kurven (parallel zur T2-Kurve, versetzt)
   let minClearSvg = '';
@@ -6041,7 +6181,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
   const stripNRows   = _stripNRows;
   const stripH       = _stripH;
   const stripY0      = drawY1 - stripH;
-  const lblColW      = 18;
+  const lblColW      = 32;
 
   // Reset interactive strip data (filled in probes.forEach below)
   _drawingProbeData   = [];
@@ -6054,18 +6194,25 @@ function buildScaleDrawingPage(stripInSvg = false) {
   if (probes.length > 0) {
     // SVG-interner Datenstreifen (nur für PDF-Export)
     if (stripInSvg) {
-      probesSvg += `<rect x="${drawX0}" y="${stripY0.toFixed(2)}" width="${drawW}" height="${stripH.toFixed(2)}"
-        fill="#f7f7f7" stroke="#cecece" stroke-width="0.25"/>`;
-      for (let r = 1; r < stripNRows; r++) {
-        const ry = (stripY0 + r * stripRowH).toFixed(2);
-        probesSvg += `<line x1="${drawX0}" y1="${ry}" x2="${drawX1}" y2="${ry}" stroke="#e0e0e0" stroke-width="0.15"/>`;
+      const divX = drawX0 + lblColW;
+      // Per-row backgrounds (alternating) + dividers
+      for (let r = 0; r < stripNRows; r++) {
+        const ry0 = stripY0 + r * stripRowH;
+        const bg  = r % 2 === 0 ? '#f7f7f7' : '#ffffff';
+        probesSvg += `<rect x="${drawX0}" y="${ry0.toFixed(2)}" width="${drawW}" height="${stripRowH.toFixed(2)}" fill="${bg}"/>`;
+        if (r > 0)
+          probesSvg += `<line x1="${drawX0}" y1="${ry0.toFixed(2)}" x2="${drawX1}" y2="${ry0.toFixed(2)}" stroke="#e4e4e4" stroke-width="0.2"/>`;
       }
-      const divX = (drawX0 + lblColW).toFixed(2);
-      probesSvg += `<line x1="${divX}" y1="${stripY0.toFixed(2)}" x2="${divX}" y2="${drawY1.toFixed(2)}" stroke="#d0d0d0" stroke-width="0.2"/>`;
+      // Outer border
+      probesSvg += `<rect x="${drawX0}" y="${stripY0.toFixed(2)}" width="${drawW}" height="${stripH.toFixed(2)}" fill="none" stroke="#cecece" stroke-width="0.3"/>`;
+      // Label/value divider
+      probesSvg += `<line x1="${divX.toFixed(2)}" y1="${stripY0.toFixed(2)}" x2="${divX.toFixed(2)}" y2="${(stripY0+stripH).toFixed(2)}" stroke="#d0d0d0" stroke-width="0.3"/>`;
+      // Row labels — styled like HTML strip
       stripRowLabels.forEach((lbl, r) => {
-        const ty = (stripY0 + r * stripRowH + stripRowH * 0.68).toFixed(2);
-        const lblClr = lbl.includes('T2') ? t2clr : lbl.includes('T3') ? t3clr : '#bbb';
-        probesSvg += `<text x="${(drawX0 + 1.2).toFixed(2)}" y="${ty}" font-size="2.1" fill="${lblClr}">${lbl}</text>`;
+        const ty  = (stripY0 + r * stripRowH + stripRowH * 0.65).toFixed(2);
+        const clr = lbl.includes('T2') ? t2clr : lbl.includes('T3') ? t3clr : '#999';
+        const fw  = r === 0 ? '600' : '600';
+        probesSvg += `<text x="${(drawX0 + 2).toFixed(2)}" y="${ty}" font-size="2.3" font-weight="${fw}" fill="${clr}">${lbl}</text>`;
       });
     }
 
@@ -6086,11 +6233,6 @@ function buildScaleDrawingPage(stripInSvg = false) {
     <line x1="${px.toFixed(2)}" y1="${(py + 1.3*symSc).toFixed(2)}" x2="${px.toFixed(2)}" y2="${plumbEndY.toFixed(2)}"
       stroke="${t2clr}" stroke-width="${(0.5*symSc).toFixed(3)}" stroke-dasharray="${(2.0*symSc).toFixed(2)},${(1.5*symSc).toFixed(2)}" opacity="0.45"/>`;
 
-      // Tick cross on SOK reference line
-      const tkS = (1.4 * symSc).toFixed(2);
-      probesSvg += `
-    <line x1="${(px - 1.4*symSc).toFixed(2)}" y1="${sokSvgY.toFixed(2)}" x2="${(px + 1.4*symSc).toFixed(2)}" y2="${sokSvgY.toFixed(2)}"
-      stroke="${t2clr}" stroke-width="${(0.5*symSc).toFixed(3)}" opacity="0.75"/>`;
 
       // Circle on curve
       probesSvg += `
@@ -6116,14 +6258,15 @@ function buildScaleDrawingPage(stripInSvg = false) {
 
       // SVG-Texte nur im PDF-Modus
       if (stripInSvg) {
-        cellVals.forEach(([val, fs, fw, clr], r) => {
-          const ty = (stripY0 + r * stripRowH + stripRowH * 0.68).toFixed(2);
-          probesSvg += `<text x="${px.toFixed(2)}" y="${ty}" font-size="${fs}" font-weight="${fw}" text-anchor="middle" fill="${clr}">${val}</text>`;
+        cellVals.forEach(([val, , fw, clr], r) => {
+          const ty  = (stripY0 + r * stripRowH + stripRowH * 0.65).toFixed(2);
+          const fsz = r === 0 ? '2.8' : '2.3';
+          probesSvg += `<text x="${px.toFixed(2)}" y="${ty}" font-size="${fsz}" font-weight="${fw}" text-anchor="middle" fill="${clr}">${val}</text>`;
         });
       }
 
       // Immer für HTML-Tabelle speichern
-      _drawingProbeData.push({ xFrac: px / VW, cells: cellVals.map(([v]) => v) });
+      _drawingProbeData.push({ xFrac: px / VW, cells: cellVals.map(([v]) => v), colors: cellVals.map(([,,, c]) => c || null) });
 
       // T3 diamond if applicable
       if (c3data) {
@@ -6231,7 +6374,69 @@ function buildScaleDrawingPage(stripInSvg = false) {
     _drawingObstData.push({ xFrac: ox / VW, name: lbl, badge, h: obsAbsH, xVal: xv, clear: parseFloat(clear.toFixed(3)), nearLbl, violated: vio });
   });
 
-  const scalebar = '';
+  // Footer: scale bars + legend (PDF only)
+  const _t3v_foot = c3data
+    ? (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value))
+    : null;
+  const scalebar = (() => {
+    if (!stripInSvg) return '';
+    const fy = drawY1;          // 166 mm
+    const fH = footH;           // 14 mm
+    let s = `<line x1="0" y1="${fy}" x2="${VW}" y2="${fy}" stroke="#c8c8c8" stroke-width="0.3"/>`;
+
+    // ── Horizontal scale bar ──
+    const barLengths = [1,2,5,10,20,25,50,100];
+    const barM = barLengths.find(m => m * ppm >= 8 && m * ppm <= 45) ?? 10;
+    const barW = barM * ppm;
+    const bx0  = drawX0 + 1;
+    const bY   = fy + fH * 0.53;
+    const hw   = barW / 2;
+    s += `<text x="${bx0}" y="${(fy+3.8).toFixed(1)}" font-size="2.1" font-weight="600" fill="#444">Masstab H  1:${scale}</text>`;
+    s += `<rect x="${bx0}" y="${(bY-1.1).toFixed(1)}" width="${hw.toFixed(1)}" height="2.2" fill="#333"/>`;
+    s += `<rect x="${(bx0+hw).toFixed(1)}" y="${(bY-1.1).toFixed(1)}" width="${hw.toFixed(1)}" height="2.2" fill="#999"/>`;
+    s += `<rect x="${bx0}" y="${(bY-1.1).toFixed(1)}" width="${barW.toFixed(1)}" height="2.2" fill="none" stroke="#333" stroke-width="0.3"/>`;
+    s += `<text x="${bx0}" y="${(bY+4).toFixed(1)}" font-size="1.9" text-anchor="middle" fill="#666">0</text>`;
+    s += `<text x="${(bx0+hw).toFixed(1)}" y="${(bY+4).toFixed(1)}" font-size="1.9" text-anchor="middle" fill="#666">${barM/2}</text>`;
+    s += `<text x="${(bx0+barW).toFixed(1)}" y="${(bY+4).toFixed(1)}" font-size="1.9" text-anchor="middle" fill="#666">${barM} m</text>`;
+
+    // ── Vertical scale ──
+    const vScale = Math.round(scale / (vEx || 1));
+    const vbX = bx0 + barW + 9;
+    s += `<text x="${vbX.toFixed(1)}" y="${(fy+3.8).toFixed(1)}" font-size="2.1" font-weight="600" fill="#444">Masstab V  1:${vScale}${vEx > 1 ? `   (Überhöhung ${vEx}×)` : ''}</text>`;
+
+    // ── SOK info ──
+    if (hasSok) {
+      const sokInfoX = vbX;
+      s += `<text x="${sokInfoX.toFixed(1)}" y="${(bY+4).toFixed(1)}" font-size="1.9" fill="#aaa">SOK li: ${sokLv.toFixed(3)} m ü.M.${(sokR !== null && Math.abs(sokR - sokLv) > 0.001) ? `   SOK re: ${sokR.toFixed(3)} m ü.M.` : ''}</text>`;
+    }
+
+    // ── Legend ──
+    let lx = VW * 0.50;
+    const lY  = fy + fH * 0.38;
+    const ltY = (lY + 1.2).toFixed(1);
+    const lw  = 10;
+
+    s += `<line x1="${lx.toFixed(1)}" y1="${lY.toFixed(1)}" x2="${(lx+lw).toFixed(1)}" y2="${lY.toFixed(1)}" stroke="#bbb" stroke-width="0.6" stroke-dasharray="3,2"/>`;
+    s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="#999">Ts bei T₁ = ${T1}°C</text>`;
+    lx += 34;
+
+    s += `<line x1="${lx.toFixed(1)}" y1="${lY.toFixed(1)}" x2="${(lx+lw).toFixed(1)}" y2="${lY.toFixed(1)}" stroke="${t2clr}" stroke-width="1.0"/>`;
+    s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" font-weight="600" fill="${t2clr}">Ts bei T₂ = ${T2}°C</text>`;
+    lx += 34;
+
+    if (showFd) {
+      s += `<line x1="${lx.toFixed(1)}" y1="${lY.toFixed(1)}" x2="${(lx+lw).toFixed(1)}" y2="${lY.toFixed(1)}" stroke="${fdClr}" stroke-width="0.5"/>`;
+      s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="#888">Fd bei T₂</text>`;
+      lx += 26;
+    }
+
+    if (c3data && _t3v_foot !== null) {
+      s += `<line x1="${lx.toFixed(1)}" y1="${lY.toFixed(1)}" x2="${(lx+lw).toFixed(1)}" y2="${lY.toFixed(1)}" stroke="${t3clr}" stroke-width="0.6" stroke-dasharray="3,2"/>`;
+      s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="${t3clr}">Ts bei T₃ = ${_t3v_foot}°C</text>`;
+    }
+
+    return s;
+  })();
 
   // Legend — HTML overlay (nur bei interaktiver Ansicht; PDF bekommt eigene Legende im Titel)
   if (!stripInSvg) {
@@ -6256,37 +6461,21 @@ function buildScaleDrawingPage(stripInSvg = false) {
   const dateS  = new Date().toLocaleDateString('de-DE');
   const sysLbl = isNFL ? 'N-FL' : isRFL ? 'R-FL' : 'Einzelleiter';
   const mainTitle = `${sysLbl}  ·  L = ${L} m`;
-  // PDF legend line helper (SVG)
-  const _pdfLeg = (x, clr, dash='', sw=0.7) => {
-    const da = dash ? ` stroke-dasharray="${dash}"` : '';
-    return `<line x1="${x}" y1="${(titleH/2).toFixed(1)}" x2="${(x+8).toFixed(1)}" y2="${(titleH/2).toFixed(1)}" stroke="${clr}" stroke-width="${sw}"${da}/>`;
-  };
-  const _pdfLegTxt = (x, clr, txt) =>
-    `<text x="${(x+9.5).toFixed(1)}" y="${(titleH/2+1).toFixed(1)}" font-size="2.3" fill="${clr}">${txt}</text>`;
   const t3v_pdf = c3data ? (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value)) : null;
-  let pdfLegSvg = '';
-  if (stripInSvg) {
-    let lx = VW * 0.38;
-    pdfLegSvg += _pdfLeg(lx, '#c0c0c0', '5 3', 0.5) + _pdfLegTxt(lx, '#999', `T₁ = ${T1}°C`); lx += 34;
-    pdfLegSvg += _pdfLeg(lx, t2clr, '', 0.8) + _pdfLegTxt(lx, t2clr, `T₂ = ${T2}°C`); lx += 34;
-    if (showFd) { pdfLegSvg += _pdfLeg(lx, fdClr, '', 0.5) + _pdfLegTxt(lx, fdClr, 'Fd'); lx += 22; }
-    if (c3data) { pdfLegSvg += _pdfLeg(lx, t3clr, '3 2', 0.6) + _pdfLegTxt(lx, t3clr, `T₃ = ${t3v_pdf}°C`); }
-  }
   const titleSvg = stripInSvg ? `
   <rect x="0" y="0" width="${VW}" height="${titleH}" fill="#f8f9fa"/>
   <line x1="0" y1="${titleH}" x2="${VW}" y2="${titleH}" stroke="#d2d2d2" stroke-width="0.3"/>
   <text x="3" y="8.5" font-size="5.5" font-weight="700" fill="#212121">${mainTitle}</text>
   ${projN ? `<text x="3" y="12" font-size="2.5" fill="#888">Projekt: ${projN}</text>` : ''}
-  ${pdfLegSvg}
-  <text x="${VW-3}" y="6.5" font-size="2.4" text-anchor="end" fill="#888">T₁ = ${T1}°C  ·  T₂ = ${T2}°C${hasSok ? `  ·  SOK li = ${sokLv.toFixed(2)} m ü.M.` : ''}</text>
   <text x="${VW-3}" y="11.5" font-size="2.3" text-anchor="end" fill="#bbb">${dateS}</text>` : '';
 
   // Frame and Y-axis
   const frameSvg   = stripInSvg ? `<rect x="${drawX0}" y="${drawY0}" width="${drawW}" height="${drawH}" fill="none" stroke="#d8d8d8" stroke-width="0.3"/>` : '';
-  const yAxisSvg   = `<text transform="rotate(-90,8,${((drawY0+drawY1)/2).toFixed(1)})" x="8" y="${((drawY0+drawY1)/2).toFixed(1)}" font-size="2.4" text-anchor="middle" fill="#aaa">${yAxisLbl}</text>`;
+  const yAxisSvg   = `<text transform="rotate(-90,8,${((drawY0+drawY1)/2).toFixed(1)})" x="8" y="${((drawY0+drawY1)/2).toFixed(1)}" font-size="${fs(2.4)}" text-anchor="middle" fill="#aaa">${yAxisLbl}</text>`;
 
+  const svgSize = stripInSvg ? `width="267mm" height="180mm"` : `width="100%" height="100%"`;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg"
-    width="267mm" height="180mm" viewBox="0 0 ${VW} ${VH}"
+    ${svgSize} viewBox="0 0 ${VW} ${VH}"
     preserveAspectRatio="xMidYMid meet"
     font-family="'Segoe UI',Arial,sans-serif">
   ${titleSvg}
@@ -6332,11 +6521,30 @@ let _dragListeners      = null;   // {onMouseDown, onMouseMove, onMouseUp}
 // ── ViewBox helpers ───────────────────────────────────────────────────────────
 function applyViewBox() {
   const svgEl = document.querySelector('#scale-svg-container svg');
-  if (!svgEl) return;
-  const vbW = 267 / drawingZoom;
+  const cont  = document.getElementById('scale-svg-container');
+  if (!svgEl || !cont) return;
+  const cW = cont.offsetWidth, cH = cont.offsetHeight;
+  const ar = (cW > 0 && cH > 0) ? cW / cH : 267 / 180;
   const vbH = 180 / drawingZoom;
-  _panX = Math.max(0, Math.min(267 - vbW, _panX));
-  _panY = Math.max(0, Math.min(180 - vbH, _panY));
+  const vbW = vbH * ar;
+  if (_drawingContentBounds) {
+    const { x: bx, y: by, w: bw, h: bh } = _drawingContentBounds;
+    // Horizontal: if viewport wider than content → center; else clamp within content
+    if (vbW >= bw) {
+      _panX = bx - (vbW - bw) / 2;
+    } else {
+      _panX = Math.max(bx, Math.min(bx + bw - vbW, _panX));
+    }
+    // Vertical: same
+    if (vbH >= bh) {
+      _panY = by - (vbH - bh) / 2;
+    } else {
+      _panY = Math.max(by, Math.min(by + bh - vbH, _panY));
+    }
+  } else {
+    _panX = Math.max(-(vbW - 267) / 2, Math.min(Math.max(0, 267 - vbW), _panX));
+    _panY = Math.max(0, Math.min(Math.max(0, 180 - vbH), _panY));
+  }
   svgEl.setAttribute('viewBox', `${_panX.toFixed(3)} ${_panY.toFixed(3)} ${vbW.toFixed(3)} ${vbH.toFixed(3)}`);
 }
 
@@ -6347,15 +6555,20 @@ function adjustDrawingZoom(newZoom) {
   if (newZoom === 1.0 && _drawingContentBounds) {
     // Reset → auto-fit to content (same as initial view)
     const { x: cx, y: cy, w: cw, h: ch } = _drawingContentBounds;
-    const fzX = 267 / cw, fzY = 180 / ch;
-    const fz  = Math.max(0.5, Math.min(4.0, Math.min(fzX, fzY)));
-    drawingZoom = Math.round(fz * 4) / 4;
-    _panX = cx; _panY = cy;
+    const _cont = document.getElementById('scale-svg-container');
+    const _ar   = (_cont && _cont.offsetHeight > 0) ? _cont.offsetWidth / _cont.offsetHeight : 267 / 180;
+    const fzX = (180 * _ar) / cw, fzY = 180 / ch;
+    const fz  = Math.max(0.5, Math.min(4.0, Math.min(fzX, fzY) * 0.97));
+    drawingZoom = Math.max(0.5, Math.floor(fz * 4) / 4); // floor to nearest 25%
+    _panX = cx - (180 * _ar / drawingZoom - cw) / 2;
+    _panY = cy - (180 / drawingZoom - ch) / 2;
   } else {
     // Zoom around current view centre
-    const cx = _panX + (267 / prevZoom) / 2;
+    const _cont = document.getElementById('scale-svg-container');
+    const _ar   = (_cont && _cont.offsetHeight > 0) ? _cont.offsetWidth / _cont.offsetHeight : 267 / 180;
+    const cx = _panX + (180 * _ar / prevZoom) / 2;
     const cy = _panY + (180 / prevZoom) / 2;
-    _panX = cx - (267 / drawingZoom) / 2;
+    _panX = cx - (180 * _ar / drawingZoom) / 2;
     _panY = cy - (180 / drawingZoom) / 2;
   }
 
@@ -6384,7 +6597,11 @@ function updateStripVisibility() {
   const strip = document.getElementById('scale-data-strip');
   if (!strip) return;
 
-  const vbW  = 267 / drawingZoom;
+  // AR-aware vbW — must match applyViewBox()
+  const _cont = document.getElementById('scale-svg-container');
+  const _cW = _cont ? _cont.offsetWidth : 0, _cH = _cont ? _cont.offsetHeight : 0;
+  const _ar  = (_cW > 0 && _cH > 0) ? _cW / _cH : 267 / 180;
+  const vbW  = 180 * _ar / drawingZoom;
   const vbX0 = _panX;
   const screenFrac = xFrac => (xFrac * 267 - vbX0) / vbW;
 
@@ -6411,15 +6628,17 @@ function updateStripVisibility() {
   // ── M-probe rows ──
   let html = '';
   _drawingStripLabels.forEach((lbl, r) => {
-    const isT2   = lbl.includes('T2');
-    const isT3   = lbl.includes('T3');
-    const color  = isT2 ? _drawingT2Clr : isT3 ? _drawingT3Clr : '#555';
-    const lblClr = isT2 ? _drawingT2Clr : isT3 ? _drawingT3Clr : '#888';
-    const isBold = r === 0;
+    const isT2    = lbl.includes('T2');
+    const isT3    = lbl.includes('T3');
+    const isAbst  = lbl.startsWith('Abst.');
+    const color   = isT2 ? _drawingT2Clr : isT3 ? _drawingT3Clr : '#555';
+    const lblClr  = isT2 ? _drawingT2Clr : isT3 ? _drawingT3Clr : isAbst ? '#2563eb' : '#888';
+    const isBold  = r === 0 || isAbst;
     html += `<div class="strip-row">`;
     html += `<div class="strip-label" style="color:${lblClr}">${lbl}</div>`;
     visibleProbes.forEach(({ probe, frac }) => {
-      html += `<div class="strip-val${isBold ? ' bold' : ''}" style="left:${(frac*100).toFixed(2)}%;color:${color}">${probe.cells[r] ?? ''}</div>`;
+      const cellClr = (probe.colors && probe.colors[r]) ? probe.colors[r] : color;
+      html += `<div class="strip-val${isBold ? ' bold' : ''}" style="left:${(frac*100).toFixed(2)}%;color:${cellClr}">${probe.cells[r] ?? ''}</div>`;
     });
     // Obstacle columns: show name in row 0, x in row 1, '—' for T2/T3 rows
     visibleObs.forEach(({ obs, frac }) => {
@@ -6443,7 +6662,8 @@ function updateStripVisibility() {
     html += '</div>';
     // Abstand row
     const nearLbls = [...new Set(visibleObs.map(v => v.obs.nearLbl || 'T₂'))];
-    const distLabel = `↕ Abstand (${nearLbls.join('/')}) [m]`;
+    const grenzStr = minClearance !== null ? ` ≥${minClearance.toFixed(2)} m` : '';
+    const distLabel = `↕ Abstand (${nearLbls.join('/')}) [m]${grenzStr}`;
     html += `<div class="strip-row"><div class="strip-label" style="color:${obsClrStrip}">${distLabel}</div>`;
     visibleObs.forEach(({ obs, frac }) => {
       const vio    = obs.violated;
@@ -6459,7 +6679,7 @@ function updateStripVisibility() {
   // Mindestabstand-Hinweis in der SOK-Fusszeile aktualisieren
   const mcNote = document.getElementById('scale-min-clearance-note');
   if (mcNote) {
-    if (minClearance !== null) {
+    if (minClearance !== null && minClearance > 0) {
       const anyVio = (_drawingObstData || []).some(o => o.violated);
       mcNote.textContent = `Mindestabstand zu Leiter: ${minClearance.toFixed(2)} m`;
       mcNote.style.color  = anyVio ? '#dc2626' : '#5a6a7a';
@@ -6473,11 +6693,14 @@ function updateStripVisibility() {
 // ── Edge indicators: badges at SVG border when a probe is off-screen ─────────
 function updateEdgeIndicators() {
   if (!_drawingProbeData) return;
+  const _ec = document.getElementById('scale-svg-container');
+  const _ew = _ec ? _ec.offsetWidth : 0, _eh = _ec ? _ec.offsetHeight : 0;
+  const _ear = (_ew > 0 && _eh > 0) ? _ew / _eh : 267 / 180;
   const vbX0 = _panX;
-  const vbX1 = _panX + 267 / drawingZoom;
+  const vbX1 = _panX + 180 * _ear / drawingZoom;
 
-  const leftProbes  = _drawingProbeData.filter(p => p.xFrac * 267 < vbX0 - 1);
-  const rightProbes = _drawingProbeData.filter(p => p.xFrac * 267 > vbX1 + 1);
+  const leftProbes  = _drawingProbeData.filter(p => p.xFrac * 267 < vbX0);
+  const rightProbes = _drawingProbeData.filter(p => p.xFrac * 267 > vbX1);
 
   const leftEl  = document.getElementById('edge-indicators-left');
   const rightEl = document.getElementById('edge-indicators-right');
@@ -6512,6 +6735,15 @@ svg { display: block; width: 267mm; height: 180mm; }
   w.addEventListener('load', () => { w.focus(); w.print(); });
 }
 
+function toggleCanvasFullscreen() {
+  const card = document.querySelector('.canvas-card');
+  const isFs = card.classList.toggle('canvas-fullscreen');
+  document.getElementById('fullscreen-icon-enter').style.display = isFs ? 'none' : '';
+  document.getElementById('fullscreen-icon-exit').style.display  = isFs ? ''     : 'none';
+  document.body.style.overflow = isFs ? 'hidden' : '';
+  setTimeout(() => { quickDraw(); _triggerDrawingRebuild(); _syncHighlightFsVisibility(); }, 50);
+}
+
 function setCanvasView(view) {
   const isScale   = view === 'zeichnung';
   const scaleDiv  = document.getElementById('scale-view');
@@ -6538,16 +6770,19 @@ function setCanvasView(view) {
     const sokNote = document.getElementById('scale-sok-note');
     if (sokNote) sokNote.style.display = 'flex';
 
-    // Auto-fit: zoom so drawing content fills the viewport width
+    // Auto-fit: zoom so drawing content fills the viewport
     drawingZoom = 1.0; _panX = 0; _panY = 0;
     if (_drawingContentBounds) {
       const { x: cx, y: cy, w: cw, h: ch } = _drawingContentBounds;
-      const fzX = 267 / cw;                   // fit to width
-      const fzY = 180 / ch;                    // fit to height
-      const fz  = Math.max(0.5, Math.min(4.0, Math.min(fzX, fzY)));
-      drawingZoom = Math.round(fz * 4) / 4;    // snap to 25% steps
-      _panX = cx;
-      _panY = cy;
+      const _cont = document.getElementById('scale-svg-container');
+      const _ar   = (_cont && _cont.offsetHeight > 0) ? _cont.offsetWidth / _cont.offsetHeight : 267 / 180;
+      const vbW1  = 180 * _ar;               // viewBox width at zoom=1
+      const fzX = vbW1 / cw;
+      const fzY = 180 / ch;
+      const fz  = Math.max(0.5, Math.min(4.0, Math.min(fzX, fzY) * 0.97));
+      drawingZoom = Math.max(0.5, Math.floor(fz * 4) / 4); // floor to nearest 25%
+      _panX = cx - (180 * _ar / drawingZoom - cw) / 2;
+      _panY = cy - (180 / drawingZoom - ch) / 2;
       // Rebuild SVG with correct symSc for this zoom
       const svgFit = buildScaleDrawingPage();
       if (svgFit && svgCont) svgCont.innerHTML = svgFit;
@@ -6574,7 +6809,8 @@ function setCanvasView(view) {
     const onMouseMove = e => {
       if (!_isDragging || !_dragStart) return;
       const rect = svgCont.getBoundingClientRect();
-      const dx = (e.clientX - _dragStart.sx) * (267 / drawingZoom) / rect.width;
+      const _ar  = rect.height > 0 ? rect.width / rect.height : 267 / 180;
+      const dx = (e.clientX - _dragStart.sx) * (180 * _ar / drawingZoom) / rect.width;
       const dy = (e.clientY - _dragStart.sy) * (180 / drawingZoom) / rect.height;
       _panX = _dragStart.px - dx;
       _panY = _dragStart.py - dy;
@@ -6618,6 +6854,10 @@ function setCanvasView(view) {
   if (segZeich) segZeich.classList.toggle('active',  isScale);
   const vexCtrl = document.getElementById('vex-header-ctrl');
   if (vexCtrl) vexCtrl.style.display = isScale ? 'flex' : 'none';
+  // In fullscreen: Zeichnung → scroll area yields all space to drawing; Diagramm → scroll area fills remainder
+  const scrollArea = document.getElementById('canvas-scroll-area');
+  if (scrollArea) scrollArea.style.flex = isScale ? '0 0 auto' : '1';
+  _syncHighlightFsVisibility();
 }
 
 function _onDrawingWheel(e) {
@@ -6626,17 +6866,17 @@ function _onDrawingWheel(e) {
   const cont = document.getElementById('scale-svg-container');
   if (!cont) return;
   const rect = cont.getBoundingClientRect();
-  // Mouse position in SVG coordinate space
+  const _ar  = rect.height > 0 ? rect.width / rect.height : 267 / 180;
   const mxF = (e.clientX - rect.left)  / rect.width;
   const myF = (e.clientY - rect.top)   / rect.height;
-  const svgMx = _panX + mxF * (267 / drawingZoom);
+  const svgMx = _panX + mxF * (180 * _ar / drawingZoom);
   const svgMy = _panY + myF * (180 / drawingZoom);
 
   const prevZoom = drawingZoom;
   drawingZoom = Math.round(Math.max(0.5, Math.min(4.0, drawingZoom + (e.deltaY < 0 ? 0.25 : -0.25))) * 4) / 4;
 
   // Keep the point under the mouse fixed
-  _panX = svgMx - mxF * (267 / drawingZoom);
+  _panX = svgMx - mxF * (180 * _ar / drawingZoom);
   _panY = svgMy - myF * (180 / drawingZoom);
 
   applyViewBox();
