@@ -1623,6 +1623,7 @@ button.header-manual-link:hover {
     </div>
 
     <!-- T3 — Vergleichskurve -->
+    <div id="t3-card" class="card" style="padding:0">
     <div id="t3-wrapper" style="padding:.55rem 1rem .6rem">
       <button id="t3-toggle-btn" onclick="toggleT3()"
         style="width:100%;padding:.28rem .6rem;border-radius:7px;border:1px solid var(--border);
@@ -1693,6 +1694,7 @@ button.header-manual-link:hover {
         </div>
       </div>
     </div>
+    </div><!-- /card T3 -->
 
     </div><!-- /sidebar-scroll -->
   </aside>
@@ -1794,7 +1796,7 @@ button.header-manual-link:hover {
       <!-- H-Eingaben (nur wenn SOK aktiv) -->
       <div id="probe-h-section" style="display:none;margin-top:.45rem">
         <div style="font-size:.6rem;font-weight:600;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;margin-bottom:.3rem;padding-top:.35rem;border-top:1px solid rgba(0,0,0,.07)">
-          Kote (Aussenkante Bauwerk / Leiter)
+          H-Punkt: z.B. Unterkante Brücke / Bauwerk
         </div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem">
           <div class="probe-m-group">
@@ -1827,18 +1829,19 @@ button.header-manual-link:hover {
           </div>
         </div>
       </div>
-      <div id="probe-h-footnote" style="display:none;margin-top:.35rem">
-        <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
-          <span style="font-size:.63rem;color:var(--muted);font-style:italic;flex:1;min-width:0">
-            ⓘ H-Punkt: z.B. Unterkante Brücke / Bauwerk (m ü.M.) — Abstand positiv wenn H-Punkt oberhalb des Leiters
-          </span>
-          <label style="display:flex;align-items:center;gap:.3rem;flex-shrink:0;font-size:.68rem;color:var(--muted);white-space:nowrap">
-            Mindestabstand zu Leiter
-            <input type="number" id="min-clearance-input" step="0.01" min="0" placeholder="—"
-              style="width:4.5rem;font-size:.78rem;padding:.18rem .4rem;text-align:right;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text)"
-              oninput="minClearance=this.value===''?null:parseFloat(this.value);_triggerDrawingRebuild()">
-            <span style="font-size:.65rem;color:var(--muted)">m</span>
-          </label>
+      <div id="probe-h-footnote" style="display:none;margin-top:.45rem">
+        <div style="font-size:.6rem;font-weight:600;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;margin-bottom:.3rem;padding-top:.35rem;border-top:1px solid rgba(0,0,0,.07)">
+          Mindestabstand
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem">
+          <div class="probe-m-group">
+            <span class="probe-h-badge">a</span>
+            <div class="probe-input-wrap">
+              <input type="number" id="min-clearance-input" class="probe-h-input" step="0.01" min="0" placeholder="—"
+                oninput="minClearance=this.value===''?null:parseFloat(this.value);_triggerDrawingRebuild()">
+              <span class="probe-mp-unit">m</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2297,6 +2300,13 @@ function updateSokMumUI() {
     info.style.display = 'none';
     if (mumBtn) mumBtn.style.display = 'none';
     if (yCInputMode === 'mum') setYCMode('sag');
+    // SOK gelöscht → H-Punkte und Mindestabstand zurücksetzen
+    probeH1 = probeH2 = probeH3 = probeH4 = null;
+    minClearance = null;
+    ['probe-h1','probe-h2','probe-h3','probe-h4'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    const mcInp = document.getElementById('min-clearance-input');
+    if (mcInp) mcInp.value = '';
+    _triggerDrawingRebuild();
   }
 }
 
@@ -2600,7 +2610,9 @@ function updateSysModeUI(mode) {
 
   // T3-Vergleichskurve: bei R-FL ausblenden (keine Temperaturabhängigkeit)
   const t3wrap = document.getElementById('t3-wrapper');
+  const t3card = document.getElementById('t3-card');
   if (t3wrap) t3wrap.style.display = isRfl ? 'none' : '';
+  if (t3card) t3card.style.display = isRfl ? 'none' : '';
   if (isRfl && showT3) {
     showT3 = false;
     const s = document.getElementById('t3-section');
@@ -5058,7 +5070,7 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b72
         <div style="font-size:.65rem;font-weight:600;color:${t3Clr};letter-spacing:.02em">${badge}' &nbsp;T₃</div>
         <div style="font-size:${compact?'1.05rem':'1.35rem'};font-weight:700;color:${t3Clr}">${f3(sag3)}<span style="font-size:.72rem;margin-left:.2rem">m</span></div>
         <div style="font-size:.72rem;color:var(--muted);margin-top:.1rem">Δh T₃</div>
-        <div style="font-size:.7rem;color:var(--muted);opacity:.8;margin-top:.3rem">${y3SubLbl}</div>
+        <div style="font-size:.7rem;color:var(--muted);opacity:.8;margin-top:${compact?'.5rem':'1rem'}">${y3SubLbl}</div>
         <div style="font-size:${compact?'.9rem':'1.1rem'};font-weight:600;color:${t3Clr}">${y3_disp}<span style="font-size:.72rem;margin-left:.2rem">${mainUnit}</span></div>
       </div>`;
   }
@@ -5135,7 +5147,6 @@ function updateHighlightCard() {
           <span style="font-size:.6rem;color:#c0c0c0;font-style:italic;white-space:nowrap">ⓘ SOK zwischen den Eingabepunkten wird interpoliert und entspricht nicht der effektiven Höhenlage.</span>
           <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
         </div>
-        <div class="istzustand-row">${t('res.h.ts')}: <strong>${fN(cIst.H, 0)} N</strong></div>
       </div>`;
   } else {
     const points = [
@@ -5163,18 +5174,21 @@ function updateHighlightCard() {
           <span style="font-size:.6rem;color:#c0c0c0;font-style:italic;white-space:nowrap">ⓘ SOK zwischen den Eingabepunkten wird interpoliert und entspricht nicht der effektiven Höhenlage.</span>
           <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
         </div>
-        <div style="${compact ? 'grid-column:1/-1;' : ''}display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
-          <div class="istzustand-row">${t('res.h.ts')}: <strong>${fN(cIst.H, 0)} N</strong></div>
-        </div>
       </div>`;
   }
 }
 
 function clearMesspunkte() {
   probeX1 = probeX2 = probeX3 = probeX4 = null;
+  probeH1 = probeH2 = probeH3 = probeH4 = null;
+  minClearance = null;
   ['probe-x1','probe-x2','probe-x3','probe-x4'].forEach(id => document.getElementById(id).value = '');
+  ['probe-h1','probe-h2','probe-h3','probe-h4'].forEach(id => document.getElementById(id).value = '');
+  const mcInp = document.getElementById('min-clearance-input');
+  if (mcInp) mcInp.value = '';
   quickDraw();
   updateAllMesspunkte();
+  _triggerDrawingRebuild();
 }
 
 function updateAllMesspunkte() {
@@ -7019,7 +7033,7 @@ const LANG = {
     'span.info.text':       'Bei der Eingabe von c<sub>proj</sub> oder c<sub>m</sub> ist gemäss dem Dokument <strong>0161.1013.0005.1</strong> vorzugehen.',
     // System
     'sys.el':               'Einzelleiter',
-    'sys.info.nfl':         'Fixabgefangen — Zugkraft temperaturabhängig (Zustandsgleichung)',
+    'sys.info.nfl':         'Tragseil fix abgefangen — Zugkraft temperaturabhängig (Zustandsgleichung)',
     'sys.info.rfl':         'Beweglich abgefangen — Zugkraft konstant, kein Temperatureinfluss auf H',
     'sys.info.el':          'Einzelleiter — Zugkraft temperaturabhängig (Zustandsgleichung)',
     'sys.kombination':      'Kombination',
