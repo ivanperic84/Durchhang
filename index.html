@@ -4028,6 +4028,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     const x = (i / 120) * L;
     ys.push(catYD(x, c1));
     if (sysMode === 'nfl' || isEl) ys.push(catYD(x, cT2forRange));
+    if (showT3 && c3) ys.push(catYD(x, c3));
   }
   ys.push(h1d, h2d);
   const yMin = Math.min(...ys), yMax = Math.max(...ys);
