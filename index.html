@@ -569,10 +569,10 @@ body {
   letter-spacing: .06em; padding: .15rem .45rem;
   border-radius: 6px; white-space: nowrap; flex-shrink: 0;
 }
-.probe-mp-badge.m1 { background: rgba(13,148,136,.12); color: #0d9488; }
-.probe-mp-badge.m2 { background: rgba(13,148,136,.12); color: #0d9488; }
-.probe-mp-badge.m3 { background: rgba(13,148,136,.12); color: #0d9488; }
-.probe-mp-badge.m4 { background: rgba(13,148,136,.12); color: #0d9488; }
+.probe-mp-badge.m1 { color: var(--mp-m1); background: color-mix(in srgb, var(--mp-m1) 13%, transparent); }
+.probe-mp-badge.m2 { color: var(--mp-m2); background: color-mix(in srgb, var(--mp-m2) 13%, transparent); }
+.probe-mp-badge.m3 { color: var(--mp-m3); background: color-mix(in srgb, var(--mp-m3) 13%, transparent); }
+.probe-mp-badge.m4 { color: var(--mp-m4); background: color-mix(in srgb, var(--mp-m4) 13%, transparent); }
 .probe-mp-xinput {
   font-family: 'SF Mono','Menlo',monospace;
   font-size: .82rem; font-weight: 600;
@@ -859,10 +859,10 @@ button.header-manual-link:hover {
 
 /* ── Projekte Modal ── */
 .proj-warning {
-  background: #fffbeb; border: 1px solid #f59e0b;
-  border-radius: 8px; padding: .6rem .85rem;
-  font-size: .75rem; color: #78350f; line-height: 1.5;
-  margin-bottom: 1rem; display: flex; gap: .5rem; align-items: flex-start;
+  background: #f8f9fa; border-left: 3px solid #d97706;
+  border-radius: 0 6px 6px 0; padding: .5rem .75rem;
+  font-size: .73rem; color: var(--muted); line-height: 1.5;
+  margin-bottom: .9rem; display: flex; gap: .5rem; align-items: flex-start;
 }
 .proj-warning svg { flex-shrink: 0; margin-top: 1px; }
 .proj-new-row { display: flex; gap: .5rem; margin-bottom: 1rem; }
@@ -872,64 +872,68 @@ button.header-manual-link:hover {
   outline: none; background: #f8f8f9;
 }
 .proj-new-row input:focus { border-color: var(--primary); background: #fff; }
-.proj-list { display: flex; flex-direction: column; gap: .45rem; max-height: 320px; overflow-y: auto; margin-bottom: .75rem; }
+.proj-list { display: flex; flex-direction: column; gap: .35rem; max-height: 320px; overflow-y: auto; margin-bottom: .75rem; }
 .proj-item {
-  border: 1px solid var(--border); border-radius: 10px;
-  padding: .38rem .65rem; display: flex; flex-direction: column; gap: .22rem;
-  transition: border-color .15s;
+  border: 1px solid var(--border); border-radius: 9px;
+  padding: .4rem .65rem; display: flex; flex-direction: column; gap: .2rem;
+  transition: border-color .15s; background: #fff;
 }
-.proj-item.active-proj { border-color: var(--primary); background: #fff5f5; }
+.proj-item.active-proj { border-color: var(--primary); background: #fff8f8; }
 .proj-item-top { display: flex; align-items: center; gap: .3rem; min-width: 0; }
 .proj-item-info { flex: 1; min-width: 0; display: flex; align-items: center; gap: .2rem; }
-.proj-item-name { font-size: .82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.proj-item-name { font-size: .82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
 .proj-item.active-proj .proj-item-name { color: var(--primary); }
 .proj-item-bottom { display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; }
 .proj-item-date { font-size: .67rem; color: var(--muted); flex: 1; white-space: nowrap; }
-.proj-item-actions { display: flex; gap: .25rem; flex-wrap: wrap; }
+.proj-item-actions { display: flex; gap: .2rem; flex-wrap: wrap; }
 .proj-btn-row { display: flex; gap: .25rem; }
 .proj-btn {
-  border: 1px solid var(--border); border-radius: 6px; background: none;
-  cursor: pointer; padding: .22rem .5rem; font-size: .7rem; color: var(--muted);
-  font-family: inherit; transition: border-color .15s, color .15s; white-space: nowrap; line-height: 1.4;
+  border: 1px solid var(--border); border-radius: 6px; background: #fff;
+  cursor: pointer; padding: .22rem .55rem; font-size: .7rem; color: #555;
+  font-family: inherit; font-weight: 500;
+  transition: border-color .15s, color .15s, background .15s; white-space: nowrap; line-height: 1.4;
 }
-.proj-btn:hover { border-color: var(--primary); color: var(--primary); }
-.proj-btn.danger:hover { border-color: #ef4444; color: #ef4444; }
-.proj-btn.pri { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
-.proj-btn.pri:hover { background: #c00; }
+.proj-btn:hover { border-color: var(--primary); color: var(--primary); background: #fff8f8; }
+.proj-btn.danger { color: #888; }
+.proj-btn.danger:hover { border-color: #ef4444; color: #ef4444; background: #fff8f8; }
+.proj-btn.pri { background: #fff; border-color: #f0a0a0; color: var(--primary); font-weight: 600; }
+.proj-btn.pri:hover { background: #fff5f5; border-color: var(--primary); }
+.proj-btn.cta { background: #d64040; border-color: #d64040; color: #fff; font-weight: 600; width: 100%; margin-top: .5rem; padding: .42rem .55rem; }
+.proj-btn.cta:hover { background: #c03030; border-color: #c03030; color: #fff; }
 .proj-empty { text-align: center; color: var(--muted); font-size: .8rem; padding: 1.5rem 0; }
-.proj-separator { border: none; border-top: 1px solid var(--border); margin: .85rem 0 .75rem; }
+.proj-separator { border: none; border-top: 1px solid var(--border); margin: .75rem 0 .65rem; }
 .proj-footer { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
 
 /* ── Projekt-Hierarchie ─────────────────────────────── */
-.proj-save-block { background:#f9fafb; border:1px solid var(--border); border-radius:10px; padding:.7rem .9rem; margin-bottom:.85rem; }
-.proj-save-section-title { font-size:.67rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.55rem; }
+.proj-save-block { background:#fff; border:1px solid var(--border); border-radius:10px; padding:.75rem .95rem; margin-bottom:.85rem; }
+.proj-save-section-title { font-size:.7rem; font-weight:600; color:var(--muted); margin-bottom:.6rem; }
 .proj-save-grid { display:grid; grid-template-columns:1fr 1fr; gap:.45rem .6rem; margin-bottom:.45rem; }
 .proj-save-label { font-size:.7rem; color:var(--muted); margin-bottom:.18rem; }
-.proj-save-inp { width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:7px; padding:.38rem .6rem; font-size:.8rem; font-family:inherit; background:#fff; outline:none; }
-.proj-save-inp:focus { border-color:var(--primary); }
+.proj-save-inp { width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:7px; padding:.38rem .6rem; font-size:.8rem; font-family:inherit; background:#f8f9fa; outline:none; color:var(--text); }
+.proj-save-inp:focus { border-color:var(--primary); background:#fff; }
 .proj-new-grp-row { display:flex; align-items:center; gap:.4rem; margin-top:.35rem; padding-top:.35rem; border-top:1px solid var(--border); }
-.proj-new-grp-inp { flex:1; border:1px solid #fca5a5; border-radius:7px; padding:.35rem .6rem; font-size:.78rem; font-family:inherit; background:#fff8f8; outline:none; }
+.proj-new-grp-inp { flex:1; border:1px solid var(--border); border-radius:7px; padding:.35rem .6rem; font-size:.78rem; font-family:inherit; background:#f8f9fa; outline:none; color:var(--text); }
 .proj-new-grp-inp:focus { border-color:var(--primary); background:#fff; }
 .proj-group-wrap { border:1px solid var(--border); border-radius:10px; overflow:hidden; }
 .proj-group-wrap.has-active { border-color:var(--primary); }
-.proj-group-header { padding:.48rem .8rem; display:flex; align-items:center; gap:.45rem; background:#f4f5f7; cursor:pointer; user-select:none; }
-.proj-group-header:hover { background:#eceff4; }
+.proj-group-header { padding:.5rem .8rem; display:flex; align-items:center; gap:.45rem; background:#f8f9fa; cursor:pointer; user-select:none; }
+.proj-group-header:hover { background:#f1f3f5; }
 .proj-collapse-icon { font-size:.6rem; color:var(--muted); flex-shrink:0; transition:transform .15s; }
-.proj-group-name { flex:1; font-size:.83rem; font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.proj-group-name { flex:1; font-size:.83rem; font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; color:var(--text); }
 .proj-group-count { font-size:.68rem; color:var(--muted); white-space:nowrap; }
-.proj-group-children { padding:.3rem .35rem .35rem 1.5rem; display:flex; flex-direction:column; gap:.3rem; background:#fff; }
-.proj-child-item { border:1px solid #e8eaed; border-radius:8px; background:#fff; }
+.proj-group-children { padding:.3rem .35rem .35rem 1.35rem; display:flex; flex-direction:column; gap:.3rem; background:#fff; }
+.proj-child-item { border:1px solid #ebebeb; border-radius:8px; background:#fff; }
 .proj-child-item.active-proj { border-color:var(--primary); background:#fff8f8; }
 .proj-check { accent-color:var(--primary); cursor:pointer; flex-shrink:0; width:14px; height:14px; margin-right:1px; }
 .proj-bulk-bar { background:#1e293b; color:#fff; border-radius:8px; padding:.4rem .7rem; display:flex; align-items:center; gap:.45rem; margin-bottom:.5rem; flex-wrap:wrap; }
 .proj-bulk-label { font-size:.75rem; flex:1; min-width:60px; }
 .proj-btn.bulk { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.25); color:#fff; }
-.proj-sort-bar { display:flex; align-items:center; gap:.3rem; margin-bottom:.55rem; flex-wrap:wrap; }
+.proj-sort-bar { display:flex; align-items:center; gap:.25rem; margin-bottom:.55rem; flex-wrap:wrap; }
 .proj-sort-lbl { font-size:.68rem; color:var(--muted); margin-right:.1rem; }
-.proj-sort-btn { border:1px solid var(--border); border-radius:5px; background:none; cursor:pointer; padding:.16rem .42rem; font-size:.68rem; color:var(--muted); font-family:inherit; transition:all .15s; }
+.proj-sort-btn { border:1px solid var(--border); border-radius:5px; background:#fff; cursor:pointer; padding:.18rem .45rem; font-size:.68rem; color:var(--muted); font-family:inherit; transition:all .15s; }
 .proj-sort-btn:hover { border-color:var(--primary); color:var(--primary); }
-.proj-sort-btn.active { border-color:var(--primary); color:var(--primary); background:#fff5f5; font-weight:600; }
-.proj-rename-btn { background:none; border:none; cursor:pointer; padding:.1rem .3rem; color:var(--muted); opacity:.65; transition:opacity .15s,color .15s; flex-shrink:0; line-height:1; }
+.proj-sort-btn.active { border-color:var(--primary); color:var(--primary); background:#fff8f8; font-weight:600; }
+.proj-rename-btn { background:none; border:none; cursor:pointer; padding:.1rem .3rem; color:var(--muted); opacity:.55; transition:opacity .15s,color .15s; flex-shrink:0; line-height:1; }
 .proj-rename-btn:hover { opacity:1; color:var(--primary); }
 .proj-group-date { font-size:.65rem; color:var(--muted); white-space:nowrap; }
 .proj-btn.bulk:hover { background:rgba(255,255,255,.2); border-color:rgba(255,255,255,.5); color:#fff; }
@@ -961,6 +965,19 @@ button.header-manual-link:hover {
   <button onclick="openProjectsModal()" class="header-manual-link" title="Datei" style="background:none;border:none;cursor:pointer;">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
     <span class="header-manual-text">Datei</span>
+  </button>
+  <button id="quick-save-btn" onclick="quickSave()" title="Speichern"
+    style="display:flex;align-items:center;gap:.3rem;padding:.28rem .45rem;border-radius:7px;
+           border:none;background:none;color:#333;font-size:.78rem;font-weight:500;
+           cursor:pointer;transition:all .15s;white-space:nowrap"
+    onmouseover="this.style.background='#f1f5f9'"
+    onmouseout="this.style.background='none'">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+      <path d="M13.5 4.5L11.5 2.5H3A1.5 1.5 0 001.5 4v8A1.5 1.5 0 003 13.5h10A1.5 1.5 0 0014.5 12V5l-1-0.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+      <rect x="5" y="1.5" width="5" height="3.5" rx=".5" stroke="currentColor" stroke-width="1.2"/>
+      <rect x="4" y="8.5" width="8" height="4" rx=".5" stroke="currentColor" stroke-width="1.2"/>
+    </svg>
+    <span id="quick-save-label" style="display:none"></span>
   </button>
   <button onclick="openReglageModal()" class="header-manual-link" title="Reglagetabelle" style="background:none;border:none;cursor:pointer;color:#444">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="2" rx="1" fill="#444"/><rect x="2" y="7" width="12" height="2" rx="1" fill="#444"/><rect x="2" y="11" width="8" height="2" rx="1" fill="#444"/></svg>
@@ -1357,7 +1374,7 @@ button.header-manual-link:hover {
     </div>
 
     <!-- T3 — Vergleichskurve -->
-    <div style="padding:.55rem 1rem .6rem">
+    <div id="t3-wrapper" style="padding:.55rem 1rem .6rem">
       <button id="t3-toggle-btn" onclick="toggleT3()"
         style="width:100%;padding:.28rem .6rem;border-radius:7px;border:1px solid var(--border);
                background:none;color:var(--muted);font-size:.74rem;font-weight:500;cursor:pointer;
@@ -2216,7 +2233,7 @@ function updateSysModeUI(mode) {
     : `Temperatur T₂`;
 
   // T3-Vergleichskurve: bei R-FL ausblenden (keine Temperaturabhängigkeit)
-  const t3wrap = document.getElementById('t3-toggle-btn')?.closest('div[style*="border-top"]');
+  const t3wrap = document.getElementById('t3-wrapper');
   if (t3wrap) t3wrap.style.display = isRfl ? 'none' : '';
   if (isRfl && showT3) {
     showT3 = false;
@@ -2307,6 +2324,13 @@ function updateT2Float(v, active) {
       el.style.color      = '#9ca3af';
     }
   });
+  // M-Punkt Badges und Info-Karten: Kurvenfarbe (R-FL = primary, sonst T2-Temperaturfarbe)
+  const mpClrBadge = (typeof sysMode !== 'undefined' && sysMode === 'rfl') ? '#eb0000' : clr;
+  const root = document.documentElement;
+  root.style.setProperty('--mp-m1', mpClrBadge);
+  root.style.setProperty('--mp-m2', mpClrBadge);
+  root.style.setProperty('--mp-m3', mpClrBadge);
+  root.style.setProperty('--mp-m4', mpClrBadge);
 }
 
 function onT2SliderEnd() { updateT2Float(parseFloat(document.getElementById('temp2').value), false); }
@@ -2354,6 +2378,11 @@ function toggleT3() {
   if (showT3) {
     const v = (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3').value));
     updateT3Float(v, false);
+    // Neu eingeblendeten Bereich in den sichtbaren Bereich scrollen
+    setTimeout(() => {
+      const sec = document.getElementById('t3-section');
+      if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 50);
   }
   berechnen();
 }
@@ -2930,6 +2959,25 @@ function saveToProject(id) {
   currentProjectId = id;
   renderProjectList();
   updateProjectBadge();
+}
+
+function quickSave() {
+  if (currentProjectId) {
+    saveToProject(currentProjectId);
+    // Brief visual feedback on the button
+    const lbl = document.getElementById('quick-save-label');
+    const btn = document.getElementById('quick-save-btn');
+    if (btn) {
+      btn.style.color = '#16a34a';
+      btn.title = '✓ Gespeichert';
+      setTimeout(() => {
+        btn.style.color = '';
+        btn.title = 'Speichern';
+      }, 1800);
+    }
+  } else {
+    openProjectsModal();
+  }
 }
 
 function loadProjectById(id) {
@@ -4272,12 +4320,17 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   // ── Probe lines ──
   const CLUSTER_PX = 55; // Pixel-Schwelle für "nahe beieinander"
 
+  // T2-Farbe für M-Marker (dynamisch nach Temperatur; R-FL: Kurvenfarbe = primary)
+  const _t2RawP = parseFloat(document.getElementById('temp2')?.value);
+  const _t2ValP = isNaN(_t2RawP) ? 40 : _t2RawP;
+  const mpClr   = (sysMode === 'rfl') ? '#eb0000' : t2TempColor(_t2ValP);
+
   // Alle aktiven Proben vorberechnen
   const allProbes = [
-    { xv: probeX1, which: 'probe1', color: '#0d9488', dotColor: '#0d9488' },
-    { xv: probeX2, which: 'probe2', color: '#0d9488', dotColor: '#0d9488' },
-    { xv: probeX3, which: 'probe3', color: '#0d9488', dotColor: '#0d9488' },
-    { xv: probeX4, which: 'probe4', color: '#0d9488', dotColor: '#0d9488' },
+    { xv: probeX1, which: 'probe1', color: mpClr, dotColor: mpClr },
+    { xv: probeX2, which: 'probe2', color: mpClr, dotColor: mpClr },
+    { xv: probeX3, which: 'probe3', color: mpClr, dotColor: mpClr },
+    { xv: probeX4, which: 'probe4', color: mpClr, dotColor: mpClr },
   ].filter(p => p.xv !== null).map(p => ({ ...p, px: cx(p.xv) }));
 
   // Cluster-Index: wie viele vorherige Proben sind "nah"?
@@ -6755,7 +6808,7 @@ function applyCustomPreset(p) {
 
     <!-- Berechnung speichern -->
     <div class="proj-save-block">
-      <div class="proj-save-section-title">Neues Projekt erstellen</div>
+      <div class="proj-save-section-title">Neue Berechnung speichern</div>
       <div class="proj-save-grid">
         <div>
           <div class="proj-save-label">Projektname (optional)</div>
@@ -6768,7 +6821,7 @@ function applyCustomPreset(p) {
                  onkeydown="if(event.key==='Enter')saveCurrentCalc()">
         </div>
       </div>
-      <button class="proj-btn pri" onclick="saveCurrentCalc()" style="width:100%;margin-top:.5rem">Speichern</button>
+      <button class="proj-btn cta" onclick="saveCurrentCalc()">Speichern</button>
     </div>
 
     <!-- Projektliste -->
