@@ -4467,12 +4467,10 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b72
         ? q_vem_vem / (2 * (c2.H + calcState.H_Fd)) * xv * (LT1_vem - xv)
         : c2.sag)
     : yChord(xv) - y2;
-  // R-FL: Δh = Abstand h1-Horizontale → Tragseil (identisch mit Diagramm-Annotation)
+  // Δh = Abstand h1-Horizontale → Kurve (identisch mit Diagramm-Annotation für alle Modi)
   const deltaH  = h1 - y2;
-  const dhLabel = isRfl
-    ? 'Δh'
-    : 'Δh ' + t('dyn.bei.t2');
-  const dhValue = isRfl ? deltaH : sag;
+  const dhLabel = isRfl ? 'Δh' : 'Δh ' + t('dyn.bei.t2');
+  const dhValue = deltaH;
   const valSize  = compact ? '1.35rem' : '2rem';
   const sagSize  = compact ? '1.1rem'  : '1.35rem';
   const topGap   = compact ? '.5rem'   : '1.2rem';
