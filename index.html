@@ -4368,6 +4368,29 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   view.probe3CX = r3.cx;
   view.probe4CX = r4.cx;
 
+  // ── T3 Vergleichspunkte M' (Diamant) ──
+  if (showT3 && c3) {
+    const _t3Raw = parseFloat(document.getElementById('temp3')?.value);
+    const _t3Val = isNaN(_t3Raw) ? 80 : _t3Raw;
+    const t3Clr  = t2TempColor(_t3Val);
+    [[probeX1,"M1'"],[probeX2,"M2'"],[probeX3,"M3'"],[probeX4,"M4'"]].forEach(([xv, lbl]) => {
+      if (xv === null) return;
+      const y3  = catYD(xv, c3);
+      const dpx = cx(xv), dpy = cy(y3);
+      const s   = 5;
+      ctx.beginPath();
+      ctx.moveTo(dpx, dpy - s); ctx.lineTo(dpx + s, dpy);
+      ctx.lineTo(dpx, dpy + s); ctx.lineTo(dpx - s, dpy);
+      ctx.closePath();
+      ctx.fillStyle   = t3Clr; ctx.fill();
+      ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.font = 'bold 10px Segoe UI'; ctx.fillStyle = t3Clr;
+      const onRight = dpx + 36 < padL + plotW;
+      ctx.textAlign = onRight ? 'left' : 'right';
+      ctx.fillText(lbl, onRight ? dpx + 9 : dpx - 9, dpy + 4);
+    });
+  }
+
   // ── 3-Punkte-Marker C ──
   if (mode3pt && threePtMark && c1) {
     const { xC } = threePtMark;
@@ -4423,7 +4446,7 @@ function canvasPt(e) {
 }
 
 // ── Highlight-Karte: Schlüsselwerte für einen Messpunkt ──
-function mpBlock(xv, badge, cls, compact = false) {
+function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b7280') {
   if (!calcState) return '';
   const { c1, c2, h1, h2, L, sh, flCombo, LT1_vem, q_vem_vem, c2_vem } = calcState;
   const catY    = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
@@ -4470,6 +4493,20 @@ function mpBlock(xv, badge, cls, compact = false) {
     ? `${t(tsHoeheKey)} &nbsp;<span style="opacity:.6">(${f3(y2)} m ${t('dyn.ueber.sok')})</span>`
     : `${t(tsHoeheKey)} ${t('dyn.ueber.sok')}`;
 
+  // T3-Vergleichswerte
+  let t3Row = '';
+  if (c3Curve) {
+    const y3     = catY(xv, c3Curve);
+    const y3_disp = hasSok ? f3(y3 + sokAtX) : f3(y3);
+    const sag3   = yChord(xv) - y3;
+    t3Row = `
+      <div style="margin-top:.5rem;padding-top:.4rem;border-top:1px dashed rgba(0,0,0,.12)">
+        <div style="font-size:.65rem;font-weight:600;color:${t3Clr};letter-spacing:.02em">${badge}' &nbsp;T₃</div>
+        <div style="font-size:${compact?'1.05rem':'1.35rem'};font-weight:700;color:${t3Clr}">${y3_disp}<span style="font-size:.72rem;margin-left:.2rem">${mainUnit}</span></div>
+        <div style="font-size:.72rem;color:${t3Clr};margin-top:.1rem">Δh: ${f3(sag3)} m</div>
+      </div>`;
+  }
+
   return `
     <div class="istzustand-main">
       <div class="istzustand-label" style="color:var(--mp-${cls})">${badge} · x = ${xv.toFixed(2)} m</div>
@@ -4477,13 +4514,16 @@ function mpBlock(xv, badge, cls, compact = false) {
       <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${subLabel}</div>
       <div class="istzustand-label" style="color:var(--mp-${cls});margin-top:${topGap}">${dhLabel}</div>
       <div class="istzustand-value" style="font-size:${sagSize};color:var(--mp-${cls})">${f3(dhValue)}<span class="istzustand-unit">m</span></div>
+      ${t3Row}
     </div>`;
 }
 
 function updateHighlightCard() {
   const el = document.getElementById('highlight-card');
   if (!calcState) { el.innerHTML = ''; return; }
-  const { c1, c2, h1, h2, L, sh, flCombo, c2_vem } = calcState;
+  const { c1, c2, h1, h2, L, sh, flCombo, c2_vem, c3: _c3state } = calcState;
+  const _c3curve = (showT3 && _c3state) ? _c3state : null;
+  const _t3clr   = _c3curve ? t2TempColor((v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value))) : null;
   const catY    = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
   const yFdSoll = x => (h1 - sh) + (h2 - h1) * x / L;
   const isNfl   = sysMode === 'nfl';
@@ -4552,7 +4592,7 @@ function updateHighlightCard() {
     const blocks = points.map((p, i) => {
       const divider = (!compact && i < total - 1)
         ? '<div class="istzustand-divider" style="margin:0 .4rem"></div>' : '';
-      return mpBlock(p.xv, p.badge, p.cls, compact) + divider;
+      return mpBlock(p.xv, p.badge, p.cls, compact, _c3curve, _t3clr) + divider;
     }).join('');
     const cols = total === 4 ? '1fr 1fr 1fr 1fr' : total === 3 ? '1fr 1fr 1fr' : '';
     const cardStyle = compact
