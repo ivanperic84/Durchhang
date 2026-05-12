@@ -3718,7 +3718,10 @@ function berechnen() {
         if (flCombo) {
           const MFL_init3 = wearPct > 0 ? flCombo.MFL : null;
           const H3 = solveNFLStateEq(q_ges, H_Fd, H_Ts, Lm, flCombo.AL, flCombo.E, flCombo.AK, deltaT3, ZL, MFL_init3);
-          _c3 = computeBase(L, q_ges + ZL, H3, h1, h2);
+          // VEM-kombinierte Kurve (identisch mit _c2_vem-Konstruktion)
+          const gk0_v3 = wearPct > 0 ? flCombo.MFL : q_ges;
+          const q_vem3 = q_ges + gk0_v3 * H_Fd / H_Ts + ZL;
+          _c3 = computeBase(L, q_vem3, H3 + H_Fd, h1, h2);
         } else if (EA !== null) {
           _c3 = computeBase(L, q_ges + ZL, solveStateEq(q_ges + ZL, Lm, H_Ts, EA, alpha, deltaT3), h1, h2);
         } else {
@@ -4496,7 +4499,7 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b72
   if (c3Curve) {
     const y3     = catY(xv, c3Curve);
     const y3_disp = hasSok ? f3(y3 + sokAtX) : f3(y3);
-    const sag3   = yChord(xv) - y3;
+    const sag3   = h1 - y3;
     t3Row = `
       <div style="margin-top:.5rem;padding-top:.4rem;border-top:1px dashed rgba(0,0,0,.12)">
         <div style="font-size:.65rem;font-weight:600;color:${t3Clr};letter-spacing:.02em">${badge}' &nbsp;T₃</div>
