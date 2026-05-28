@@ -22,10 +22,10 @@
   --shadow: 0 2px 8px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
   --radius: 8px;
   --border: #e5e5e5;
-  --mp-m1: #0d9488;
-  --mp-m2: #0d9488;
-  --mp-m3: #0d9488;
-  --mp-m4: #0d9488;
+  --mp-m1: #6b7280;
+  --mp-m2: #6b7280;
+  --mp-m3: #6b7280;
+  --mp-m4: #6b7280;
 }
 
 sub { font-size: .8em; vertical-align: sub; }
@@ -412,16 +412,7 @@ body {
   position: relative;
 }
 #canvas-scroll-area::after {
-  content: '';
-  position: sticky;
-  bottom: 0;
-  left: 0;
-  display: block;
-  width: 100%;
-  height: 32px;
-  background: linear-gradient(to bottom, transparent, rgba(255,255,255,.85));
-  pointer-events: none;
-  margin-top: -32px;
+  display: none;
 }
 .canvas-card.canvas-fullscreen #canvas-scroll-area {
   max-height: none;
@@ -1456,14 +1447,14 @@ button.header-manual-link:hover {
       <div class="card-title"><span id="card-title-bp">Befestigungspunkte Ts</span> <span id="bp-card-sub" style="font-weight:400;color:var(--tertiary)">(über SOK)</span></div>
       <div class="field-row">
         <div class="field">
-          <label id="h1-label">Höhe links h₁ <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über SOK</span></label>
+          <label id="h1-label">Höhe links h<sub>1</sub> <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über SOK</span></label>
           <div class="input-wrap">
             <input type="text" inputmode="decimal" id="h1" value="7.00" oninput="onSokMumInput();berechnen()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
             <span class="input-unit">m</span>
           </div>
         </div>
         <div class="field">
-          <label id="h2-label">Höhe rechts h₂ <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über SOK</span></label>
+          <label id="h2-label">Höhe rechts h<sub>2</sub> <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über SOK</span></label>
           <div class="input-wrap">
             <input type="text" inputmode="decimal" id="h2" value="7.00" oninput="onSokMumInput();berechnen()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
             <span class="input-unit">m</span>
@@ -1575,16 +1566,16 @@ button.header-manual-link:hover {
         </div>
         <div class="field-row">
           <div class="field" id="t1-field">
-            <label id="t1-label">Temperatur T₁ <span style="font-weight:400;color:var(--tertiary);font-size:.75em">(Montage)</span></label>
+            <label id="t1-label">Temperatur T<sub>1</sub> <span style="font-weight:400;color:var(--tertiary);font-size:.75em">(Montage)</span></label>
             <div class="input-wrap">
               <input type="number" id="temp1" value="10" step="1" oninput="updateH_Ts_ubFromT1(); berechnen()" onchange="updateH_Ts_ubFromT1(); berechnen()">
               <span class="input-unit">°C</span>
             </div>
           </div>
           <div class="field" id="t2-field">
-            <label id="t2-label">Temperatur T₂</label>
+            <label id="t2-label">Temperatur T<sub>2</sub></label>
             <div class="input-wrap">
-              <input type="number" id="temp2" value="80" min="-20" max="80" step="1"
+              <input type="number" id="temp2" value="-20" min="-20" max="80" step="1"
                      oninput="onT2Input(this.value)"
                      onchange="onT2Input(this.value)">
               <span class="input-unit">°C</span>
@@ -1641,11 +1632,11 @@ button.header-manual-link:hover {
                  onmouseup="onT2SliderEnd()"
                  ontouchend="onT2SliderEnd()">
         </div>
-        <!-- Eislast — dynamisch sichtbar bei N-FL und T₂ = −5°C -->
+        <!-- Eislast — dynamisch sichtbar bei N-FL und T<sub>2</sub> = −5°C -->
         <div class="field" id="eislast-row" style="display:none">
           <div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;font-size:.72rem;font-weight:500;color:var(--muted)">
             <span id="eis-label-main">Eislast Z<sub>L</sub></span>
-            <span id="eis-label-sub" style="font-weight:400;color:var(--tertiary);font-size:.75em">(bei T₂ = −5 °C)</span>
+            <span id="eis-label-sub" style="font-weight:400;color:var(--tertiary);font-size:.75em">(bei T<sub>2</sub> = −5 °C)</span>
             <span style="position:relative;display:inline-flex">
               <button id="eis-info-btn" onclick="toggleEislastInfo(event)"
                 style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.2);background:none;color:var(--muted);font-size:.6rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"
@@ -1655,7 +1646,7 @@ button.header-manual-link:hover {
                   <span style="width:18px;height:18px;border-radius:50%;background:#eb0000;color:#fff;font-size:.65rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">i</span>
                   <span style="font-weight:600;color:#c60000;font-size:.73rem">Hinweis / Remarque / Nota</span>
                 </div>
-                <p id="eis-popup-text" style="margin:0;line-height:1.55;color:var(--text)">Zusatzlast durch Eisansatz [N/m] — aktiv bei N-FL und −20 °C ≤ T₂ ≤ −5 °C.</p>
+                <p id="eis-popup-text" style="margin:0;line-height:1.55;color:var(--text)">Zusatzlast durch Eisansatz [N/m] — aktiv bei N-FL und −20 °C ≤ T<sub>2</sub> ≤ −5 °C.</p>
               </div>
             </span>
           </div>
@@ -1694,11 +1685,11 @@ button.header-manual-link:hover {
         <svg id="t3-toggle-icon" width="22" height="8" viewBox="0 0 22 8" style="flex-shrink:0">
           <line x1="0" y1="4" x2="22" y2="4" stroke="currentColor" stroke-width="1.8" stroke-dasharray="5,3" stroke-linecap="round"/>
         </svg>
-        <span id="t3-toggle-txt">T₃ Vergleichskurve einblenden</span>
+        <span id="t3-toggle-txt">T<sub>3</sub> Vergleichskurve einblenden</span>
       </button>
       <div id="t3-section" style="display:none;margin-top:.55rem">
         <div class="field">
-          <label>Temperatur T₃</label>
+          <label>Temperatur T<sub>3</sub></label>
           <div class="input-wrap">
             <input type="number" id="temp3" value="80" min="-20" max="80" step="1"
                    oninput="onT3Input(this.value)"
@@ -1822,10 +1813,10 @@ button.header-manual-link:hover {
       </div>
     </div>
     <div class="legend" id="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#b7b7b7"></div><span id="leg-ts1">Ts bei T₁</span></div>
-      <div class="legend-item" id="leg-ts2-item"><div class="legend-dot"></div><span id="leg-ts2-label">Ts bei T₂</span></div>
-      <div class="legend-item" id="leg-ts3-item" style="display:none"><div class="legend-dot" id="leg-ts3-dot" style="border:2px dashed #6b7280;background:transparent"></div><span id="leg-ts3-label">Ts bei T₃</span></div>
-      <div class="legend-item" id="leg-fd-solllage-item" style="display:none"><div class="legend-dot" style="background:#86868b;opacity:.35"></div><span id="leg-fd-solllage-label">Fd Solllage (T₁)</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#b7b7b7"></div><span id="leg-ts1">Ts bei T<sub>1</sub></span></div>
+      <div class="legend-item" id="leg-ts2-item"><div class="legend-dot"></div><span id="leg-ts2-label">Ts bei T<sub>2</sub></span></div>
+      <div class="legend-item" id="leg-ts3-item" style="display:none"><div class="legend-dot" id="leg-ts3-dot" style="border:2px dashed #6b7280;background:transparent"></div><span id="leg-ts3-label">Ts bei T<sub>3</sub></span></div>
+      <div class="legend-item" id="leg-fd-solllage-item" style="display:none"><div class="legend-dot" style="background:#86868b;opacity:.35"></div><span id="leg-fd-solllage-label">Fd Solllage (T<sub>1</sub>)</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:#86868b;opacity:.7"></div><span id="leg-sehne-label">Sehnenlinie</span></div>
     </div>
     <div id="canvas-scroll-area">
@@ -2353,7 +2344,7 @@ function onSokMumRightInput() {
 }
 
 // Labels und Info-Box aktualisieren
-// h₁/h₂ zeigen immer "über SOK" — SOK-Felder sind nur die absolute Referenz
+// h<sub>1</sub>/h<sub>2</sub> zeigen immer "über SOK" — SOK-Felder sind nur die absolute Referenz
 function updateSokMumUI() {
   const sokL   = getSokMumLeft();
   const sokR   = getSokMumRight();
@@ -2682,8 +2673,8 @@ function updateSysModeUI(mode) {
   // T2-Label: bei R-FL Hinweis
   const t2Lbl = document.getElementById('t2-label');
   if (t2Lbl) t2Lbl.innerHTML = isRfl
-    ? `Temperatur T₂ <span style="font-weight:400;color:var(--muted);font-size:.78em">(fixiert −5 °C für Eislast)</span>`
-    : `Temperatur T₂`;
+    ? `Temperatur T<sub>2</sub> <span style="font-weight:400;color:var(--muted);font-size:.78em">(fixiert −5 °C für Eislast)</span>`
+    : `Temperatur T<sub>2</sub>`;
 
   // T3-Vergleichskurve: bei R-FL ausblenden (keine Temperaturabhängigkeit)
   const t3wrap = document.getElementById('t3-wrapper');
@@ -2696,7 +2687,7 @@ function updateSysModeUI(mode) {
     const txt = document.getElementById('t3-toggle-txt');
     const leg = document.getElementById('leg-ts3-item');
     if (s) s.style.display = 'none';
-    if (txt) txt.textContent = 'T₃ Vergleichskurve einblenden';
+    if (txt) txt.innerHTML = 'T<sub>3</sub> Vergleichskurve einblenden';
     if (leg) leg.style.display = 'none';
   }
 
@@ -2779,18 +2770,12 @@ function updateT2Float(v, active) {
       el.style.color      = '#9ca3af';
     }
   });
-  // M-Punkt Badges und Info-Karten: Kurvenfarbe (R-FL = primary, sonst T2-Temperaturfarbe)
-  const mpClrBadge = (typeof sysMode !== 'undefined' && sysMode === 'rfl') ? '#eb0000' : clr;
   const root = document.documentElement;
-  root.style.setProperty('--mp-m1', mpClrBadge);
-  root.style.setProperty('--mp-m2', mpClrBadge);
-  root.style.setProperty('--mp-m3', mpClrBadge);
-  root.style.setProperty('--mp-m4', mpClrBadge);
 }
 
 function onT2SliderEnd() { updateT2Float(parseFloat(document.getElementById('temp2').value), false); }
 
-// Eislast-Feld dynamisch ein-/ausblenden (nur N-FL, -20°C ≤ T₂ ≤ -5°C)
+// Eislast-Feld dynamisch ein-/ausblenden (nur N-FL, -20°C ≤ T<sub>2</sub> ≤ -5°C)
 function onT2Slider(val, active = false) {
   const v = Math.round(parseFloat(val));
   document.getElementById('temp2').value = v;
@@ -2816,7 +2801,7 @@ function updateEislastVisibility() {
   const show = (sysMode === 'nfl' || sysMode === 'rfl') && T2 === -5;
   row.style.display = show ? '' : 'none';
   if (!show) document.getElementById('zl-eis').value = 0;
-  // Sub-label immer sichtbar (bei T₂ = −5 °C gilt für NFL und RFL)
+  // Sub-label immer sichtbar (bei T<sub>2</sub> = −5 °C gilt für NFL und RFL)
   const subLbl = document.getElementById('eis-label-sub');
   if (subLbl) subLbl.style.display = '';
 }
@@ -2828,7 +2813,7 @@ function toggleT3() {
   const txt     = document.getElementById('t3-toggle-txt');
   const legItem = document.getElementById('leg-ts3-item');
   section.style.display = showT3 ? '' : 'none';
-  if (txt)  txt.textContent  = showT3 ? 'T₃ Vergleichskurve ausblenden' : 'T₃ Vergleichskurve einblenden';
+  if (txt)  txt.innerHTML  = showT3 ? 'T<sub>3</sub> Vergleichskurve ausblenden' : 'T<sub>3</sub> Vergleichskurve einblenden';
   if (legItem) legItem.style.display = showT3 ? '' : 'none';
   if (showT3) {
     const v = (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3').value));
@@ -4167,7 +4152,7 @@ function readInputs() {
 
   // deltaT: bei N-FL und Einzelleiter aus T1/T2; R-FL = 0 (konstante Zugkraft)
   const deltaT = (sysMode === 'nfl' || sysMode === 'el') ? (T2 - T1) : 0;
-  // Eislast: nur wirksam wenn Feld sichtbar (N-FL, -20°C ≤ T₂ ≤ -5°C)
+  // Eislast: nur wirksam wenn Feld sichtbar (N-FL, -20°C ≤ T<sub>2</sub> ≤ -5°C)
   const zlField = document.getElementById('eislast-row');
   const ZL = (zlField && zlField.style.display !== 'none')
     ? (parseFloat(document.getElementById('zl-eis').value) || 0)
@@ -4242,8 +4227,8 @@ function berechnen() {
       }
       if (H2 !== null) c2 = computeBase(L, q_ges + ZL, H2, h1, h2);
       // VEM Handbuch Formel 7.66 + 7.82: Fahrdraht-Durchhang mit effektiver Spannweite
-      // LT1 = c_proj + 2·Δh·(H₂+H_Fd) / (c_proj·q_vem)   [VEM 7.82, Δh-Korrektur]
-      // f   = LT1² / 8 · q_vem / (H₂+H_Fd)                [VEM 7.66 mit LT1]
+      // LT1 = c_proj + 2·Δh·(H<sub>2</sub>+H_Fd) / (c_proj·q_vem)   [VEM 7.82, Δh-Korrektur]
+      // f   = LT1² / 8 · q_vem / (H<sub>2</sub>+H_Fd)                [VEM 7.66 mit LT1]
       // q_vem = gkx + gk0_neu × H_Fd / Ht0   [VEM S.445: gk0 = neuer Draht, gkx = abgenutzt]
       if (flCombo && H2 !== null && c2) {
         const gk0_vem = wearPct > 0 ? flCombo.MFL : q_ges;  // neues MFL für H_Fd-Ratio
@@ -4255,7 +4240,7 @@ function berechnen() {
         c2.sag   = LT1 * LT1 / 8 * q_vem / (H2 + H_Fd);
         _LT1_vem   = LT1;
         _q_vem_vem = q_vem;
-        // Kombinierte Katenarie (Ts+Fd): exakte Kurve mit q_vem und H₂+H_Fd
+        // Kombinierte Katenarie (Ts+Fd): exakte Kurve mit q_vem und H<sub>2</sub>+H_Fd
         // Entspricht der VEM-Parabel, aber als echte Kettenlinie berechnet
         _c2_vem = computeBase(L, q_vem, H2 + H_Fd, h1, h2);
       }
@@ -4284,13 +4269,13 @@ function berechnen() {
 
   const warns = [];
   if (spanMode === 'ruling') warns.push(`Lm = ${Lm.toFixed(2)} m · Dargestelltes Feld: ${L.toFixed(1)} m`);
-  if (c1.x_low < 0 || c1.x_low > L) warns.push(`T₁: Tiefpunkt außerhalb der Spannweite.`);
+  if (c1.x_low < 0 || c1.x_low > L) warns.push(`T<sub>1</sub>: Tiefpunkt außerhalb der Spannweite.`);
   if ((sysMode === 'nfl' || isEl) && c2 && (c2.x_low < 0 || c2.x_low > L))
-    warns.push(`T₂: Tiefpunkt außerhalb der Spannweite.`);
+    warns.push(`T<sub>2</sub>: Tiefpunkt außerhalb der Spannweite.`);
   if (warns.length) { warnBox.innerHTML = warns.join('<br>'); warnBox.classList.remove('hidden'); }
 
   // T3 — Vergleichskurve (optional)
-  let _c3 = null;
+  let _c3 = null, _c3_canvas = null;
   if (showT3) {
     const _t3Raw = parseFloat(document.getElementById('temp3')?.value);
     const T3 = isNaN(_t3Raw) ? 80 : _t3Raw;
@@ -4300,10 +4285,16 @@ function berechnen() {
         if (flCombo) {
           const MFL_init3 = wearPct > 0 ? flCombo.MFL : null;
           const H3 = solveNFLStateEq(q_ges, H_Fd, H_Ts, Lm, flCombo.AL, flCombo.E, flCombo.AK, deltaT3, ZL, MFL_init3);
-          // VEM-kombinierte Kurve (identisch mit _c2_vem-Konstruktion)
+          // Ts-only (konsistent mit c2, für Ergebnistabelle)
+          _c3 = computeBase(L, q_ges + ZL, H3, h1, h2);
+          // VEM-Sag-Korrektur (wie bei c2)
           const gk0_v3 = wearPct > 0 ? flCombo.MFL : q_ges;
           const q_vem3 = q_ges + gk0_v3 * H_Fd / H_Ts + ZL;
-          _c3 = computeBase(L, q_vem3, H3 + H_Fd, h1, h2);
+          const absDH3 = Math.abs(h2 - h1);
+          const LT1_3  = absDH3 > 1e-9 ? L + 2 * absDH3 * (H3 + H_Fd) / (L * q_vem3) : L;
+          _c3.sag = LT1_3 * LT1_3 / 8 * q_vem3 / (H3 + H_Fd);
+          // VEM-kombiniert für Canvas (gleiche Methode wie _c2_vem)
+          _c3_canvas = computeBase(L, q_vem3, H3 + H_Fd, h1, h2);
         } else if (EA !== null) {
           _c3 = computeBase(L, q_ges + ZL, solveStateEq(q_ges + ZL, Lm, H_Ts, EA, alpha, deltaT3), h1, h2);
         } else {
@@ -4321,8 +4312,9 @@ function berechnen() {
     } catch (_) {}
   }
 
-  renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, _c2_vem, ZL);
-  drawCanvas(c1, c2, L, h1, h2, sh, false, _c2_vem, _c3);
+  const _T3 = showT3 ? (parseFloat(document.getElementById('temp3')?.value) || 80) : null;
+  renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, _c2_vem, ZL, _c3, _T3);
+  drawCanvas(c1, c2, L, h1, h2, sh, false, _c2_vem, _c3_canvas ?? _c3);
 
   calcState = { L, Lm, spanMode, q_Ts, q_Fd, q_ges, H_Ts, H_Ts_ub, H_Fd, sh, h1, h2, T1, T2,
                 alpha, EA, EA_Ts, deltaT, c1, c2, flCombo, ZL,
@@ -4360,7 +4352,7 @@ function quickDraw() {
         const H2 = solveNFLStateEq(flCombo.MFL, H_Fd, H_Ts, Lm,
                                    flCombo.AL, flCombo.E, flCombo.AK, T2 - T1, ZL);
         c2 = computeBase(L, q_ges + ZL, H2, h1, h2);
-        const q_vem   = flCombo.MFL * (1 + H_Fd / H_Ts) + ZL;   // F₀ = H_Ts bei T₁ (VEM 7.82)
+        const q_vem   = flCombo.MFL * (1 + H_Fd / H_Ts) + ZL;   // F₀ = H_Ts bei T<sub>1</sub> (VEM 7.82)
         const absDH_qd = Math.abs(h2 - h1);                     // |Δh| — symmetrisch
         const LT1_qd   = absDH_qd > 1e-9
           ? L + 2 * absDH_qd * (H2 + H_Fd) / (L * q_vem)       // VEM 7.82: immer LT1 ≥ L
@@ -4393,7 +4385,7 @@ function quickDraw() {
 // ═══════════════════════════════════════════════════════════════
 // ERGEBNISDARSTELLUNG (DOM)
 // ═══════════════════════════════════════════════════════════════
-function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, c2vem = null, ZL = 0) {
+function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, c2vem = null, ZL = 0, c3 = null, T3 = null) {
   const isEl = sysMode === 'el';
   // Für N-FL+flCombo: geometrischen Sehnenwert aus c2vem verwenden (konsistent mit Diagramm)
   const c2Display = (flCombo && c2vem) ? { ...c2, sag: c2vem.sag } : c2;
@@ -4429,7 +4421,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
   // Fd ist horizontal (Solllage); Hängerlänge(x) = sh − sag_Ts(x)
   const haenger_min = sh - c1.sag;     // kürzester Hänger (am Tiefpunkt)
   const haenger_max = sh;              // längster Hänger (am Mast)
-  // Fd-Anhebung bei T₂ (N-FL): Δy_Fd = Δy_Ts am Tiefpunkt = c1.sag − c2.sag
+  // Fd-Anhebung bei T<sub>2</sub> (N-FL): Δy_Fd = Δy_Ts am Tiefpunkt = c1.sag − c2.sag
   // Absolute Fd-Höhe über SOK am Tiefpunkt des Istzustands
   const yFdSoll = x => (h1 - sh) + (h2 - h1) * x / L;
   const catY_c1 = x => c1.a * Math.cosh((x - c1.x_low) / c1.a) + c1.C;
@@ -4455,10 +4447,14 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         <span class="metric-value">${(q_Ts + q_Fd + 0.02*9.81).toFixed(3)}<span class="metric-unit">N/m</span></span></div>
     </div>`;
 
+  const dxfBtn = `<button id="dxf-btn" onclick="exportDxf()" title="3D DXF exportieren (1:100)">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 2V14M2 5.5L14 5.5M2 10.5L14 10.5" stroke="currentColor" stroke-width="1" stroke-linejoin="round" opacity="0.5"/></svg>
+          3D DXF (1:100)
+        </button>`;
   const pdfBtn = `<button id="pdf-btn" onclick="pdfExport()">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span id="pdf-btn-label">${t('btn.pdf')}</span>
-        </button>`;
+        </button>${dxfBtn}`;
   if (sysMode === 'rfl') {
     const hasZL = ZL > 0;
     document.getElementById('results').innerHTML = hasZL ? `
@@ -4493,39 +4489,50 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         <div class="metric-row"><span class="metric-label">${t('res.material')}</span>
           <span class="metric-value" style="font-size:.8rem">${getMaterialNameTs()}</span></div>
       </div>`;
+    const t3Clr3 = (c3 && T3 !== null) ? t2TempColor(T3) : null;
+    const t3Col  = (c3 && T3 !== null) ? `
+        <div>
+          <div class="results-col-title" style="color:${t3Clr3}">T<sub>3</sub> = ${T3} °C — ΔT = ${sign(T3-T1)}${T3-T1} K</div>
+          <div class="metric-list">${col(c3, 't3val')}</div>
+        </div>` : '';
     document.getElementById('results').innerHTML = `
-      <div class="results-grid">
+      <div class="results-grid" style="${c3 ? 'grid-template-columns:1fr 1fr 1fr' : ''}">
         <div>
           <div class="results-col-title">T<sub>1</sub> = ${T1} °C — ${t('res.ausgangszustand')}</div>
           <div class="metric-list">${col(c1, 'ref')}</div>
         </div>
         <div>
-          <div class="results-col-title">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
+          <div class="results-col-title" style="color:${t2TempColor(T2)}">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
           <div class="metric-list">${col(c2Display, '')}</div>
         </div>
+        ${t3Col}
       </div>
       ${infoBlock}
       <div class="delta-bar">
         ${chip(t('res.delta.durchhang'), df, 'm', c1.sag)}
         ${chip(t('res.delta.zugkraft'), dH, 'N', c1.H)}
         <div class="delta-chip">α·ΔT = ${(alpha * deltaT * 1e6).toFixed(2)} × 10⁻⁶</div>
-        <button id="pdf-btn" onclick="pdfExport()">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span id="pdf-btn-label">${t('btn.pdf')}</span>
-        </button>
+        ${pdfBtn}
       </div>`;
   } else {
     const df = c2Display.sag - c1.sag, dH = c2.H - c1.H;
+    const t3Clr2 = (c3 && T3 !== null) ? t2TempColor(T3) : null;
+    const t3Col2 = (c3 && T3 !== null) ? `
+        <div>
+          <div class="results-col-title" style="color:${t3Clr2}">T<sub>3</sub> = ${T3} °C — ΔT = ${sign(T3-T1)}${T3-T1} K</div>
+          <div class="metric-list">${col(c3, 't3val')}</div>
+        </div>` : '';
     document.getElementById('results').innerHTML = `
-      <div class="results-grid">
+      <div class="results-grid" style="${c3 ? 'grid-template-columns:1fr 1fr 1fr' : ''}">
         <div>
           <div class="results-col-title">T<sub>1</sub> = ${T1} °C — ${t('res.ausgangszustand')}</div>
           <div class="metric-list">${col(c1, 'ref')}</div>
         </div>
         <div>
-          <div class="results-col-title">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
+          <div class="results-col-title" style="color:${t2TempColor(T2)}">T<sub>2</sub> = ${T2} °C — ΔT = ${sign(deltaT)}${deltaT} K</div>
           <div class="metric-list">${col(c2Display, '')}</div>
         </div>
+        ${t3Col2}
       </div>
       ${fdBlock}
       <div class="delta-bar">
@@ -4536,6 +4543,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span id="pdf-btn-label">${t('btn.pdf')}</span>
         </button>
+        ${dxfBtn}
       </div>`;
   }
   updateHighlightCard();
@@ -4880,7 +4888,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     const y2     = catYD(xv, cProbe);
     const distH1 = h1d - y2;
 
-    // Dot on T₂ curve
+    // Dot on T<sub>2</sub> curve
     ctx.beginPath(); ctx.arc(px, cy(y2), 5, 0, Math.PI * 2);
     ctx.fillStyle = dotColor; ctx.fill();
     ctx.beginPath(); ctx.arc(px, cy(y2), 5, 0, Math.PI * 2);
@@ -5135,7 +5143,7 @@ function canvasPt(e) {
 }
 
 // ── Highlight-Karte: Schlüsselwerte für einen Messpunkt ──
-function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b7280') {
+function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b7280', t2Clr = '#6b7280') {
   if (!calcState) return '';
   const { c1, c2, h1, h2, L, sh, flCombo, LT1_vem, q_vem_vem, c2_vem } = calcState;
   const catY    = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
@@ -5150,7 +5158,7 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b72
   const y2      = useVem ? catY(xv, c2_vem) : y2_ts;       // Anzeigewert: kombiniert oder Ts
   const y1      = catY(xv, c1);
   const fd      = isNfl ? yFdSoll(xv) + (y2_ts - y1) : yFdSoll(xv);  // Fd stets via Ts
-  // VEM 7.66: positionsabhängiger Durchhang f(x) = q_vem/(2*(H₂+H_Fd)) * x * (LT1-x)
+  // VEM 7.66: positionsabhängiger Durchhang f(x) = q_vem/(2*(H<sub>2</sub>+H_Fd)) * x * (LT1-x)
   const sag     = isNfl
     ? (flCombo && LT1_vem !== null
         ? q_vem_vem / (2 * (c2.H + calcState.H_Fd)) * xv * (LT1_vem - xv)
@@ -5192,9 +5200,9 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b72
       : `${t(t3hKey)} ${t('dyn.ueber.sok')}`;
     t3Row = `
       <div style="margin-top:.5rem;padding-top:.4rem;border-top:1px dashed rgba(0,0,0,.12)">
-        <div style="font-size:.65rem;font-weight:600;color:${t3Clr};letter-spacing:.02em">${badge}' &nbsp;T₃</div>
+        <div style="font-size:.72rem;font-weight:600;color:${t3Clr};letter-spacing:.02em">${badge}' &nbsp;T<sub style="font-size:.8em">3</sub></div>
         <div style="font-size:${compact?'1.05rem':'1.35rem'};font-weight:700;color:${t3Clr}">${f3(sag3)}<span style="font-size:.72rem;margin-left:.2rem">m</span></div>
-        <div style="font-size:.72rem;color:var(--muted);margin-top:.1rem">Δh T₃</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:.1rem">Δh T<sub style="font-size:.8em">3</sub></div>
         <div style="font-size:.7rem;color:var(--muted);opacity:.8;margin-top:${compact?'.5rem':'1rem'}">${y3SubLbl}</div>
         <div style="font-size:${compact?'.9rem':'1.1rem'};font-weight:600;color:${t3Clr}">${y3_disp}<span style="font-size:.72rem;margin-left:.2rem">${mainUnit}</span></div>
       </div>`;
@@ -5202,11 +5210,11 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b72
 
   return `
     <div class="istzustand-main">
-      <div class="istzustand-label" style="color:var(--mp-${cls})">${badge} · x = ${xv.toFixed(2)} m</div>
-      <div class="istzustand-value" style="font-size:${valSize};color:var(--mp-${cls})">${f3(dhValue)}<span class="istzustand-unit">m</span></div>
+      <div class="istzustand-label" style="color:${t2Clr}">${badge} · x = ${xv.toFixed(2)} m</div>
+      <div class="istzustand-value" style="font-size:${valSize};color:${t2Clr}">${f3(dhValue)}<span class="istzustand-unit">m</span></div>
       <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${dhLabel}</div>
       <div style="font-size:.7rem;color:var(--muted);opacity:.8;margin-top:${topGap}">${subLabel}</div>
-      <div class="istzustand-value" style="font-size:${sagSize};color:var(--mp-${cls})">${mainVal}<span class="istzustand-unit">${mainUnit}</span></div>
+      <div class="istzustand-value" style="font-size:${sagSize};color:${t2Clr}">${mainVal}<span class="istzustand-unit">${mainUnit}</span></div>
       ${t3Row}
     </div>`;
 }
@@ -5285,7 +5293,7 @@ function updateHighlightCard() {
     const blocks = points.map((p, i) => {
       const divider = (!compact && i < total - 1)
         ? '<div class="istzustand-divider" style="margin:0 .4rem"></div>' : '';
-      return mpBlock(p.xv, p.badge, p.cls, compact, _c3curve, _t3clr) + divider;
+      return mpBlock(p.xv, p.badge, p.cls, compact, _c3curve, _t3clr, curveClr) + divider;
     }).join('');
     const cols = total === 4 ? '1fr 1fr 1fr 1fr' : total === 3 ? '1fr 1fr 1fr' : '';
     const cardStyle = compact
@@ -5527,9 +5535,9 @@ function moveDrag(e) {
     tooltip.style.left = (clientX - tooltip.offsetWidth / 2) + 'px';
     tooltip.style.top  = (clientY - 44) + 'px';
     const _isH1    = drag.which === 'h1';
-    const _lbl     = _isH1 ? 'h₁' : 'h₂';
+    const _lbl     = _isH1 ? 'h<sub>1</sub>' : 'h<sub>2</sub>';
     const _sokSide = _isH1 ? getSokMumLeft() : getSokMumRight();
-    // h₁/h₂ immer in Meter über SOK; SOK-Referenz als Zusatzinfo
+    // h<sub>1</sub>/h<sub>2</sub> immer in Meter über SOK; SOK-Referenz als Zusatzinfo
     tooltip.textContent = _sokSide !== null
       ? `${_lbl} = ${newVal.toFixed(2)} m ü.SOK  (= ${(_sokSide + newVal).toFixed(2)} ${t('bp.mum.abbrev')})`
       : `${_lbl} = ${newVal.toFixed(2)} m ü.SOK`;
@@ -5672,26 +5680,26 @@ function buildPdfSectionHtml(projName, canvasImg) {
 <div class="step"><table class="inp">
   <tr><td>${t('pdf.systemtyp')}</td><td><strong>${isEl ? t('pdf.sys.el') : isNFL ? t('pdf.sys.nfl') : t('pdf.sys.rfl')}</strong></td></tr>
   <tr><td>${t('pdf.berechnungsmodell')}</td><td>${spanMode === 'ruling' ? `${t('pdf.span.ruling')} &nbsp; Lm = ${Lm.toFixed(2)} m &nbsp;|&nbsp; L = ${f3(L)} m` : `${t('pdf.span.single')} &nbsp; L = ${f3(L)} m`}</td></tr>
-  <tr><td>${t('pdf.hoehendiff')}</td><td>Δh = h₂ − h₁ = ${f3(h2)} − ${f3(h1)} = ${f3(dh)} m</td></tr>
+  <tr><td>${t('pdf.hoehendiff')}</td><td>Δh = h<sub>2</sub> − h<sub>1</sub> = ${f3(h2)} − ${f3(h1)} = ${f3(dh)} m</td></tr>
   ${isEl
     ? `<tr><td>${t('res.leiter.label')}</td><td><strong>${matTs}</strong> &nbsp; q = ${q_Ts.toFixed(4)} N/m${EA !== null ? ` &nbsp;|&nbsp; E·A = ${(EA/1e6).toFixed(2)} MN &nbsp;|&nbsp; α = ${(alpha*1e6).toFixed(1)}×10⁻⁶ /K` : ''}</td></tr>
-       <tr><td>${t('pdf.befhoehen')}</td><td>h₁ = ${f3(h1)} m &nbsp;|&nbsp; h₂ = ${f3(h2)} m</td></tr>
+       <tr><td>${t('pdf.befhoehen')}</td><td>h<sub>1</sub> = ${f3(h1)} m &nbsp;|&nbsp; h<sub>2</sub> = ${f3(h2)} m</td></tr>
        ${hasSok ? `<tr><td>${t('pdf.sok.links')}</td><td>${sokLv.toFixed(3)} m ${t('pdf.mum.short')} &nbsp;→ li = <strong>${(sokLv+h1).toFixed(3)} m ${t('pdf.mum.short')}</strong></td></tr>
        <tr><td>${t('pdf.sok.rechts')}</td><td>${sokRv.toFixed(3)} m ${t('pdf.mum.short')} &nbsp;→ re = <strong>${(sokRv+h2).toFixed(3)} m ${t('pdf.mum.short')}</strong></td></tr>` : ''}
-       <tr><td>${t('pdf.zugkraft.direkt')}</td><td><strong>H = ${fN(H_Ts,0)} N &nbsp;(bei T₁ = ${T1} °C)</strong></td></tr>
-       <tr><td>${t('pdf.temperaturen')}</td><td><strong>T₁ = ${T1} °C &nbsp;→&nbsp; T₂ = ${T2} °C &nbsp;(ΔT = ${sign(deltaT)}${deltaT} K)</strong></td></tr>`
+       <tr><td>${t('pdf.zugkraft.direkt')}</td><td><strong>H = ${fN(H_Ts,0)} N &nbsp;(bei T<sub>1</sub> = ${T1} °C)</strong></td></tr>
+       <tr><td>${t('pdf.temperaturen')}</td><td><strong>T<sub>1</sub> = ${T1} °C &nbsp;→&nbsp; T<sub>2</sub> = ${T2} °C &nbsp;(ΔT = ${sign(deltaT)}${deltaT} K)</strong></td></tr>`
     : `<tr><td>${t('pdf.ts.label')} (Ts)</td><td><strong>${matTs}</strong> &nbsp; q<sub>Ts</sub> = ${q_Ts.toFixed(4)} N/m${EA !== null ? ` &nbsp;|&nbsp; (E·A)${isNFL ? '<sub>kombi</sub>' : ''} = ${(EA/1e6).toFixed(1)} MN &nbsp;|&nbsp; α${isNFL ? '<sub>kombi</sub>' : ''} = ${(alpha*1e6).toFixed(1)}×10⁻⁶ /K` : ''}</td></tr>
        <tr><td>${t('res.fd.title')}</td><td><strong>${matFd}</strong> &nbsp; q<sub>Fd</sub> = ${q_Fd.toFixed(4)} N/m &nbsp;${wearPct > 0 ? `<em style="color:#eb0000">(${t('pdf.abnutzung')} ${wearPct} %: ${(q_Fd/(1-wearPct/100)).toFixed(4)} N/m)</em>` : `(0 % ${t('pdf.abnutzung')})`} &nbsp;|&nbsp; H<sub>Fd</sub> = ${fN(H_Fd,0)} N</td></tr>
        <tr><td>${t('pdf.haenger')}</td><td>q<sub>H</sub> = 0.020 kg/m × 9.81 m/s² = ${q_H.toFixed(4)} N/m</td></tr>
        <tr><td>${t('pdf.systemhoehe')}</td><td>sh = ${sh} m</td></tr>
-       <tr><td>${t('pdf.befhoehen')}</td><td>h₁ = ${f3(h1)} m &nbsp;|&nbsp; h₂ = ${f3(h2)} m</td></tr>
+       <tr><td>${t('pdf.befhoehen')}</td><td>h<sub>1</sub> = ${f3(h1)} m &nbsp;|&nbsp; h<sub>2</sub> = ${f3(h2)} m</td></tr>
        ${hasSok ? `<tr><td>${t('pdf.sok.links')}</td><td>${sokLv.toFixed(3)} m ${t('pdf.mum.short')} &nbsp;→ li = <strong>${(sokLv+h1).toFixed(3)} m ${t('pdf.mum.short')}</strong></td></tr>
        <tr><td>${t('pdf.sok.rechts')}</td><td>${sokRv.toFixed(3)} m ${t('pdf.mum.short')} &nbsp;→ re = <strong>${(sokRv+h2).toFixed(3)} m ${t('pdf.mum.short')}</strong></td></tr>` : ''}
        ${isNFL
-         ? `<tr><td>${t('pdf.h.ub')}</td><td><strong>H<sub>ub</sub> = ${fN(H_Ts_ub,0)} N &nbsp;(bei T₁ = ${T1} °C)</strong></td></tr>
+         ? `<tr><td>${t('pdf.h.ub')}</td><td><strong>H<sub>ub</sub> = ${fN(H_Ts_ub,0)} N &nbsp;(bei T<sub>1</sub> = ${T1} °C)</strong></td></tr>
             <tr><td>${t('pdf.h.b')}</td><td><strong>H<sub>Ts,1</sub> = ${fN(H_Ts,0)} N &nbsp;</strong><em style="color:#6b7280">(via Zustandsgl. unbelastet→belastet, EA<sub>Ts</sub>)</em></td></tr>
-            <tr><td>${t('pdf.temperaturen')}</td><td><strong>T₁ = ${T1} °C &nbsp;→&nbsp; T₂ = ${T2} °C &nbsp;(ΔT = ${sign(deltaT)}${deltaT} K)</strong></td></tr>
-            ${ZL > 0 ? `<tr><td>${t('pdf.eislast')}</td><td><strong style="color:#eb0000">Z<sub>L</sub> = ${ZL.toFixed(2)} N/m &nbsp;(T₂ = ${T2} °C)</strong></td></tr>` : ''}`
+            <tr><td>${t('pdf.temperaturen')}</td><td><strong>T<sub>1</sub> = ${T1} °C &nbsp;→&nbsp; T<sub>2</sub> = ${T2} °C &nbsp;(ΔT = ${sign(deltaT)}${deltaT} K)</strong></td></tr>
+            ${ZL > 0 ? `<tr><td>${t('pdf.eislast')}</td><td><strong style="color:#eb0000">Z<sub>L</sub> = ${ZL.toFixed(2)} N/m &nbsp;(T<sub>2</sub> = ${T2} °C)</strong></td></tr>` : ''}`
          : `<tr><td>${t('pdf.zugkraft.const')}</td><td><strong>H<sub>Ts</sub> = ${fN(H_Ts,0)} N</strong></td></tr>
             <tr><td>${t('pdf.betrieb.temp')}</td><td>T = ${T1} °C</td></tr>`}`}
 </table></div>
@@ -5706,7 +5714,7 @@ function buildPdfSectionHtml(projName, canvasImg) {
        <p class="sub">q<sub>ges</sub> = ${q_Ts.toFixed(4)} + ${q_Fd.toFixed(4)} + ${q_H.toFixed(4)}
          = <strong class="r">${q_ges.toFixed(4)} N/m</strong></p>
        <p class="sub2">Die Hängerlast wird als gleichmässig verteilte Last über die Spannweite angesetzt.</p>
-       ${ZL > 0 ? `<p class="sub" style="margin-top:5px"><em style="color:#eb0000">Zielzustand T₂ mit Eislast:</em>
+       ${ZL > 0 ? `<p class="sub" style="margin-top:5px"><em style="color:#eb0000">Zielzustand T<sub>2</sub> mit Eislast:</em>
          q<sub>ges,ZL</sub> = q<sub>ges</sub> + Z<sub>L</sub> = ${q_ges.toFixed(4)} + ${ZL.toFixed(4)}
          = <strong style="color:#c2410c">${(q_ges + ZL).toFixed(4)} N/m</strong></p>` : ''}`}
 </div>
@@ -5737,7 +5745,7 @@ ${isNFL_ub ? `
 </div>` : ''}
 
 <!-- ── Schritt 2: Kettenlinie ── -->
-<h2>${t('pdf.step2')} &nbsp;—&nbsp; ${isNFL || isEl ? `${t('pdf.ausgangszustand')} (T₁ = ${T1} °C)` : `(T = ${T1} °C)`}</h2>
+<h2>${t('pdf.step2')} &nbsp;—&nbsp; ${isNFL || isEl ? `${t('pdf.ausgangszustand')} (T<sub>1</sub> = ${T1} °C)` : `(T = ${T1} °C)`}</h2>
 <div class="step">
   <p><strong>${t('pdf.katenlin.param')}</strong></p>
   <p class="sub"><em>a = H<sub>Ts</sub> / q<sub>ges</sub></em></p>
@@ -5765,10 +5773,10 @@ ${(isNFL || isEl) && C !== null && K !== null ? `
 <h2 class="warm">${t('pdf.step3')} &nbsp;—&nbsp; (${isEl ? 'Einzelleiter' : 'N-FL'}, ΔT = ${sign(deltaT)}${deltaT} K)</h2>
 <div class="step">
   <p><strong>${t('pdf.allg.zustgl')}</strong></p>
-  <p class="sub"><em class="w">(q·Lm)² / (24·H₂²) − H₂/(E·A) = (q·Lm)² / (24·H₁²) − H₁/(E·A) + α·ΔT</em></p>
-  <p class="sub2">Umgeformt in kubisches Polynom (Multiplikation mit H₂²):</p>
-  <p class="sub"><em class="w">C·H₂³ + K·H₂² − G = 0</em></p>
-  <p class="sub2">mit &nbsp; G = (q<sub>ges</sub>·Lm)²/24 &nbsp;|&nbsp; C = 1/(E·A) &nbsp;|&nbsp; K = G/H₁² − C·H₁ + α·ΔT</p>
+  <p class="sub"><em class="w">(q·Lm)² / (24·H<sub>2</sub>²) − H<sub>2</sub>/(E·A) = (q·Lm)² / (24·H<sub>1</sub>²) − H<sub>1</sub>/(E·A) + α·ΔT</em></p>
+  <p class="sub2">Umgeformt in kubisches Polynom (Multiplikation mit H<sub>2</sub>²):</p>
+  <p class="sub"><em class="w">C·H<sub>2</sub>³ + K·H<sub>2</sub>² − G = 0</em></p>
+  <p class="sub2">mit &nbsp; G = (q<sub>ges</sub>·Lm)²/24 &nbsp;|&nbsp; C = 1/(E·A) &nbsp;|&nbsp; K = G/H<sub>1</sub>² − C·H<sub>1</sub> + α·ΔT</p>
 </div>
 <div class="step">
   <p><strong>${t('pdf.koeff')}</strong></p>
@@ -5776,14 +5784,14 @@ ${(isNFL || isEl) && C !== null && K !== null ? `
     = <strong class="r">${G.toFixed(6)} N²·m</strong></p>
   <p class="sub">C = 1 / (E·A) = 1 / ${(EA/1e6).toFixed(1)} MN
     = <strong class="r">${C.toExponential(4)} m/N</strong></p>
-  <p class="sub">K = G/H₁² − C·H₁ + α·ΔT</p>
+  <p class="sub">K = G/H<sub>1</sub>² − C·H<sub>1</sub> + α·ΔT</p>
   <p class="sub2">= ${G.toFixed(4)} / ${fN(H_Ts,1)}² − ${C.toExponential(4)} × ${fN(H_Ts,1)} + ${(alpha*1e6).toFixed(1)}×10⁻⁶ × (${sign(deltaT)}${deltaT})</p>
   <p class="sub">= <strong class="r">${K.toExponential(4)} m/N</strong></p>
 </div>
 <div class="step">
   <p><strong>${t('pdf.kub.poly')}</strong></p>
-  <p class="sub"><em class="w">${C.toExponential(4)} · H₂³ + ${K.toExponential(4)} · H₂² − ${G.toFixed(2)} = 0</em></p>
-  <p class="sub2">Lösung mit Newton-Raphson-Iteration (Startwert H₂ = H₁):</p>
+  <p class="sub"><em class="w">${C.toExponential(4)} · H<sub>2</sub>³ + ${K.toExponential(4)} · H<sub>2</sub>² − ${G.toFixed(2)} = 0</em></p>
+  <p class="sub2">Lösung mit Newton-Raphson-Iteration (Startwert H<sub>2</sub> = H<sub>1</sub>):</p>
   <p class="sub">H<sub>Ts,2</sub> = <strong class="w">${fN(c2.H,1)} N</strong></p>
 </div>
 
@@ -5793,16 +5801,16 @@ ${isNFL && flCombo ? `
 <div class="step">
   <p><strong>${t('pdf.fd.kombi')}</strong></p>
   <p class="sub2">${t('pdf.fd.kombibody')}</p>
-  <p class="sub"><em class="w">q<sub>vem</sub> = MFL × (1 + H<sub>Fd</sub>/F<sub>0</sub>)${ZL > 0 ? ' + Z<sub>L</sub>' : ''}</em> &nbsp;&nbsp;F<sub>0</sub> = H<sub>Ts</sub> bei T₁ (belastet)</p>
-  <p class="sub"><em class="w">L<sub>T1</sub> = L + 2·|Δh|·(H<sub>Ts,2</sub>+H<sub>Fd</sub>) / (L·q<sub>vem</sub>)</em> &nbsp;&nbsp;[VEM 7.82] &nbsp;|Δh| = |h₂−h₁| &nbsp;→ L<sub>T1</sub> ≥ L immer</p>
+  <p class="sub"><em class="w">q<sub>vem</sub> = MFL × (1 + H<sub>Fd</sub>/F<sub>0</sub>)${ZL > 0 ? ' + Z<sub>L</sub>' : ''}</em> &nbsp;&nbsp;F<sub>0</sub> = H<sub>Ts</sub> bei T<sub>1</sub> (belastet)</p>
+  <p class="sub"><em class="w">L<sub>T1</sub> = L + 2·|Δh|·(H<sub>Ts,2</sub>+H<sub>Fd</sub>) / (L·q<sub>vem</sub>)</em> &nbsp;&nbsp;[VEM 7.82] &nbsp;|Δh| = |h<sub>2</sub>−h<sub>1</sub>| &nbsp;→ L<sub>T1</sub> ≥ L immer</p>
   <p class="sub"><em class="w">f<sub>Fd</sub> = L<sub>T1</sub>² / 8 · q<sub>vem</sub> / (H<sub>Ts,2</sub> + H<sub>Fd</sub>)</em> &nbsp;&nbsp;[VEM 7.66]</p>
-  <p class="sub2" style="color:#eb0000">Die im Diagramm angezeigte Ts-Kurve bei T₂ entspricht der kombinierten Kettenlinie des Ts+Fd-Systems mit den Parametern q<sub>vem</sub> und H<sub>Ts,2</sub>+H<sub>Fd</sub>. Dieser Ansatz stimmt mit der VEM-Parabel überein (Abweichung &lt; 5 mm für übliche Spannweiten).</p>
+  <p class="sub2" style="color:#eb0000">Die im Diagramm angezeigte Ts-Kurve bei T<sub>2</sub> entspricht der kombinierten Kettenlinie des Ts+Fd-Systems mit den Parametern q<sub>vem</sub> und H<sub>Ts,2</sub>+H<sub>Fd</sub>. Dieser Ansatz stimmt mit der VEM-Parabel überein (Abweichung &lt; 5 mm für übliche Spannweiten).</p>
 </div>
 <div class="step">
   <p><strong>${t('pdf.berechn.werte')}</strong></p>
   <p class="sub">MFL = ${flCombo.MFL.toFixed(5)} N/m &nbsp;(Quelle: SBB Durchhang-Excel / VBA)</p>
-  <p class="sub">F<sub>0</sub> = H<sub>Ts,1</sub> = ${fN(H_Ts,0)} N &nbsp;(Ts-Zug bei T₁ = ${T1} °C, belastet)</p>
-  <p class="sub">H<sub>Ts,2</sub> = ${fN(c2.H,0)} N &nbsp;(Ts-Zug bei T₂ = ${T2} °C)</p>
+  <p class="sub">F<sub>0</sub> = H<sub>Ts,1</sub> = ${fN(H_Ts,0)} N &nbsp;(Ts-Zug bei T<sub>1</sub> = ${T1} °C, belastet)</p>
+  <p class="sub">H<sub>Ts,2</sub> = ${fN(c2.H,0)} N &nbsp;(Ts-Zug bei T<sub>2</sub> = ${T2} °C)</p>
   <p class="sub">H<sub>Fd</sub> = ${fN(H_Fd,0)} N &nbsp;(konstant)</p>
   <p class="sub">q<sub>vem</sub> = MFL × (1 + H<sub>Fd</sub>/F<sub>0</sub>)${ZL > 0 ? ' + Z<sub>L</sub>' : ''}
     = ${flCombo.MFL.toFixed(4)} × (1 + ${fN(H_Fd,0)}/${fN(H_Ts,0)})${ZL > 0 ? ` + ${ZL.toFixed(4)}` : ''}
@@ -5810,7 +5818,7 @@ ${isNFL && flCombo ? `
   ${(()=>{ const _qv=flCombo.MFL*(1+H_Fd/H_Ts)+ZL, _absDH=Math.abs(h2-h1),
             _LT1=_absDH>1e-9 ? L+2*_absDH*(c2.H+H_Fd)/(L*_qv) : L;
     return _absDH>1e-9
-      ? `<p class="sub">|Δh| = |h₂ − h₁| = |${fN(h2,3)} − ${fN(h1,3)}| = <strong class="r">${fN(_absDH,3)} m</strong></p>
+      ? `<p class="sub">|Δh| = |h<sub>2</sub> − h<sub>1</sub>| = |${fN(h2,3)} − ${fN(h1,3)}| = <strong class="r">${fN(_absDH,3)} m</strong></p>
          <p class="sub">L<sub>T1</sub> = ${fN(L,3)} + 2×${fN(_absDH,3)}×(${fN(c2.H,0)}+${fN(H_Fd,0)}) / (${fN(L,3)}×${_qv.toFixed(4)})
            = <strong class="r">${f3(_LT1)} m</strong> &nbsp;<em style="color:var(--muted);font-size:.82em">(VEM 7.82, L<sub>T1</sub> ≥ L)</em></p>`
       : `<p class="sub">|Δh| = 0 → L<sub>T1</sub> = L = ${fN(L,3)} m</p>`; })()}
@@ -5818,11 +5826,11 @@ ${isNFL && flCombo ? `
   <p class="sub">f<sub>Fd,2</sub> = L<sub>T1</sub>² / 8 × q<sub>vem</sub> / (H<sub>Ts,2</sub> + H<sub>Fd</sub>) = <strong class="w">${f3(c2.sag)} m</strong>${ZL > 0 ? ' &nbsp;<em style="color:#eb0000">(inkl. Eislast)</em>' : ''}</p>
 </div>` : ''}
 
-<!-- ── Schritt 4: Kettenlinie T₂ ── -->
-<h2 class="warm">${t('pdf.step4')} &nbsp;—&nbsp; ${t('pdf.zielzustand')} (T₂ = ${T2} °C)</h2>
+<!-- ── Schritt 4: Kettenlinie T<sub>2</sub> ── -->
+<h2 class="warm">${t('pdf.step4')} &nbsp;—&nbsp; ${t('pdf.zielzustand')} (T<sub>2</sub> = ${T2} °C)</h2>
 <div class="step">
-  <p class="sub"><em class="w">a₂ = H₂ / q</em></p>
-  <p class="sub">a₂ = ${fN(c2.H,1)} / ${q_ges.toFixed(4)} = <strong class="w">${f3(c2.a)} m</strong></p>
+  <p class="sub"><em class="w">a<sub>2</sub> = H<sub>2</sub> / q</em></p>
+  <p class="sub">a<sub>2</sub> = ${fN(c2.H,1)} / ${q_ges.toFixed(4)} = <strong class="w">${f3(c2.a)} m</strong></p>
   <p class="sub">Tiefpunkt: x<sub>0,2</sub> = <strong class="w">${f3(c2.x_low)} m</strong></p>
   <p class="sub">Durchhang: f<sub>2</sub> = <strong class="w">${f3(c2.sag)} m</strong>
     &nbsp;(Δf = ${sign(c2.sag-c1.sag)}${f3(Math.abs(c2.sag-c1.sag))} m &nbsp;|&nbsp;
@@ -5833,10 +5841,10 @@ ${isNFL && flCombo ? `
 <h2 class="warm">${t('pdf.step3')} &nbsp;—&nbsp; (${isEl ? 'Einzelleiter' : 'N-FL'})</h2>
 <div class="step">
   <p>Keine E·A-Angabe — Berechnung über Seillängenzunahme.</p>
-  <p class="sub"><em class="w">s₂ = s₁ · (1 + α·ΔT)</em></p>
-  <p class="sub">s₂ = ${f3(c1.s)} × (1 + ${(alpha*1e6).toFixed(1)}×10⁻⁶ × ${sign(deltaT)}${deltaT})
+  <p class="sub"><em class="w">s<sub>2</sub> = s<sub>1</sub> · (1 + α·ΔT)</em></p>
+  <p class="sub">s<sub>2</sub> = ${f3(c1.s)} × (1 + ${(alpha*1e6).toFixed(1)}×10⁻⁶ × ${sign(deltaT)}${deltaT})
     = <strong class="w">${f3(c2.s)} m</strong></p>
-  <p class="sub">H₂ = <strong class="w">${fN(c2.H,1)} N</strong> &nbsp;|&nbsp;
+  <p class="sub">H<sub>2</sub> = <strong class="w">${fN(c2.H,1)} N</strong> &nbsp;|&nbsp;
     f<sub>2</sub> = <strong class="w">${f3(c2.sag)} m</strong></p>
 </div>
 ` : ''}
@@ -5845,7 +5853,7 @@ ${isNFL && flCombo ? `
 ${!isEl ? `
 <h2 style="color:#525252;border-left-color:#86868b">${isNFL ? t('pdf.step5') : t('pdf.step3')} &nbsp;—&nbsp; ${t('res.fd.title')}</h2>
 <div class="step">
-  <p class="sub"><em style="color:#525252">Fd-Höhe über SOK am Tiefpunkt${isNFL ? ' (Istzustand bei T₂)' : ''}</em></p>
+  <p class="sub"><em style="color:#525252">Fd-Höhe über SOK am Tiefpunkt${isNFL ? ' (Istzustand bei T<sub>2</sub>)' : ''}</em></p>
   <p class="sub">Fd-Höhe über SOK = <strong style="color:#525252">${f3(fd_abs_pdf)} m</strong>
     &nbsp;<span style="color:#6b7280">(Tiefpunkt bei x = ${f3(x_ist_pdf)} m)</span></p>
   <p class="sub">H<sub>Fd</sub> = <strong style="color:#525252">${fN(H_Fd,0)} N</strong> (konstant${sysMode === 'rfl' ? ', Nachspannvorrichtung' : ''})</p>
@@ -5853,11 +5861,11 @@ ${!isEl ? `
   <p class="sub">Hänger im Tiefpunkt = sh − f<sub>${flCombo ? 'Fd,1' : 'Ts,1'}</sub> = ${sh} − ${f3(c1.sag)} = <strong style="color:#525252">${f3(sh - c1.sag)} m</strong> (minimum)</p>
 </div>` : ''}
 
-<!-- ── Vergleich T₁ → T₂ ── -->
+<!-- ── Vergleich T<sub>1</sub> → T<sub>2</sub> ── -->
 ${(isNFL || isEl) ? `
-<h2>${t('pdf.vergleich')} ${isEl ? t('res.leiter.label') : t('pdf.ts.label')} T₁ → T₂</h2>
+<h2>${t('pdf.vergleich')} ${isEl ? t('res.leiter.label') : t('pdf.ts.label')} T<sub>1</sub> → T<sub>2</sub></h2>
 <table class="cmp">
-  <tr><th>${t('pdf.cmp.groesse')}</th><th>T₁ = ${T1} °C</th><th class="warm">T₂ = ${T2} °C</th><th>${t('pdf.cmp.aenderung')}</th></tr>
+  <tr><th>${t('pdf.cmp.groesse')}</th><th>T<sub>1</sub> = ${T1} °C</th><th class="warm">T<sub>2</sub> = ${T2} °C</th><th>${t('pdf.cmp.aenderung')}</th></tr>
   ${tr(t('pdf.katenlin.param') + ' a', c1.a, c2.a, 'm')}
   ${tr('x₀', c1.x_low, c2.x_low, 'm')}
   ${tr(flCombo ? t('res.sag.belastet') : t('res.sag.ts.label'), c1.sag, (flCombo && calcState.c2_vem) ? calcState.c2_vem.sag : c2.sag, 'm')}
@@ -5881,7 +5889,7 @@ ${hasAnyProbe ? `
     ${probeRows(probeX3, 'M3')}
     ${probeRows(probeX4, 'M4')}
   </table>
-  <p class="sub2" style="margin-top:4px">${t('pdf.ausgangszustand')}: ${isNFL || isEl ? `T₂ = ${T2} °C` : `T = ${T1} °C`} &nbsp;|&nbsp; ${isEl ? `H` : `H<sub>Ts</sub>`}${isNFL || isEl ? `<sub>2</sub>` : ``} = ${fN(cIstPdf.H,0)} N</p>
+  <p class="sub2" style="margin-top:4px">${t('pdf.ausgangszustand')}: ${isNFL || isEl ? `T<sub>2</sub> = ${T2} °C` : `T = ${T1} °C`} &nbsp;|&nbsp; ${isEl ? `H` : `H<sub>Ts</sub>`}${isNFL || isEl ? `<sub>2</sub>` : ``} = ${fN(cIstPdf.H,0)} N</p>
 </div>` : ''}
 
 ${mode3pt && threePtMark ? `
@@ -5900,9 +5908,9 @@ ${mode3pt && threePtMark ? `
   <img src="${canvasImg}" alt="Kettenwerk">
   <p style="font-size:7.5pt;color:#b7b7b7;margin-top:4px">
     ${isEl
-      ? `${t('leg.leiter1')} T₁ = ${T1} °C &nbsp;|&nbsp; ${t('leg.leiter2')} T₂ = ${T2} °C &nbsp;|&nbsp; Y: ${hasSok ? `m ${t('pdf.mum.short')}` : `m ${t('pdf.sok.short')}`}`
+      ? `${t('leg.leiter1')} T<sub>1</sub> = ${T1} °C &nbsp;|&nbsp; ${t('leg.leiter2')} T<sub>2</sub> = ${T2} °C &nbsp;|&nbsp; Y: ${hasSok ? `m ${t('pdf.mum.short')}` : `m ${t('pdf.sok.short')}`}`
       : isNFL
-        ? `${t('leg.ts1')} T₁ = ${T1} °C &nbsp;|&nbsp; ${t('leg.ts2')} T₂ = ${T2} °C &nbsp;|&nbsp; ${t('leg.fd.solllage')} &nbsp;|&nbsp; Y: ${hasSok ? `m ${t('pdf.mum.short')}` : `m ${t('pdf.sok.short')}`}`
+        ? `${t('leg.ts1')} T<sub>1</sub> = ${T1} °C &nbsp;|&nbsp; ${t('leg.ts2')} T<sub>2</sub> = ${T2} °C &nbsp;|&nbsp; ${t('leg.fd.solllage')} &nbsp;|&nbsp; Y: ${hasSok ? `m ${t('pdf.mum.short')}` : `m ${t('pdf.sok.short')}`}`
         : `${t('leg.ts1.rfl')} T = ${T1} °C &nbsp;|&nbsp; ${t('leg.fd.solllage')} &nbsp;|&nbsp; Y: ${hasSok ? `m ${t('pdf.mum.short')}` : `m ${t('pdf.sok.short')}`}`
     }
   </p>
@@ -6079,12 +6087,12 @@ function buildScaleDrawingPage(stripInSvg = false) {
     const mastMidYL = (sy(sokYL) + sy(h1abs)) / 2;
     const mastMidYR = (sy(sokYR) + sy(h2abs)) / 2;
     anchLbl += `
-  <text x="${(sx(0)+1.5).toFixed(2)}" y="${(mastMidYL+0.8).toFixed(2)}" font-size="${fs(2.0)}" fill="#888">h₁ = ${h1.toFixed(3)} m</text>
-  <text x="${(sx(L)-1.5).toFixed(2)}" y="${(mastMidYR+0.8).toFixed(2)}" font-size="${fs(2.0)}" text-anchor="end" fill="#888">h₂ = ${h2.toFixed(3)} m</text>`;
+  <text x="${(sx(0)+1.5).toFixed(2)}" y="${(mastMidYL+0.8).toFixed(2)}" font-size="${fs(2.0)}" fill="#888">h<sub>1</sub> = ${h1.toFixed(3)} m</text>
+  <text x="${(sx(L)-1.5).toFixed(2)}" y="${(mastMidYR+0.8).toFixed(2)}" font-size="${fs(2.0)}" text-anchor="end" fill="#888">h<sub>2</sub> = ${h2.toFixed(3)} m</text>`;
   } else {
     anchLbl = `
-  <text x="${(sx(0)+2).toFixed(2)}" y="${(sy(h1abs)-2).toFixed(2)}" font-size="${fs(2.3)}" fill="#555">h₁ = ${h1.toFixed(3)} m</text>
-  <text x="${(sx(L)-2).toFixed(2)}" y="${(sy(h2abs)-2).toFixed(2)}" font-size="${fs(2.3)}" text-anchor="end" fill="#555">h₂ = ${h2.toFixed(3)} m</text>`;
+  <text x="${(sx(0)+2).toFixed(2)}" y="${(sy(h1abs)-2).toFixed(2)}" font-size="${fs(2.3)}" fill="#555">h<sub>1</sub> = ${h1.toFixed(3)} m</text>
+  <text x="${(sx(L)-2).toFixed(2)}" y="${(sy(h2abs)-2).toFixed(2)}" font-size="${fs(2.3)}" text-anchor="end" fill="#555">h<sub>2</sub> = ${h2.toFixed(3)} m</text>`;
   }
 
   // Probe list and strip dimensions — reuse early-computed values
@@ -6344,11 +6352,11 @@ function buildScaleDrawingPage(stripInSvg = false) {
 
     // Nächstliegender Leiter: T2 immer, T3 wenn vorhanden → kleinster Abstand
     const tsT2AbsH = absY(xv, catY(xv, cDisp));
-    let nearAbsH = tsT2AbsH, nearLbl = 'T₂';
+    let nearAbsH = tsT2AbsH, nearLbl = 'T<sub>2</sub>';
     if (c3data) {
       const tsT3AbsH = absY(xv, catY(xv, c3data));
       if (Math.abs(obsAbsH - tsT3AbsH) < Math.abs(obsAbsH - tsT2AbsH)) {
-        nearAbsH = tsT3AbsH; nearLbl = 'T₃';
+        nearAbsH = tsT3AbsH; nearLbl = 'T<sub>3</sub>';
       }
     }
     const ty    = sy(nearAbsH);
@@ -6418,22 +6426,22 @@ function buildScaleDrawingPage(stripInSvg = false) {
     const lw  = 10;
 
     s += `<line x1="${lx.toFixed(1)}" y1="${lY.toFixed(1)}" x2="${(lx+lw).toFixed(1)}" y2="${lY.toFixed(1)}" stroke="#bbb" stroke-width="0.6" stroke-dasharray="3,2"/>`;
-    s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="#999">Ts bei T₁ = ${T1}°C</text>`;
+    s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="#999">Ts bei T<sub>1</sub> = ${T1}°C</text>`;
     lx += 34;
 
     s += `<line x1="${lx.toFixed(1)}" y1="${lY.toFixed(1)}" x2="${(lx+lw).toFixed(1)}" y2="${lY.toFixed(1)}" stroke="${t2clr}" stroke-width="1.0"/>`;
-    s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" font-weight="600" fill="${t2clr}">Ts bei T₂ = ${T2}°C</text>`;
+    s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" font-weight="600" fill="${t2clr}">Ts bei T<sub>2</sub> = ${T2}°C</text>`;
     lx += 34;
 
     if (showFd) {
       s += `<line x1="${lx.toFixed(1)}" y1="${lY.toFixed(1)}" x2="${(lx+lw).toFixed(1)}" y2="${lY.toFixed(1)}" stroke="${fdClr}" stroke-width="0.5"/>`;
-      s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="#888">Fd bei T₂</text>`;
+      s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="#888">Fd bei T<sub>2</sub></text>`;
       lx += 26;
     }
 
     if (c3data && _t3v_foot !== null) {
       s += `<line x1="${lx.toFixed(1)}" y1="${lY.toFixed(1)}" x2="${(lx+lw).toFixed(1)}" y2="${lY.toFixed(1)}" stroke="${t3clr}" stroke-width="0.6" stroke-dasharray="3,2"/>`;
-      s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="${t3clr}">Ts bei T₃ = ${_t3v_foot}°C</text>`;
+      s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="${t3clr}">Ts bei T<sub>3</sub> = ${_t3v_foot}°C</text>`;
     }
 
     return s;
@@ -6447,10 +6455,10 @@ function buildScaleDrawingPage(stripInSvg = false) {
       return `<svg width="24" height="9" style="flex-shrink:0;display:block"><line x1="1" y1="4.5" x2="23" y2="4.5" stroke="${clr}" stroke-width="${sw}"${da} stroke-linecap="round"/></svg>`;
     };
     const t3v = c3data ? (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value)) : null;
-    let legHtml = `<div class="dl-item">${_legLine('#c0c0c0', '5 3')} <span style="color:#999">Ts bei T₁ = ${T1}°C</span></div>`;
-    legHtml += `<div class="dl-item">${_legLine(t2clr, '', true)} <span style="color:${t2clr};font-weight:600">Ts bei T₂ = ${T2}°C</span></div>`;
-    if (showFd) legHtml += `<div class="dl-item">${_legLine(fdClr, '', false, true)} <span>Fd bei T₂</span></div>`;
-    if (c3data) legHtml += `<div class="dl-item">${_legLine(t3clr, '4 2.5')} <span style="color:${t3clr}">Ts bei T₃ = ${t3v}°C</span></div>`;
+    let legHtml = `<div class="dl-item">${_legLine('#c0c0c0', '5 3')} <span style="color:#999">Ts bei T<sub>1</sub> = ${T1}°C</span></div>`;
+    legHtml += `<div class="dl-item">${_legLine(t2clr, '', true)} <span style="color:${t2clr};font-weight:600">Ts bei T<sub>2</sub> = ${T2}°C</span></div>`;
+    if (showFd) legHtml += `<div class="dl-item">${_legLine(fdClr, '', false, true)} <span>Fd bei T<sub>2</sub></span></div>`;
+    if (c3data) legHtml += `<div class="dl-item">${_legLine(t3clr, '4 2.5')} <span style="color:${t3clr}">Ts bei T<sub>3</sub> = ${t3v}°C</span></div>`;
     const legEl = document.getElementById('drawing-legend-overlay');
     if (legEl) { legEl.style.display = 'flex'; legEl.innerHTML = legHtml; }
   }
@@ -6662,7 +6670,7 @@ function updateStripVisibility() {
     });
     html += '</div>';
     // Abstand row
-    const nearLbls = [...new Set(visibleObs.map(v => v.obs.nearLbl || 'T₂'))];
+    const nearLbls = [...new Set(visibleObs.map(v => v.obs.nearLbl || 'T<sub>2</sub>'))];
     const grenzStr = minClearance !== null ? ` ≥${minClearance.toFixed(2)} m` : '';
     const distLabel = `↕ Abstand (${nearLbls.join('/')}) [m]${grenzStr}`;
     html += `<div class="strip-row"><div class="strip-label" style="color:${obsClrStrip}">${distLabel}</div>`;
@@ -6905,6 +6913,128 @@ function refreshScaleViewIfActive() {
   }
   buildInteractiveStrip();
   updateEdgeIndicators();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DXF-EXPORT (3D, Massstab 1:200, AC1009/R12)
+// ═══════════════════════════════════════════════════════════════
+function exportDxf() {
+  if (!calcState) return;
+  const { c1, c2, L, h1, h2, sh, flCombo, c2_vem } = calcState;
+  const isNfl = sysMode === 'nfl';
+
+  // 1:100 in cm → 1 Zeichnungs-cm pro Real-Meter
+  const SC = 1;
+
+  // SOK
+  const sokL = getSokMumLeft(), sokR = getSokMumRight();
+  const hasSok = sokL !== null || sokR !== null;
+  const sokLeft  = sokL ?? sokR ?? 0;
+  const sokRight = sokR ?? sokL ?? 0;
+  const sokAt = x => sokLeft + (sokRight - sokLeft) * x / L;
+  const absH  = (x, y) => hasSok ? y + sokAt(x) : y;
+
+  // Anzeigeseil: VEM-kombiniert wenn vorhanden, sonst c2
+  const cDisp = (isNfl && flCombo && c2_vem) ? c2_vem : c2;
+  const catFn = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
+
+  const f4 = v => Number(v).toFixed(4);
+
+  // LINE-Entity (AC1009, 3D)
+  const lineEnt = (layer, x1, z1, x2, z2) =>
+    `0\nLINE\n8\n${layer}\n10\n${f4(x1)}\n20\n0.0000\n30\n${f4(z1)}\n11\n${f4(x2)}\n21\n0.0000\n31\n${f4(z2)}\n`;
+
+  let ents = '';
+
+  // --- Tragseil / Einzelleiter (T2, 200 Segmente) ---
+  const N = 200;
+  for (let i = 0; i < N; i++) {
+    const xa = L * i / N, xb = L * (i + 1) / N;
+    ents += lineEnt('TRAGSEIL',
+      xa * SC, absH(xa, catFn(xa, cDisp)) * SC,
+      xb * SC, absH(xb, catFn(xb, cDisp)) * SC);
+  }
+
+  // --- T1-Referenzseil (gestrichelt dargestellt, gleiche Entität) ---
+  for (let i = 0; i < N; i++) {
+    const xa = L * i / N, xb = L * (i + 1) / N;
+    ents += lineEnt('TRAGSEIL_T1',
+      xa * SC, absH(xa, catFn(xa, c1)) * SC,
+      xb * SC, absH(xb, catFn(xb, c1)) * SC);
+  }
+
+  // --- Masten (SOK → Aufhängepunkt) ---
+  const h1Abs = absH(0, h1), h2Abs = absH(L, h2);
+  ents += lineEnt('MAST', 0, sokLeft * SC, 0, h1Abs * SC);
+  ents += lineEnt('MAST', L * SC, sokRight * SC, L * SC, h2Abs * SC);
+
+  // --- SOK-Linie ---
+  if (hasSok) {
+    ents += lineEnt('SOK', 0, sokLeft * SC, L * SC, sokRight * SC);
+  }
+
+  // --- Messpunkte, H-Punkte, Mindestabstand ---
+  const allProbes = [
+    { xv: probeX1, h: probeH1 }, { xv: probeX2, h: probeH2 },
+    { xv: probeX3, h: probeH3 }, { xv: probeX4, h: probeH4 },
+  ].filter(p => p.xv !== null);
+
+  allProbes.forEach(({ xv, h }) => {
+    const hw   = Math.min(1.0, L * 0.03);
+    const catH = absH(xv, catFn(xv, cDisp));
+
+    // Kreuz-Marker auf dem Tragseil (immer, unabhängig von SOK/H)
+    ents += lineEnt('MESSPUNKT', (xv - hw) * SC, catH * SC, (xv + hw) * SC, catH * SC);
+    ents += lineEnt('MESSPUNKT', xv * SC, (catH - hw) * SC, xv * SC, (catH + hw) * SC);
+
+    // H-Punkt + Clearance-Linie (nur wenn H-Wert und SOK gesetzt)
+    if (h !== null && hasSok) {
+      ents += lineEnt('H_PUNKT', (xv - hw) * SC, h * SC, (xv + hw) * SC, h * SC);
+      if (Math.abs(h - catH) > 0.001)
+        ents += lineEnt('H_PUNKT', xv * SC, h * SC, xv * SC, catH * SC);
+
+      // Mindestabstand-Referenzlinie bei h − minClearance
+      if (minClearance !== null) {
+        const minZ = (h - minClearance) * SC;
+        ents += lineEnt('MINDESTABSTAND', (xv - hw) * SC, minZ, (xv + hw) * SC, minZ);
+      }
+    }
+  });
+
+  // --- DXF zusammenbauen (AC1009 / R12) ---
+  const layerDefs = [
+    { name: 'TRAGSEIL',       color: 1  }, // Rot
+    { name: 'TRAGSEIL_T1',    color: 8  }, // Grau
+    { name: 'MAST',           color: 7  }, // Schwarz/Weiss
+    { name: 'SOK',            color: 30 }, // Orange
+    { name: 'H_PUNKT',        color: 3  }, // Grün
+    { name: 'MESSPUNKT',      color: 5  }, // Blau
+    { name: 'MINDESTABSTAND', color: 2  }, // Gelb
+  ];
+
+  let dxf = '';
+  // HEADER
+  dxf += '0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n0\nENDSEC\n';
+  // TABLES → LAYER
+  dxf += '0\nSECTION\n2\nTABLES\n';
+  dxf += `0\nTABLE\n2\nLAYER\n70\n${layerDefs.length + 1}\n`;
+  dxf += '0\nLAYER\n2\n0\n70\n0\n62\n7\n6\nCONTINUOUS\n';
+  layerDefs.forEach(l =>
+    dxf += `0\nLAYER\n2\n${l.name}\n70\n0\n62\n${l.color}\n6\nCONTINUOUS\n`);
+  dxf += '0\nENDTAB\n0\nENDSEC\n';
+  // ENTITIES
+  dxf += '0\nSECTION\n2\nENTITIES\n';
+  dxf += ents;
+  dxf += '0\nENDSEC\n0\nEOF\n';
+
+  const fname = `kettenwerk_${L}m_1zu100.dxf`;
+  const blob = new Blob([dxf], { type: 'application/dxf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fname;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function pdfExport() {
@@ -7254,8 +7384,8 @@ const LANG = {
     'card.system':          'System',
     'card.parameter':       'Parameter',
     // Befestigungspunkte
-    'bp.h1':                'Höhe links h₁',
-    'bp.h2':                'Höhe rechts h₂',
+    'bp.h1':                'Höhe links h<sub>1</sub>',
+    'bp.h2':                'Höhe rechts h<sub>2</sub>',
     'bp.ueber.sok':         'über SOK',
     'bp.sok.label':         'SOK m ü. M. (optional)',
     'bp.sok.clear':         '✕ löschen',
@@ -7326,18 +7456,18 @@ const LANG = {
     'preset.bei.t1':        'bei',
     'preset.hts.konst':     'N konstant (Nachspannvorrichtung)',
     'preset.abnutzung':     'Abnutzung max.',
-    'preset.el.reglage':    'Reglage bei T₁ = 10 °C, Lm = 45 m',
+    'preset.el.reglage':    'Reglage bei T<sub>1</sub> = 10 °C, Lm = 45 m',
     'preset.custom.lbl':    'Benutzerdefiniertes Kettenwerk',
     'preset.bearbeiten':    'Bearbeiten',
     'mat.rn.6kn.rl':        '6 kN Basiskraft (Rückleiter/Speiseleitung)',
     'mat.rn.9kn':           '9 kN Basiskraft (normale Zugkraft)',
     'mat.rn.6kn.lm35':      '6 kN Basiskraft, Lm > 35 m',
-    'par.T1':               'Temperatur T₁',
+    'par.T1':               'Temperatur T<sub>1</sub>',
     'par.T1.sub':           '(Montage)',
-    'par.T2':               'Temperatur T₂',
+    'par.T2':               'Temperatur T<sub>2</sub>',
     'par.eislast':          'Eislast Z<sub>L</sub>',
-    'par.eislast.sub':      '(bei T₂ = −5 °C)',
-    'par.eislast.hint':     'Zusatzlast durch Eisansatz [N/m] — aktiv bei N-FL und −20 °C ≤ T₂ ≤ −5 °C.',
+    'par.eislast.sub':      '(bei T<sub>2</sub> = −5 °C)',
+    'par.eislast.hint':     'Zusatzlast durch Eisansatz [N/m] — aktiv bei N-FL und −20 °C ≤ T<sub>2</sub> ≤ −5 °C.',
     // Buttons
     'btn.pdf':              'PDF Berechnungsprotokoll',
     'btn.drawing':          'Zeichnung',
@@ -7349,18 +7479,18 @@ const LANG = {
     'canvas.x.label':       'Horizontalabstand [m]',
     'canvas.fd.solllage':   'Fd Solllage',
     'canvas.fd':            'Fd',
-    'canvas.fd.t2':         'Fd (T₂)',
+    'canvas.fd.t2':         'Fd (T<sub>2</sub>)',
     'canvas.probe.hint':    'Messpunkte: ins Diagramm klicken / ziehen oder x-Wert eingeben',
     'canvas.probe.reset':   '✕ Reset',
-    'leg.ts1':              'Ts bei T₁',
+    'leg.ts1':              'Ts bei T<sub>1</sub>',
     'leg.ts1.rfl':          'Tragseil (Ts)',
-    'leg.ts2':              'Ts bei T₂',
+    'leg.ts2':              'Ts bei T<sub>2</sub>',
     'leg.fd':               'Fahrdraht (Fd)',
-    'leg.fd.nfl':           'Fd effektiv (T₂)',
-    'leg.fd.solllage':      'Fd Solllage (T₁)',
+    'leg.fd.nfl':           'Fd effektiv (T<sub>2</sub>)',
+    'leg.fd.solllage':      'Fd Solllage (T<sub>1</sub>)',
     'leg.sehne':            'Sehnenlinie',
-    'leg.leiter1':          'Leiter bei T₁',
-    'leg.leiter2':          'Leiter bei T₂',
+    'leg.leiter1':          'Leiter bei T<sub>1</sub>',
+    'leg.leiter2':          'Leiter bei T<sub>2</sub>',
     // Dynamic result labels
     'res.ts.hoehe':         'Ts-Höhe',
     'res.seil.hoehe':       'Seilhöhe',
@@ -7369,8 +7499,8 @@ const LANG = {
     'res.sag.ts':           'Durchhang Ts',
     'dyn.ueber.sok':        'ü.SOK',
     'dyn.ueber.mum':        'm ü.M.',
-    'dyn.bei.t1':           'bei T₁',
-    'dyn.bei.t2':           'bei T₂',
+    'dyn.bei.t1':           'bei T<sub>1</sub>',
+    'dyn.bei.t2':           'bei T<sub>2</sub>',
     // Results area
     'res.ausgangszustand':  'Ausgangszustand',
     'res.x_low':            'Tiefpunkt x',
@@ -7500,8 +7630,8 @@ const LANG = {
     'card.system':          'Système',
     'card.parameter':       'Paramètres',
     // Befestigungspunkte
-    'bp.h1':                'Hauteur gauche h₁',
-    'bp.h2':                'Hauteur droite h₂',
+    'bp.h1':                'Hauteur gauche h<sub>1</sub>',
+    'bp.h2':                'Hauteur droite h<sub>2</sub>',
     'bp.ueber.sok':         'sur DRS',
     'bp.sok.label':         'DRS m s.n.m. (optionnel)',
     'bp.sok.clear':         '✕ effacer',
@@ -7572,18 +7702,18 @@ const LANG = {
     'preset.bei.t1':        'à',
     'preset.hts.konst':     'N constant (tendeur automatique)',
     'preset.abnutzung':     'Usure max.',
-    'preset.el.reglage':    'Réglage à T₁ = 10 °C, Lm = 45 m',
+    'preset.el.reglage':    'Réglage à T<sub>1</sub> = 10 °C, Lm = 45 m',
     'preset.custom.lbl':    'Caténaire personnalisée',
     'preset.bearbeiten':    'Modifier',
     'mat.rn.6kn.rl':        '6 kN force de base (fil de retour/câble d\'alimentation)',
     'mat.rn.9kn':           '9 kN force de base (tension nominale)',
     'mat.rn.6kn.lm35':      '6 kN force de base, Lm > 35 m',
-    'par.T1':               'Température T₁',
+    'par.T1':               'Température T<sub>1</sub>',
     'par.T1.sub':           '(pose)',
-    'par.T2':               'Température T₂',
+    'par.T2':               'Température T<sub>2</sub>',
     'par.eislast':          'Charge de glace Z<sub>L</sub>',
-    'par.eislast.sub':      '(à T₂ = −5 °C)',
-    'par.eislast.hint':     'Charge supplémentaire due au givre [N/m] — active pour N-FL et −20 °C ≤ T₂ ≤ −5 °C.',
+    'par.eislast.sub':      '(à T<sub>2</sub> = −5 °C)',
+    'par.eislast.hint':     'Charge supplémentaire due au givre [N/m] — active pour N-FL et −20 °C ≤ T<sub>2</sub> ≤ −5 °C.',
     // Buttons
     'btn.pdf':              'Protocole de calcul PDF',
     'btn.drawing':          'Dessin',
@@ -7595,18 +7725,18 @@ const LANG = {
     'canvas.x.label':       'Distance horizontale [m]',
     'canvas.fd.solllage':   'FC position nominale',
     'canvas.fd':            'FC',
-    'canvas.fd.t2':         'FC (T₂)',
+    'canvas.fd.t2':         'FC (T<sub>2</sub>)',
     'canvas.probe.hint':    'Points de mesure: cliquer/glisser dans le diagramme ou saisir x',
     'canvas.probe.reset':   '✕ Reset',
-    'leg.ts1':              'CP à T₁',
+    'leg.ts1':              'CP à T<sub>1</sub>',
     'leg.ts1.rfl':          'Câble porteur (CP)',
-    'leg.ts2':              'CP à T₂',
+    'leg.ts2':              'CP à T<sub>2</sub>',
     'leg.fd':               'Fil de contact (FC)',
-    'leg.fd.nfl':           'FC effectif (T₂)',
-    'leg.fd.solllage':      'FC position théorique (T₁)',
+    'leg.fd.nfl':           'FC effectif (T<sub>2</sub>)',
+    'leg.fd.solllage':      'FC position théorique (T<sub>1</sub>)',
     'leg.sehne':            'Ligne de corde',
-    'leg.leiter1':          'Conducteur à T₁',
-    'leg.leiter2':          'Conducteur à T₂',
+    'leg.leiter1':          'Conducteur à T<sub>1</sub>',
+    'leg.leiter2':          'Conducteur à T<sub>2</sub>',
     // Dynamic result labels
     'res.ts.hoehe':         'Hauteur CP',
     'res.seil.hoehe':       'Hauteur cond.',
@@ -7615,8 +7745,8 @@ const LANG = {
     'res.sag.ts':           'Flèche CP',
     'dyn.ueber.sok':        's.DRS',
     'dyn.ueber.mum':        'm s.n.m.',
-    'dyn.bei.t1':           'à T₁',
-    'dyn.bei.t2':           'à T₂',
+    'dyn.bei.t1':           'à T<sub>1</sub>',
+    'dyn.bei.t2':           'à T<sub>2</sub>',
     // Results area
     'res.ausgangszustand':  'État initial',
     'res.x_low':            'Point le plus bas x',
@@ -7746,8 +7876,8 @@ const LANG = {
     'card.system':          'Sistema',
     'card.parameter':       'Parametri',
     // Befestigungspunkte
-    'bp.h1':                'Altezza sinistra h₁',
-    'bp.h2':                'Altezza destra h₂',
+    'bp.h1':                'Altezza sinistra h<sub>1</sub>',
+    'bp.h2':                'Altezza destra h<sub>2</sub>',
     'bp.ueber.sok':         'sul PRF',
     'bp.sok.label':         'PRF m s.l.m. (opzionale)',
     'bp.sok.clear':         '✕ cancella',
@@ -7818,18 +7948,18 @@ const LANG = {
     'preset.bei.t1':        'a',
     'preset.hts.konst':     'N costante (tenditore automatico)',
     'preset.abnutzung':     'Usura max.',
-    'preset.el.reglage':    'Regolazione a T₁ = 10 °C, Lm = 45 m',
+    'preset.el.reglage':    'Regolazione a T<sub>1</sub> = 10 °C, Lm = 45 m',
     'preset.custom.lbl':    'Catenaria personalizzata',
     'preset.bearbeiten':    'Modifica',
     'mat.rn.6kn.rl':        '6 kN forza base (conduttore di ritorno/linea di alimentazione)',
     'mat.rn.9kn':           '9 kN forza base (tensione nominale)',
     'mat.rn.6kn.lm35':      '6 kN forza base, Lm > 35 m',
-    'par.T1':               'Temperatura T₁',
+    'par.T1':               'Temperatura T<sub>1</sub>',
     'par.T1.sub':           '(posa)',
-    'par.T2':               'Temperatura T₂',
+    'par.T2':               'Temperatura T<sub>2</sub>',
     'par.eislast':          'Carico neve Z<sub>L</sub>',
-    'par.eislast.sub':      '(a T₂ = −5 °C)',
-    'par.eislast.hint':     'Carico aggiuntivo da ghiaccio [N/m] — attivo per N-FL e −20 °C ≤ T₂ ≤ −5 °C.',
+    'par.eislast.sub':      '(a T<sub>2</sub> = −5 °C)',
+    'par.eislast.hint':     'Carico aggiuntivo da ghiaccio [N/m] — attivo per N-FL e −20 °C ≤ T<sub>2</sub> ≤ −5 °C.',
     // Buttons
     'btn.pdf':              'Protocollo di calcolo PDF',
     'btn.drawing':          'Disegno',
@@ -7841,18 +7971,18 @@ const LANG = {
     'canvas.x.label':       'Distanza orizzontale [m]',
     'canvas.fd.solllage':   'FC posizione nominale',
     'canvas.fd':            'FC',
-    'canvas.fd.t2':         'FC (T₂)',
+    'canvas.fd.t2':         'FC (T<sub>2</sub>)',
     'canvas.probe.hint':    'Punti di misura: cliccare/trascinare nel diagramma o inserire x',
     'canvas.probe.reset':   '✕ Reset',
-    'leg.ts1':              'FP a T₁',
+    'leg.ts1':              'FP a T<sub>1</sub>',
     'leg.ts1.rfl':          'Fune portante (FP)',
-    'leg.ts2':              'FP a T₂',
+    'leg.ts2':              'FP a T<sub>2</sub>',
     'leg.fd':               'Filo di contatto (FC)',
-    'leg.fd.nfl':           'FC effettivo (T₂)',
-    'leg.fd.solllage':      'FC posizione teorica (T₁)',
+    'leg.fd.nfl':           'FC effettivo (T<sub>2</sub>)',
+    'leg.fd.solllage':      'FC posizione teorica (T<sub>1</sub>)',
     'leg.sehne':            'Linea di corda',
-    'leg.leiter1':          'Conduttore a T₁',
-    'leg.leiter2':          'Conduttore a T₂',
+    'leg.leiter1':          'Conduttore a T<sub>1</sub>',
+    'leg.leiter2':          'Conduttore a T<sub>2</sub>',
     // Dynamic result labels
     'res.ts.hoehe':         'Altezza FP',
     'res.seil.hoehe':       'Altezza cond.',
@@ -7861,8 +7991,8 @@ const LANG = {
     'res.sag.ts':           'Freccia FP',
     'dyn.ueber.sok':        's.PRF',
     'dyn.ueber.mum':        'm s.l.m.',
-    'dyn.bei.t1':           'a T₁',
-    'dyn.bei.t2':           'a T₂',
+    'dyn.bei.t1':           'a T<sub>1</sub>',
+    'dyn.bei.t2':           'a T<sub>2</sub>',
     // Results area
     'res.ausgangszustand':  'Stato iniziale',
     'res.x_low':            'Punto più basso x',
@@ -8654,7 +8784,7 @@ renderObstacleList();
             <td class="hb-tab-param" style="padding:4px 8px;font-weight:600;width:32%">Parameter</td>
             <td class="hb-tab-desc" style="padding:4px 8px;font-weight:600">Beschreibung</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:#6b7280">h₁ / h₂</td><td style="padding:3px 8px">Befestigungshöhen Ts links/rechts <strong>über Schienenoberkante (SOK)</strong> [m]. Diese Werte bleiben immer in «über SOK» — unabhängig davon, ob SOK m ü. M. eingegeben ist.</td></tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">h<sub>1</sub> / h<sub>2</sub></td><td style="padding:3px 8px">Befestigungshöhen Ts links/rechts <strong>über Schienenoberkante (SOK)</strong> [m]. Diese Werte bleiben immer in «über SOK» — unabhängig davon, ob SOK m ü. M. eingegeben ist.</td></tr>
           <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">SOK m ü. M. (optional)</td><td style="padding:3px 8px">Absolute Höhe der Schienenoberkante in Metern über Meer [m ü. M.], separat für Mast links und Mast rechts. Wenn gesetzt, werden alle Koordinaten im Diagramm, in den Messpunkt-Callouts und in der Tiefpunktanzeige als m ü. M. dargestellt. Der rechte Wert wird automatisch vom linken übernommen, kann aber unabhängig angepasst werden (Gefällestrecken).</td></tr>
           <tr><td style="padding:3px 8px;color:#6b7280">L / Lm</td><td style="padding:3px 8px">Spannweite L [m] oder Mittelspannweite Lm [m] für Mehrfeldberechnung. Hinweis: Bei Eingabe von c<sub>proj</sub> oder c<sub>m</sub> ist gemäss Dokument <strong>0161.1013.0005.1</strong> vorzugehen (ⓘ-Schaltfläche beim Feld).</td></tr>
           <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">sh</td><td style="padding:3px 8px">Systemhöhe: vertikaler Abstand Ts-Aufhängepunkt → Fd-Höhe am Mast [m]. N-FL gestützt: 2.40 m; N-FL gehängt: 1.90 m; R-FL: 1.60 m</td></tr>
@@ -8665,11 +8795,11 @@ renderObstacleList();
             <td class="hb-tab-param" style="padding:4px 8px;font-weight:600;width:32%">Parameter</td>
             <td class="hb-tab-desc" style="padding:4px 8px;font-weight:600">Beschreibung</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:#6b7280">H Ts unbelastet</td><td style="padding:3px 8px">Ts-Zugkraft beim Einziehen (ohne Fd und Hänger) bei T₁ [N] — nur N-FL</td></tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">H Ts unbelastet</td><td style="padding:3px 8px">Ts-Zugkraft beim Einziehen (ohne Fd und Hänger) bei T<sub>1</sub> [N] — nur N-FL</td></tr>
           <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">H Ts belastet</td><td style="padding:3px 8px">Ts-Zugkraft nach Anhängen aller Lasten — automatisch via Zustandsgleichung berechnet [N]</td></tr>
           <tr><td style="padding:3px 8px;color:#6b7280">H Fd</td><td style="padding:3px 8px">Fahrdrahtzug — konstant (N-FL: i. d. R. 8 500 N; Gotthard / R-FL: 10 000 N) [N]</td></tr>
-          <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">T₁ / T₂</td><td style="padding:3px 8px">Montagetemperatur T₁ (Reglagetemperatur) und Zieltemperatur T₂ [°C] — nur N-FL</td></tr>
-          <tr><td style="padding:3px 8px;color:#6b7280">Eislast Z<sub>L</sub></td><td style="padding:3px 8px">Zusatzlast durch Eisansatz [N/m] — erscheint automatisch bei N-FL und T₂ = −5 °C</td></tr>
+          <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">T<sub>1</sub> / T<sub>2</sub></td><td style="padding:3px 8px">Montagetemperatur T<sub>1</sub> (Reglagetemperatur) und Zieltemperatur T<sub>2</sub> [°C] — nur N-FL</td></tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">Eislast Z<sub>L</sub></td><td style="padding:3px 8px">Zusatzlast durch Eisansatz [N/m] — erscheint automatisch bei N-FL und T<sub>2</sub> = −5 °C</td></tr>
           <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">Abnutzung</td><td style="padding:3px 8px">Fahrdraht-Abnutzung in % (Schieberegler). Reduziert das Eigengewicht q<sub>Fd</sub> proportional. Einfärbt das Diagramm bei Überschreitung des zulässigen Grenzwerts für das gewählte Kettenwerk.</td></tr>
           <tr><td style="padding:3px 8px;color:#6b7280">Materialien</td><td style="padding:3px 8px">Leitermaterial Ts und Fd: bestimmt q, E, α, A (siehe Tabelle Abschn. 4)</td></tr>
         </table>
@@ -8683,7 +8813,7 @@ renderObstacleList();
             <td style="padding:4px 8px;font-weight:600;width:32%">Paramètre</td>
             <td style="padding:4px 8px;font-weight:600">Description</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:#6b7280">h₁ / h₂</td><td style="padding:3px 8px">Hauteurs de fixation CP gauche/droite <strong>au-dessus du dessus du rail (DRS)</strong> [m]. Ces valeurs restent toujours en «au-dessus DRS» — indépendamment de si les DRS m s.n.m. sont saisis.</td></tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">h<sub>1</sub> / h<sub>2</sub></td><td style="padding:3px 8px">Hauteurs de fixation CP gauche/droite <strong>au-dessus du dessus du rail (DRS)</strong> [m]. Ces valeurs restent toujours en «au-dessus DRS» — indépendamment de si les DRS m s.n.m. sont saisis.</td></tr>
           <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">DRS m s.n.m. (optionnel)</td><td style="padding:3px 8px">Hauteur absolue du dessus du rail en mètres sur niveau de la mer [m s.n.m.], séparément pour le poteau gauche et le poteau droit. Si défini, toutes les coordonnées dans le diagramme, les callouts des points de mesure et l'affichage du point le plus bas sont présentés en m s.n.m. La valeur droite est automatiquement reprise de la gauche, mais peut être ajustée indépendamment (tronçons en pente).</td></tr>
           <tr><td style="padding:3px 8px;color:#6b7280">L / Lm</td><td style="padding:3px 8px">Portée L [m] ou portée équivalente Lm [m] pour calcul multi-travées. Note: pour la saisie de c<sub>proj</sub> ou c<sub>m</sub>, procéder selon le document <strong>0161.1013.0005.1</strong> (bouton ⓘ du champ).</td></tr>
           <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">sh</td><td style="padding:3px 8px">Hauteur de système: distance verticale entre le point de fixation CP et la hauteur FC au poteau [m]. N-FL suspendu: 2.40 m; N-FL pendu: 1.90 m; R-FL: 1.60 m</td></tr>
@@ -8694,11 +8824,11 @@ renderObstacleList();
             <td style="padding:4px 8px;font-weight:600;width:32%">Paramètre</td>
             <td style="padding:4px 8px;font-weight:600">Description</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:#6b7280">H CP non chargé</td><td style="padding:3px 8px">Force de traction CP lors de la pose (sans FC et pendotes) à T₁ [N] — N-FL seulement</td></tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">H CP non chargé</td><td style="padding:3px 8px">Force de traction CP lors de la pose (sans FC et pendotes) à T<sub>1</sub> [N] — N-FL seulement</td></tr>
           <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">H CP chargé</td><td style="padding:3px 8px">Force de traction CP après fixation de toutes les charges — calculée automatiquement via l'équation d'état [N]</td></tr>
           <tr><td style="padding:3px 8px;color:#6b7280">H FC</td><td style="padding:3px 8px">Traction du fil de contact — constante (N-FL: généralement 8 500 N; Gothard / R-FL: 10 000 N) [N]</td></tr>
-          <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">T₁ / T₂</td><td style="padding:3px 8px">Température de pose T₁ (température de réglage) et température cible T₂ [°C] — N-FL seulement</td></tr>
-          <tr><td style="padding:3px 8px;color:#6b7280">Charge de glace Z<sub>L</sub></td><td style="padding:3px 8px">Charge supplémentaire due au givrage [N/m] — apparaît automatiquement pour N-FL à T₂ = −5 °C</td></tr>
+          <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">T<sub>1</sub> / T<sub>2</sub></td><td style="padding:3px 8px">Température de pose T<sub>1</sub> (température de réglage) et température cible T<sub>2</sub> [°C] — N-FL seulement</td></tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">Charge de glace Z<sub>L</sub></td><td style="padding:3px 8px">Charge supplémentaire due au givrage [N/m] — apparaît automatiquement pour N-FL à T<sub>2</sub> = −5 °C</td></tr>
           <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">Usure</td><td style="padding:3px 8px">Usure du fil de contact en % (curseur). Réduit le poids propre q<sub>FC</sub> proportionnellement. Colore le diagramme lors du dépassement de la valeur limite admissible pour la caténaire choisie.</td></tr>
           <tr><td style="padding:3px 8px;color:#6b7280">Matériaux</td><td style="padding:3px 8px">Matériau des conducteurs CP et FC: détermine q, E, α, A (voir tableau section 4)</td></tr>
         </table>
@@ -8712,7 +8842,7 @@ renderObstacleList();
             <td style="padding:4px 8px;font-weight:600;width:32%">Parametro</td>
             <td style="padding:4px 8px;font-weight:600">Descrizione</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:#6b7280">h₁ / h₂</td><td style="padding:3px 8px">Altezze di fissaggio FP sinistra/destra <strong>sopra il piano del ferro (PRF)</strong> [m]. Questi valori restano sempre in «sopra PRF» — indipendentemente da se il PRF m s.l.m. è inserito.</td></tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">h<sub>1</sub> / h<sub>2</sub></td><td style="padding:3px 8px">Altezze di fissaggio FP sinistra/destra <strong>sopra il piano del ferro (PRF)</strong> [m]. Questi valori restano sempre in «sopra PRF» — indipendentemente da se il PRF m s.l.m. è inserito.</td></tr>
           <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">PRF m s.l.m. (opzionale)</td><td style="padding:3px 8px">Altezza assoluta del piano del ferro in metri sul livello del mare [m s.l.m.], separatamente per il palo sinistro e il palo destro. Se impostato, tutte le coordinate nel diagramma, nelle callout dei punti di misura e nella visualizzazione del punto più basso sono presentate in m s.l.m. Il valore destro viene automaticamente ripreso da quello sinistro, ma può essere adattato indipendentemente (tratti in pendenza).</td></tr>
           <tr><td style="padding:3px 8px;color:#6b7280">L / Lm</td><td style="padding:3px 8px">Campata L [m] o campata equivalente Lm [m] per il calcolo multi-campata. Nota: per l'inserimento di c<sub>proj</sub> o c<sub>m</sub>, procedere secondo il documento <strong>0161.1013.0005.1</strong> (pulsante ⓘ del campo).</td></tr>
           <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">sh</td><td style="padding:3px 8px">Altezza di sistema: distanza verticale tra il punto di fissaggio FP e l'altezza FC al palo [m]. N-FL sostenuto: 2.40 m; N-FL appeso: 1.90 m; R-FL: 1.60 m</td></tr>
@@ -8723,11 +8853,11 @@ renderObstacleList();
             <td style="padding:4px 8px;font-weight:600;width:32%">Parametro</td>
             <td style="padding:4px 8px;font-weight:600">Descrizione</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:#6b7280">H FP non caricato</td><td style="padding:3px 8px">Forza di tiro FP durante la posa (senza FC e pendoli) a T₁ [N] — solo N-FL</td></tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">H FP non caricato</td><td style="padding:3px 8px">Forza di tiro FP durante la posa (senza FC e pendoli) a T<sub>1</sub> [N] — solo N-FL</td></tr>
           <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">H FP caricato</td><td style="padding:3px 8px">Forza di tiro FP dopo il montaggio di tutti i carichi — calcolata automaticamente tramite l'equazione di stato [N]</td></tr>
           <tr><td style="padding:3px 8px;color:#6b7280">H FC</td><td style="padding:3px 8px">Tiro del filo di contatto — costante (N-FL: generalmente 8 500 N; Gottardo / R-FL: 10 000 N) [N]</td></tr>
-          <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">T₁ / T₂</td><td style="padding:3px 8px">Temperatura di posa T₁ (temperatura di regolazione) e temperatura obiettivo T₂ [°C] — solo N-FL</td></tr>
-          <tr><td style="padding:3px 8px;color:#6b7280">Carico di ghiaccio Z<sub>L</sub></td><td style="padding:3px 8px">Carico supplementare dovuto alla formazione di ghiaccio [N/m] — appare automaticamente per N-FL a T₂ = −5 °C</td></tr>
+          <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">T<sub>1</sub> / T<sub>2</sub></td><td style="padding:3px 8px">Temperatura di posa T<sub>1</sub> (temperatura di regolazione) e temperatura obiettivo T<sub>2</sub> [°C] — solo N-FL</td></tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">Carico di ghiaccio Z<sub>L</sub></td><td style="padding:3px 8px">Carico supplementare dovuto alla formazione di ghiaccio [N/m] — appare automaticamente per N-FL a T<sub>2</sub> = −5 °C</td></tr>
           <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">Usura</td><td style="padding:3px 8px">Usura del filo di contatto in % (cursore). Riduce il peso proprio q<sub>FC</sub> proporzionalmente. Colora il diagramma al superamento del valore limite ammissibile per la catenaria scelta.</td></tr>
           <tr><td style="padding:3px 8px;color:#6b7280">Materiali</td><td style="padding:3px 8px">Materiale dei conduttori FP e FC: determina q, E, α, A (vedere tabella sez. 4)</td></tr>
         </table>
@@ -8747,23 +8877,23 @@ renderObstacleList();
         <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">q²<sub>ges</sub>·Lm² / (24·H²<sub>b</sub>) − H<sub>b</sub>/(E·A)<sub>Ts</sub> = q²<sub>Ts</sub>·Lm² / (24·H²<sub>ub</sub>) − H<sub>ub</sub>/(E·A)<sub>Ts</sub></p>
         <p style="color:#6b7280;font-size:.8rem">Lösung mit Newton-Raphson (nur E·A des Tragseils; VBA-konform). Ergebnis: H<sub>Ts,belastet</sub> = F₀ (Referenzzustand).</p>
 
-        <p style="font-weight:600;margin-top:.7rem">Schritt 3 &nbsp;—&nbsp; Kettenlinie Ausgangszustand (T₁)</p>
+        <p style="font-weight:600;margin-top:.7rem">Schritt 3 &nbsp;—&nbsp; Kettenlinie Ausgangszustand (T<sub>1</sub>)</p>
         <p>Das Ts wird als exakte Kettenlinie modelliert mit Kettenlinienparameter <em>a = H/q</em>:</p>
         <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">y(x) = a · cosh((x − x₀) / a) + C₀</p>
-        <p style="color:#6b7280;font-size:.8rem">Tiefpunkt x₀ und Konstante C₀ aus Randbedingungen h₁, h₂ bestimmt (exakte Lösung, keine Parabelannäherung).</p>
+        <p style="color:#6b7280;font-size:.8rem">Tiefpunkt x₀ und Konstante C₀ aus Randbedingungen h<sub>1</sub>, h<sub>2</sub> bestimmt (exakte Lösung, keine Parabelannäherung).</p>
 
         <p style="font-weight:600;margin-top:.7rem">Schritt 4 &nbsp;—&nbsp; Stufe 2 Zustandsgleichung: Temperaturänderung (N-FL, VBA-konform)</p>
         <p>Für bekannte FL-Kombinationen nach VEM Handbuch / VBA Upro1:</p>
         <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">((MFL + Z<sub>L</sub> + MFL·H<sub>Fd</sub>/F₀) / (H<sub>Fd</sub> + x))² − (MFL/F₀)² − G·(α·ΔT + (x−F₀)/(E·A)) = 0</p>
-        <p style="color:#6b7280;font-size:.8rem">F₀ = H<sub>Ts</sub> bei T₁ (belastet). G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = Eislast [N/m] (0 wenn nicht anwendbar). Newton-Raphson → H<sub>Ts,2</sub>.</p>
+        <p style="color:#6b7280;font-size:.8rem">F₀ = H<sub>Ts</sub> bei T<sub>1</sub> (belastet). G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = Eislast [N/m] (0 wenn nicht anwendbar). Newton-Raphson → H<sub>Ts,2</sub>.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Schritt 5 &nbsp;—&nbsp; Kombinierte Kettenlinie &amp; Durchhang (VEM Handbuch Formeln 7.82 + 7.66)</p>
         <p>Massgebender Durchhang für Kontrollmessungen — kombiniertes Ts+Fd-System:</p>
-        <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>Fd</sub>/F₀) + Z<sub>L</sub> &nbsp;&nbsp;[F₀ = H<sub>Ts</sub> bei T₁, belastet]</p>
-        <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">L<sub>T1</sub> = L + 2·<strong>|Δh|</strong>·(H<sub>Ts,2</sub>+H<sub>Fd</sub>) / (L·q<sub>vem</sub>) &nbsp;&nbsp;[Formel 7.82, |Δh| = |h₂−h₁| ≥ 0]</p>
+        <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>Fd</sub>/F₀) + Z<sub>L</sub> &nbsp;&nbsp;[F₀ = H<sub>Ts</sub> bei T<sub>1</sub>, belastet]</p>
+        <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">L<sub>T1</sub> = L + 2·<strong>|Δh|</strong>·(H<sub>Ts,2</sub>+H<sub>Fd</sub>) / (L·q<sub>vem</sub>) &nbsp;&nbsp;[Formel 7.82, |Δh| = |h<sub>2</sub>−h<sub>1</sub>| ≥ 0]</p>
         <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">f<sub>Fd</sub> = L<sub>T1</sub>² / 8 · q<sub>vem</sub> / (H<sub>Ts,2</sub> + H<sub>Fd</sub>) &nbsp;&nbsp;[Formel 7.66 mit L<sub>T1</sub>]</p>
-        <p style="color:#6b7280;font-size:.8rem">Entspricht Zellenformeln P12/P14 in SBB Durchhang 2026.xlsm (NFL-Re Sheet). L<sub>T1</sub> ≥ L immer (Absolutwert |Δh| — symmetrisch für h₁&gt;h₂ und h₂&gt;h₁). Gilt für T₁ und T₂.</p>
-        <p style="margin-top:.5rem;font-size:.8rem;background:#eff6ff;border-left:3px solid #3b82f6;padding:5px 8px;border-radius:0 4px 4px 0"><strong>Darstellung im Diagramm:</strong> Die angezeigte Ts-Kurve bei T₂ entspricht der kombinierten Kettenlinie des Ts+Fd-Systems mit den Parametern q<sub>vem</sub> und H<sub>Ts,2</sub>+H<sub>Fd</sub>. Diese stimmt mit der VEM-Parabel überein (Abweichung &lt; 5 mm für übliche Spannweiten). Messpunkte (M1–M4) zeigen die Höhe auf dieser kombinierten Kurve.</p>
+        <p style="color:#6b7280;font-size:.8rem">Entspricht Zellenformeln P12/P14 in SBB Durchhang 2026.xlsm (NFL-Re Sheet). L<sub>T1</sub> ≥ L immer (Absolutwert |Δh| — symmetrisch für h<sub>1</sub>&gt;h<sub>2</sub> und h<sub>2</sub>&gt;h<sub>1</sub>). Gilt für T<sub>1</sub> und T<sub>2</sub>.</p>
+        <p style="margin-top:.5rem;font-size:.8rem;background:#eff6ff;border-left:3px solid #3b82f6;padding:5px 8px;border-radius:0 4px 4px 0"><strong>Darstellung im Diagramm:</strong> Die angezeigte Ts-Kurve bei T<sub>2</sub> entspricht der kombinierten Kettenlinie des Ts+Fd-Systems mit den Parametern q<sub>vem</sub> und H<sub>Ts,2</sub>+H<sub>Fd</sub>. Diese stimmt mit der VEM-Parabel überein (Abweichung &lt; 5 mm für übliche Spannweiten). Messpunkte (M1–M4) zeigen die Höhe auf dieser kombinierten Kurve.</p>
       </div><!-- /hb-de -->
 
       <!-- FR -->
@@ -8777,23 +8907,23 @@ renderObstacleList();
         <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">q²<sub>tot</sub>·Lm² / (24·H²<sub>ch</sub>) − H<sub>ch</sub>/(E·A)<sub>CP</sub> = q²<sub>CP</sub>·Lm² / (24·H²<sub>nch</sub>) − H<sub>nch</sub>/(E·A)<sub>CP</sub></p>
         <p style="color:#6b7280;font-size:.8rem">Résolution Newton-Raphson (E·A du câble porteur uniquement; conforme VBA). Résultat: H<sub>CP,chargé</sub> = F₀ (état de référence).</p>
 
-        <p style="font-weight:600;margin-top:.7rem">Étape 3 &nbsp;—&nbsp; Caténaire état initial (T₁)</p>
+        <p style="font-weight:600;margin-top:.7rem">Étape 3 &nbsp;—&nbsp; Caténaire état initial (T<sub>1</sub>)</p>
         <p>Le CP est modélisé comme caténaire exacte avec paramètre caténaire <em>a = H/q</em>:</p>
         <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">y(x) = a · cosh((x − x₀) / a) + C₀</p>
-        <p style="color:#6b7280;font-size:.8rem">Point le plus bas x₀ et constante C₀ déterminés à partir des conditions aux limites h₁, h₂ (solution exacte, pas d'approximation parabolique).</p>
+        <p style="color:#6b7280;font-size:.8rem">Point le plus bas x₀ et constante C₀ déterminés à partir des conditions aux limites h<sub>1</sub>, h<sub>2</sub> (solution exacte, pas d'approximation parabolique).</p>
 
         <p style="font-weight:600;margin-top:.7rem">Étape 4 &nbsp;—&nbsp; Équation d'état niveau 2: variation de température (N-FL, conforme VBA)</p>
         <p>Pour combinaisons FL connues selon VEM Manuel / VBA Upro1:</p>
         <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">((MFL + Z<sub>L</sub> + MFL·H<sub>FC</sub>/F₀) / (H<sub>FC</sub> + x))² − (MFL/F₀)² − G·(α·ΔT + (x−F₀)/(E·A)) = 0</p>
-        <p style="color:#6b7280;font-size:.8rem">F₀ = H<sub>CP</sub> à T₁ (chargé). G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = charge de glace [N/m] (0 si non applicable). Newton-Raphson → H<sub>CP,2</sub>.</p>
+        <p style="color:#6b7280;font-size:.8rem">F₀ = H<sub>CP</sub> à T<sub>1</sub> (chargé). G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = charge de glace [N/m] (0 si non applicable). Newton-Raphson → H<sub>CP,2</sub>.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Étape 5 &nbsp;—&nbsp; Caténaire combinée &amp; flèche (VEM Manuel formules 7.82 + 7.66)</p>
         <p>Flèche déterminante pour les mesures de contrôle — système combiné CP+FC:</p>
-        <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>FC</sub>/F₀) + Z<sub>L</sub> &nbsp;&nbsp;[F₀ = H<sub>CP</sub> à T₁, chargé]</p>
-        <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">L<sub>T1</sub> = L + 2·<strong>|Δh|</strong>·(H<sub>CP,2</sub>+H<sub>FC</sub>) / (L·q<sub>vem</sub>) &nbsp;&nbsp;[Formule 7.82, |Δh|=|h₂−h₁| ≥ 0]</p>
+        <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>FC</sub>/F₀) + Z<sub>L</sub> &nbsp;&nbsp;[F₀ = H<sub>CP</sub> à T<sub>1</sub>, chargé]</p>
+        <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">L<sub>T1</sub> = L + 2·<strong>|Δh|</strong>·(H<sub>CP,2</sub>+H<sub>FC</sub>) / (L·q<sub>vem</sub>) &nbsp;&nbsp;[Formule 7.82, |Δh|=|h<sub>2</sub>−h<sub>1</sub>| ≥ 0]</p>
         <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">f<sub>FC</sub> = L<sub>T1</sub>² / 8 · q<sub>vem</sub> / (H<sub>CP,2</sub> + H<sub>FC</sub>) &nbsp;&nbsp;[Formule 7.66]</p>
-        <p style="color:#6b7280;font-size:.8rem">Correspond aux formules P12/P14 dans SBB Durchhang 2026.xlsm (feuille NFL-Re). L<sub>T1</sub> ≥ L toujours (valeur absolue |Δh| — symétrique). Valable pour T₁ et T₂.</p>
-        <p style="margin-top:.5rem;font-size:.8rem;background:#eff6ff;border-left:3px solid #3b82f6;padding:5px 8px;border-radius:0 4px 4px 0"><strong>Affichage dans le diagramme:</strong> La courbe CP affichée à T₂ correspond à la caténaire combinée du système CP+FC avec les paramètres q<sub>vem</sub> et H<sub>CP,2</sub>+H<sub>FC</sub>. Les points de mesure (M1–M4) indiquent la hauteur sur cette courbe combinée.</p>
+        <p style="color:#6b7280;font-size:.8rem">Correspond aux formules P12/P14 dans SBB Durchhang 2026.xlsm (feuille NFL-Re). L<sub>T1</sub> ≥ L toujours (valeur absolue |Δh| — symétrique). Valable pour T<sub>1</sub> et T<sub>2</sub>.</p>
+        <p style="margin-top:.5rem;font-size:.8rem;background:#eff6ff;border-left:3px solid #3b82f6;padding:5px 8px;border-radius:0 4px 4px 0"><strong>Affichage dans le diagramme:</strong> La courbe CP affichée à T<sub>2</sub> correspond à la caténaire combinée du système CP+FC avec les paramètres q<sub>vem</sub> et H<sub>CP,2</sub>+H<sub>FC</sub>. Les points de mesure (M1–M4) indiquent la hauteur sur cette courbe combinée.</p>
       </div><!-- /hb-fr -->
 
       <!-- IT -->
@@ -8807,23 +8937,23 @@ renderObstacleList();
         <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">q²<sub>tot</sub>·Lm² / (24·H²<sub>c</sub>) − H<sub>c</sub>/(E·A)<sub>FP</sub> = q²<sub>FP</sub>·Lm² / (24·H²<sub>nc</sub>) − H<sub>nc</sub>/(E·A)<sub>FP</sub></p>
         <p style="color:#6b7280;font-size:.8rem">Soluzione Newton-Raphson (solo E·A della fune portante; conforme VBA). Risultato: H<sub>FP,caricato</sub> = F₀ (stato di riferimento).</p>
 
-        <p style="font-weight:600;margin-top:.7rem">Passo 3 &nbsp;—&nbsp; Catenaria stato iniziale (T₁)</p>
+        <p style="font-weight:600;margin-top:.7rem">Passo 3 &nbsp;—&nbsp; Catenaria stato iniziale (T<sub>1</sub>)</p>
         <p>La FP è modellata come catenaria esatta con parametro catenaria <em>a = H/q</em>:</p>
         <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">y(x) = a · cosh((x − x₀) / a) + C₀</p>
-        <p style="color:#6b7280;font-size:.8rem">Punto più basso x₀ e costante C₀ determinati dalle condizioni al contorno h₁, h₂ (soluzione esatta, nessuna approssimazione parabolica).</p>
+        <p style="color:#6b7280;font-size:.8rem">Punto più basso x₀ e costante C₀ determinati dalle condizioni al contorno h<sub>1</sub>, h<sub>2</sub> (soluzione esatta, nessuna approssimazione parabolica).</p>
 
         <p style="font-weight:600;margin-top:.7rem">Passo 4 &nbsp;—&nbsp; Equazione di stato livello 2: variazione di temperatura (N-FL, conforme VBA)</p>
         <p>Per combinazioni FL note secondo VEM Manuale / VBA Upro1:</p>
         <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">((MFL + Z<sub>L</sub> + MFL·H<sub>FC</sub>/F₀) / (H<sub>FC</sub> + x))² − (MFL/F₀)² − G·(α·ΔT + (x−F₀)/(E·A)) = 0</p>
-        <p style="color:#6b7280;font-size:.8rem">F₀ = H<sub>FP</sub> a T₁ (caricato). G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = carico di ghiaccio [N/m] (0 se non applicabile). Newton-Raphson → H<sub>FP,2</sub>.</p>
+        <p style="color:#6b7280;font-size:.8rem">F₀ = H<sub>FP</sub> a T<sub>1</sub> (caricato). G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = carico di ghiaccio [N/m] (0 se non applicabile). Newton-Raphson → H<sub>FP,2</sub>.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Passo 5 &nbsp;—&nbsp; Catenaria combinata &amp; freccia (VEM Manuale formule 7.82 + 7.66)</p>
         <p>Freccia determinante per le misure di controllo — sistema combinato FP+FC:</p>
-        <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>FC</sub>/F₀) + Z<sub>L</sub> &nbsp;&nbsp;[F₀ = H<sub>FP</sub> a T₁, caricato]</p>
-        <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">L<sub>T1</sub> = L + 2·<strong>|Δh|</strong>·(H<sub>FP,2</sub>+H<sub>FC</sub>) / (L·q<sub>vem</sub>) &nbsp;&nbsp;[Formula 7.82, |Δh|=|h₂−h₁| ≥ 0]</p>
+        <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>FC</sub>/F₀) + Z<sub>L</sub> &nbsp;&nbsp;[F₀ = H<sub>FP</sub> a T<sub>1</sub>, caricato]</p>
+        <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">L<sub>T1</sub> = L + 2·<strong>|Δh|</strong>·(H<sub>FP,2</sub>+H<sub>FC</sub>) / (L·q<sub>vem</sub>) &nbsp;&nbsp;[Formula 7.82, |Δh|=|h<sub>2</sub>−h<sub>1</sub>| ≥ 0]</p>
         <p style="font-family:monospace;background:#f3f4f6;padding:4px 8px;border-radius:4px;margin:.25rem 0">f<sub>FC</sub> = L<sub>T1</sub>² / 8 · q<sub>vem</sub> / (H<sub>FP,2</sub> + H<sub>FC</sub>) &nbsp;&nbsp;[Formula 7.66]</p>
-        <p style="color:#6b7280;font-size:.8rem">Corrisponde alle formule P12/P14 in SBB Durchhang 2026.xlsm (foglio NFL-Re). L<sub>T1</sub> ≥ L sempre (valore assoluto |Δh| — simmetrico). Valido per T₁ e T₂.</p>
-        <p style="margin-top:.5rem;font-size:.8rem;background:#eff6ff;border-left:3px solid #3b82f6;padding:5px 8px;border-radius:0 4px 4px 0"><strong>Visualizzazione nel diagramma:</strong> La curva FP visualizzata a T₂ corrisponde alla catenaria combinata del sistema FP+FC con i parametri q<sub>vem</sub> e H<sub>FP,2</sub>+H<sub>FC</sub>. I punti di misura (M1–M4) indicano l'altezza su questa curva combinata.</p>
+        <p style="color:#6b7280;font-size:.8rem">Corrisponde alle formule P12/P14 in SBB Durchhang 2026.xlsm (foglio NFL-Re). L<sub>T1</sub> ≥ L sempre (valore assoluto |Δh| — simmetrico). Valido per T<sub>1</sub> e T<sub>2</sub>.</p>
+        <p style="margin-top:.5rem;font-size:.8rem;background:#eff6ff;border-left:3px solid #3b82f6;padding:5px 8px;border-radius:0 4px 4px 0"><strong>Visualizzazione nel diagramma:</strong> La curva FP visualizzata a T<sub>2</sub> corrisponde alla catenaria combinata del sistema FP+FC con i parametri q<sub>vem</sub> e H<sub>FP,2</sub>+H<sub>FC</sub>. I punti di misura (M1–M4) indicano l'altezza su questa curva combinata.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 4 Leiterkennwerte ══ -->
@@ -8980,7 +9110,7 @@ renderObstacleList();
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.3 &nbsp;SOK m ü. M. — absolute Höhenreferenz</p>
         <p>Die zwei SOK-Felder (<em>Mast links</em> / <em>Mast rechts</em>) nehmen die absolute Schienenoberkantenhöhe in m ü. M. auf. Wichtige Regeln:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
-          <li>h₁ / h₂ bleiben <em>immer</em> als «über SOK»-Werte erhalten — sie werden bei SOK-Eingabe nicht umgerechnet.</li>
+          <li>h<sub>1</sub> / h<sub>2</sub> bleiben <em>immer</em> als «über SOK»-Werte erhalten — sie werden bei SOK-Eingabe nicht umgerechnet.</li>
           <li>Bei unterschiedlichen SOK-Werten links und rechts (Gefälle) interpoliert die App für jeden Diagrammpunkt linear zwischen den beiden SOK-Werten.</li>
           <li>Der rechte SOK-Wert wird automatisch aus dem linken übernommen. Sobald er manuell geändert wird, bleibt er unabhängig.</li>
           <li>«✕ löschen» setzt beide SOK-Felder zurück; das Diagramm kehrt zur SOK-relativen Darstellung zurück.</li>
@@ -8989,7 +9119,7 @@ renderObstacleList();
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.4 &nbsp;Diagramm &amp; Interaktion</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li>Die Y-Achse zeigt «Höhe [m ü. SOK]» resp. «Höhe [m ü. M.]» je nach SOK-Einstellung.</li>
-          <li>Ankerlabels an den Mastpositionen zeigen h₁/h₂ als absolute Höhe (m ü. M.) oder als «h = x.xx m».</li>
+          <li>Ankerlabels an den Mastpositionen zeigen h<sub>1</sub>/h<sub>2</sub> als absolute Höhe (m ü. M.) oder als «h = x.xx m».</li>
           <li>Messpunkt-Callouts zeigen zweilagig: Bezeichnung (M1–M4) oben, Höhenwert unten.</li>
           <li>Die orangefarbene Tiefpunkt-Karte zeigt ebenfalls m ü. M., wenn SOK gesetzt.</li>
           <li>PDF-Export: Das Berechnungsprotokoll enthält alle Eingaben, Ergebnisse und das Diagramm.</li>
@@ -9018,7 +9148,7 @@ renderObstacleList();
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.3 &nbsp;DRS m s.n.m. — référence d'altitude absolue</p>
         <p>Les deux champs DRS (<em>Poteau gauche</em> / <em>Poteau droit</em>) reçoivent la hauteur absolue du dessus du rail en m s.n.m. Règles importantes:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
-          <li>h₁ / h₂ restent <em>toujours</em> en valeurs «au-dessus DRS» — ils ne sont pas convertis lors de la saisie DRS.</li>
+          <li>h<sub>1</sub> / h<sub>2</sub> restent <em>toujours</em> en valeurs «au-dessus DRS» — ils ne sont pas convertis lors de la saisie DRS.</li>
           <li>En cas de valeurs DRS différentes à gauche et à droite (pente), l'application interpole linéairement pour chaque point du diagramme entre les deux valeurs DRS.</li>
           <li>La valeur DRS droite est automatiquement reprise de la gauche. Dès qu'elle est modifiée manuellement, elle reste indépendante.</li>
           <li>«✕ effacer» remet les deux champs DRS à zéro; le diagramme revient à l'affichage relatif DRS.</li>
@@ -9027,7 +9157,7 @@ renderObstacleList();
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.4 &nbsp;Diagramme &amp; interaction</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li>L'axe Y affiche «Hauteur [m s. DRS]» ou «Hauteur [m s.n.m.]» selon le réglage DRS.</li>
-          <li>Les labels d'ancrage aux positions des poteaux indiquent h₁/h₂ en hauteur absolue (m s.n.m.) ou en «h = x.xx m».</li>
+          <li>Les labels d'ancrage aux positions des poteaux indiquent h<sub>1</sub>/h<sub>2</sub> en hauteur absolue (m s.n.m.) ou en «h = x.xx m».</li>
           <li>Les callouts des points de mesure sont sur deux niveaux: désignation (M1–M4) en haut, valeur de hauteur en bas.</li>
           <li>La carte orange du point le plus bas indique également m s.n.m. si DRS est défini.</li>
           <li>Export PDF: le protocole de calcul contient toutes les saisies, résultats et le diagramme.</li>
@@ -9056,7 +9186,7 @@ renderObstacleList();
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.3 &nbsp;PRF m s.l.m. — riferimento di altezza assoluta</p>
         <p>I due campi PRF (<em>Palo sinistro</em> / <em>Palo destro</em>) ricevono l'altezza assoluta del piano del ferro in m s.l.m. Regole importanti:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
-          <li>h₁ / h₂ restano <em>sempre</em> come valori «sopra PRF» — non vengono convertiti durante l'inserimento PRF.</li>
+          <li>h<sub>1</sub> / h<sub>2</sub> restano <em>sempre</em> come valori «sopra PRF» — non vengono convertiti durante l'inserimento PRF.</li>
           <li>Con valori PRF diversi a sinistra e a destra (pendenza), l'applicazione interpola linearmente per ogni punto del diagramma tra i due valori PRF.</li>
           <li>Il valore PRF destro viene automaticamente ripreso da quello sinistro. Non appena viene modificato manualmente, rimane indipendente.</li>
           <li>«✕ elimina» azzera entrambi i campi PRF; il diagramma torna alla visualizzazione relativa al PRF.</li>
@@ -9065,7 +9195,7 @@ renderObstacleList();
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.4 &nbsp;Diagramma &amp; interazione</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li>L'asse Y mostra «Altezza [m s. PRF]» o «Altezza [m s.l.m.]» a seconda dell'impostazione PRF.</li>
-          <li>Le etichette di ancoraggio alle posizioni dei pali mostrano h₁/h₂ come altezza assoluta (m s.l.m.) o come «h = x.xx m».</li>
+          <li>Le etichette di ancoraggio alle posizioni dei pali mostrano h<sub>1</sub>/h<sub>2</sub> come altezza assoluta (m s.l.m.) o come «h = x.xx m».</li>
           <li>Le callout dei punti di misura sono su due livelli: denominazione (M1–M4) in alto, valore di altezza in basso.</li>
           <li>La scheda arancione del punto più basso mostra anch'essa m s.l.m. se PRF è impostato.</li>
           <li>Esportazione PDF: il protocollo di calcolo contiene tutti gli inserimenti, risultati e il diagramma.</li>
@@ -9081,9 +9211,9 @@ renderObstacleList();
           <strong>Aufgabe:</strong> Berechne den Fahrdraht-Durchhang und die Ts-Höhe am Feldmittelpunkt für ein ebenes N-FL-Feld.<br>
           <strong>Kettenwerk:</strong> StCu 50 mm² + Cu 107 mm², gestützt, 6 kN &nbsp;|&nbsp;
           <strong>Spannweite:</strong> L = Lm = 50 m &nbsp;|&nbsp;
-          <strong>Höhen:</strong> h₁ = h₂ = 5.50 m &nbsp;|&nbsp; sh = 2.40 m<br>
+          <strong>Höhen:</strong> h<sub>1</sub> = h<sub>2</sub> = 5.50 m &nbsp;|&nbsp; sh = 2.40 m<br>
           <strong>Zugkräfte:</strong> H<sub>Ts,ub</sub> = 1 700 N &nbsp;|&nbsp; H<sub>Fd</sub> = 8 500 N &nbsp;|&nbsp;
-          <strong>Temperaturen:</strong> T₁ = +10 °C → T₂ = +40 °C
+          <strong>Temperaturen:</strong> T<sub>1</sub> = +10 °C → T<sub>2</sub> = +40 °C
         </div>
         <div style="border-left:3px solid #eb0000;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
           <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Schritt 1 &nbsp;—&nbsp; Gesamtlast (bekannte FL-Kombination)</p>
@@ -9103,20 +9233,20 @@ renderObstacleList();
           <p style="margin:.1rem 0">Newton-Raphson (Startwert H<sub>ub</sub> = 1 700 N) → <strong>H<sub>Ts,belastet</sub> = F₀ ≈ 3 860 N</strong></p>
         </div>
         <div style="border-left:3px solid #eb0000;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Schritt 3 &nbsp;—&nbsp; Kettenlinie bei T₁ = +10 °C</p>
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Schritt 3 &nbsp;—&nbsp; Kettenlinie bei T<sub>1</sub> = +10 °C</p>
           <p style="margin:.1rem 0">Kettenlinienparameter:</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#f0f4f8;padding:3px 6px;border-radius:3px">a = H<sub>Ts</sub> / MFL = 3 860 / 13.876 = <strong>278.1 m</strong></p>
-          <p style="margin:.1rem 0">Ebenes Feld (h₁ = h₂) → Tiefpunkt in Feldmitte: x₀ = 25.000 m</p>
-          <p style="margin:.1rem 0">Ts-Höhe am Tiefpunkt: y<sub>Ts</sub>(25 m) = h₁ − f<sub>Ts</sub></p>
+          <p style="margin:.1rem 0">Ebenes Feld (h<sub>1</sub> = h<sub>2</sub>) → Tiefpunkt in Feldmitte: x₀ = 25.000 m</p>
+          <p style="margin:.1rem 0">Ts-Höhe am Tiefpunkt: y<sub>Ts</sub>(25 m) = h<sub>1</sub> − f<sub>Ts</sub></p>
           <p style="margin:.1rem 0">Fahrdraht-Durchhang nach VEM 7.66:</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#f0f4f8;padding:3px 6px;border-radius:3px">
             q<sub>vem</sub> = 13.876 × (1 + 8500/3860) = 13.876 × 3.202 = 44.43 N/m<br>
             f<sub>Fd,1</sub> = 50² / 8 × 44.43 / (3860 + 8500) = 312.5 × 44.43 / 12 360 = <strong>1.123 m</strong>
           </p>
-          <p style="margin:.1rem 0">Ts-Höhe SOK bei T₁: h₁ − f<sub>Fd,1</sub> + sh = 5.50 − 1.123 + 2.40 (Näherung am Tiefpunkt)</p>
+          <p style="margin:.1rem 0">Ts-Höhe SOK bei T<sub>1</sub>: h<sub>1</sub> − f<sub>Fd,1</sub> + sh = 5.50 − 1.123 + 2.40 (Näherung am Tiefpunkt)</p>
         </div>
         <div style="border-left:3px solid #b7b7b7;padding:.4rem .8rem;margin:.5rem 0;background:#f6f6f6;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Schritt 4 &nbsp;—&nbsp; Zustandsgleichung T₁ → T₂ (ΔT = +30 K)</p>
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Schritt 4 &nbsp;—&nbsp; Zustandsgleichung T<sub>1</sub> → T<sub>2</sub> (ΔT = +30 K)</p>
           <p style="margin:.1rem 0">VEM Handbuch / VBA Upro1 Gleichung (Newton-Raphson):</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#ebebeb;padding:3px 6px;border-radius:3px">
             gk₀ = MFL / F₀ = 13.876 / 3860 = 3.594×10⁻³ 1/m<br>
@@ -9128,11 +9258,11 @@ renderObstacleList();
           <p style="margin:.1rem 0;font-size:.8rem;color:#686868">Die Zugkraft nimmt bei Erwärmung ab (Ts dehnt sich aus → tiefere Spannung).</p>
         </div>
         <div style="border-left:3px solid #b7b7b7;padding:.4rem .8rem;margin:.5rem 0;background:#f6f6f6;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Schritt 5 &nbsp;—&nbsp; Fahrdraht-Durchhang bei T₂ = +40 °C</p>
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Schritt 5 &nbsp;—&nbsp; Fahrdraht-Durchhang bei T<sub>2</sub> = +40 °C</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#ebebeb;padding:3px 6px;border-radius:3px">
             f<sub>Fd,2</sub> = 50² / 8 × 44.43 / (2880 + 8500) = 312.5 × 44.43 / 11 380 = <strong>≈ 1.220 m</strong>
           </p>
-          <p style="margin:.1rem 0">Ts-Höhe SOK in Feldmitte bei T₂ ≈ 5.50 − 1.220 = <strong>ca. 4.28 m ü. SOK</strong></p>
+          <p style="margin:.1rem 0">Ts-Höhe SOK in Feldmitte bei T<sub>2</sub> ≈ 5.50 − 1.220 = <strong>ca. 4.28 m ü. SOK</strong></p>
           <p style="margin:.1rem 0;font-size:.8rem;color:#686868">Kontrolle: Minimale Fahrdrahthöhe ≥ 5.00 m ü. SOK (Fd-Höhe = Ts-Höhe − sh = 4.28 − 2.40 ≈ 5.38 m → Grenzwert eingehalten ✓)</p>
         </div>
         <div style="background:#f6f6f6;border:1px solid #d2d2d2;border-radius:6px;padding:.5rem .9rem;margin:.6rem 0;font-size:.81rem">
@@ -9146,9 +9276,9 @@ renderObstacleList();
           <strong>Tâche:</strong> Calculer la flèche du fil de contact et la hauteur CP au milieu de la travée pour une travée N-FL plane.<br>
           <strong>Caténaire:</strong> StCu 50 mm² + Cu 107 mm², suspendu, 6 kN &nbsp;|&nbsp;
           <strong>Portée:</strong> L = Lm = 50 m &nbsp;|&nbsp;
-          <strong>Hauteurs:</strong> h₁ = h₂ = 5.50 m &nbsp;|&nbsp; sh = 2.40 m<br>
+          <strong>Hauteurs:</strong> h<sub>1</sub> = h<sub>2</sub> = 5.50 m &nbsp;|&nbsp; sh = 2.40 m<br>
           <strong>Forces de traction:</strong> H<sub>CP,nc</sub> = 1 700 N &nbsp;|&nbsp; H<sub>FC</sub> = 8 500 N &nbsp;|&nbsp;
-          <strong>Températures:</strong> T₁ = +10 °C → T₂ = +40 °C
+          <strong>Températures:</strong> T<sub>1</sub> = +10 °C → T<sub>2</sub> = +40 °C
         </div>
         <div style="border-left:3px solid #eb0000;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
           <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Étape 1 &nbsp;—&nbsp; Charge totale (combinaison FL connue)</p>
@@ -9168,20 +9298,20 @@ renderObstacleList();
           <p style="margin:.1rem 0">Newton-Raphson (valeur de départ H<sub>nc</sub> = 1 700 N) → <strong>H<sub>CP,chargé</sub> = F₀ ≈ 3 860 N</strong></p>
         </div>
         <div style="border-left:3px solid #eb0000;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Étape 3 &nbsp;—&nbsp; Caténaire à T₁ = +10 °C</p>
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Étape 3 &nbsp;—&nbsp; Caténaire à T<sub>1</sub> = +10 °C</p>
           <p style="margin:.1rem 0">Paramètre caténaire:</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#f0f4f8;padding:3px 6px;border-radius:3px">a = H<sub>CP</sub> / MFL = 3 860 / 13.876 = <strong>278.1 m</strong></p>
-          <p style="margin:.1rem 0">Travée plane (h₁ = h₂) → point le plus bas au milieu de travée: x₀ = 25.000 m</p>
-          <p style="margin:.1rem 0">Hauteur CP au point le plus bas: y<sub>CP</sub>(25 m) = h₁ − f<sub>CP</sub></p>
+          <p style="margin:.1rem 0">Travée plane (h<sub>1</sub> = h<sub>2</sub>) → point le plus bas au milieu de travée: x₀ = 25.000 m</p>
+          <p style="margin:.1rem 0">Hauteur CP au point le plus bas: y<sub>CP</sub>(25 m) = h<sub>1</sub> − f<sub>CP</sub></p>
           <p style="margin:.1rem 0">Flèche FC selon VEM 7.66:</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#f0f4f8;padding:3px 6px;border-radius:3px">
             q<sub>vem</sub> = 13.876 × (1 + 8500/3860) = 13.876 × 3.202 = 44.43 N/m<br>
             f<sub>FC,1</sub> = 50² / 8 × 44.43 / (3860 + 8500) = 312.5 × 44.43 / 12 360 = <strong>1.123 m</strong>
           </p>
-          <p style="margin:.1rem 0">Hauteur CP DRS à T₁: h₁ − f<sub>FC,1</sub> + sh = 5.50 − 1.123 + 2.40 (approximation au point le plus bas)</p>
+          <p style="margin:.1rem 0">Hauteur CP DRS à T<sub>1</sub>: h<sub>1</sub> − f<sub>FC,1</sub> + sh = 5.50 − 1.123 + 2.40 (approximation au point le plus bas)</p>
         </div>
         <div style="border-left:3px solid #b7b7b7;padding:.4rem .8rem;margin:.5rem 0;background:#f6f6f6;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Étape 4 &nbsp;—&nbsp; Équation d'état T₁ → T₂ (ΔT = +30 K)</p>
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Étape 4 &nbsp;—&nbsp; Équation d'état T<sub>1</sub> → T<sub>2</sub> (ΔT = +30 K)</p>
           <p style="margin:.1rem 0">Équation VEM Manuel / VBA Upro1 (Newton-Raphson):</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#ebebeb;padding:3px 6px;border-radius:3px">
             gk₀ = MFL / F₀ = 13.876 / 3860 = 3.594×10⁻³ 1/m<br>
@@ -9193,11 +9323,11 @@ renderObstacleList();
           <p style="margin:.1rem 0;font-size:.8rem;color:#686868">La force de traction diminue lors du réchauffement (le CP se dilate → tension plus faible).</p>
         </div>
         <div style="border-left:3px solid #b7b7b7;padding:.4rem .8rem;margin:.5rem 0;background:#f6f6f6;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Étape 5 &nbsp;—&nbsp; Flèche FC à T₂ = +40 °C</p>
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Étape 5 &nbsp;—&nbsp; Flèche FC à T<sub>2</sub> = +40 °C</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#ebebeb;padding:3px 6px;border-radius:3px">
             f<sub>FC,2</sub> = 50² / 8 × 44.43 / (2880 + 8500) = 312.5 × 44.43 / 11 380 = <strong>≈ 1.220 m</strong>
           </p>
-          <p style="margin:.1rem 0">Hauteur CP DRS au milieu de travée à T₂ ≈ 5.50 − 1.220 = <strong>env. 4.28 m s. DRS</strong></p>
+          <p style="margin:.1rem 0">Hauteur CP DRS au milieu de travée à T<sub>2</sub> ≈ 5.50 − 1.220 = <strong>env. 4.28 m s. DRS</strong></p>
           <p style="margin:.1rem 0;font-size:.8rem;color:#686868">Contrôle: Hauteur minimale FC ≥ 5.00 m s. DRS (hauteur FC = hauteur CP − sh = 4.28 − 2.40 ≈ 5.38 m → valeur limite respectée ✓)</p>
         </div>
         <div style="background:#f6f6f6;border:1px solid #d2d2d2;border-radius:6px;padding:.5rem .9rem;margin:.6rem 0;font-size:.81rem">
@@ -9211,9 +9341,9 @@ renderObstacleList();
           <strong>Compito:</strong> Calcolare la freccia del filo di contatto e l'altezza FP al punto medio della campata per una campata N-FL piana.<br>
           <strong>Catenaria:</strong> StCu 50 mm² + Cu 107 mm², sostenuta, 6 kN &nbsp;|&nbsp;
           <strong>Campata:</strong> L = Lm = 50 m &nbsp;|&nbsp;
-          <strong>Altezze:</strong> h₁ = h₂ = 5.50 m &nbsp;|&nbsp; sh = 2.40 m<br>
+          <strong>Altezze:</strong> h<sub>1</sub> = h<sub>2</sub> = 5.50 m &nbsp;|&nbsp; sh = 2.40 m<br>
           <strong>Forze di tiro:</strong> H<sub>FP,nc</sub> = 1 700 N &nbsp;|&nbsp; H<sub>FC</sub> = 8 500 N &nbsp;|&nbsp;
-          <strong>Temperature:</strong> T₁ = +10 °C → T₂ = +40 °C
+          <strong>Temperature:</strong> T<sub>1</sub> = +10 °C → T<sub>2</sub> = +40 °C
         </div>
         <div style="border-left:3px solid #eb0000;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
           <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Passo 1 &nbsp;—&nbsp; Carico totale (combinazione FL nota)</p>
@@ -9233,20 +9363,20 @@ renderObstacleList();
           <p style="margin:.1rem 0">Newton-Raphson (valore iniziale H<sub>nc</sub> = 1 700 N) → <strong>H<sub>FP,caricato</sub> = F₀ ≈ 3 860 N</strong></p>
         </div>
         <div style="border-left:3px solid #eb0000;padding:.4rem .8rem;margin:.5rem 0;background:#f8fafc;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Passo 3 &nbsp;—&nbsp; Catenaria a T₁ = +10 °C</p>
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Passo 3 &nbsp;—&nbsp; Catenaria a T<sub>1</sub> = +10 °C</p>
           <p style="margin:.1rem 0">Parametro catenaria:</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#f0f4f8;padding:3px 6px;border-radius:3px">a = H<sub>FP</sub> / MFL = 3 860 / 13.876 = <strong>278.1 m</strong></p>
-          <p style="margin:.1rem 0">Campata piana (h₁ = h₂) → punto più basso al centro campata: x₀ = 25.000 m</p>
-          <p style="margin:.1rem 0">Altezza FP al punto più basso: y<sub>FP</sub>(25 m) = h₁ − f<sub>FP</sub></p>
+          <p style="margin:.1rem 0">Campata piana (h<sub>1</sub> = h<sub>2</sub>) → punto più basso al centro campata: x₀ = 25.000 m</p>
+          <p style="margin:.1rem 0">Altezza FP al punto più basso: y<sub>FP</sub>(25 m) = h<sub>1</sub> − f<sub>FP</sub></p>
           <p style="margin:.1rem 0">Freccia FC secondo VEM 7.66:</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#f0f4f8;padding:3px 6px;border-radius:3px">
             q<sub>vem</sub> = 13.876 × (1 + 8500/3860) = 13.876 × 3.202 = 44.43 N/m<br>
             f<sub>FC,1</sub> = 50² / 8 × 44.43 / (3860 + 8500) = 312.5 × 44.43 / 12 360 = <strong>1.123 m</strong>
           </p>
-          <p style="margin:.1rem 0">Altezza FP PRF a T₁: h₁ − f<sub>FC,1</sub> + sh = 5.50 − 1.123 + 2.40 (approssimazione al punto più basso)</p>
+          <p style="margin:.1rem 0">Altezza FP PRF a T<sub>1</sub>: h<sub>1</sub> − f<sub>FC,1</sub> + sh = 5.50 − 1.123 + 2.40 (approssimazione al punto più basso)</p>
         </div>
         <div style="border-left:3px solid #b7b7b7;padding:.4rem .8rem;margin:.5rem 0;background:#f6f6f6;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Passo 4 &nbsp;—&nbsp; Equazione di stato T₁ → T₂ (ΔT = +30 K)</p>
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Passo 4 &nbsp;—&nbsp; Equazione di stato T<sub>1</sub> → T<sub>2</sub> (ΔT = +30 K)</p>
           <p style="margin:.1rem 0">Equazione VEM Manuale / VBA Upro1 (Newton-Raphson):</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#ebebeb;padding:3px 6px;border-radius:3px">
             gk₀ = MFL / F₀ = 13.876 / 3860 = 3.594×10⁻³ 1/m<br>
@@ -9258,11 +9388,11 @@ renderObstacleList();
           <p style="margin:.1rem 0;font-size:.8rem;color:#686868">La forza di tiro diminuisce con il riscaldamento (la FP si dilata → tensione minore).</p>
         </div>
         <div style="border-left:3px solid #b7b7b7;padding:.4rem .8rem;margin:.5rem 0;background:#f6f6f6;border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Passo 5 &nbsp;—&nbsp; Freccia FC a T₂ = +40 °C</p>
+          <p style="font-weight:700;color:#212121;margin:0 0 .2rem">Passo 5 &nbsp;—&nbsp; Freccia FC a T<sub>2</sub> = +40 °C</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:#ebebeb;padding:3px 6px;border-radius:3px">
             f<sub>FC,2</sub> = 50² / 8 × 44.43 / (2880 + 8500) = 312.5 × 44.43 / 11 380 = <strong>≈ 1.220 m</strong>
           </p>
-          <p style="margin:.1rem 0">Altezza FP PRF al centro campata a T₂ ≈ 5.50 − 1.220 = <strong>ca. 4.28 m s. PRF</strong></p>
+          <p style="margin:.1rem 0">Altezza FP PRF al centro campata a T<sub>2</sub> ≈ 5.50 − 1.220 = <strong>ca. 4.28 m s. PRF</strong></p>
           <p style="margin:.1rem 0;font-size:.8rem;color:#686868">Controllo: Altezza minima FC ≥ 5.00 m s. PRF (altezza FC = altezza FP − sh = 4.28 − 2.40 ≈ 5.38 m → valore limite rispettato ✓)</p>
         </div>
         <div style="background:#f6f6f6;border:1px solid #d2d2d2;border-radius:6px;padding:.5rem .9rem;margin:.6rem 0;font-size:.81rem">
@@ -9367,8 +9497,8 @@ renderObstacleList();
           <tr><td>Abnutzung Fahrdraht</td><td>usure fil de contact</td><td>usura filo di contatto</td></tr>
           <!-- Temperaturen & Zustände -->
           <tr class="gl-cat"><td colspan="3">Temperaturen &amp; Zustände / Températures &amp; états / Temperature &amp; stati</td></tr>
-          <tr><td>Montagetemperatur T₁</td><td>température de pose T₁</td><td>temperatura di posa T₁</td></tr>
-          <tr><td>Zieltemperatur T₂</td><td>température cible T₂</td><td>temperatura obiettivo T₂</td></tr>
+          <tr><td>Montagetemperatur T<sub>1</sub></td><td>température de pose T<sub>1</sub></td><td>temperatura di posa T<sub>1</sub></td></tr>
+          <tr><td>Zieltemperatur T<sub>2</sub></td><td>température cible T<sub>2</sub></td><td>temperatura obiettivo T<sub>2</sub></td></tr>
           <tr><td>Ausgangszustand</td><td>état initial</td><td>stato iniziale</td></tr>
           <tr><td>Zustandsgleichung</td><td>équation d'état</td><td>equazione di stato</td></tr>
           <!-- Werkzeuge & Export -->
@@ -9757,6 +9887,18 @@ renderObstacleList();
     transition: background .15s;
   }
   #pdf-btn:hover { background: rgba(0,0,0,.10); }
+  #dxf-btn {
+    display: flex;
+    align-items: center; justify-content: center; gap: .4rem;
+    grid-column: 1 / -1;
+    padding: .22rem .7rem;
+    border-radius: 980px; border: 1px solid rgba(0,0,0,.15);
+    background: rgba(0,0,0,.05); color: #4b5563;
+    font-size: .76rem; font-weight: 500; font-family: inherit;
+    cursor: pointer; white-space: nowrap;
+    transition: background .15s;
+  }
+  #dxf-btn:hover { background: rgba(0,0,0,.10); }
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
