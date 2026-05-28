@@ -1424,7 +1424,7 @@ button.header-manual-link:hover {
         <div class="field">
           <label id="span-L-label">Spannweite L</label>
           <div class="input-wrap">
-            <input type="number" id="span" value="45" min="0.1" step="0.1">
+            <input type="number" id="span" value="45" min="0.1" step="0.1" oninput="berechnen()" onchange="berechnen()">
             <span class="input-unit">m</span>
           </div>
         </div>
@@ -2948,6 +2948,7 @@ function applyElVariant(idx) {
     activePresetRef = null;
     infoBox.style.display = 'none';
   }
+  berechnen();
 }
 
 function elMaterialChanged() {
