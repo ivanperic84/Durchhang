@@ -7552,13 +7552,11 @@ function pdfExport() {
   const projName = currentProjectId ? (getProjMeta().find(m => m.id === currentProjectId)?.name || '') : '';
   const bodyContent = buildPdfSectionHtml(projName, canvasImg);
   if (!bodyContent) return;
-  const scaleSvg = buildScaleDrawingPage(true);  // mit SVG-Datenstreifen für PDF
 
   const html = `<!DOCTYPE html><html lang="${currentLang}"><head><meta charset="UTF-8">
 <title>${t('pdf.title')}</title>
 <style>
-@page          { size: A4 portrait;   margin: 16mm 14mm; }
-@page landscape{ size: A4 landscape;  margin: 15mm; }
+@page { size: A4 portrait; margin: 16mm 14mm; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 9.5pt; color: #1e293b; line-height: 1.6; }
 .hdr { background: linear-gradient(135deg,#444444,#212121); color: white; padding: 12px 16px;
@@ -7593,13 +7591,8 @@ table.cmp tr:nth-child(even) td { background: #f8fafc; }
 .diagram img { width: 100%; border: 1px solid #d2d2d2; border-radius: 6px; }
 footer { margin-top: 16px; font-size: 7.5pt; color: #b7b7b7;
          border-top: 1px solid #d2d2d2; padding-top: 5px; text-align: right; }
-.scale-page { page: landscape; page-break-before: always;
-              display: flex; align-items: center; justify-content: center;
-              width: 267mm; height: 180mm; }
-.scale-page svg { display: block; }
 </style></head><body>
 ${bodyContent}
-<div class="scale-page">${scaleSvg}</div>
 </body></html>`;
 
   const win = window.open('', '_blank');
