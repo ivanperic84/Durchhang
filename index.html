@@ -1125,6 +1125,37 @@ button.header-manual-link:hover {
 .reglage-info-box .info-note {
   color: var(--muted);
 }
+.reglage-info-box .reglage-hdr {
+  display: flex; justify-content: space-between; align-items: baseline; gap: .4rem;
+}
+#el-reglage-edit-btn {
+  flex-shrink: 0; background: none; border: 1px solid #c8c8c8;
+  border-radius: 6px; padding: .1rem .38rem; font-size: .65rem;
+  color: var(--muted); cursor: pointer; transition: border-color .15s, color .15s;
+  font-family: inherit;
+}
+#el-reglage-edit-btn:hover { color: var(--text); border-color: #888; }
+.rp-params {
+  display: grid; grid-template-columns: auto 1fr auto;
+  gap: .22rem .5rem; align-items: center;
+  padding: .35rem 0; border-bottom: 1px solid #e4e4e4; margin-bottom: .1rem;
+}
+.rp-params .rp-reset {
+  grid-column: 1 / -1; display: flex; justify-content: flex-end; padding-top: .1rem;
+}
+.rp-lbl { font-size: .67rem; color: var(--muted); white-space: nowrap; }
+.rp-input {
+  width: 5.2rem; border: 1px solid #d1d5db; border-radius: 6px;
+  padding: .13rem .3rem; font-size: .7rem; text-align: right;
+  background: #fff; font-family: inherit;
+}
+.rp-input:focus { outline: none; border-color: var(--primary); }
+.rtbl { width: 100%; border-collapse: collapse; font-size: .68rem; margin-top: .35rem; }
+.rtbl th, .rtbl td { padding: .15rem .32rem; text-align: right; border-bottom: 1px solid #ececec; }
+.rtbl th { color: var(--muted); font-weight: 600; border-bottom: 1px solid #d8d8d8; }
+.rtbl td:first-child, .rtbl th:first-child { text-align: left; }
+.rtbl tr:last-child td { border-bottom: none; }
+.rtbl tr.rtbl-t1 td { font-weight: 600; background: #f0f0f0; }
 
 /* ── Language Switcher ── */
 .lang-switcher {
@@ -1361,8 +1392,12 @@ button.header-manual-link:hover {
 
       <!-- Einzelleiter: Reglagewert-Info -->
       <div id="el-reglage-info" class="reglage-info-box" style="display:none;margin-top:.5rem">
-        <div class="info-title" id="el-reglage-title"></div>
+        <div class="reglage-hdr">
+          <div class="info-title" id="el-reglage-title"></div>
+          <button id="el-reglage-edit-btn" onclick="toggleReglageEdit()">Bearbeiten</button>
+        </div>
         <div class="info-note" id="el-reglage-note"></div>
+        <div id="el-reglage-edit-panel" style="display:none"></div>
       </div>
 
       <div id="wear-row" style="display:none;margin-top:.6rem">
@@ -1967,7 +2002,7 @@ let t2BeforeRfl = 80; // T2-Wert vor R-FL-Modus sichern
 // Quelle: SBB 0161.1013.0001 (31.10.2024)
 // ═══════════════════════════════════════════════════════════════
 const MATERIALS = {
-  cu95:      { name: 'Cu 95 mm²',        q: 8.4239123,  alpha: 17e-6,   E: 108e9,        AK: 94.77e-6,  H_reglage: 3700, basis_kN: 6,  reglage_note: '6 kN Basiskraft (Rückleiter/Speiseleitung)', reglage_note_key: 'mat.rn.6kn.rl',
+  cu95:      { name: 'Cu 95 mm²',        q: 8.4239123,  alpha: 17e-6,   E: 108e9,        AK: 94.77e-6,  L_ref: 45, H_reglage: 3700, basis_kN: 6,  reglage_note: '6 kN Basiskraft (Rückleiter/Speiseleitung)', reglage_note_key: 'mat.rn.6kn.rl',
     H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
                        vals:  [6000,5500,5000,4600,4200,3900,3700,3400,3200,3100,2900,2800,2600] },
     // Varianten gemäss Reglagetabelle SBB 0161.1013.0001
@@ -1980,7 +2015,7 @@ const MATERIALS = {
                            vals:  [8000,7300,6700,6100,5600,5100,4700,4300,4000,3700,3500,3300,3100] } },
     ] },
   cu107:     { name: 'Cu 107 mm²',       q: 9.517,      alpha: 17e-6,   E: 108e9,        AK: 107e-6,    H_reglage: null, basis_kN: null, reglage_note: null, reglage_note_key: null },
-  cu150:     { name: 'Cu 150 mm²',       q: 13.4351100, alpha: 17e-6,   E: 108e9,        AK: 149.7e-6,  H_reglage: 5600, basis_kN: 9,  reglage_note: '9 kN Basiskraft (normale Zugkraft)',           reglage_note_key: 'mat.rn.9kn',
+  cu150:     { name: 'Cu 150 mm²',       q: 13.4351100, alpha: 17e-6,   E: 108e9,        AK: 149.7e-6,  L_ref: 45, H_reglage: 5600, basis_kN: 9,  reglage_note: '9 kN Basiskraft (normale Zugkraft)',           reglage_note_key: 'mat.rn.9kn',
     H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
                        vals:  [9000,8200,7500,6900,6400,6000,5600,5300,5000,4700,4500,4300,4100] },
     H_reglage_variants: [
@@ -1995,20 +2030,36 @@ const MATERIALS = {
   cu300:     { name: 'Cu 300 mm²',       q: 26.2818220, alpha: 17e-6,   E: 108e9,        AK: 301.3e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
   stcu50:    { name: 'StCu 50 mm²',      q: 4.0109198,  alpha: 11.5e-6, E: 159e9,        AK: 49.48e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
   stcu92:    { name: 'StCu 92 mm²',      q: 8.2179727,  alpha: 16.2e-6, E: 124e9,        AK: 92.41e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
-  aldrey240: { name: 'Aldrey 240 mm²',   q: 6.5606488,  alpha: 23e-6,   E: 5.5897905e10, AK: 239.4e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
+  aldrey240: { name: 'Aldrey 240 mm²',   q: 6.5606488,  alpha: 23e-6,   E: 5.5897905e10, AK: 239.4e-6,  H_reglage: null, basis_kN: 6, reglage_note: null,
+    auto_variant_by_span: true,
+    H_reglage_variants: [
+      { label: 'c ≤ 35 m', c_max: 35,      L_ref: 30, H_reglage: null, reglage_note: '6 kN Basiszugkraft (c ≤ 35 m)', reglage_note_key: null },
+      { label: 'c > 35 m', c_max: Infinity, L_ref: 45, H_reglage: null, reglage_note: '6 kN Basiszugkraft (c > 35 m)', reglage_note_key: null },
+    ] },
   aldrey300: { name: 'Aldrey 300 mm²',   q: 8.2670059,  alpha: 23e-6,   E: 5.5897905e10, AK: 301.3e-6,  H_reglage: 2200, basis_kN: 6,  reglage_note: '6 kN Basiskraft (c ≤ 35 m)', reglage_note_key: null,
+    auto_variant_by_span: true,
     H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
                        vals:  [6000,4800,3800,3200,2800,2400,2200,2000,1900,1700,1600,1500,1500] },
     H_reglage_variants: [
-      { label: 'c ≤ 35 m', H_reglage: 2200, reglage_note: '6 kN Basiskraft (c ≤ 35 m)', reglage_note_key: null,
+      { label: 'c ≤ 35 m', c_max: 35,       L_ref: 30, H_reglage: 2200, reglage_note: '6 kN Basiskraft (c ≤ 35 m)', reglage_note_key: null,
         H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
                            vals:  [6000,4800,3800,3200,2800,2400,2200,2000,1900,1700,1600,1500,1500] } },
-      { label: 'c > 35 m', H_reglage: 2900, reglage_note: '6 kN Basiskraft (c > 35 m)', reglage_note_key: null,
+      { label: 'c > 35 m', c_max: Infinity,  L_ref: 45, H_reglage: 2900, reglage_note: '6 kN Basiskraft (c > 35 m)', reglage_note_key: null,
         H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
                            vals:  [6000,5100,4400,3900,3500,3200,2900,2700,2600,2400,2300,2200,2100] } },
     ] },
-  aldrey400: { name: 'Aldrey 400 mm²',   q: 11.0422870, alpha: 23e-6,   E: 5.5897905e10, AK: 402.9e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
-  aldrey550: { name: 'Aldrey 550 mm²',   q: 15.0924340, alpha: 23e-6,   E: 5.5897905e10, AK: 550.6e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
+  aldrey400: { name: 'Aldrey 400 mm²',   q: 11.0422870, alpha: 23e-6,   E: 5.5897905e10, AK: 402.9e-6,  H_reglage: null, basis_kN: 6, reglage_note: null,
+    auto_variant_by_span: true,
+    H_reglage_variants: [
+      { label: 'c ≤ 35 m', c_max: 35,      L_ref: 30, H_reglage: null, reglage_note: '6 kN Basiszugkraft (c ≤ 35 m)', reglage_note_key: null },
+      { label: 'c > 35 m', c_max: Infinity, L_ref: 45, H_reglage: null, reglage_note: '6 kN Basiszugkraft (c > 35 m)', reglage_note_key: null },
+    ] },
+  aldrey550: { name: 'Aldrey 550 mm²',   q: 15.0924340, alpha: 23e-6,   E: 5.5897905e10, AK: 550.6e-6,  H_reglage: null, basis_kN: 6, reglage_note: null,
+    auto_variant_by_span: true,
+    H_reglage_variants: [
+      { label: 'c ≤ 35 m', c_max: 35,      L_ref: 30, H_reglage: null, reglage_note: '6 kN Basiszugkraft (c ≤ 35 m)', reglage_note_key: null },
+      { label: 'c > 35 m', c_max: Infinity, L_ref: 45, H_reglage: null, reglage_note: '6 kN Basiszugkraft (c > 35 m)', reglage_note_key: null },
+    ] },
   alum191:   { name: 'Alumin. 191 mm²',  q: 5.2465577,  alpha: 23e-6,   E: 5.88399e10,   AK: 191e-6,    H_reglage: null, basis_kN: null, reglage_note: null },
   cusn95:    { name: 'CuSn 0.1 95 mm²',  q: 8.4268000,  alpha: 17e-6,   E: 105e9,        AK: 94.72e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
   bziii50:   { name: 'BzIII 50 mm²',     q: 4.3752600,  alpha: 17e-6,   E: 113e9,        AK: 49.45e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
@@ -2208,7 +2259,7 @@ function openHandbuch()  {
 }
 function closeHandbuch() { document.getElementById('handbuch-modal').classList.remove('open'); }
 
-function openReglageModal()  { document.getElementById('reglage-modal').classList.add('open'); }
+function openReglageModal()  { document.getElementById('reglage-modal').classList.add('open'); renderReglageElTable(); }
 function closeReglageModal() { document.getElementById('reglage-modal').classList.remove('open'); }
 
 // Dropdown mit den zum aktiven Systemmodus passenden Kombinationen befüllen
@@ -2709,9 +2760,9 @@ function updateSysModeUI(mode) {
   const fdItem  = document.getElementById('leg-fd-item');
   const fdLbl   = document.getElementById('leg-fd-label');
   const fdSoll  = document.getElementById('leg-fd-solllage-item');
-  if (ts1Lbl)  ts1Lbl.textContent  = isEl ? t('leg.leiter1') : isNfl ? t('leg.ts1') : t('leg.ts1.rfl');
+  if (ts1Lbl)  ts1Lbl.innerHTML  = isEl ? t('leg.leiter1') : isNfl ? t('leg.ts1') : t('leg.ts1.rfl');
   if (ts2Item) ts2Item.style.display  = (isNfl || isEl) ? '' : 'none';
-  if (ts2Lbl)  ts2Lbl.textContent  = isEl ? t('leg.leiter2') : t('leg.ts2');
+  if (ts2Lbl)  ts2Lbl.innerHTML  = isEl ? t('leg.leiter2') : t('leg.ts2');
   if (fdItem)  fdItem.style.display   = 'none';   // Fd nicht mehr im Diagramm
   if (fdSoll)  fdSoll.style.display   = 'none';   // Fd Solllage nicht mehr im Diagramm
 
@@ -2896,6 +2947,17 @@ function setSysMode(mode) {
   berechnen();
 }
 
+// Einzelleiter: auto-Variante nach Spannweite wählen (nur bei auto_variant_by_span-Materialien)
+function autoSelectElVariantBySpan(L) {
+  if (sysMode !== 'el') return;
+  const sel = document.getElementById('el-material-select')?.value;
+  const mat = sel ? MATERIALS[sel] : null;
+  if (!mat || !mat.auto_variant_by_span || !mat.H_reglage_variants) return;
+  const idx = mat.H_reglage_variants.findIndex(v => L <= (v.c_max ?? Infinity));
+  const newIdx = idx < 0 ? mat.H_reglage_variants.length - 1 : idx;
+  if (newIdx !== elBasiskraftIdx) applyElVariant(newIdx);
+}
+
 // Einzelleiter: Materialwechsel → material-ts hidden field + Eigengewicht aktualisieren
 // Einzelleiter: Variante (Basiskraft) anwenden
 function applyElVariant(idx) {
@@ -2914,25 +2976,38 @@ function applyElVariant(idx) {
 
   const infoBox = document.getElementById('el-reglage-info');
   if (variant.H_reglage !== null && variant.H_reglage !== undefined) {
-    activePresetRef = variant.H_reglage_table
-      ? { H_Ts_ub_table: variant.H_reglage_table }
-      : null;
-    if (activePresetRef) {
+    if (elReglageHmaxOvr === null && elReglageLrefOvr === null) {
+      activePresetRef = variant.H_reglage_table
+        ? { H_Ts_ub_table: variant.H_reglage_table }
+        : null;
+      if (activePresetRef) {
+        updateH_Ts_ubFromT1();
+      } else {
+        _tensionAutoFilling = true;
+        document.getElementById('tension').value = variant.H_reglage;
+        _tensionAutoFilling = false;
+      }
+    }
+    document.getElementById('el-reglage-title').innerHTML =
+      `H = ${variant.H_reglage.toLocaleString('de-CH')} N  (${t('preset.el.reglage')})`;
+    document.getElementById('el-reglage-note').innerHTML =
+      variant.reglage_note_key ? t(variant.reglage_note_key) : (variant.reglage_note || '');
+  } else {
+    // Kein Preset: synthetische Tabelle aus 6 kN Voreinstellung aufbauen
+    const dftH = 6000, dftL = mat.L_ref ?? 45;
+    if (mat.E && mat.AK && elReglageHmaxOvr === null && elReglageLrefOvr === null) {
+      const _t = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40];
+      const _v = _t.map(T => { const H = _reglageH(mat, dftH, dftL, T); return H ? Math.round(H) : 0; });
+      activePresetRef = { H_Ts_ub_table: { temps: _t, vals: _v } };
       updateH_Ts_ubFromT1();
     } else {
-      _tensionAutoFilling = true;
-      document.getElementById('tension').value = variant.H_reglage;
-      _tensionAutoFilling = false;
+      activePresetRef = null;
     }
-    document.getElementById('el-reglage-title').textContent =
-      `H = ${variant.H_reglage.toLocaleString('de-CH')} N  (${t('preset.el.reglage')})`;
-    document.getElementById('el-reglage-note').textContent =
-      variant.reglage_note_key ? t(variant.reglage_note_key) : (variant.reglage_note || '');
-    infoBox.style.display = '';
-  } else {
-    activePresetRef = null;
-    infoBox.style.display = 'none';
+    document.getElementById('el-reglage-title').innerHTML = 'Reglagewerte';
+    document.getElementById('el-reglage-note').innerHTML  = '6 kN Basiszugkraft (Voreinstellung −20 °C)';
   }
+  infoBox.style.display = '';
+  if (elReglageOpen) renderReglageEditPanel();
   berechnen();
 }
 
@@ -2944,10 +3019,10 @@ function elMaterialChanged() {
     document.getElementById('weight-ts').value = mat.q.toFixed(5);
     document.getElementById('alpha-ts').value  = (mat.alpha * 1e6).toFixed(1);
 
-    // Basiskraft-Varianten-Buttons aufbauen (nur wenn Varianten vorhanden)
+    // Basiskraft-Varianten-Buttons aufbauen (nur wenn Varianten vorhanden und nicht auto)
     const basisRow  = document.getElementById('el-basis-row');
     const basisBtns = document.getElementById('el-basis-btns');
-    if (mat.H_reglage_variants && mat.H_reglage_variants.length > 1) {
+    if (mat.H_reglage_variants && mat.H_reglage_variants.length > 1 && !mat.auto_variant_by_span) {
       basisBtns.innerHTML = mat.H_reglage_variants
         .map((v, i) => `<button class="seg-btn${i === 0 ? ' active' : ''}" onclick="applyElVariant(${i})">${v.label}</button>`)
         .join('');
@@ -2958,6 +3033,9 @@ function elMaterialChanged() {
     }
 
     elBasiskraftIdx = 0;
+    // Overrides + Edit-Panel zurücksetzen bei Materialwechsel
+    elReglageHmaxOvr = null; elReglageLrefOvr = null;
+    if (elReglageOpen) { elReglageOpen = false; const p=document.getElementById('el-reglage-edit-panel'); const b=document.getElementById('el-reglage-edit-btn'); if(p){p.style.display='none';p.innerHTML='';} if(b) b.textContent='Bearbeiten'; }
     applyElVariant(0);
   }
   berechnen();
@@ -3237,7 +3315,7 @@ function setProjectState(s) {
       document.getElementById('alpha-ts').value  = (mat.alpha * 1e6).toFixed(1);
       const basisRow  = document.getElementById('el-basis-row');
       const basisBtns = document.getElementById('el-basis-btns');
-      if (mat.H_reglage_variants && mat.H_reglage_variants.length > 1) {
+      if (mat.H_reglage_variants && mat.H_reglage_variants.length > 1 && !mat.auto_variant_by_span) {
         basisBtns.innerHTML = mat.H_reglage_variants
           .map((v,i) => `<button class="seg-btn${i===elBasiskraftIdx?' active':''}" onclick="applyElVariant(${i})">${v.label}</button>`)
           .join('');
@@ -3250,7 +3328,7 @@ function setProjectState(s) {
       if (variant) {
         activePresetRef = variant.H_reglage_table ? { H_Ts_ub_table: variant.H_reglage_table } : null;
         if (variant.H_reglage != null) {
-          document.getElementById('el-reglage-title').textContent =
+          document.getElementById('el-reglage-title').innerHTML =
             `H = ${variant.H_reglage.toLocaleString('de-CH')} N  (${t('preset.el.reglage')})`;
           document.getElementById('el-reglage-note').textContent =
             variant.reglage_note_key ? t(variant.reglage_note_key) : (variant.reglage_note || '');
@@ -3872,7 +3950,427 @@ function updateH_Ts_ubFromT1() {
     document.getElementById('tension').value = H_new;
     _tensionAutoFilling = false;
     refreshPresetNote(); // Infobox-Note mit aktuellem T1 / H_Ts_ub aktualisieren
+    if (elReglageOpen) renderReglageEditPanel(); // T1-Markierung in Tabelle aktualisieren
   }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// REGLAGETABELLE — editierbare Referenzparameter (Einzelleiter)
+// ═══════════════════════════════════════════════════════════════
+let elReglageHmaxOvr = null;   // H bei −20 °C, Benutzer-Override
+let elReglageLrefOvr = null;   // L Referenzspannweite, Benutzer-Override
+let elReglageOpen    = false;  // Edit-Panel geöffnet
+let _elMatEdits  = {};     // { 'cu95': { H_max: 6000, L_ref: 45 }, ... } — modal overrides
+let _rglElEditMode = false; // Bearbeiten-Modus im Modal
+
+// Gibt { mat, variant, tbl, H_max, L_ref } für die aktive Selektion zurück.
+// tbl ist nur gesetzt wenn kein Override aktiv (dann werden Tabellenwerte direkt verwendet).
+function _reglageBase() {
+  const sel = document.getElementById('el-material-select')?.value;
+  const mat = sel ? MATERIALS[sel] : null;
+  if (!mat) return { mat: null, variant: null, tbl: null, H_max: null, L_ref: 45 };
+  const variant = mat.H_reglage_variants ? mat.H_reglage_variants[elBasiskraftIdx] : mat;
+  const rawTbl  = variant?.H_reglage_table ?? mat.H_reglage_table ?? null;
+  const useRaw  = rawTbl && elReglageHmaxOvr === null && elReglageLrefOvr === null;
+  const matKey  = sel + (mat.H_reglage_variants && mat.H_reglage_variants.length > 1 ? '_' + elBasiskraftIdx : '');
+  const matEdit = _elMatEdits[matKey];
+  const H_max   = elReglageHmaxOvr ?? matEdit?.H_max ?? (rawTbl ? rawTbl.vals[0] : 6000);
+  const L_ref   = elReglageLrefOvr ?? matEdit?.L_ref ?? (variant?.L_ref ?? mat.L_ref ?? 45);
+  return { mat, variant, tbl: useRaw ? rawTbl : null, H_max, L_ref };
+}
+
+// Berechnet H bei Temperatur T, ausgehend von H_max bei −20 °C
+function _reglageH(mat, H_max, L_ref, T) {
+  if (!H_max || !mat.E || !mat.AK) return null;
+  const dT = T - (-20);
+  if (dT === 0) return H_max;
+  try { return solveStateEq(mat.q, L_ref, H_max, mat.E * mat.AK, mat.alpha, dT); }
+  catch (e) { return null; }
+}
+
+// Rendert den Inhalt des Edit-Panels
+function renderReglageEditPanel() {
+  const panel = document.getElementById('el-reglage-edit-panel');
+  if (!panel) return;
+  const { mat, tbl, H_max, L_ref } = _reglageBase();
+  if (!mat) { panel.innerHTML = ''; return; }
+
+  const temps    = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40];
+  const canCalc  = H_max && mat.E && mat.AK;
+  const hasOvr   = elReglageHmaxOvr !== null || elReglageLrefOvr !== null;
+  const T1cur    = parseFloat(document.getElementById('temp1')?.value) ?? 10;
+
+  // Tabelle aufbauen
+  let rows = '';
+  if (canCalc) {
+    for (const T of temps) {
+      let H = null;
+      if (tbl) {
+        const i = tbl.temps.indexOf(T);
+        if (i >= 0) {
+          H = tbl.vals[i];
+        } else {
+          for (let j = 0; j < tbl.temps.length - 1; j++) {
+            if (T > tbl.temps[j] && T < tbl.temps[j+1]) {
+              const fr = (T - tbl.temps[j]) / (tbl.temps[j+1] - tbl.temps[j]);
+              H = tbl.vals[j] + fr * (tbl.vals[j+1] - tbl.vals[j]);
+              break;
+            }
+          }
+        }
+      } else {
+        H = _reglageH(mat, H_max, L_ref, T);
+      }
+      const Hr = H !== null ? Math.round(H) : null;
+      const f  = H !== null ? mat.q * L_ref * L_ref / (8 * H) : null;
+      const isT1 = Math.abs(T - T1cur) < 0.01;
+      rows += `<tr class="${isT1 ? 'rtbl-t1' : ''}">
+        <td>${T > 0 ? '+' : ''}${T} °C</td>
+        <td>${Hr !== null ? Hr.toLocaleString('de-CH') : '—'}</td>
+        <td>${f !== null ? f.toFixed(2) : '—'}</td>
+      </tr>`;
+    }
+  }
+
+  panel.innerHTML = `
+    <div class="rp-params">
+      <span class="rp-lbl">H (−20 °C)</span>
+      <input type="number" class="rp-input" id="rp-hmax" value="${H_max ?? ''}" placeholder="N"
+        step="100" min="100"
+        oninput="elReglageHmaxOvr=parseFloat(this.value)||null;_applyReglageOvr()">
+      <span class="rp-lbl">N</span>
+      <span class="rp-lbl">L ref</span>
+      <input type="number" class="rp-input" id="rp-lref" value="${L_ref}" placeholder="m"
+        step="1" min="1" max="300"
+        oninput="elReglageLrefOvr=parseFloat(this.value)||null;_applyReglageOvr()">
+      <span class="rp-lbl">m</span>
+      ${hasOvr ? `<div class="rp-reset"><button onclick="elReglageHmaxOvr=null;elReglageLrefOvr=null;_applyReglageOvr()"
+        style="font-size:.63rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:0 .2rem">↺ Reset</button></div>` : ''}
+    </div>
+    ${canCalc
+      ? `<table class="rtbl">
+          <thead><tr>
+            <th>T</th><th>H [N]</th>
+            <th>f [m] <span style="font-weight:400;opacity:.6">(L = ${L_ref} m)</span></th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`
+      : `<p style="font-size:.67rem;color:var(--muted);margin:.35rem 0 0">H bei −20 °C eingeben, um Tabelle zu berechnen.</p>`}
+  `;
+}
+
+// Übernimmt Override in activePresetRef → aktualisiert Zugkraft + Diagramm
+function _applyReglageOvr() {
+  const { mat, H_max, L_ref } = _reglageBase();
+  if (mat && H_max && mat.E && mat.AK) {
+    const temps = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40];
+    const vals  = temps.map(T => {
+      const H = _reglageH(mat, H_max, L_ref, T);
+      return H !== null ? Math.round(H) : 0;
+    });
+    activePresetRef = { H_Ts_ub_table: { temps, vals } };
+    updateH_Ts_ubFromT1();
+  }
+  renderReglageEditPanel();
+  berechnen();
+}
+
+function toggleReglageEdit() {
+  elReglageOpen = !elReglageOpen;
+  const panel = document.getElementById('el-reglage-edit-panel');
+  const btn   = document.getElementById('el-reglage-edit-btn');
+  if (panel) panel.style.display = elReglageOpen ? '' : 'none';
+  if (btn)   btn.textContent     = elReglageOpen ? 'Schliessen' : 'Bearbeiten';
+  if (elReglageOpen) renderReglageEditPanel();
+}
+
+// ── Hilfsfunktion: effektiver H_max und L_ref für ein Material/Variante ──────
+function _effHmax(mat, variant) {
+  const key = mat._key + (variant && variant !== mat ? ('_' + mat.H_reglage_variants.indexOf(variant)) : '');
+  if (_elMatEdits[key]?.H_max != null) return _elMatEdits[key].H_max;
+  const tbl = variant?.H_reglage_table ?? mat.H_reglage_table;
+  return tbl ? tbl.vals[0] : (variant?.H_reglage ?? mat.H_reglage ?? 6000);
+}
+function _effLref(mat, variant) {
+  const key = mat._key + (variant && variant !== mat ? ('_' + mat.H_reglage_variants.indexOf(variant)) : '');
+  if (_elMatEdits[key]?.L_ref != null) return _elMatEdits[key].L_ref;
+  return variant?.L_ref ?? mat.L_ref ?? 45;
+}
+
+// ── Rendert die dynamische Einzelleiter-Tabelle im Modal ──────────────────────
+function renderReglageElTable() {
+  const wrap = document.getElementById('rgl-el-wrap');
+  if (!wrap) return;
+  const em = _rglElEditMode;
+
+  // Alle Materialien mit ihren Varianten als Zeilen sammeln
+  const rows = [];
+  for (const [key, mat] of Object.entries(MATERIALS)) {
+    mat._key = key; // für Key-Zugriff in _effHmax/_effLref
+    const variants = mat.H_reglage_variants;
+    if (variants && variants.length > 1) {
+      variants.forEach((v, vi) => {
+        const editKey = key + '_' + vi;
+        const Hmax = _effHmax(mat, v);
+        const Lref = _effLref(mat, v);
+        const H10  = _reglageHAt10(mat, v, Hmax, Lref);
+        rows.push({ key: editKey, name: mat.name, label: v.label, Hmax, Lref, H10,
+          note: v.reglage_note ?? '', hasPreset: v.H_reglage != null });
+      });
+    } else {
+      const editKey = key;
+      const Hmax = _effHmax(mat, mat);
+      const Lref = _effLref(mat, mat);
+      const H10  = _reglageHAt10(mat, mat, Hmax, Lref);
+      rows.push({ key: editKey, name: mat.name, label: null, Hmax, Lref, H10,
+        note: mat.reglage_note ?? '', hasPreset: mat.H_reglage != null });
+    }
+  }
+
+  const colNote = em ? '' : '<col style="width:28%">';
+  const thNote  = em ? '' : '<th class="c-left">Anmerkung</th>';
+
+  let tBody = '';
+  for (const r of rows) {
+    const hVal  = r.Hmax != null ? r.Hmax.toLocaleString('de-CH') + ' N' : '—';
+    const h10Val= r.H10  != null ? Math.round(r.H10).toLocaleString('de-CH') + ' N' : '—';
+    const lVal  = r.Lref;
+    const nameCell = r.label
+      ? `${r.name} <span style="color:var(--tertiary);font-size:.7rem">· ${r.label}</span>`
+      : r.name;
+    const preset = r.hasPreset ? '' : ' <span style="color:var(--tertiary);font-size:.65rem">(Voreinst.)</span>';
+
+    if (em) {
+      tBody += `<tr>
+        <td class="c-left">${nameCell}</td>
+        <td class="c-right"><input type="number" step="100" min="100" value="${r.Hmax ?? 6000}"
+          style="width:5rem;border:1px solid #d1d5db;border-radius:5px;padding:.1rem .25rem;font-size:.71rem;text-align:right;font-family:inherit"
+          oninput="_elMatEdits['${r.key}'] = _elMatEdits['${r.key}'] || {}; _elMatEdits['${r.key}'].H_max=parseFloat(this.value)||null; renderReglageElTable()"> N</td>
+        <td class="c-right"><input type="number" step="1" min="1" max="300" value="${r.Lref}"
+          style="width:3.5rem;border:1px solid #d1d5db;border-radius:5px;padding:.1rem .25rem;font-size:.71rem;text-align:right;font-family:inherit"
+          oninput="_elMatEdits['${r.key}'] = _elMatEdits['${r.key}'] || {}; _elMatEdits['${r.key}'].L_ref=parseFloat(this.value)||null; renderReglageElTable()"> m</td>
+        <td class="c-right" style="color:var(--muted)">${h10Val}</td>
+      </tr>`;
+    } else {
+      const tdNote = `<td class="c-left" style="color:var(--muted);font-size:.71rem">${r.note}</td>`;
+      tBody += `<tr>
+        <td class="c-left">${nameCell}</td>
+        <td class="c-right">${hVal}${preset}</td>
+        <td class="c-right" style="color:var(--muted)">${h10Val}</td>
+        <td class="c-ctr" style="color:var(--muted)">${lVal} m</td>
+        ${tdNote}
+      </tr>`;
+    }
+  }
+
+  if (em) {
+    wrap.innerHTML = `<table class="rgl-tbl" style="min-width:460px">
+      <colgroup><col style="width:30%"><col style="width:22%"><col style="width:16%"><col style="width:20%"></colgroup>
+      <thead><tr>
+        <th class="c-left">Material</th>
+        <th class="c-right">H (−20 °C)</th>
+        <th class="c-right">L ref</th>
+        <th class="c-right">H (+10 °C) <span style="font-weight:400;font-size:.65rem">berechnet</span></th>
+      </tr></thead>
+      <tbody>${tBody}</tbody>
+    </table>
+    <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:.6rem">
+      <button onclick="_resetElMatEdits()" style="font-size:.7rem;padding:.2rem .55rem;border:1px solid #d1d5db;border-radius:6px;background:none;cursor:pointer;color:var(--muted);font-family:inherit">Zurücksetzen</button>
+      <button onclick="_applyElMatEdits()" style="font-size:.7rem;padding:.2rem .55rem;border:1px solid var(--primary);border-radius:6px;background:var(--primary);cursor:pointer;color:#fff;font-family:inherit">Übernehmen</button>
+    </div>`;
+  } else {
+    wrap.innerHTML = `<table class="rgl-tbl" style="min-width:460px">
+      <colgroup><col style="width:28%"><col style="width:16%"><col style="width:16%"><col style="width:12%">${colNote}</colgroup>
+      <thead><tr>
+        <th class="c-left">Material</th>
+        <th class="c-right">H (−20 °C)</th>
+        <th class="c-right">H (+10 °C)</th>
+        <th class="c-ctr">L ref</th>
+        ${thNote}
+      </tr></thead>
+      <tbody>${tBody}</tbody>
+    </table>`;
+  }
+}
+
+// Berechnet H bei +10°C aus H_max und L_ref
+function _reglageHAt10(mat, variant, H_max, L_ref) {
+  if (!H_max || !mat.E || !mat.AK) return null;
+  const tbl = variant?.H_reglage_table ?? mat.H_reglage_table;
+  const edits = _elMatEdits[mat._key + (variant && variant !== mat ? ('_' + (mat.H_reglage_variants?.indexOf(variant) ?? 0)) : '')];
+  if (!edits?.H_max && !edits?.L_ref && tbl) {
+    const i = tbl.temps.indexOf(10);
+    if (i >= 0) return tbl.vals[i];
+  }
+  return _reglageH(mat, H_max, L_ref, 10);
+}
+
+function toggleReglageElEdit() {
+  _rglElEditMode = !_rglElEditMode;
+  const btn = document.getElementById('rgl-el-edit-btn');
+  if (btn) btn.textContent = _rglElEditMode ? 'Schliessen' : 'Bearbeiten';
+  renderReglageElTable();
+}
+
+function _resetElMatEdits() {
+  _elMatEdits = {};
+  renderReglageElTable();
+}
+
+function _applyElMatEdits() {
+  // Übernommene Werte in MATERIALS schreiben und activePresetRef aktualisieren
+  for (const [key, mat] of Object.entries(MATERIALS)) {
+    mat._key = key;
+    const applyToVariant = (editKey, variant) => {
+      const ed = _elMatEdits[editKey];
+      if (!ed) return;
+      if (ed.H_max != null || ed.L_ref != null) {
+        const H_max = ed.H_max ?? _effHmax(mat, variant);
+        const L_ref = ed.L_ref ?? _effLref(mat, variant);
+        const temps = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40];
+        const vals  = temps.map(T => { const H = _reglageH(mat, H_max, L_ref, T); return H ? Math.round(H) : 0; });
+        const newTbl = { temps, vals };
+        if (variant === mat) {
+          mat.H_reglage_table = newTbl;
+          mat.H_reglage = vals[temps.indexOf(10)];
+          if (ed.L_ref != null) mat.L_ref = L_ref;
+        } else {
+          variant.H_reglage_table = newTbl;
+          variant.H_reglage = vals[temps.indexOf(10)];
+          if (ed.L_ref != null) variant.L_ref = L_ref;
+        }
+      }
+    };
+    if (mat.H_reglage_variants && mat.H_reglage_variants.length > 1) {
+      mat.H_reglage_variants.forEach((v, vi) => applyToVariant(key + '_' + vi, v));
+    } else {
+      applyToVariant(key, mat);
+    }
+  }
+  _elMatEdits = {};
+  // Sidebar-Preset aktualisieren falls Einzelleiter aktiv
+  if (sysMode === 'el') { const s=document.getElementById('el-material-select'); if(s) { elReglageHmaxOvr=null; elReglageLrefOvr=null; applyElVariant(elBasiskraftIdx); } }
+  _rglElEditMode = false;
+  const btn = document.getElementById('rgl-el-edit-btn');
+  if (btn) btn.textContent = 'Bearbeiten';
+  renderReglageElTable();
+}
+
+// ── CSV Export ────────────────────────────────────────────────────────────────
+function exportMaterialsCSV() {
+  const temps = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40];
+  const sep = ';';
+  const header = ['Material','Code','q [N/m]','alpha [1e-6/K]','E [GPa]','AK [mm²]','L_ref [m]',
+    ...temps.map(T => 'H ' + (T>0?'+':'') + T + ' °C [N]'), 'Anmerkung'].join(sep);
+
+  const lines = ['﻿' + header]; // BOM für Excel-Kompatibilität
+
+  for (const [key, mat] of Object.entries(MATERIALS)) {
+    mat._key = key;
+    const variants = mat.H_reglage_variants;
+    const addRow = (editKey, name, variant) => {
+      const H_max = _effHmax(mat, variant);
+      const L_ref = _effLref(mat, variant);
+      const tbl   = (variant !== mat ? variant?.H_reglage_table : null) ?? mat.H_reglage_table;
+      const Hvals = temps.map(T => {
+        if (tbl) { const i = tbl.temps.indexOf(T); if (i >= 0) return Math.round(tbl.vals[i]); }
+        const H = _reglageH(mat, H_max ?? 6000, L_ref, T);
+        return H ? Math.round(H) : 0;
+      });
+      const note  = (variant !== mat ? variant?.reglage_note : null) ?? mat.reglage_note ?? '';
+      lines.push([
+        name, editKey,
+        mat.q.toFixed(5),
+        (mat.alpha * 1e6).toFixed(2),
+        (mat.E / 1e9).toFixed(1),
+        (mat.AK * 1e6).toFixed(2),
+        L_ref,
+        ...Hvals,
+        '"' + note.replace(/"/g,'""') + '"'
+      ].join(sep));
+    };
+
+    if (variants && variants.length > 1) {
+      variants.forEach((v, vi) => addRow(key + '_' + vi, mat.name + ' · ' + v.label, v));
+    } else {
+      addRow(key, mat.name, mat);
+    }
+  }
+
+  const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Einzelleiter_Materialien.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── CSV Import ────────────────────────────────────────────────────────────────
+function importMaterialsCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      let text = e.target.result;
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1); // BOM entfernen
+      const lines = text.split(/\r?\n/).filter(l => l.trim() && !l.startsWith('#'));
+      if (lines.length < 2) { alert('CSV leer oder ungültig.'); return; }
+      const sep = lines[0].includes(';') ? ';' : ',';
+      const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g,''));
+      const codeIdx  = headers.indexOf('Code');
+      const lrefIdx  = headers.indexOf('L_ref [m]');
+      const temps    = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40];
+      const hIdx     = temps.map(T => headers.indexOf('H ' + (T>0?'+':'') + T + ' °C [N]'));
+      if (codeIdx < 0) { alert('Spalte "Code" nicht gefunden.'); return; }
+
+      let updated = 0;
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(sep).map(c => c.trim().replace(/^"|"$/g,''));
+        const editKey = cols[codeIdx];
+        if (!editKey) continue;
+        const L_ref = lrefIdx >= 0 ? parseFloat(cols[lrefIdx]) : null;
+        const Hvals = hIdx.map(idx => idx >= 0 ? parseFloat(cols[idx]) : NaN);
+        if (Hvals.some(isNaN)) continue;
+        const H_max = Hvals[0]; // H bei -20°C
+
+        // Finde das zugehörige Material
+        let matKey = editKey, variantIdx = -1;
+        if (editKey.includes('_')) {
+          const parts = editKey.split('_');
+          const lastPart = parts[parts.length - 1];
+          if (!isNaN(parseInt(lastPart))) {
+            variantIdx = parseInt(lastPart);
+            matKey = parts.slice(0, -1).join('_');
+          }
+        }
+        const mat = MATERIALS[matKey];
+        if (!mat) continue;
+
+        const applyFn = (target) => {
+          target.H_reglage_table = { temps, vals: Hvals.map(Math.round) };
+          target.H_reglage = Math.round(Hvals[temps.indexOf(10)]);
+          if (L_ref != null && !isNaN(L_ref)) target.L_ref = L_ref;
+        };
+        if (variantIdx >= 0 && mat.H_reglage_variants?.[variantIdx]) {
+          applyFn(mat.H_reglage_variants[variantIdx]);
+          if (variantIdx === 0) applyFn(mat); // Haupteintrag synchen
+        } else {
+          applyFn(mat);
+        }
+        updated++;
+      }
+      if (updated > 0) {
+        if (sysMode === 'el') { elReglageHmaxOvr=null; elReglageLrefOvr=null; applyElVariant(elBasiskraftIdx); }
+        renderReglageElTable();
+        alert(updated + ' Material' + (updated>1?'ien':'') + ' aktualisiert.');
+      } else {
+        alert('Keine bekannten Materialcodes gefunden.');
+      }
+    } catch(err) { alert('Fehler beim Import: ' + err.message); }
+    event.target.value = ''; // Reset file input
+  };
+  reader.readAsText(file, 'UTF-8');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3910,13 +4408,20 @@ function solveStateEq(q, Lm, H1, EA, alpha, deltaT) {
   const C = 1 / EA;
   const K = G / (H1 * H1) - C * H1 + alpha * deltaT;
   let H = H1;
-  for (let i = 0; i < 200; i++) {
+  // When K < 0 the cubic has a local minimum at H_crit = -2K/(3C).
+  // If H1 lies left of that minimum, Newton-Raphson diverges.
+  // Fix: start right of the minimum so the derivative is always positive.
+  if (K < 0) {
+    const H_crit = -2 * K / (3 * C);
+    if (H < H_crit) H = H_crit * 2;
+  }
+  for (let i = 0; i < 300; i++) {
     const f  = C * H ** 3 + K * H ** 2 - G;
     const df = 3 * C * H ** 2 + 2 * K * H;
     if (Math.abs(df) < 1e-20) break;
     const dH = f / df;
+    if (H - dH <= 0) { H = H / 2; continue; } // bisection fallback, never go negative
     H -= dH;
-    if (H < 1) H = 1; // Zugkraft darf nicht negativ werden
     if (Math.abs(dH) < 1e-9) break;
   }
   return H;
@@ -4182,6 +4687,10 @@ function berechnen() {
   }
   const { L, Lm, H_Ts, H_Ts_ub, H_Fd, h1, h2, T1, T2, q_Ts, q_Fd, q_Fd_base,
           sh, q_ges, EA, EA_Ts, alpha, deltaT, spanMode, flCombo, ZL } = readInputs();
+
+  // Auto-Variante nach Spannweite wählen (z.B. Aldrey 300: c ≤/> 35 m)
+  // Massgebend ist Lm (Mittelspannweite), im Einzelfeld-Modus gilt Lm = L
+  autoSelectElVariantBySpan(Lm);
 
   const errorBox = document.getElementById('error-box');
   const warnBox  = document.getElementById('warn-box');
@@ -4550,7 +5059,7 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
 
   // Legende: orangene Kurve je nach Modus beschriften
   const ts2Lbl = document.getElementById('leg-ts2-label');
-  if (ts2Lbl) ts2Lbl.textContent = t('leg.ts2');
+  if (ts2Lbl) ts2Lbl.innerHTML = t('leg.ts2');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -8199,13 +8708,13 @@ function setLang(lang) {
   const t1Lbl = document.getElementById('t1-label');
   if (t1Lbl) t1Lbl.innerHTML = `${t('par.T1')} <span style="font-weight:400;color:var(--tertiary);font-size:.75em">${t('par.T1.sub')}</span>`;
   const t2Lbl = document.getElementById('t2-label');
-  if (t2Lbl) t2Lbl.textContent = t('par.T2');
+  if (t2Lbl) t2Lbl.innerHTML = t('par.T2');
   const eisMain = document.getElementById('eis-label-main');
   if (eisMain) eisMain.innerHTML = t('par.eislast');
   const eisSub = document.getElementById('eis-label-sub');
-  if (eisSub) eisSub.textContent = t('par.eislast.sub');
+  if (eisSub) eisSub.innerHTML = t('par.eislast.sub');
   const eisPopup = document.getElementById('eis-popup-text');
-  if (eisPopup) eisPopup.textContent = t('par.eislast.hint');
+  if (eisPopup) eisPopup.innerHTML = t('par.eislast.hint');
 
   // ── 3-Punkte panel ───────────────────────────────────────────
   const tpHdr = document.getElementById('three-pt-hdr');
@@ -8288,7 +8797,7 @@ function setLang(lang) {
   const legSehne = document.getElementById('leg-sehne-label');
   if (legSehne) legSehne.textContent = t('leg.sehne');
   const legFdSoll = document.getElementById('leg-fd-solllage-label');
-  if (legFdSoll) legFdSoll.textContent = t('leg.fd.solllage');
+  if (legFdSoll) legFdSoll.innerHTML = t('leg.fd.solllage');
 
   // ── Handbuch modal (if open or preload) ───────────────────────
   translateHandbuch();
@@ -9085,6 +9594,13 @@ renderObstacleList();
         <tr style="background:#f9fafb"><td style="padding:3px 8px">StCu 92 + Cu 150</td><td style="padding:3px 8px;text-align:right">1.60</td><td style="padding:3px 8px;text-align:right">12 000</td><td style="padding:3px 8px;text-align:right">10 000</td><td style="padding:3px 8px;text-align:right">25 %</td></tr>
       </table>
 
+      <div class="hb-lang hb-de"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.4 &nbsp;Einzelleiter — Basiszugkraft bei −20 °C</p>
+      <p style="font-size:.82rem">Für Einzelleiter ohne tabellarische Herstellerwerte gilt 6 000 N als Basiszugkraft. Leiter mit offizieller Reglagetabelle (z. B. Cu 95 / Cu 150) verwenden diese Tabelle direkt. Alle Werte können in der Reglagetabelle oder in der Seitenleiste per <em>Bearbeiten</em> überschrieben werden (→ Abschn. 6.5 / 6.6).</p></div>
+      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.4 &nbsp;Conducteur seul — Force de base à −20 °C</p>
+      <p style="font-size:.82rem">Pour les conducteurs seuls sans valeurs tabulaires du fabricant, 6 000 N est appliqué comme force de base. Les conducteurs avec un tableau de réglage officiel (p. ex. Cu 95 / Cu 150) utilisent directement ce tableau. Toutes les valeurs peuvent être remplacées dans le tableau de réglage ou dans la barre latérale via <em>Modifier</em> (→ sect. 6.5 / 6.6).</p></div>
+      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.4 &nbsp;Conduttore singolo — Forza di base a −20 °C</p>
+      <p style="font-size:.82rem">Per i conduttori singoli senza valori tabulari del produttore, 6 000 N viene applicato come forza di base. I conduttori con una tabella di regolazione ufficiale (es. Cu 95 / Cu 150) utilizzano direttamente questa tabella. Tutti i valori possono essere sostituiti nella tabella di regolazione o nella barra laterale tramite <em>Modifica</em> (→ sez. 6.5 / 6.6).</p></div>
+
       <!-- ══ 6 Diagnosewerkzeuge & Sonderfunktionen ══ -->
       <h3 id="hb-werkzeuge" style="font-size:.95rem;font-weight:700;color:#212121;margin:1.2rem 0 .4rem;border-bottom:2px solid #e5e5e5;padding-bottom:.25rem">6 &nbsp;<span id="hb-s6">Diagnosewerkzeuge &amp; Sonderfunktionen</span></h3>
 
@@ -9200,6 +9716,94 @@ renderObstacleList();
           <li>La scheda arancione del punto più basso mostra anch'essa m s.l.m. se PRF è impostato.</li>
           <li>Esportazione PDF: il protocollo di calcolo contiene tutti gli inserimenti, risultati e il diagramma.</li>
         </ul>
+      </div><!-- /hb-it -->
+
+      <!-- ══ 6.5 Einzelleiter — Reglagewerte ══ -->
+
+      <!-- DE -->
+      <div class="hb-lang hb-de">
+        <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.5 &nbsp;Einzelleiter — Reglagewerte &amp; Basiszugkraft</p>
+        <p>Im Modus <em>Einzelleiter</em> zeigt die Seitenleiste eine Infobox <strong>Reglagewerte</strong> mit der temperaturabhängigen Reglagezugkraft. Über die Schaltfläche <strong>Bearbeiten</strong> können zwei Referenzparameter angepasst werden:</p>
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
+          <tr style="background:#f3f4f6">
+            <td class="hb-tab-param" style="padding:4px 8px;font-weight:600;width:32%">Parameter</td>
+            <td class="hb-tab-desc" style="padding:4px 8px;font-weight:600">Beschreibung</td>
+          </tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">H (−20 °C)</td><td style="padding:3px 8px">Basiszugkraft bei −20 °C [N]. Voreinstellung: tabellarische Herstellerwerte; bei Leitern ohne Tabelle 6 000 N.</td></tr>
+          <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">L ref</td><td style="padding:3px 8px">Referenzspannweite [m], auf die die Zustandsgleichung angewendet wird. Standard: 45 m (Cu); 30 m (Aldrey c ≤ 35 m).</td></tr>
+        </table>
+        <p>Die Änderungen wirken sofort auf das Diagramm und gelten als Sitzungsüberschreibung (kein dauerhafter Speicher). Mit <strong>↺ Reset</strong> werden die Herstellerwerte wiederhergestellt.</p>
+        <p style="font-size:.82rem;color:#6b7280">Für Aldrey-Leiter (240 / 300 / 400 / 550 mm²) wird die Reglagevariante <strong>automatisch</strong> nach der Mittelspannweite Lm gewählt: c ≤ 35 m → 30 m Referenz; c > 35 m → 45 m Referenz.</p>
+      </div><!-- /hb-de -->
+
+      <!-- FR -->
+      <div class="hb-lang hb-fr" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.5 &nbsp;Conducteur seul — Valeurs de réglage &amp; force de base</p>
+        <p>En mode <em>Conducteur seul</em>, la barre latérale affiche une boîte d'information <strong>Valeurs de réglage</strong> avec la force de traction de réglage dépendante de la température. Via le bouton <strong>Modifier</strong>, deux paramètres de référence peuvent être ajustés:</p>
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
+          <tr style="background:#f3f4f6">
+            <td style="padding:4px 8px;font-weight:600;width:32%">Paramètre</td>
+            <td style="padding:4px 8px;font-weight:600">Description</td>
+          </tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">H (−20 °C)</td><td style="padding:3px 8px">Force de base à −20 °C [N]. Valeur par défaut: valeurs tabulaires du fabricant; pour les conducteurs sans table 6 000 N.</td></tr>
+          <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">L ref</td><td style="padding:3px 8px">Portée de référence [m] sur laquelle l'équation d'état est appliquée. Standard: 45 m (Cu); 30 m (Aldrey c ≤ 35 m).</td></tr>
+        </table>
+        <p>Les modifications prennent effet immédiatement sur le diagramme et sont valables comme substitution de session (pas de mémoire permanente). Avec <strong>↺ Reset</strong>, les valeurs du fabricant sont restaurées.</p>
+        <p style="font-size:.82rem;color:#6b7280">Pour les conducteurs Aldrey (240 / 300 / 400 / 550 mm²), la variante de réglage est sélectionnée <strong>automatiquement</strong> selon la portée équivalente Lm: c ≤ 35 m → référence 30 m; c > 35 m → référence 45 m.</p>
+      </div><!-- /hb-fr -->
+
+      <!-- IT -->
+      <div class="hb-lang hb-it" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.5 &nbsp;Conduttore singolo — Valori di regolazione &amp; forza di base</p>
+        <p>In modalità <em>Conduttore singolo</em>, la barra laterale mostra una casella informativa <strong>Valori di regolazione</strong> con la forza di tiro di regolazione dipendente dalla temperatura. Tramite il pulsante <strong>Modifica</strong>, è possibile adattare due parametri di riferimento:</p>
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
+          <tr style="background:#f3f4f6">
+            <td style="padding:4px 8px;font-weight:600;width:32%">Parametro</td>
+            <td style="padding:4px 8px;font-weight:600">Descrizione</td>
+          </tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">H (−20 °C)</td><td style="padding:3px 8px">Forza di base a −20 °C [N]. Valore predefinito: valori tabulari del produttore; per conduttori senza tabella 6 000 N.</td></tr>
+          <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">L ref</td><td style="padding:3px 8px">Campata di riferimento [m] su cui viene applicata l'equazione di stato. Standard: 45 m (Cu); 30 m (Aldrey c ≤ 35 m).</td></tr>
+        </table>
+        <p>Le modifiche hanno effetto immediato sul diagramma e valgono come sostituzione di sessione (nessuna memoria permanente). Con <strong>↺ Reset</strong> vengono ripristinati i valori del produttore.</p>
+        <p style="font-size:.82rem;color:#6b7280">Per i conduttori Aldrey (240 / 300 / 400 / 550 mm²), la variante di regolazione viene selezionata <strong>automaticamente</strong> in base alla campata equivalente Lm: c ≤ 35 m → riferimento 30 m; c > 35 m → riferimento 45 m.</p>
+      </div><!-- /hb-it -->
+
+      <!-- ══ 6.6 Reglagetabelle — CSV Export/Import ══ -->
+
+      <!-- DE -->
+      <div class="hb-lang hb-de">
+        <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.6 &nbsp;Reglagetabelle — CSV Export / Import</p>
+        <p>Die Reglagetabelle (erreichbar über das Tabellensymbol im Header) zeigt für alle Einzelleitertypen die temperaturabhängige Reglagezugkraft von −20 °C bis +40 °C. Über die Schaltflächen im Header der Tabelle:</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>Bearbeiten</strong> — schaltet alle Materialparameter (H bei −20 °C und L ref) zur Bearbeitung frei. Änderungen gelten für die gesamte Sitzung.</li>
+          <li><strong>Export CSV</strong> — exportiert alle aktuellen H(−20 °C)- und L-ref-Werte als semikolongetrennte CSV-Datei (UTF-8 BOM, direkt in Excel öffenbar).</li>
+          <li><strong>Import CSV</strong> — lädt eine zuvor exportierte CSV-Datei und setzt alle Werte entsprechend. Unbekannte Spalten werden ignoriert; nur gültige Zahlen werden übernommen.</li>
+        </ul>
+        <p style="font-size:.8rem;color:#6b7280">Die importierten Werte gelten als Sitzungsüberschreibung und werden beim Neuladen der Seite nicht gespeichert. Für dauerhafte Projektdaten die Speichern-Funktion (Projektdatei) verwenden.</p>
+      </div><!-- /hb-de -->
+
+      <!-- FR -->
+      <div class="hb-lang hb-fr" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.6 &nbsp;Tableau de réglage — Export / Import CSV</p>
+        <p>Le tableau de réglage (accessible via l'icône tableau dans l'en-tête) affiche pour tous les types de conducteurs seuls la force de traction de réglage dépendante de la température de −20 °C à +40 °C. Via les boutons dans l'en-tête du tableau:</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>Modifier</strong> — déverrouille tous les paramètres matériaux (H à −20 °C et L ref) pour modification. Les modifications s'appliquent à toute la session.</li>
+          <li><strong>Export CSV</strong> — exporte toutes les valeurs H(−20 °C) et L ref actuelles sous forme de fichier CSV séparé par des points-virgules (UTF-8 BOM, directement ouvrable dans Excel).</li>
+          <li><strong>Import CSV</strong> — charge un fichier CSV précédemment exporté et applique toutes les valeurs. Les colonnes inconnues sont ignorées; seuls les nombres valides sont repris.</li>
+        </ul>
+        <p style="font-size:.8rem;color:#6b7280">Les valeurs importées sont valables comme substitution de session et ne sont pas sauvegardées lors du rechargement de la page. Utiliser la fonction Enregistrer (fichier projet) pour les données de projet permanentes.</p>
+      </div><!-- /hb-fr -->
+
+      <!-- IT -->
+      <div class="hb-lang hb-it" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.6 &nbsp;Tabella di regolazione — Export / Import CSV</p>
+        <p>La tabella di regolazione (accessibile tramite l'icona tabella nell'intestazione) mostra per tutti i tipi di conduttori singoli la forza di tiro di regolazione dipendente dalla temperatura da −20 °C a +40 °C. Tramite i pulsanti nell'intestazione della tabella:</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>Modifica</strong> — sblocca tutti i parametri materiale (H a −20 °C e L ref) per la modifica. Le modifiche si applicano all'intera sessione.</li>
+          <li><strong>Export CSV</strong> — esporta tutti i valori H(−20 °C) e L ref attuali come file CSV separato da punti e virgola (UTF-8 BOM, apribile direttamente in Excel).</li>
+          <li><strong>Import CSV</strong> — carica un file CSV precedentemente esportato e applica tutti i valori. Le colonne sconosciute vengono ignorate; vengono accettati solo numeri validi.</li>
+        </ul>
+        <p style="font-size:.8rem;color:#6b7280">I valori importati valgono come sostituzione di sessione e non vengono salvati al ricaricamento della pagina. Per i dati di progetto permanenti utilizzare la funzione Salva (file di progetto).</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 7 Beispielberechnung ══ -->
@@ -9829,44 +10433,16 @@ renderObstacleList();
 
       <!-- Einzelleiter -->
       <div>
-        <div class="rgl-section">Einzelleiter — Reglagezugkraft</div>
-        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
-        <table class="rgl-tbl" style="min-width:380px">
-          <colgroup>
-            <col style="width:32%">
-            <col style="width:16%">
-            <col style="width:14%">
-            <col style="width:38%">
-          </colgroup>
-          <thead><tr>
-            <th class="c-left">Material</th>
-            <th class="c-right">H<sub>Reglage</sub></th>
-            <th class="c-ctr">Basiskraft</th>
-            <th class="c-left">Anmerkung</th>
-          </tr></thead>
-          <tbody>
-            <tr>
-              <td class="c-left">Cu 95 mm²</td>
-              <td class="c-right">3'700 N</td>
-              <td class="c-ctr" style="color:var(--muted)">6 kN</td>
-              <td class="c-left" style="color:var(--muted);font-size:.72rem">Rückleiter / Speiseleitung</td>
-            </tr>
-            <tr>
-              <td class="c-left">Cu 150 mm²</td>
-              <td class="c-right">5'600 N</td>
-              <td class="c-ctr" style="color:var(--muted)">9 kN</td>
-              <td class="c-left" style="color:var(--muted);font-size:.72rem">Normale Zugkraft</td>
-            </tr>
-            <tr>
-              <td class="c-left">Aldrey 300 mm²</td>
-              <td class="c-right">2'900 N</td>
-              <td class="c-ctr" style="color:var(--muted)">6 kN</td>
-              <td class="c-left" style="color:var(--muted);font-size:.72rem">Lm &gt; 35 m</td>
-            </tr>
-          </tbody>
-        </table>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.45rem">
+          <div class="rgl-section" style="margin-bottom:0">Einzelleiter — Reglagezugkraft</div>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <button id="rgl-el-edit-btn" onclick="toggleReglageElEdit()" style="font-size:.68rem;padding:.18rem .5rem;border:1px solid #c8c8c8;border-radius:6px;background:none;cursor:pointer;color:var(--muted);font-family:inherit">Bearbeiten</button>
+            <button onclick="exportMaterialsCSV()" style="font-size:.68rem;padding:.18rem .5rem;border:1px solid #c8c8c8;border-radius:6px;background:none;cursor:pointer;color:var(--muted);font-family:inherit">Export CSV</button>
+            <label style="font-size:.68rem;padding:.18rem .5rem;border:1px solid #c8c8c8;border-radius:6px;background:none;cursor:pointer;color:var(--muted);display:inline-block">Import CSV<input type="file" accept=".csv,.txt" onchange="importMaterialsCSV(event)" style="display:none"></label>
+          </div>
         </div>
-        <p class="rgl-note">Reglagezugkraft bei +10 °C, Lm = 45 m, Berechnungsart «Ausgleichend» &nbsp;·&nbsp; (SBB «Durchhang 2026.xlsm»)</p>
+        <div id="rgl-el-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
+        <p class="rgl-note" id="rgl-el-note">Reglagezugkraft bei +10 °C, Lm = 45 m, Berechnungsart «Ausgleichend» &nbsp;·&nbsp; (SBB «Durchhang 2026.xlsm»)</p>
       </div>
 
     </div>
