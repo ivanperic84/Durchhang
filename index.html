@@ -355,6 +355,10 @@ body {
   transition: background .15s, color .15s, box-shadow .15s;
   white-space: normal;
   line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 .seg-btn.active {
   background: #fff;
@@ -502,35 +506,35 @@ body {
   gap: .75rem;
   flex-shrink: 0;
 }
-.zoom-controls { display: flex; align-items: center; gap: .55rem; }
-.zoom-slider {
-  -webkit-appearance: none;
-  width: 110px; height: 4px;
-  border-radius: 2px;
-  background: var(--border);
-  outline: none; cursor: pointer;
+.zoom-controls {
+  display: flex; align-items: center; gap: .4rem;
+  padding: .3rem .7rem;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
-.zoom-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  background: #666;
+.zoom-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  width: 22px; height: 22px;
+  font-size: .9rem;
   cursor: pointer;
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 1px #999;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-family: inherit;
+  flex-shrink: 0;
 }
-.zoom-slider::-moz-range-thumb {
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  background: #666;
-  cursor: pointer;
-  border: 2px solid #fff;
-}
+.zoom-btn:hover { color: var(--text); border-color: #aaa; }
+.zoom-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
 .zoom-reset-btn {
   font-size: 1.05rem; color: var(--muted);
   background: none; border: none;
-  cursor: pointer; padding: 0 .2rem;
-  font-family: inherit;
+  cursor: pointer; padding: 0 .15rem;
+  font-family: inherit; flex-shrink: 0;
 }
 .zoom-reset-btn:hover { color: var(--text); }
 .zoom-level-lbl {
@@ -538,6 +542,15 @@ body {
   font-size: .72rem; color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+.share-item {
+  display: flex; align-items: center; gap: .45rem;
+  width: 100%; padding: .45rem .75rem;
+  border: none; background: none;
+  cursor: pointer; font-size: .74rem; font-family: inherit;
+  color: var(--text); text-align: left;
+  white-space: nowrap; transition: background .12s;
+}
+.share-item:hover { background: #f1f5f9; }
 .pdf-draw-btn {
   display: flex; align-items: center; gap: .35rem;
   font-size: .72rem; font-weight: 500; font-family: inherit;
@@ -913,6 +926,8 @@ button.header-manual-link {
 button.header-manual-link:hover {
   background: rgba(235,0,0,.12);
 }
+#foto-undo:not([disabled]), #foto-redo:not([disabled]) { opacity: 1; color: var(--text); }
+#foto-undo[disabled], #foto-redo[disabled] { opacity: .3; cursor: default; }
 
 /* ── Tooltip (shown during drag) ── */
 #drag-tooltip {
@@ -1075,6 +1090,53 @@ button.header-manual-link:hover {
   border-radius: 6px; transition: background .15s;
 }
 .modal-close:hover { background: var(--border); }
+.foto-role-btn {
+  border: 1px solid #d1d5db; border-radius: 5px;
+  padding: .18rem .45rem; font-size: .72rem;
+  font-family: inherit; cursor: pointer; line-height: 1.4;
+  transition: all .12s;
+}
+.foto-role-btn:hover { filter: brightness(.93); }
+
+/* ── Foto Vollbild ── */
+#foto-canvas-area:fullscreen,
+#foto-canvas-area:-webkit-full-screen {
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+#foto-canvas-area:fullscreen #foto-role-btns,
+#foto-canvas-area:-webkit-full-screen #foto-role-btns {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: .45rem .7rem;
+  flex-shrink: 0;
+}
+#foto-canvas-area:fullscreen #foto-role-btns span,
+#foto-canvas-area:-webkit-full-screen #foto-role-btns span { color: var(--muted); }
+#foto-canvas-area:fullscreen #foto-canvas-wrap,
+#foto-canvas-area:-webkit-full-screen #foto-canvas-wrap {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;    /* Scrollen bei langen Bildern */
+  overflow-x: hidden;
+  background: var(--bg);
+  border-radius: 0;
+  margin-bottom: 0;
+  min-height: 0;
+  padding: .5rem 0;
+}
+#foto-canvas-area:fullscreen #foto-canvas,
+#foto-canvas-area:-webkit-full-screen #foto-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+  cursor: crosshair;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
 .modal-section-label {
   font-size: .68rem; font-weight: 700; color: var(--muted);
   text-transform: uppercase; letter-spacing: .06em;
@@ -1297,6 +1359,13 @@ button.header-manual-link:hover {
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
     <span class="header-manual-text">Datei</span>
   </button>
+  <button onclick="totalReset()" class="header-manual-link" title="Zurücksetzen auf Standardwerte"
+    style="background:none;border:none;cursor:pointer;color:#444">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <path d="M2.5 8a5.5 5.5 0 1 1 1.1 3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <polyline points="2.5,4.5 2.5,8 6,8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
   <button id="quick-save-btn" onclick="quickSave()" title="Speichern"
     style="display:flex;align-items:center;gap:.3rem;padding:.28rem .45rem;border-radius:7px;
            border:none;background:none;color:#333;font-size:.78rem;font-weight:500;
@@ -1450,7 +1519,7 @@ button.header-manual-link:hover {
         <div class="field">
           <label id="span-L-label">Spannweite L</label>
           <div class="input-wrap">
-            <input type="number" id="span" value="45" min="0.1" step="0.1" oninput="berechnen()" onchange="berechnen()">
+            <input type="number" id="span" value="45" min="0.1" step="0.1" oninput="_autoFillKmRight();berechnen()" onchange="_autoFillKmRight();berechnen()">
             <span class="input-unit">m</span>
           </div>
         </div>
@@ -1477,55 +1546,119 @@ button.header-manual-link:hover {
       </div>
     </div>
 
-    <!-- 3. Befestigungspunkte -->
-    <div class="card">
-      <div class="card-title"><span id="card-title-bp">Befestigungspunkte Ts</span> <span id="bp-card-sub" style="font-weight:400;color:var(--tertiary)">(über SOK)</span></div>
+    <!-- 3. Befestigungspunkte + Mastangaben (zusammengeführt) -->
+    <div class="card" id="foto-sidebar-card">
+      <div class="card-title"><span id="card-title-bp">Höheneingabe</span> <span id="bp-card-sub" style="font-weight:400;color:var(--tertiary)"></span></div>
+
+      <!-- Masthöhe h1 / h2 -->
       <div class="field-row">
         <div class="field">
-          <label id="h1-label">Höhe links h<sub>1</sub> <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über SOK</span></label>
+          <label id="h1-label">Höhe Leiter h&#x2081; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über Mastfuss</span></label>
           <div class="input-wrap">
             <input type="text" inputmode="decimal" id="h1" value="7.00" oninput="onSokMumInput();berechnen()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
             <span class="input-unit">m</span>
           </div>
         </div>
         <div class="field">
-          <label id="h2-label">Höhe rechts h<sub>2</sub> <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über SOK</span></label>
+          <label id="h2-label">Höhe Leiter h&#x2082; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über Mastfuss</span></label>
           <div class="input-wrap">
             <input type="text" inputmode="decimal" id="h2" value="7.00" oninput="onSokMumInput();berechnen()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
             <span class="input-unit">m</span>
           </div>
         </div>
       </div>
-      <!-- Optionale SOK-Referenz m ü. M. (links + rechts) -->
+
+      <!-- Mastlänge (für Foto-Kalibrierung) — nur im Foto-Tab sichtbar -->
+      <div id="mastlaenge-row" class="field-row" style="display:none;margin-top:.5rem">
+        <div class="field">
+          <label>Mastlänge links</label>
+          <div class="input-wrap">
+            <input type="text" inputmode="decimal" id="foto-hmast-L" placeholder="m"
+              onblur="const v=parseFloat(this.value);if(!isNaN(v)&&v>0)this.value=v;const r=document.getElementById('foto-hmast-R');if(r&&!r.value)r.value=this.value;fotoRecalcIfReady();"
+              onchange="fotoRecalcIfReady()">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Mastlänge rechts <span style="font-weight:400;color:var(--tertiary);font-size:.8em">leer = links</span></label>
+          <div class="input-wrap">
+            <input type="text" inputmode="decimal" id="foto-hmast-R" placeholder="= links"
+              onblur="const v=parseFloat(this.value);if(!isNaN(v)&&v>0)this.value=v;fotoRecalcIfReady();"
+              onchange="fotoRecalcIfReady()">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Δ Mastfuss-SOK -->
+      <div class="field-row" style="margin-top:.5rem">
+        <div class="field">
+          <label style="white-space:nowrap">&#x394; Mastfuss-SOK li</label>
+          <div class="input-wrap">
+            <input type="number" id="mast-delta-sok-left" step="0.01" placeholder="0.00"
+              oninput="berechnen()" onchange="berechnen()"
+              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+        <div class="field">
+          <label style="white-space:nowrap">&#x394; Mastfuss-SOK re</label>
+          <div class="input-wrap">
+            <input type="number" id="mast-delta-sok-right" step="0.01" placeholder="0.00"
+              oninput="berechnen()" onchange="berechnen()"
+              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOK m ü. M. (optional) -->
       <div style="margin-top:.65rem">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem">
           <label id="sok-optional-label" style="font-size:.72rem;color:var(--muted)">SOK m ü. M. (optional)</label>
           <button id="sok-clear-btn" onclick="clearSokMum()" title="SOK-Referenz löschen"
-            style="padding:.15rem .4rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:.7rem;cursor:pointer;line-height:1">✕ löschen</button>
+            style="padding:.15rem .4rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:.7rem;cursor:pointer;line-height:1">&#x2715; löschen</button>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem">
-          <div>
-            <div class="input-wrap">
-              <input type="number" id="sok-mum-left" placeholder="— m ü.M." step="0.001"
-                style="font-size:.78rem"
-                oninput="onSokMumLeftInput()" onchange="onSokMumLeftInput()">
-              <span class="input-unit" style="font-size:.7rem">m</span>
-            </div>
+          <div class="input-wrap">
+            <input type="number" id="sok-mum-left" placeholder="— m ü.M." step="0.001"
+              style="font-size:.78rem"
+              oninput="onSokMumLeftInput()" onchange="onSokMumLeftInput()">
+            <span class="input-unit" style="font-size:.7rem">m</span>
           </div>
-          <div>
-            <div class="input-wrap">
-              <input type="number" id="sok-mum-right" placeholder="— m ü.M." step="0.001"
-                style="font-size:.78rem"
-                oninput="this.dataset.userEdited='1';onSokMumRightInput()" onchange="this.dataset.userEdited='1';onSokMumRightInput()">
-              <span class="input-unit" style="font-size:.7rem">m</span>
-            </div>
+          <div class="input-wrap">
+            <input type="number" id="sok-mum-right" placeholder="— m ü.M." step="0.001"
+              style="font-size:.78rem"
+              oninput="this.dataset.userEdited='1';onSokMumRightInput()" onchange="this.dataset.userEdited='1';onSokMumRightInput()">
+            <span class="input-unit" style="font-size:.7rem">m</span>
           </div>
         </div>
       </div>
       <div id="sok-mum-info" style="display:none;margin-top:.35rem;font-size:.7rem;color:var(--muted)"></div>
-      <p id="bp-drag-hint" style="font-size:.72rem;color:var(--tertiary);margin-top:.5rem;font-style:italic">
-        Ankerpunkte im Diagramm verschiebbar
-      </p>
+
+      <!-- Mastbezeichnung: Name/Nr. + KM -->
+      <div style="margin-top:.6rem">
+        <label style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.28rem">Bezeichnung <span style="font-weight:400;color:var(--tertiary)">(optional)</span></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.25rem .4rem">
+          <span style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem">Name / Nr. links</span>
+          <span style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem">Name / Nr. rechts</span>
+          <input type="text" id="mast-num-left" placeholder="Nr."
+            oninput="_syncMastNames();berechnen()"
+            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%">
+          <input type="text" id="mast-num-right" placeholder="Nr."
+            oninput="_syncMastNames();berechnen()"
+            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%">
+          <span style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM links</span>
+          <span style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM rechts</span>
+          <input type="text" id="mast-km-left" placeholder="000.000"
+            oninput="_autoFillKmRight()" onchange="_autoFillKmRight()"
+            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%;letter-spacing:.03em">
+          <input type="text" id="mast-km-right" placeholder="000.000"
+            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%;letter-spacing:.03em">
+        </div>
+      </div>
+
+      <p id="bp-drag-hint" style="display:none;font-size:.72rem;color:var(--tertiary);margin-top:.5rem;font-style:italic"></p>
     </div>
 
     <!-- 4. Parameter -->
@@ -1541,10 +1674,26 @@ button.header-manual-link:hover {
             </div>
           </div>
           <div class="field">
-            <label id="tension-label">H Ts unbelastet</label>
-            <div class="input-wrap">
-              <input type="number" id="tension" value="2100" min="0.1" step="1" oninput="if(!_tensionAutoFilling) activePresetRef=null; berechnen()" onchange="berechnen()">
+            <label id="tension-label" style="display:flex;justify-content:space-between;align-items:center;gap:.3rem">
+              <span>H Ts unbelastet</span>
+              <button id="tension-reset-btn" onclick="resetHToReglage()" title="H auf Reglagetabellenwert zurücksetzen"
+                style="display:none;padding:.1rem .35rem;border-radius:5px;border:1px solid #d97706;background:none;color:#d97706;font-size:.65rem;cursor:pointer;font-family:inherit;line-height:1.4;white-space:nowrap;flex-shrink:0">&#x21BA; Reglage</button>
+            </label>
+            <div class="input-wrap" id="tension-wrap">
+              <input type="number" id="tension" value="2100" min="0.1" step="1" oninput="if(!_tensionAutoFilling){activePresetRef=null;_updateTensionFotoState(false);} berechnen()" onchange="berechnen()">
               <span class="input-unit">N</span>
+            </div>
+            <!-- Delta + Info: unter dem Feld, nur bei Foto-Override -->
+            <div id="tension-foto-note" style="display:none;margin-top:.25rem;font-size:.67rem;color:#92400e;background:#fef3c7;border:1px solid #fcd34d;border-radius:4px;padding:.28rem .5rem;line-height:1.4">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:.4rem;white-space:nowrap">
+                <span style="font-weight:600">Foto-Feldaufnahme</span>
+                <button onclick="resetHToReglage()" title="H auf Reglagetabellenwert zurücksetzen"
+                  style="background:none;border:none;padding:0;font-size:.67rem;color:#92400e;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;text-decoration:underline;line-height:1">&#x21BA; Reglage</button>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:.3rem;margin-top:.15rem">
+                <span id="tension-delta" style="display:none;font-size:.82rem;font-weight:700;line-height:1"></span>
+                <span style="font-size:.63rem;color:#b45309">vs. Reglagewert bei T&#x2081;</span>
+              </div>
             </div>
             <!-- N-FL: berechnete Belastet-Zugkraft (passiv) -->
             <div id="h-belastet-display" style="margin-top:.4rem">
@@ -1557,7 +1706,7 @@ button.header-manual-link:hover {
             </div>
             <!-- 3-Punkte-Toggle -->
             <button id="three-pt-btn" onclick="toggle3pt()"
-              style="margin-top:.5rem;padding:.18rem .5rem .18rem .35rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--tertiary);font-size:.68rem;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:.3rem;line-height:1.3">
+              style="margin-top:.5rem;padding:.18rem .5rem .18rem .35rem;border-radius:6px;border:1px solid #c4cad1;background:none;color:#4e5965;font-size:.68rem;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:.3rem;line-height:1.3">
               <span style="font-size:.72rem;opacity:.7">⊕</span> <span id="three-pt-btn-label">3-Punkte-Messung</span>
             </button>
           </div>
@@ -1788,11 +1937,14 @@ button.header-manual-link:hover {
   <!-- ── Canvas ── -->
   <div class="canvas-card">
     <div class="canvas-header">
-      <div style="display:flex;align-items:center;gap:.6rem">
-        <div class="seg-ctrl canvas-view-seg">
+      <div style="display:flex;align-items:center;gap:.6rem;min-width:0;flex:1">
+        <div class="seg-ctrl canvas-view-seg" style="flex-shrink:0">
           <button class="seg-btn active" id="view-seg-diagramm"  onclick="setCanvasView('diagramm')">Diagramm</button>
           <button class="seg-btn"        id="view-seg-zeichnung" onclick="setCanvasView('zeichnung')">Zeichnung</button>
+          <button class="seg-btn"        id="view-seg-foto"      onclick="setCanvasView('foto')">Foto</button>
         </div>
+        <!-- Status-Info (nur im Foto-Tab sichtbar) -->
+        <span id="foto-status" style="display:none;font-size:.71rem;color:#2563eb;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">Foto laden, dann Punkte klicken</span>
         <div id="vex-header-ctrl" style="display:none;align-items:center;gap:.35rem;font-size:.7rem;color:var(--muted)">
           <span style="white-space:nowrap">Überhöhung</span>
           <select id="vex-select" onchange="setDrawingVEx(this.value)"
@@ -1806,6 +1958,38 @@ button.header-manual-link:hover {
       </div>
       <div style="display:flex;align-items:center;gap:.5rem">
         <span class="drag-hint" id="canvas-drag-hint" style="display:none"></span>
+        <!-- Teilen / Export -->
+        <div style="position:relative">
+          <button id="share-btn" onclick="toggleShareMenu(event)" title="Export / Teilen"
+            style="padding:.25rem .5rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:.3rem;font-size:.72rem;font-family:inherit;transition:background .15s,color .15s"
+            onmouseover="this.style.background='#f1f5f9';this.style.color='var(--text)'"
+            onmouseout="this.style.background='none';this.style.color='var(--muted)'">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+              <path d="M3 12h10M8 3v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M5 6l3-3 3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Teilen
+          </button>
+          <div id="share-menu" style="display:none;position:absolute;right:0;top:calc(100% + 5px);background:var(--bg);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:215px;z-index:200;overflow:hidden">
+            <button class="share-item" onclick="pdfExport();closeShareMenu()">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Berechnung PDF
+            </button>
+            <button class="share-item" onclick="exportDxf();closeShareMenu()">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 2V14M2 5.5L14 5.5M2 10.5L14 10.5" stroke="currentColor" stroke-width="1" stroke-linejoin="round" opacity="0.5"/></svg>
+              3D DXF (1:100)
+            </button>
+            <div style="height:1px;background:var(--border);margin:.1rem 0"></div>
+            <button class="share-item" onclick="pdfExportDrawing();closeShareMenu()">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Zeichnung PDF
+            </button>
+            <button class="share-item" id="share-foto-dl" onclick="fotoSaveImage();closeShareMenu()" style="display:none">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Fotoaufnahme PNG
+            </button>
+          </div>
+        </div>
         <button id="fullscreen-btn" onclick="toggleCanvasFullscreen()"
           title="Vollbild"
           style="padding:.25rem .4rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s"
@@ -1824,16 +2008,11 @@ button.header-manual-link:hover {
     <div id="scale-view">
       <div id="scale-toolbar">
         <div class="zoom-controls">
-          <input type="range" class="zoom-slider" id="zoom-slider"
-                 min="50" max="400" step="25" value="100"
-                 oninput="adjustDrawingZoom(+this.value/100)">
+          <button class="zoom-btn" onclick="adjustDrawingZoom(drawingZoom - 0.25)" title="Verkleinern">−</button>
+          <button class="zoom-btn" onclick="adjustDrawingZoom(drawingZoom + 0.25)" title="Vergrössern">+</button>
           <span class="zoom-level-lbl" id="drawing-zoom-label">100%</span>
           <button class="zoom-reset-btn" onclick="adjustDrawingZoom(1)" title="Zoom zurücksetzen">↺</button>
         </div>
-        <button class="pdf-draw-btn" onclick="pdfExportDrawing()">
-          <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          PDF
-        </button>
       </div>
       <div id="drawing-viewport">
         <div id="scale-svg-container"></div>
@@ -1847,6 +2026,244 @@ button.header-manual-link:hover {
         <span id="scale-min-clearance-note" style="display:none;color:#5a6a7a;font-weight:600;white-space:nowrap"></span>
       </div>
     </div>
+
+    <!-- ── Foto-Tab-Panel ── -->
+    <div id="foto-view" style="display:none;flex-direction:column;overflow:hidden">
+
+      <!-- Toolbar -->
+      <div style="display:flex;gap:.32rem;align-items:center;padding:.38rem .6rem;border-bottom:1px solid var(--border);background:#fafafa;flex-wrap:wrap">
+        <label style="cursor:pointer;background:#1e293b;border:1px solid #1e293b;border-radius:6px;padding:.28rem .8rem;font-size:.72rem;font-weight:600;color:#fff;white-space:nowrap;letter-spacing:.02em;box-shadow:0 1px 3px rgba(0,0,0,.18)">
+          Foto laden
+          <input type="file" accept="image/*" capture="environment" onchange="fotoLoadImage(event)" style="display:none">
+        </label>
+        <select id="foto-mode" onchange="fotoModeChanged()"
+          style="border:1px solid var(--border);border-radius:6px;padding:.2rem .38rem;font-size:.71rem;font-family:inherit;background:var(--bg);color:var(--text);cursor:pointer">
+          <option value="single">7-Klick Modus</option>
+          <option value="multi">Kurven-Fit (6+)</option>
+        </select>
+        <div style="display:flex;gap:.28rem;flex-shrink:0;flex-wrap:wrap;margin-left:auto">
+          <button id="foto-catenary-toggle" onclick="fotoToggleCatenary()"
+            style="background:none;border:1px solid var(--border);border-radius:6px;padding:.2rem .55rem;font-size:.71rem;color:var(--muted);cursor:pointer;font-family:inherit">Seillinie einblenden</button>
+          <button id="foto-grid-toggle" onclick="fotoToggleGrid()"
+            style="background:none;border:1px solid var(--border);border-radius:6px;padding:.2rem .55rem;font-size:.71rem;color:var(--muted);cursor:pointer;font-family:inherit">Raster</button>
+
+        </div>
+      </div>
+
+      <!-- Messungen-Dropdown -->
+      <div id="foto-messungen-panel" style="display:none;background:#f8fafc;border-bottom:1px solid var(--border);padding:.32rem .65rem">
+        <ul id="foto-messungen-list" style="list-style:none;margin:0;padding:0"></ul>
+      </div>
+
+      <!-- Klick-Ziel Buttons -->
+      <div id="foto-role-btns" style="display:flex;flex-wrap:wrap;gap:.28rem;padding:.32rem .6rem;border-bottom:1px solid var(--border);background:#fafafa;align-items:center">
+        <span style="font-size:.66rem;color:var(--muted);white-space:nowrap">Klick-Ziel:</span>
+        <button id="foto-btn-top_L"  onclick="fotoSetRole('top_L')"  class="foto-role-btn">&#9650; L</button>
+        <button id="foto-btn-base_L" onclick="fotoSetRole('base_L')" class="foto-role-btn">&#9660; L</button>
+        <span style="color:var(--border);font-size:.65rem">|</span>
+        <button id="foto-btn-top_R"  onclick="fotoSetRole('top_R')"  class="foto-role-btn">&#9650; R</button>
+        <button id="foto-btn-base_R" onclick="fotoSetRole('base_R')" class="foto-role-btn">&#9660; R</button>
+        <span style="color:#d1d5db;font-size:.65rem">|</span>
+        <button id="foto-btn-p1"     onclick="fotoSetRole('p1')"     class="foto-role-btn">P1</button>
+        <button id="foto-btn-p2"     onclick="fotoSetRole('p2')"     class="foto-role-btn">P2</button>
+        <span style="color:#d1d5db;font-size:.65rem">|</span>
+        <button id="foto-btn-cmid"   onclick="fotoSetRole('cmid')"   class="foto-role-btn">f Leiter</button>
+        <button id="foto-btn-curve"  onclick="fotoSetRole('curve')"  class="foto-role-btn" style="display:none">+ Kurve</button>
+        <span id="foto-status-fs" style="font-size:.7rem;color:var(--muted);display:none;margin-left:.3rem"></span>
+        <span style="color:#d1d5db;font-size:.65rem;margin-left:.15rem">|</span>
+        <button onclick="fotoReset()" title="Alle Klick-Eingaben zurücksetzen"
+          style="background:none;border:1px solid var(--border);border-radius:6px;padding:.18rem .45rem;font-size:.69rem;color:var(--muted);cursor:pointer;font-family:inherit;white-space:nowrap">Reset</button>
+        <button onclick="fotoRefresh()" title="Darstellung aktualisieren"
+          style="background:none;border:1px solid var(--border);border-radius:6px;padding:.18rem .45rem;font-size:.69rem;color:var(--muted);cursor:pointer;font-family:inherit;white-space:nowrap">Refresh</button>
+      </div>
+
+      <!-- Zoom-Steuerung -->
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="fotoZoomOut()" title="Verkleinern">−</button>
+        <button class="zoom-btn" onclick="fotoZoomIn()" title="Vergrössern">+</button>
+        <span id="foto-zoom-lbl" class="zoom-level-lbl">100%</span>
+        <button class="zoom-reset-btn" onclick="fotoZoomReset()" title="Zoom zurücksetzen">↺</button>
+        <button id="foto-pan-lock-btn" onclick="fotoPanLockToggle()" class="zoom-btn" title="Bildausschnitt einfrieren" style="margin-left:.15rem">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+            <rect x="3" y="7.5" width="10" height="7.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M5.5 7.5V5a2.5 2.5 0 015 0v2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <span style="width:1px;height:14px;background:var(--border);margin:0 .2rem;flex-shrink:0"></span>
+        <button id="foto-opacity-btn" onclick="fotoOpacityCycle()" class="zoom-btn" title="Foto-Transparenz" style="width:auto;padding:0 .38rem;font-size:.65rem;letter-spacing:.01em;flex-shrink:0">100%</button>
+        <span style="width:1px;height:14px;background:var(--border);margin:0 .2rem;flex-shrink:0"></span>
+        <a id="foto-geoadmin-btn" href="#" target="_blank" rel="noopener"
+          title="Fotostandort auf map.geo.admin.ch"
+          style="display:flex;align-items:center;gap:.28rem;padding:.18rem .42rem;border-radius:5px;border:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:.68rem;font-family:inherit;pointer-events:none;opacity:.35;white-space:nowrap">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="6.5" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 2a4.5 4.5 0 010 9C5 11 2 8.5 8 2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+          </svg>
+          geo.admin
+        </a>
+      </div>
+
+      <!-- Canvas + GPS + Multi-berechnen -->
+      <div id="foto-canvas-area">
+        <div id="foto-multi-btns" style="display:none;padding:.3rem .6rem;border-bottom:1px solid var(--border)">
+          <button onclick="fotoCalculate()" style="background:#1e293b;color:#fff;border:none;border-radius:6px;padding:.22rem .7rem;font-size:.73rem;cursor:pointer;font-family:inherit">
+            Berechnen (ab 3 Kurvenpunkten)
+          </button>
+          <span id="foto-curve-count" style="font-size:.72rem;color:var(--muted);margin-left:.5rem"></span>
+        </div>
+        <div id="foto-canvas-wrap" style="position:relative;background:#e8e8e8;overflow:hidden;aspect-ratio:1/1">
+          <canvas id="foto-canvas"
+            onmousedown="fotoCanvasDown(event)"
+            onmousemove="fotoCanvasMove(event)"
+            onmouseup="fotoCanvasUp(event)"
+            onmouseleave="fotoLoupeHide()"
+            ontouchstart="fotoCanvasDown(event)" ontouchmove="fotoCanvasMove(event)" ontouchend="fotoCanvasUp(event)"
+            style="display:block;width:100%;height:100%;cursor:crosshair;user-select:none;touch-action:none"></canvas>
+          <div id="foto-canvas-placeholder" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#999;pointer-events:none">
+            Kein Foto geladen
+          </div>
+          <div id="foto-status-overlay" style="display:none;position:absolute;bottom:.55rem;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);color:#fff;font-size:.68rem;font-family:inherit;padding:.22rem .65rem;border-radius:20px;white-space:nowrap;pointer-events:none;z-index:5;letter-spacing:.01em"></div>
+          <canvas id="foto-loupe" width="300" height="300"
+            style="display:none;position:absolute;width:180px;height:180px;border-radius:50%;box-shadow:0 0 0 2px #333,0 2px 10px rgba(0,0,0,.4);pointer-events:none;z-index:10"></canvas>
+
+          <!-- Mastlänge-Popup (absolut positioniert am Mastfuss-Punkt) -->
+          <div id="foto-mast-prompt"
+            style="display:none;position:absolute;z-index:20;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:.45rem .6rem;min-width:168px">
+            <div style="font-size:.67rem;color:var(--muted);font-weight:600;letter-spacing:.03em;text-transform:uppercase;margin-bottom:.3rem;white-space:nowrap">
+              Mastlänge <span id="foto-mast-prompt-side">links</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:.3rem">
+              <input type="number" id="foto-mast-prompt-val" min="0.5" step="0.1" placeholder="—"
+                style="width:5rem;background:#ebebeb;border:1px solid var(--border);border-radius:8px;padding:.24rem .4rem;font-size:.83rem;font-family:inherit;font-weight:500;color:var(--text);outline:none"
+                onkeydown="if(event.key==='Enter')_fotoMastPromptConfirm();else if(event.key==='Escape')_fotoMastPromptDismiss()">
+              <span style="font-size:.72rem;color:var(--muted)">m</span>
+              <button onclick="_fotoMastPromptConfirm()"
+                style="background:#1e293b;color:#fff;border:none;border-radius:6px;padding:.24rem .6rem;font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit">OK</button>
+              <button onclick="_fotoMastPromptDismiss()"
+                style="background:none;border:none;padding:.1rem .2rem;font-size:.8rem;color:var(--muted);cursor:pointer;line-height:1;opacity:.7">&#x2715;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ergebnis-Panel -->
+      <!-- Ergebnis-Karte (gleiche Optik wie Diagramm-Ergebnisse) -->
+      <div id="foto-result" style="display:none">
+        <div class="results-card" style="margin:.5rem .5rem .4rem;padding:1rem 1.1rem .9rem">
+
+          <!-- Hauptwerte + Montage: 2-Spalten-Grid wie Diagramm -->
+          <div class="results-grid">
+            <!-- Linke Spalte: Messwerte -->
+            <div>
+              <div class="results-col-title" style="display:flex;justify-content:space-between;align-items:center">
+                <span>Messung</span>
+                <span id="foto-result-temp" style="font-style:italic;font-weight:400;text-transform:none;letter-spacing:0;font-size:.69rem;color:var(--muted)">—</span>
+              </div>
+              <div class="metric-list">
+                <div id="foto-mast-names-row" class="metric-row" style="display:none">
+                  <span class="metric-label">Masten</span>
+                  <span id="foto-mast-names" class="metric-value" style="font-size:.78rem;color:#2563eb">—</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">Durchhang f</span>
+                  <span id="foto-f" class="metric-value">—</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">Zugkraft H</span>
+                  <span id="foto-H" class="metric-value warm">—</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label" style="font-size:.72rem;color:var(--tertiary)">Position x&#x1D436;</span>
+                  <span id="foto-xC" class="metric-value ref">—</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label" style="font-size:.72rem;color:var(--tertiary)">Höhendiff. dh</span>
+                  <span id="foto-dh" class="metric-value ref">—</span>
+                </div>
+                <div class="metric-row" style="display:none" id="foto-k-row">
+                  <span class="metric-label" style="font-size:.65rem;color:var(--tertiary)">Skala k</span>
+                  <span id="foto-k" class="metric-value ref" style="font-size:.72rem">—</span>
+                </div>
+              </div>
+              <p id="foto-xc-hint" style="margin:.3rem .3rem 0;font-size:.65rem;color:var(--tertiary);line-height:1.3"></p>
+              <p style="margin:.4rem .3rem 0;font-size:.63rem;color:var(--tertiary);line-height:1.4;font-style:italic">
+                T₂-Regler in der Sidebar anpassen um andere Temperaturen zu berechnen.
+              </p>
+            </div>
+
+            <!-- Rechte Spalte: Montage + Soll/Ist -->
+            <div>
+              <div class="results-col-title">Referenz</div>
+              <div class="metric-list">
+                <div id="foto-montage-ref" class="metric-row">
+                  <span class="metric-label">Montage (10 °C)</span>
+                  <strong id="foto-H-mont" class="metric-value">—</strong>
+                </div>
+              </div>
+
+              <!-- Soll / Ist (nur wenn Reglagetabelle vorhanden) -->
+              <div id="foto-soll-ist-wrap" style="display:none;margin-top:.6rem">
+                <div class="results-col-title" style="display:flex;justify-content:space-between;align-items:center">
+                  <span>Soll / Ist</span>
+                  <span id="foto-lref-note" style="font-style:italic;font-weight:400;text-transform:none;letter-spacing:0;font-size:.69rem">—</span>
+                </div>
+                <div class="metric-list">
+                  <div class="metric-row">
+                    <span id="foto-H-bei-T-label" class="metric-label">H bei T&#x2082;</span>
+                    <span style="display:flex;gap:.5rem;align-items:baseline">
+                      <span id="foto-H-ist"     class="metric-value" style="font-size:.83rem">—</span>
+                      <span id="foto-H-reglage" class="metric-value ref">—</span>
+                      <span id="foto-delta-H"   class="metric-value" style="font-size:.78rem">—</span>
+                    </span>
+                  </div>
+                  <div class="metric-row">
+                    <span class="metric-label">f bei L/2</span>
+                    <span style="display:flex;gap:.5rem;align-items:baseline">
+                      <span id="foto-f-ist"     class="metric-value" style="font-size:.83rem">—</span>
+                      <span id="foto-f-reglage" class="metric-value ref">—</span>
+                      <span id="foto-delta-f"   class="metric-value" style="font-size:.78rem">—</span>
+                    </span>
+                  </div>
+                </div>
+                <!-- Spannweiten-Hinweis wenn L ≠ L₀ -->
+                <p id="foto-span-hint" style="display:none;margin:.35rem .3rem 0;font-size:.63rem;color:var(--tertiary);line-height:1.3"></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aktion -->
+          <div style="margin-top:.85rem;border-top:1px solid var(--border);padding-top:.75rem">
+            <button onclick="fotoApplyToCalc()"
+              style="background:none;color:var(--text);border:1px solid var(--border);border-radius:6px;padding:.3rem .9rem;font-size:.76rem;cursor:pointer;font-family:inherit;font-weight:500;transition:background .15s"
+              onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='none'">
+              In App übernehmen
+            </button>
+          </div>
+        </div>
+
+        <!-- Versteckte Spans (werden von JS beschrieben, nicht angezeigt) -->
+        <span id="foto-temp-slider-wrap" style="display:none">
+          <span id="foto-T-slider-val"></span>
+          <span id="foto-H-temp"></span>
+          <span id="foto-f-temp"></span>
+          <span id="foto-T1-result"></span>
+        </span>
+      </div>
+
+      <!-- Versteckte State-Inputs (werden von Sidebar synchronisiert) -->
+      <div style="display:none">
+        <input type="number" id="foto-L">
+        <select id="foto-mat"></select>
+        <input type="number" id="foto-T1">
+        <input type="number" id="foto-elev-L">
+        <input type="number" id="foto-elev-R">
+        <!-- Mastnamen-Brücke: gespiegelt von mast-num-left/right via _syncMastNames() -->
+        <input type="text" id="foto-name-L">
+        <input type="text" id="foto-name-R">
+      </div>
+
+    </div><!-- /#foto-view -->
+
     <div class="legend" id="legend">
       <div class="legend-item"><div class="legend-dot" style="background:#b7b7b7"></div><span id="leg-ts1">Ts bei T<sub>1</sub></span></div>
       <div class="legend-item" id="leg-ts2-item"><div class="legend-dot"></div><span id="leg-ts2-label">Ts bei T<sub>2</sub></span></div>
@@ -1892,6 +2309,13 @@ button.header-manual-link:hover {
             <input type="number" id="probe-x4" class="probe-mp-xinput" placeholder="x₄" step="0.5" min="0">
             <span class="probe-mp-unit">m</span>
           </div>
+        </div>
+      </div>
+      <!-- Foto-Modus: Seillinienhöhe an x-Position -->
+      <div id="foto-probe-out" style="display:none;margin-top:.4rem;padding:.3rem .4rem;background:#f0f7ff;border:1px solid #bfdbfe;border-radius:6px;font-size:.72rem">
+        <div style="font-size:.6rem;font-weight:600;letter-spacing:.04em;color:#1d4ed8;text-transform:uppercase;margin-bottom:.25rem">Seillinienhöhe über SOK</div>
+        <div id="foto-probe-rows" style="display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:.18rem .5rem;align-items:baseline;color:var(--muted)">
+          <!-- befüllt per JS -->
         </div>
       </div>
       <!-- H-Eingaben (nur wenn SOK aktiv) -->
@@ -2259,6 +2683,1953 @@ function openHandbuch()  {
 }
 function closeHandbuch() { document.getElementById('handbuch-modal').classList.remove('open'); }
 
+// ── EXIF GPS-Parser (kompakt, nur JPEG/EXIF, kein externer Dependency) ─────
+function _extractExifGps(buf) {
+  try {
+    const d = new DataView(buf);
+    if (d.byteLength < 12 || d.getUint16(0, false) !== 0xFFD8) return null;
+    let pos = 2;
+    while (pos + 4 <= d.byteLength) {
+      if (d.getUint8(pos) !== 0xFF) break;
+      const m = d.getUint8(pos + 1);
+      if (m === 0xDA || m === 0xD9) break;
+      const len = d.getUint16(pos + 2, false);
+      if (m === 0xE1 && len > 8) {
+        // "Exif\0\0" Header prüfen
+        if (d.getUint8(pos+4)===0x45 && d.getUint8(pos+5)===0x78 &&
+            d.getUint8(pos+6)===0x69 && d.getUint8(pos+7)===0x66 &&
+            d.getUint8(pos+8)===0x00 && d.getUint8(pos+9)===0x00) {
+          const T = pos + 10;   // Offset zur TIFF-Basis
+          const le = d.getUint16(T, false) === 0x4949;
+          const u16 = o => d.getUint16(T + o, le);
+          const u32 = o => d.getUint32(T + o, le);
+          if (u16(2) !== 42) break;
+          // IFD0 → GPS-IFD suchen (Tag 0x8825)
+          const ifd0 = u32(4), nc = u16(ifd0);
+          let gOff = -1;
+          for (let i = 0; i < nc && i < 64; i++) {
+            const e = ifd0 + 2 + i * 12;
+            if (T + e + 12 > d.byteLength) break;
+            if (u16(e) === 0x8825) { gOff = u32(e + 8); break; }
+          }
+          if (gOff < 0) return null;
+          const gn = u16(gOff);
+          let latD = null, lonD = null, latR = 'N', lonR = 'E';
+          for (let i = 0; i < gn && i < 32; i++) {
+            const e = gOff + 2 + i * 12;
+            if (T + e + 12 > d.byteLength) break;
+            const tag = u16(e), type = u16(e+2), cnt = u32(e+4), vo = u32(e+8);
+            const rat = o => { const n=u32(vo+o), dn=u32(vo+o+4); return dn ? n/dn : 0; };
+            if (tag === 1) latR = String.fromCharCode(d.getUint8(T + e + 8));
+            else if (tag === 3) lonR = String.fromCharCode(d.getUint8(T + e + 8));
+            else if (tag === 2 && type === 5 && cnt === 3)
+              latD = rat(0) + rat(8)/60 + rat(16)/3600;
+            else if (tag === 4 && type === 5 && cnt === 3)
+              lonD = rat(0) + rat(8)/60 + rat(16)/3600;
+          }
+          if (latD !== null && lonD !== null)
+            return { lat: latR==='S' ? -latD : latD, lon: lonR==='W' ? -lonD : lonD };
+          return null;
+        }
+      }
+      pos += 2 + len;
+    }
+  } catch(e) {}
+  return null;
+}
+
+// ── Foto-Auswertung ────────────────────────────────────────────────────────
+(function() {
+  // ── State ──
+  let _img        = null;
+  let _pts        = [];         // { px, py, role }
+  let _undoStack     = [];         // Snapshots von _pts für Undo
+  let _redoStack     = [];         // Snapshots von _pts für Redo
+  let _activeRole    = null;       // Rolle die der nächste Klick setzt
+  let _gps           = null;       // { lat, lon } aus EXIF, oder null
+  let _showCatenary      = false;      // Seillinie-Overlay ein/aus
+  let _showGrid          = false;      // Fluchtpunkt-Raster ein/aus
+  let _fotoTempOverride  = null;       // { H, f, T } vom Temperatur-Slider; null = Messzustand
+  let _dragIdx           = null;       // Index in _pts des gerade gezogenen Punktes
+  let _dragMoved         = false;      // Wurde während mousedown tatsächlich gezogen?
+  let _fotoZoom          = 1.0;        // Zoom-Faktor (1 = kein Zoom)
+  let _fotoPanX          = 0;          // Pan-Offset X in Bildpixeln
+  let _fotoPanY          = 0;          // Pan-Offset Y in Bildpixeln
+  let _fotoPanLocked     = false;      // Bildausschnitt eingefroren
+  let _panDrag           = null;       // { startX, startY, startPanX, startPanY } für Pan-Drag
+  let _fotoOpacity       = 1.0;        // Foto-Transparenz (1.0 / 0.66 / 0.33)
+  let _dimDrag           = null;       // { side, startPx, startOffset } für Bemaßungsarm-Drag
+  let _dimOffsets        = { L: 0, R: 0 }; // Arm-Offset in Bildpixeln
+  let _lastDimArms       = { L: null, R: null }; // { armX, yTop, yBot } aus letztem _draw()
+
+  // Beide Masten kalibrieren → perspektiv-korrekte Skala k(x)
+  // single: 7 Klicks  — linker Mast (2) + rechter Mast (2) + Ankerpunkte (2) + Leiter bei L/2 (1)
+  // multi:  6+ Klicks — linker Mast (2) + rechter Mast (2) + Ankerpunkte (2) + Kurvenpunkte (n)
+  const _roles = {
+    single: ['top_L', 'base_L', 'top_R', 'base_R', 'p1', 'p2', 'cmid'],
+    multi:  ['top_L', 'base_L', 'top_R', 'base_R', 'p1', 'p2'],
+  };
+  const _labels = {
+    top_L:  'Mastspitze links',
+    base_L: 'Mastfuss / SOK links',
+    top_R:  'Mastspitze rechts',
+    base_R: 'Mastfuss / SOK rechts',
+    p1:     'Linker Ankerpunkt (Leiterbefestigung)',
+    p2:     'Rechter Ankerpunkt (Leiterbefestigung)',
+    cmid:   'Leiter bei Mittspan (L/2) klicken',
+    curve:  'Punkt auf Leiter',
+  };
+  const _colors = {
+    top_L:'#16a34a', base_L:'#16a34a',
+    top_R:'#2563eb', base_R:'#2563eb',
+    p1:'#eb0000', p2:'#eb0000',
+    cmid:'#2563eb', curve:'#7c3aed',
+  };
+
+  function _mode()    { return document.getElementById('foto-mode')?.value || 'single'; }
+  function _status(t) {
+    const el = document.getElementById('foto-status');
+    if (el) el.textContent = t;
+    const ov = document.getElementById('foto-status-overlay');
+    if (ov) { ov.textContent = t; ov.style.display = t ? 'block' : 'none'; }
+  }
+
+  // ── Populate material select ──
+  function _populateMat() {
+    const sel = document.getElementById('foto-mat');
+    if (!sel || sel.options.length > 1) return;
+    if (typeof MATERIALS !== 'undefined') {
+      Object.entries(MATERIALS).forEach(([k, m]) => {
+        if (!m.q) return;
+        const o = document.createElement('option'); o.value = k; o.textContent = m.name || k; sel.appendChild(o);
+      });
+      // Voreingabe: Cu 95
+      if (typeof MATERIALS['cu95'] !== 'undefined') sel.value = 'cu95';
+    }
+  }
+
+  // Expose _populateMat so setCanvasView can call it
+  window._fotoPopulateMat = _populateMat;
+
+  // ── Open / Close ──
+  window.openFotoModal = function() {
+    // Primär: Foto-Tab öffnen
+    if (typeof setCanvasView === 'function') setCanvasView('foto');
+  };
+  window.closeFotoModal = function() {
+    document.getElementById('foto-modal').classList.remove('open');
+  };
+  window.openFotoHelp = function() {
+    document.getElementById('foto-modal').classList.add('open');
+  };
+
+  window.fotoModeChanged = function() {
+    const mode = _mode();
+    document.getElementById('foto-multi-btns').style.display = mode === 'multi' ? '' : 'none';
+    // Aktive Rolle anpassen wenn sie im neuen Modus nicht vorkommt
+    const required = _roles[mode];
+    if (_activeRole !== 'curve' && !required.includes(_activeRole)) {
+      const firstUnset = required.find(r => !_pts.some(p => p.role === r));
+      _activeRole = firstUnset || (mode === 'multi' ? 'curve' : null);
+    }
+    _updateRoleButtons();
+    _updateStatus();
+  };
+
+  // ── Image load ──
+  // ── GPS-Anzeige aktualisieren ──
+  function _updateGpsDisplay() {
+    const btn = document.getElementById('foto-geoadmin-btn');
+    if (!btn) return;
+    if (!_gps) {
+      btn.href = '#'; btn.style.pointerEvents = 'none'; btn.style.opacity = '.35';
+      btn.title = 'Kein GPS in Bildmetadaten';
+      return;
+    }
+    const lat6 = _gps.lat.toFixed(6), lon6 = _gps.lon.toFixed(6);
+    btn.href = `https://map.geo.admin.ch/?lang=de&topic=ech&bgLayer=ch.swisstopo.pixelkarte-farbe&lat=${lat6}&lon=${lon6}&zoom=17&crosshair=marker`;
+    btn.style.pointerEvents = '';
+    btn.style.opacity = '1';
+    btn.style.color = 'var(--text)';
+    btn.title = `Fotostandort auf map.geo.admin.ch (${lat6}, ${lon6})`;
+  }
+
+  const _FOTO_MAX_PX = 3_000_000;  // maximale Auflösung beim Bildladen (Pixel total ~3 MP)
+
+  function _initFotoImg(src, origW, origH) {
+    _img = new Image();
+    _img.onload = () => {
+      _pts = [];
+      _undoStack = [];
+      _redoStack = [];
+      _activeRole = _roles[_mode()][0];
+      // Zoom + Bemaßungsoffsets zurücksetzen
+      _fotoZoom = 1.0; _fotoPanX = 0; _fotoPanY = 0;
+      _dimOffsets = { L: 0, R: 0 }; _lastDimArms = { L: null, R: null };
+      _updateFotoZoomUI();
+      const ph = document.getElementById('foto-canvas-placeholder');
+      if (ph) ph.style.display = 'none';
+      _setupFotoCanvasEvents();
+      _draw();
+      _updateRoleButtons();
+      _updateStatus();
+      _updateUndoButtons();
+    };
+    _img.src = src;
+  }
+
+  let _fotoEventsSetup = false;
+  function _setupFotoCanvasEvents() {
+    if (_fotoEventsSetup) return;
+    _fotoEventsSetup = true;
+    const canvas = document.getElementById('foto-canvas');
+    if (!canvas) return;
+    // Mausrad-Zoom (nur mit Ctrl, nur wenn nicht eingefroren)
+    canvas.addEventListener('wheel', (e) => {
+      if (_fotoPanLocked || (!e.ctrlKey && !e.metaKey)) return;
+      e.preventDefault();
+      const { cx, cy } = _canvasXYRaw(e);
+      const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+      _applyFotoZoom(_fotoZoom * factor, cx, cy);
+    }, { passive: false });
+    // Touch-Pinch-Zoom
+    let _lastPinchDist = null;
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        _lastPinchDist = Math.hypot(dx, dy);
+      }
+    }, { passive: true });
+    canvas.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2 && _lastPinchDist && !_fotoPanLocked) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.hypot(dx, dy);
+        const factor = dist / _lastPinchDist;
+        _lastPinchDist = dist;
+        const canvas2 = document.getElementById('foto-canvas');
+        if (!canvas2) return;
+        const rect = canvas2.getBoundingClientRect();
+        const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        const sx = canvas2.width / rect.width;
+        const sy = canvas2.height / rect.height;
+        _applyFotoZoom(_fotoZoom * factor, (mx - rect.left) * sx, (my - rect.top) * sy);
+        e.preventDefault();
+      }
+    }, { passive: false });
+    canvas.addEventListener('touchend', () => { _lastPinchDist = null; }, { passive: true });
+  }
+
+  window.fotoLoadImage = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const imgReader = new FileReader();
+    imgReader.onload = e => {
+      const rawImg = new Image();
+      rawImg.onload = () => {
+        const ow = rawImg.naturalWidth, oh = rawImg.naturalHeight;
+        if (ow * oh > _FOTO_MAX_PX) {
+          // Bild skalieren auf max. ~3 MP
+          const scale = Math.sqrt(_FOTO_MAX_PX / (ow * oh));
+          const nw = Math.round(ow * scale), nh = Math.round(oh * scale);
+          const tmp = document.createElement('canvas');
+          tmp.width = nw; tmp.height = nh;
+          tmp.getContext('2d').drawImage(rawImg, 0, 0, nw, nh);
+          _initFotoImg(tmp.toDataURL('image/jpeg', 0.88), nw, nh);
+          _status(`Bild auf ${nw}×${nh} px skaliert (Original: ${ow}×${oh}).`);
+        } else {
+          _initFotoImg(e.target.result, ow, oh);
+        }
+      };
+      rawImg.src = e.target.result;
+    };
+    imgReader.readAsDataURL(file);
+    // EXIF GPS aus ersten 64 KB lesen
+    _gps = null;
+    _updateGpsDisplay();
+    const exifReader = new FileReader();
+    exifReader.onload = e => {
+      _gps = _extractExifGps(e.target.result);
+      _updateGpsDisplay();
+    };
+    exifReader.readAsArrayBuffer(file.slice(0, 65536));
+  };
+
+  // ── Canvas-Koordinaten (Bildpixel) aus Mouse- oder Touch-Event ──
+  function _canvasXY(event) {
+    const canvas = document.getElementById('foto-canvas');
+    if (!canvas || !_img) return { px: 0, py: 0 };
+    const rect = canvas.getBoundingClientRect();
+    const S  = canvas.width;
+    const cs = Math.max(S / _img.naturalWidth, S / _img.naturalHeight);
+    const src = event.touches ? event.touches[0] : event;
+    const cx = (src.clientX - rect.left) * (S / rect.width);
+    const cy = (src.clientY - rect.top)  * (S / rect.height);
+    return {
+      px: (cx - S / 2) / (cs * _fotoZoom) + _img.naturalWidth  / 2 + _fotoPanX,
+      py: (cy - S / 2) / (cs * _fotoZoom) + _img.naturalHeight / 2 + _fotoPanY
+    };
+  }
+
+  // Bildschirmkoordinaten → Bildkoordinaten für Zoom-Zentrierung
+  function _canvasXYRaw(event) {
+    const canvas = document.getElementById('foto-canvas');
+    const rect   = canvas.getBoundingClientRect();
+    const sx = canvas.width  / rect.width;
+    const sy = canvas.height / rect.height;
+    const src = event.touches ? event.touches[0] : event;
+    return {
+      cx: (src.clientX - rect.left) * sx,
+      cy: (src.clientY - rect.top)  * sy
+    };
+  }
+
+  // Gibt Index des nächsten Punktes zurück, der innerhalb HIT_R px liegt; sonst -1
+  function _hitPoint(px, py) {
+    const canvas = document.getElementById('foto-canvas');
+    const S   = canvas ? canvas.width : 0;
+    const cs  = (canvas && _img) ? Math.max(S / _img.naturalWidth, S / _img.naturalHeight) : 1;
+    const dpr = window.devicePixelRatio || 1;
+    // Hit-Radius in Bildpixeln: ~24 CSS-Pixel auf dem Bildschirm
+    const HIT = Math.max(8, 24 * dpr / (cs * _fotoZoom));
+    for (let i = _pts.length - 1; i >= 0; i--) {
+      if (Math.hypot(_pts[i].px - px, _pts[i].py - py) < HIT) return i;
+    }
+    return -1;
+  }
+
+  function _placePoint(px, py) {
+    if (!_activeRole) { _status('Klick-Ziel oben wählen'); return; }
+    _undoStack.push(_pts.map(p => ({ ...p })));
+    _redoStack = [];
+    if (_activeRole === 'curve') {
+      _pts.push({ px, py, role: 'curve' });
+    } else {
+      const idx = _pts.findIndex(p => p.role === _activeRole);
+      if (idx >= 0) _pts[idx] = { px, py, role: _activeRole };
+      else _pts.push({ px, py, role: _activeRole });
+    }
+    _draw();
+    _updateUndoButtons();
+    // Mastlänge-Prompt nach Setzen von Mastfuss (falls Feld noch leer)
+    if (_activeRole === 'base_L' || _activeRole === 'base_R') {
+      _showMastLaengePrompt(_activeRole === 'base_L' ? 'L' : 'R');
+    }
+    const mode = _mode();
+    const required = _roles[mode];
+    const nextUnset = required.find(r => !_pts.some(p => p.role === r));
+    if (nextUnset) {
+      _activeRole = nextUnset;
+    } else if (mode === 'single') {
+      _activeRole = null;
+      _calculate();
+    } else {
+      _activeRole = 'curve';
+      const cnt = _pts.filter(p => p.role === 'curve').length;
+      const cc = document.getElementById('foto-curve-count');
+      if (cc) cc.textContent = `${cnt} Kurvenpunkt${cnt !== 1 ? 'e' : ''} gesetzt`;
+    }
+    _updateRoleButtons();
+    _updateStatus();
+  }
+
+  // ── Canvas click (legacy, still used as fallback) ──
+  window.fotoCanvasClick = function(event) {
+    // Handled by mousedown/up below; only fires when no drag occurred
+  };
+
+  // ── Zoom-Hilfsfunktion ──
+  function _applyFotoZoom(newZoom, centerCx, centerCy) {
+    const canvas = document.getElementById('foto-canvas');
+    if (!canvas || !_img) return;
+    newZoom = Math.max(1.0, Math.min(8.0, newZoom));
+    const S  = canvas.width;
+    const cs = Math.max(S / _img.naturalWidth, S / _img.naturalHeight);
+    // Zoompunkt in Bildkoordinaten festhalten
+    const imgX = (centerCx - S / 2) / (cs * _fotoZoom) + _img.naturalWidth  / 2 + _fotoPanX;
+    const imgY = (centerCy - S / 2) / (cs * _fotoZoom) + _img.naturalHeight / 2 + _fotoPanY;
+    _fotoZoom = newZoom;
+    _fotoPanX = imgX - _img.naturalWidth  / 2 - (centerCx - S / 2) / (cs * _fotoZoom);
+    _fotoPanY = imgY - _img.naturalHeight / 2 - (centerCy - S / 2) / (cs * _fotoZoom);
+    _draw();
+    _updateFotoZoomUI();
+  }
+
+  function _updateFotoZoomUI() {
+    const lbl = document.getElementById('foto-zoom-lbl');
+    if (lbl) lbl.textContent = Math.round(_fotoZoom * 100) + '%';
+  }
+
+  window.fotoZoomIn  = () => { const c = document.getElementById('foto-canvas'); _applyFotoZoom(_fotoZoom * 1.25, c ? c.width/2 : 0, c ? c.height/2 : 0); };
+  window.fotoZoomOut = () => { const c = document.getElementById('foto-canvas'); _applyFotoZoom(_fotoZoom / 1.25, c ? c.width/2 : 0, c ? c.height/2 : 0); };
+  window.fotoZoomReset = () => { _fotoZoom = 1.0; _fotoPanX = 0; _fotoPanY = 0; _draw(); _updateFotoZoomUI(); };
+  window.fotoOpacityCycle = () => {
+    const steps = [1.0, 0.66, 0.33];
+    const next = steps[(steps.indexOf(_fotoOpacity) + 1) % steps.length];
+    _fotoOpacity = next;
+    const btn = document.getElementById('foto-opacity-btn');
+    if (btn) btn.textContent = Math.round(next * 100) + '%';
+    if (_img) _draw();
+  };
+  window.fotoPanLockToggle = () => {
+    _fotoPanLocked = !_fotoPanLocked;
+    const btn = document.getElementById('foto-pan-lock-btn');
+    if (btn) {
+      btn.style.background = _fotoPanLocked ? 'var(--text)' : '';
+      btn.style.color      = _fotoPanLocked ? '#fff' : '';
+      btn.title = _fotoPanLocked ? 'Bildausschnitt freigeben' : 'Bildausschnitt einfrieren';
+    }
+  };
+
+  // ── Drag & Drop für bestehende Punkte + Pan ──
+  window.fotoCanvasDown = function(event) {
+    if (!_img) return;
+    const isMiddle = event.button === 1;
+    const isRight  = event.button === 2;
+    if (isRight) return;
+    const { px, py } = _canvasXY(event);
+    const { cx, cy } = _canvasXYRaw(event);
+
+    // Bemaßungsarm-Drag prüfen (vor Punkt-Treffererkennung)
+    if (!isMiddle && !_fotoPanLocked) {
+      const canvas = document.getElementById('foto-canvas');
+      const _S3 = canvas.width;
+      const _cs3 = Math.max(_S3 / _img.naturalWidth, _S3 / _img.naturalHeight);
+      const _dpr3 = window.devicePixelRatio || 1;
+      const hitR = 18 * _dpr3 / (_cs3 * _fotoZoom);
+      for (const side of ['L', 'R']) {
+        const arm = _lastDimArms[side];
+        if (!arm) continue;
+        if (Math.abs(px - arm.armX) < hitR && py > arm.yTop - hitR && py < arm.yBot + hitR) {
+          _dimDrag = { side, startPx: px, startOffset: _dimOffsets[side] };
+          document.getElementById('foto-canvas').style.cursor = 'ew-resize';
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    const idx = _hitPoint(px, py);
+    if (idx >= 0 && !isMiddle) {
+      _dragIdx   = idx;
+      _dragMoved = false;
+      _undoStack.push(_pts.map(p => ({ ...p })));
+      _redoStack = [];
+      event.preventDefault();
+      document.getElementById('foto-canvas').style.cursor = 'grabbing';
+    } else if (!_fotoPanLocked && (isMiddle || (!_activeRole && idx < 0))) {
+      // Pan-Modus: Mittlere Maustaste oder kein Klick-Ziel aktiv
+      _panDrag = { startCx: cx, startCy: cy, startPanX: _fotoPanX, startPanY: _fotoPanY };
+      _dragIdx = null;
+      _dragMoved = false;
+      document.getElementById('foto-canvas').style.cursor = 'move';
+      event.preventDefault();
+    } else {
+      _dragIdx   = null;
+      _dragMoved = false;
+    }
+  };
+
+  window.fotoCanvasMove = function(event) {
+    if (!_img) return;
+    const canvas = document.getElementById('foto-canvas');
+    const { px, py } = _canvasXY(event);
+    const { cx, cy } = _canvasXYRaw(event);
+    if (_dimDrag) {
+      _dimOffsets[_dimDrag.side] = _dimDrag.startOffset + (px - _dimDrag.startPx);
+      _draw();
+      if (event.cancelable) event.preventDefault();
+      return;
+    }
+    if (_panDrag) {
+      const _S  = canvas.width;
+      const _cs = _img ? Math.max(_S / _img.naturalWidth, _S / _img.naturalHeight) : 1;
+      const dx = (cx - _panDrag.startCx) / (_cs * _fotoZoom);
+      const dy = (cy - _panDrag.startCy) / (_cs * _fotoZoom);
+      _fotoPanX = _panDrag.startPanX - dx;
+      _fotoPanY = _panDrag.startPanY - dy;
+      _draw();
+      if (event.cancelable) event.preventDefault();
+      return;
+    }
+    if (_dragIdx !== null) {
+      _dragMoved    = true;
+      _pts[_dragIdx].px = px;
+      _pts[_dragIdx].py = py;
+      _draw();
+      fotoLoupeMove(event);
+      if (event.cancelable) event.preventDefault();
+      return;
+    }
+    // Hover-Cursor
+    const idx = _hitPoint(px, py);
+    if (idx >= 0) {
+      canvas.style.cursor = 'grab';
+    } else {
+      // Bemaßungsarm in der Nähe?
+      const _Sh = canvas.width;
+      const _csh = Math.max(_Sh / _img.naturalWidth, _Sh / _img.naturalHeight);
+      const _dprh = window.devicePixelRatio || 1;
+      const hitR = 18 * _dprh / (_csh * _fotoZoom);
+      const nearArm = ['L','R'].some(s => {
+        const a = _lastDimArms[s];
+        return a && Math.abs(px - a.armX) < hitR && py > a.yTop - hitR && py < a.yBot + hitR;
+      });
+      canvas.style.cursor = nearArm ? 'ew-resize' : (!_activeRole ? 'move' : 'crosshair');
+    }
+    fotoLoupeMove(event);
+  };
+
+  window.fotoCanvasUp = function(event) {
+    if (!_img) return;
+    const canvas = document.getElementById('foto-canvas');
+    const { px, py } = _canvasXY(event);
+    if (_dimDrag) {
+      _dimDrag = null;
+      canvas.style.cursor = _activeRole ? 'crosshair' : 'move';
+      return;
+    }
+    if (_panDrag) {
+      _panDrag = null;
+      const idx = _hitPoint(px, py);
+      canvas.style.cursor = idx >= 0 ? 'grab' : (!_activeRole ? 'move' : 'crosshair');
+      return;
+    }
+    if (_dragIdx !== null) {
+      const wasDrag = _dragMoved;
+      _dragIdx   = null;
+      _dragMoved = false;
+      canvas.style.cursor = _hitPoint(px, py) >= 0 ? 'grab' : (_activeRole ? 'crosshair' : 'move');
+      if (wasDrag) {
+        const mode = _mode();
+        const allSet = _roles[mode].every(r => _pts.some(p => p.role === r));
+        if (allSet) _calculate();
+      } else {
+        _placePoint(px, py);
+      }
+      return;
+    }
+    // Normaler Klick (kein Drag-Start)
+    if (_activeRole) _placePoint(px, py);
+  };
+
+  // ── Rolle per Button wählen ──
+  window.fotoSetRole = function(role) {
+    _activeRole = role;
+    _updateRoleButtons();
+    _status(`Klick: ${_labels[role]}`);
+  };
+
+  // ── Rollen-Buttons aktualisieren ──
+  function _updateRoleButtons() {
+    const mode = _mode();
+    const clr = { top_L:'#16a34a', base_L:'#16a34a', top_R:'#2563eb', base_R:'#2563eb',
+                  p1:'#eb0000', p2:'#eb0000', cmid:'#2563eb', curve:'#7c3aed' };
+    Object.keys(clr).forEach(role => {
+      const btn = document.getElementById(`foto-btn-${role}`);
+      if (!btn) return;
+      const isSet    = _pts.some(p => p.role === role);
+      const isActive = _activeRole === role;
+      const c = clr[role];
+      if (isActive) {
+        btn.style.cssText = `background:${c};border-color:${c};color:#fff;font-weight:600`;
+      } else if (isSet) {
+        btn.style.cssText = `background:${c}18;border-color:${c};color:${c};font-weight:500`;
+      } else {
+        btn.style.cssText = 'background:#f3f4f6;border-color:#d1d5db;color:#555;font-weight:400';
+      }
+    });
+    // Kurven-Button: Anzahl anzeigen
+    const cvBtn = document.getElementById('foto-btn-curve');
+    if (cvBtn) {
+      const cnt = _pts.filter(p => p.role === 'curve').length;
+      cvBtn.textContent = cnt > 0 ? `+ Kurve (${cnt})` : '+ Kurve';
+      cvBtn.style.display = mode === 'multi' ? '' : 'none';
+    }
+    const cmidBtn = document.getElementById('foto-btn-cmid');
+    if (cmidBtn) cmidBtn.style.display = mode === 'single' ? '' : 'none';
+  }
+
+  // ── Undo / Redo (Snapshot-basiert) ──
+  function _updateUndoButtons() {
+    const u = document.getElementById('foto-undo');
+    const r = document.getElementById('foto-redo');
+    if (u) u.disabled = _undoStack.length === 0;
+    if (r) r.disabled = _redoStack.length === 0;
+  }
+
+  window.fotoUndo = function() {
+    if (_undoStack.length === 0) return;
+    _redoStack.push(_pts.map(p => ({ ...p })));
+    _pts = _undoStack.pop();
+    // Aktive Rolle auf erste ungesetzte Pflicht-Rolle zurücksetzen
+    const mode = _mode();
+    const firstUnset = _roles[mode].find(r => !_pts.some(p => p.role === r));
+    _activeRole = firstUnset || (mode === 'multi' ? 'curve' : _roles[mode].at(-1));
+    document.getElementById('foto-result').style.display = 'none';
+    window._fotoResult = null;
+    if (_img) _draw();
+    _updateRoleButtons();
+    _updateStatus();
+    _updateUndoButtons();
+  };
+
+  window.fotoRedo = function() {
+    if (_redoStack.length === 0) return;
+    _undoStack.push(_pts.map(p => ({ ...p })));
+    _pts = _redoStack.pop();
+    const mode = _mode();
+    const firstUnset = _roles[mode].find(r => !_pts.some(p => p.role === r));
+    _activeRole = firstUnset || (mode === 'multi' ? 'curve' : null);
+    document.getElementById('foto-result').style.display = 'none';
+    window._fotoResult = null;
+    if (_img) _draw();
+    _updateRoleButtons();
+    if (!firstUnset && mode === 'single') _calculate();
+    else _updateStatus();
+    _updateUndoButtons();
+  };
+
+  // ── Status-Zeile ──
+  function _updateStatus() {
+    if (!_img) { _status('Foto laden, dann Punkte klicken'); return; }
+    if (!_activeRole) { _status('Alle Punkte gesetzt — Ergebnis unten.'); return; }
+    _status(`Klick: ${_labels[_activeRole]}`);
+  }
+
+  // ── Draw canvas ──
+  function _draw() {
+    const canvas = document.getElementById('foto-canvas');
+    if (!canvas || !_img) return;
+
+    const imgW = _img.naturalWidth;
+    const imgH = _img.naturalHeight;
+
+    // Quadratisches Canvas passend zum Container (DPR-bewusst)
+    const dpr  = window.devicePixelRatio || 1;
+    const wrap = document.getElementById('foto-canvas-wrap');
+    const cssS = Math.max(1, wrap ? wrap.offsetWidth : imgW);
+    const S    = Math.round(cssS * dpr);
+    canvas.width  = S;
+    canvas.height = S;
+    canvas.style.aspectRatio = '';
+
+    const ctx = canvas.getContext('2d');
+    const cs  = Math.max(S / imgW, S / imgH);   // Cover-Skalierung
+
+    // ── Zoom / Pan ──
+    const _iz    = 1 / (cs * _fotoZoom);   // Inverse für konstante Bildschirmgrösse
+    const halfVis = S / (2 * cs * _fotoZoom);
+    _fotoPanX = Math.max(halfVis - imgW / 2, Math.min(imgW / 2 - halfVis, _fotoPanX));
+    _fotoPanY = Math.max(halfVis - imgH / 2, Math.min(imgH / 2 - halfVis, _fotoPanY));
+
+    ctx.save();
+    ctx.translate(S / 2, S / 2);
+    ctx.scale(cs * _fotoZoom, cs * _fotoZoom);
+    ctx.translate(-imgW / 2 - _fotoPanX, -imgH / 2 - _fotoPanY);
+    ctx.globalAlpha = _fotoOpacity;
+    ctx.drawImage(_img, 0, 0);
+    ctx.globalAlpha = 1.0;
+
+    // ── Referenzraster basierend auf Mastpunkten ──
+    if (_showGrid) {
+      const W = imgW, H_c = imgH;
+      ctx.save();
+      const lw_g = Math.max(0.8, W / 700) * _iz * dpr;
+
+      // Hilfsfunktion: Linie durch zwei Punkte auf volle Bildbreite verlängern
+      const drawExtLine = (p1, p2, style, dash) => {
+        if (!p1 || !p2) return;
+        const dx = p2.px - p1.px;
+        if (Math.abs(dx) < 2) return;
+        const slope  = (p2.py - p1.py) / dx;
+        const yLeft  = p1.py - p1.px * slope;
+        const yRight = p1.py + (W - p1.px) * slope;
+        ctx.strokeStyle = style;
+        ctx.lineWidth   = lw_g;
+        if (dash) ctx.setLineDash([W / 50 * _iz, W / 70 * _iz]);
+        else ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(0, yLeft);
+        ctx.lineTo(W, yRight);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      };
+
+      const _gTL = _pts.find(p => p.role === 'top_L');
+      const _gBL = _pts.find(p => p.role === 'base_L');
+      const _gTR = _pts.find(p => p.role === 'top_R');
+      const _gBR = _pts.find(p => p.role === 'base_R');
+
+      const hasAnyPt = _gTL || _gBL || _gTR || _gBR;
+
+      if (!hasAnyPt) {
+        // Fallback: 3 horizontale Hilfslinien
+        ctx.lineWidth = lw_g;
+        [0.3, 0.5, 0.7].forEach(f => {
+          ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+          ctx.setLineDash([W / 55, W / 75]);
+          ctx.beginPath(); ctx.moveTo(0, H_c * f); ctx.lineTo(W, H_c * f); ctx.stroke();
+        });
+        ctx.setLineDash([]);
+      } else {
+        // Perspektivische Referenzlinien durch die gesetzten Mastpunkte
+        drawExtLine(_gTL, _gTR, 'rgba(255,255,255,0.50)', false); // Mastspitze
+        drawExtLine(_gBL, _gBR, 'rgba(255,255,255,0.60)', false); // Mastfuss / SOK
+
+        // Linien auch wenn nur eine Seite gesetzt (horizontale Hilfslinie am Punkt)
+        if (_gTL && !_gTR) { ctx.strokeStyle='rgba(255,255,255,0.30)'; ctx.lineWidth=lw_g; ctx.setLineDash([W/55*_iz,W/75*_iz]); ctx.beginPath(); ctx.moveTo(0,_gTL.py); ctx.lineTo(W,_gTL.py); ctx.stroke(); ctx.setLineDash([]); }
+        if (_gBL && !_gBR) { ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=lw_g; ctx.setLineDash([W/55*_iz,W/75*_iz]); ctx.beginPath(); ctx.moveTo(0,_gBL.py); ctx.lineTo(W,_gBL.py); ctx.stroke(); ctx.setLineDash([]); }
+        if (_gTR && !_gTL) { ctx.strokeStyle='rgba(255,255,255,0.30)'; ctx.lineWidth=lw_g; ctx.setLineDash([W/55*_iz,W/75*_iz]); ctx.beginPath(); ctx.moveTo(0,_gTR.py); ctx.lineTo(W,_gTR.py); ctx.stroke(); ctx.setLineDash([]); }
+        if (_gBR && !_gBL) { ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=lw_g; ctx.setLineDash([W/55*_iz,W/75*_iz]); ctx.beginPath(); ctx.moveTo(0,_gBR.py); ctx.lineTo(W,_gBR.py); ctx.stroke(); ctx.setLineDash([]); }
+
+        // Sekundäre Zwischenlinien entlang der Mastlänge (3 gleichmässig verteilt)
+        // Pro Seite: Interpolation zwischen top und base → 3 Zwischenpunkte bei 25%, 50%, 75%
+        const _nSecondary = 9; // Anzahl Zwischenlinien
+        const _drawSecondaryLines = (pTop, pBot, otherTop, otherBot) => {
+          if (!pTop || !pBot) return;
+          for (let i = 1; i < _nSecondary; i++) {
+            const t = i / _nSecondary;
+            const ix1 = { px: pTop.px + t * (pBot.px - pTop.px), py: pTop.py + t * (pBot.py - pTop.py) };
+            if (otherTop && otherBot) {
+              const ix2 = { px: otherTop.px + t * (otherBot.px - otherTop.px), py: otherTop.py + t * (otherBot.py - otherTop.py) };
+              drawExtLine(ix1, ix2, 'rgba(255,255,255,0.32)', true);
+            } else {
+              ctx.strokeStyle = 'rgba(255,255,255,0.32)';
+              ctx.lineWidth = lw_g * 0.85;
+              ctx.setLineDash([W/55*_iz, W/75*_iz]);
+              ctx.beginPath(); ctx.moveTo(0, ix1.py); ctx.lineTo(W, ix1.py); ctx.stroke();
+              ctx.setLineDash([]);
+            }
+          }
+        };
+        _drawSecondaryLines(_gTL, _gBL, _gTR, _gBR);
+
+        // Vertikale gestrichelte Linien an den Mastfuss-x-Positionen (Senkrechte prüfen)
+        [_gBL, _gBR].filter(Boolean).forEach(pt => {
+          ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+          ctx.lineWidth   = Math.max(0.6, W / 900) * _iz;
+          ctx.setLineDash([W/60*_iz, W/80*_iz]);
+          ctx.beginPath(); ctx.moveTo(pt.px, 0); ctx.lineTo(pt.px, H_c); ctx.stroke();
+          ctx.setLineDash([]);
+        });
+      }
+
+      ctx.restore();
+    }
+
+    const ptTopL   = _pts.find(p => p.role === 'top_L');
+    const ptBaseL  = _pts.find(p => p.role === 'base_L');
+    const ptTopR   = _pts.find(p => p.role === 'top_R');
+    const ptBaseR  = _pts.find(p => p.role === 'base_R');
+    const ptP1     = _pts.find(p => p.role === 'p1');
+    const ptP2     = _pts.find(p => p.role === 'p2');
+    const ptCmid   = _pts.find(p => p.role === 'cmid');
+    const curvePts = _pts.filter(p => p.role === 'curve');
+
+    const lw = Math.max(1.2, imgW / 850) * _iz * dpr;
+    const r  = Math.max(6,   imgW / 175) * _iz * dpr;
+    const fs = Math.max(11,  imgW / 110) * _iz * dpr;
+
+    // Mastbezeichnungen aus Eingabefeldern
+    const nameL = document.getElementById('foto-name-L')?.value.trim() || '';
+    const nameR = document.getElementById('foto-name-R')?.value.trim() || '';
+
+    // Linke Mastlinie (grün)
+    if (ptTopL && ptBaseL) {
+      ctx.strokeStyle = '#16a34a'; ctx.lineWidth = lw; ctx.setLineDash([lw*4, lw*2]);
+      ctx.beginPath(); ctx.moveTo(ptTopL.px, ptTopL.py); ctx.lineTo(ptBaseL.px, ptBaseL.py); ctx.stroke();
+      ctx.setLineDash([]);
+      if (nameL) {
+        ctx.font = `bold ${fs}px Arial`;
+        const tw = ctx.measureText(nameL).width;
+        const lx = ptTopL.px - tw / 2, ly = ptTopL.py - r * 1.8;
+        ctx.fillStyle = 'rgba(22,163,74,.15)';
+        ctx.fillRect(lx - 4, ly - fs + 2, tw + 8, fs + 4);
+        ctx.fillStyle = '#16a34a';
+        ctx.fillText(nameL, lx, ly);
+      }
+    }
+    // Rechte Mastlinie (teal)
+    if (ptTopR && ptBaseR) {
+      ctx.strokeStyle = '#2563eb'; ctx.lineWidth = lw; ctx.setLineDash([lw*4, lw*2]);
+      ctx.beginPath(); ctx.moveTo(ptTopR.px, ptTopR.py); ctx.lineTo(ptBaseR.px, ptBaseR.py); ctx.stroke();
+      ctx.setLineDash([]);
+      if (nameR) {
+        ctx.font = `bold ${fs}px Arial`;
+        const tw = ctx.measureText(nameR).width;
+        const lx = ptTopR.px - tw / 2, ly = ptTopR.py - r * 1.8;
+        ctx.fillStyle = 'rgba(37,99,235,.15)';
+        ctx.fillRect(lx - 4, ly - fs + 2, tw + 8, fs + 4);
+        ctx.fillStyle = '#2563eb';
+        ctx.fillText(nameR, lx, ly);
+      }
+    }
+    // Ankersehne P1 → P2 (rot)
+    if (ptP1 && ptP2) {
+      ctx.strokeStyle = '#eb0000'; ctx.lineWidth = lw; ctx.setLineDash([lw*5, lw*3]);
+      ctx.beginPath(); ctx.moveTo(ptP1.px, ptP1.py); ctx.lineTo(ptP2.px, ptP2.py); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Vertikale Führungslinie bei perspektiv-korrektem L/2
+      let t_img_L2 = 0.5;
+      if (ptTopL && ptBaseL && ptTopR && ptBaseR) {
+        const hmL   = parseFloat(document.getElementById('foto-hmast-L')?.value) || 0;
+        const hmR_v = parseFloat(document.getElementById('foto-hmast-R')?.value);
+        const hmR   = hmR_v > 0 ? hmR_v : hmL;
+        const mpxL  = Math.abs(ptBaseL.py - ptTopL.py);
+        const mpxR  = Math.abs(ptBaseR.py - ptTopR.py);
+        const kL_d  = mpxL > 0 ? hmL / mpxL : 0;
+        const kR_d  = mpxR > 0 ? hmR / mpxR : 0;
+        if (kL_d > 0 && kR_d > 0) { const rp = kR_d / kL_d; t_img_L2 = rp / (1 + rp); }
+      }
+      const px_L2     = ptP1.px + t_img_L2 * (ptP2.px - ptP1.px);
+      const chordY_L2 = ptP1.py + t_img_L2 * (ptP2.py - ptP1.py);
+      const isActiveCmid = _activeRole === 'cmid';
+      ctx.strokeStyle = isActiveCmid ? 'rgba(37,99,235,0.65)' : 'rgba(37,99,235,0.30)';
+      ctx.lineWidth = lw; ctx.setLineDash([lw*3, lw*2]);
+      ctx.beginPath(); ctx.moveTo(px_L2, 0); ctx.lineTo(px_L2, imgH); ctx.stroke();
+      ctx.setLineDash([]);
+      // Querstrich an Sehnenhöhe
+      ctx.strokeStyle = '#2563eb'; ctx.lineWidth = lw * 1.5;
+      ctx.beginPath(); ctx.moveTo(px_L2 - r*2.5, chordY_L2); ctx.lineTo(px_L2 + r*2.5, chordY_L2); ctx.stroke();
+      // Label oben
+      const Lv = parseFloat(document.getElementById('foto-L')?.value);
+      const lblL2 = Lv > 0 ? `L/2 = ${(Lv/2).toFixed(0)} m` : 'L/2';
+      ctx.font = `${fs * 0.72}px Arial`; ctx.fillStyle = 'rgba(37,99,235,0.75)';
+      ctx.textAlign = 'center'; ctx.fillText(lblL2, px_L2, r * 2.2); ctx.textAlign = 'left';
+    }
+    // Sag-Linie (cmid ↑ zur Sehne, blau) — Sehne am Klick-x des Punkts
+    if (ptP1 && ptP2 && ptCmid) {
+      const t_img_c    = (ptCmid.px - ptP1.px) / (ptP2.px - ptP1.px);
+      const chordY_mid = ptP1.py + t_img_c * (ptP2.py - ptP1.py);
+      ctx.strokeStyle = '#2563eb'; ctx.lineWidth = lw * 1.5; ctx.setLineDash([lw*3, lw*2]);
+      ctx.beginPath(); ctx.moveTo(ptCmid.px, ptCmid.py); ctx.lineTo(ptCmid.px, chordY_mid); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // f-Bemaßung (Dimension-Linie rechts oder links je nach Platz)
+      const fVal = window._fotoResult?.f;
+      if (fVal != null && fVal > 0) {
+        const yTop = chordY_mid;
+        const yBot = ptCmid.py;
+        const spaceR = imgW - ptCmid.px;
+        const goRight = spaceR > r * 14;
+        const armX  = goRight ? ptCmid.px + r * 4 : ptCmid.px - r * 4;
+        const tick   = r * 1.2;
+        // Maßlinie
+        ctx.strokeStyle = '#2563eb'; ctx.lineWidth = lw * 0.9; ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(armX, yTop); ctx.lineTo(armX, yBot); ctx.stroke();
+        // Querabschlüsse
+        ctx.beginPath();
+        ctx.moveTo(armX - tick, yTop); ctx.lineTo(armX + tick, yTop);
+        ctx.moveTo(armX - tick, yBot); ctx.lineTo(armX + tick, yBot);
+        ctx.stroke();
+        // Zuleitungen
+        ctx.setLineDash([lw * 2, lw * 1.5]);
+        ctx.beginPath();
+        ctx.moveTo(ptCmid.px, yTop); ctx.lineTo(armX, yTop);
+        ctx.moveTo(ptCmid.px, yBot); ctx.lineTo(armX, yBot);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // Label
+        const fsDim = fs * 0.82;
+        ctx.font = `bold ${fsDim}px Arial`;
+        const lbl_f = `f = ${fVal.toFixed(3)} m`;
+        const tw_f  = ctx.measureText(lbl_f).width;
+        const lx_f  = goRight ? armX + r * 1.2 : armX - r * 1.2 - tw_f;
+        const ly_f  = (yTop + yBot) / 2 + fsDim * 0.38;
+        ctx.fillStyle = 'rgba(255,255,255,0.82)';
+        ctx.beginPath();
+        ctx.roundRect(lx_f - 3, ly_f - fsDim - 1, tw_f + 6, fsDim + 6, 3);
+        ctx.fill();
+        ctx.fillStyle = '#2563eb';
+        ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+        ctx.fillText(lbl_f, lx_f, ly_f);
+      }
+    }
+    // ── Fadenkreuz-Marker ──────────────────────────────────────────────────────
+    // hex-Farbe → rgba-String
+    const _hexRgba = (hex, a) => {
+      const h = hex.replace('#','');
+      const r_ = parseInt(h.slice(0,2),16), g_ = parseInt(h.slice(2,4),16), b_ = parseInt(h.slice(4,6),16);
+      return `rgba(${r_},${g_},${b_},${a})`;
+    };
+
+    const _drawCrosshair = (px, py, color, label, rr, labelLeft = false) => {
+      ctx.save();
+      // 1. Fadenkreuz-Arme (ausserhalb des Rings)
+      const inner = rr * 1.25, outer = rr * 2.1;
+      ctx.strokeStyle = _hexRgba(color, 0.80);
+      ctx.lineWidth = lw * 1.2;
+      ctx.setLineDash([]);
+      [[0,-1],[0,1],[1,0],[-1,0]].forEach(([dx,dy]) => {
+        ctx.beginPath();
+        ctx.moveTo(px + dx * inner, py + dy * inner);
+        ctx.lineTo(px + dx * outer, py + dy * outer);
+        ctx.stroke();
+      });
+      // 2. Ring (Outline, kein Fill)
+      ctx.strokeStyle = _hexRgba(color, 0.88);
+      ctx.lineWidth = lw * 1.5;
+      ctx.beginPath(); ctx.arc(px, py, rr, 0, Math.PI * 2); ctx.stroke();
+      // 3. Mittelpunkt (kleiner gefüllter Punkt)
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(px, py, lw * 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = color; ctx.lineWidth = lw * 0.9;
+      ctx.beginPath(); ctx.arc(px, py, lw * 1.8, 0, Math.PI * 2); ctx.stroke();
+      // 4. Label-Pill (links oder rechts oben vom Ring)
+      if (label) {
+        const fsl = Math.round(fs * 0.58);
+        ctx.font = `600 ${fsl}px Arial`;
+        const tw = ctx.measureText(label).width;
+        const ly = py - rr * 0.85;
+        const lx = labelLeft ? px - rr * 0.75 : px + rr * 0.75;
+        const pp = 3 * _iz;
+        const pillX = labelLeft ? lx - tw - pp : lx - pp;
+        ctx.fillStyle = 'rgba(255,255,255,0.88)';
+        ctx.beginPath();
+        ctx.roundRect(pillX, ly - fsl, tw + 2 * pp, fsl + 4 * _iz, 2 * _iz);
+        ctx.fill();
+        ctx.fillStyle = color;
+        ctx.textAlign = labelLeft ? 'right' : 'left';
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillText(label, lx, ly);
+      }
+      ctx.restore();
+    };
+
+    // Kurvenpunkte (violett, etwas kleiner)
+    curvePts.forEach((p, i) => {
+      _drawCrosshair(p.px, p.py, '#7c3aed', `C${i+1}`, r * 0.75);
+    });
+
+    // Fixer Punkte Labels
+    const _fixedLabels = { top_L:'▲ L', base_L:'▼ L', top_R:'▲ R', base_R:'▼ R', p1:'P1', p2:'P2', cmid:'f' };
+    const _labelLeft = new Set(['top_L', 'base_L', 'p1']);
+    _pts.filter(p => p.role !== 'curve').forEach(p => {
+      _drawCrosshair(p.px, p.py, _colors[p.role] || '#333', _fixedLabels[p.role] || '', r, _labelLeft.has(p.role));
+    });
+
+    // ── Höhenbemaßung P1 / P2 über Mastfuss ──
+    const _drawHeightDim = (ptAnchor, ptBase, kVal, color, side) => {
+      if (!ptAnchor || !ptBase || !kVal || kVal <= 0) return;
+      const hm = (ptBase.py - ptAnchor.py) * kVal;
+      if (hm <= 0 || !isFinite(hm)) return;
+
+      const x0   = ptAnchor.px;
+      const yTop = ptAnchor.py;
+      const yBot = ptBase.py;
+      const armX = (side === 'L' ? x0 - r * 3.5 : x0 + r * 3.5) + _dimOffsets[side];
+      const tick = r * 1.4;
+
+      // Arm-Position für Hit-Detection merken
+      _lastDimArms[side] = { armX, yTop, yBot };
+
+      // Vertikale Maßlinie (bei aktivem Drag etwas heller)
+      const isDragging = _dimDrag?.side === side;
+      ctx.strokeStyle = isDragging ? color + 'cc' : color;
+      ctx.lineWidth = lw * (isDragging ? 1.4 : 0.9);
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(armX, yTop); ctx.lineTo(armX, yBot); ctx.stroke();
+      // Querabschlüsse
+      ctx.lineWidth = lw * 0.9;
+      ctx.beginPath();
+      ctx.moveTo(armX - tick, yTop); ctx.lineTo(armX + tick, yTop);
+      ctx.moveTo(armX - tick, yBot); ctx.lineTo(armX + tick, yBot);
+      ctx.stroke();
+      // Horizontale Zuleitung
+      ctx.setLineDash([lw * 2, lw * 1.5]);
+      ctx.beginPath(); ctx.moveTo(x0, yTop); ctx.lineTo(armX, yTop); ctx.stroke();
+      ctx.setLineDash([]);
+      // Grab-Punkt in Mitte der Linie
+      const midY = (yTop + yBot) / 2;
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(armX, midY, r * 0.55, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(armX, midY, r * 0.28, 0, Math.PI * 2); ctx.fill();
+
+      // Textlabel
+      const label  = hm.toFixed(2) + ' m';
+      const fsDim  = fs * 0.82;
+      ctx.font = `bold ${fsDim}px Arial`;
+      const tw = ctx.measureText(label).width;
+      const lx = side === 'L' ? armX - tw - r * 1.2 : armX + r * 1.2;
+      const ly = midY + fsDim * 0.38;
+      ctx.fillStyle = 'rgba(255,255,255,0.82)';
+      ctx.beginPath();
+      ctx.roundRect(lx - 3, ly - fsDim - 1, tw + 6, fsDim + 6, 3);
+      ctx.fill();
+      ctx.fillStyle = color;
+      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText(label, lx, ly);
+    };
+    // k_L / k_R aus Eingabefeldern ableiten (nur für Anzeige, falls gesetzt)
+    const _hmL  = parseFloat(document.getElementById('foto-hmast-L')?.value);
+    const _hmR  = parseFloat(document.getElementById('foto-hmast-R')?.value) || _hmL;
+    const _kL_d = (ptTopL && ptBaseL && _hmL > 0)
+                  ? _hmL / (ptBaseL.py - ptTopL.py) : 0;
+    const _kR_d = (ptTopR && ptBaseR && _hmR > 0)
+                  ? _hmR / (ptBaseR.py - ptTopR.py) : 0;
+    _drawHeightDim(ptP1, ptBaseL, _kL_d, '#16a34a', 'L');
+    _drawHeightDim(ptP2, ptBaseR, _kR_d, '#2563eb', 'R');
+
+    // Live-Update der Sidebar während Drag (h1/h2 sofort nachführen)
+    if (_dragIdx !== null && window._fotoTabActive && _kL_d > 0 && _kR_d > 0 && ptP1 && ptP2 && ptBaseL && ptBaseR) {
+      const _liveH1 = (ptBaseL.py - ptP1.py) * _kL_d;
+      const _liveH2 = (ptBaseR.py - ptP2.py) * _kR_d;
+      const h1El = document.getElementById('h1');
+      const h2El = document.getElementById('h2');
+      if (h1El && _liveH1 > 0) h1El.value = _liveH1.toFixed(2);
+      if (h2El && _liveH2 > 0) h2El.value = _liveH2.toFixed(2);
+    }
+
+    // ── Berechnete Seillinie (Katenoide) als Overlay ──
+    if (_showCatenary && window._fotoResult && typeof catSagAt === 'function') {
+      const res = window._fotoResult;
+      const { q, L: rL, dh: rDh, k_L: rKL, k_R: rKR, ptP1: rP1, ptP2: rP2 } = res;
+      // Temperatur-Override: Slider-H überschreibt Mess-H für das Overlay
+      const H = (_fotoTempOverride ? _fotoTempOverride.H : res.H);
+      if (H && q && rL && rP1 && rP2 && rKL && rKR) {
+        // Perspektivisch korrekte Abbildung t_img → t_real
+        // r = k_R/k_L: >1 wenn rechter Mast weiter weg (k_R gross, wenig px/m)
+        const rPerspect = rKR / rKL;
+        const toReal = t => (Math.abs(rPerspect - 1) < 1e-4) ? t
+                           : t / (rPerspect * (1 - t) + t);
+        const steps = 120;
+        ctx.save();
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur  = 0;
+        ctx.strokeStyle = 'rgba(235,0,0,0.45)';
+        ctx.lineWidth   = lw * 1.1;
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        for (let i = 0; i <= steps; i++) {
+          const t_img  = i / steps;
+          const t_real = toReal(t_img);
+          const cx     = rP1.px + t_img  * (rP2.px - rP1.px);
+          const k_t    = rKL + t_real * (rKR - rKL);      // k am physischen Ort
+          const sagM   = catSagAt(H, q, rL, rDh, t_real * rL);
+          const cy     = (rP1.py + t_img * (rP2.py - rP1.py)) + sagM / k_t;
+          if (i === 0) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
+        }
+        ctx.stroke();
+        ctx.restore();
+        // Beschriftung «H = x kN» — Tiefpunkt in Bildkoordinaten suchen
+        const t_real_mid = toReal(0.5);
+        const midCx   = (rP1.px + rP2.px) / 2;
+        const midSagM = catSagAt(H, q, rL, rDh, t_real_mid * rL);
+        const k_mid   = rKL + t_real_mid * (rKR - rKL);
+        const midCy   = (rP1.py + rP2.py) / 2 + midSagM / k_mid;
+        // Label «H = x kN» knapp unterhalb des Tiefpunkts
+        const lblFs = fs * 0.85;
+        ctx.font = `bold ${lblFs}px Arial`;
+        const label = `H = ${(H/1000).toFixed(2)} kN`;
+        const tw = ctx.measureText(label).width;
+        const lblY = midCy + r * 1.6 + lblFs;
+        ctx.fillStyle = 'rgba(255,255,255,0.78)';
+        ctx.fillRect(midCx - tw/2 - 5, lblY - lblFs, tw + 10, lblFs + 4);
+        ctx.fillStyle = '#eb0000';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+        ctx.fillText(label, midCx, lblY);
+        ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+
+      }
+    }
+    ctx.restore();  // Zoom/Pan-Transform zurücksetzen
+  }
+
+  // ── Calculate ──
+  function _calculate() {
+    const L      = parseFloat(document.getElementById('foto-L')?.value);
+    const hmastL = parseFloat(document.getElementById('foto-hmast-L')?.value);
+    const hmastR_raw = parseFloat(document.getElementById('foto-hmast-R')?.value);
+    const hmastR = isNaN(hmastR_raw) ? hmastL : hmastR_raw;  // R fällt auf L zurück
+    const T1     = parseFloat(document.getElementById('foto-T1')?.value);
+    const mode   = _mode();
+
+    if (!L || L <= 0)          { _status('Spannweite L eingeben!'); return; }
+    if (!hmastL || hmastL <= 0){ _status('Masthöhe L eingeben!'); return; }
+    if (isNaN(T1))              { _status('Messtemperatur T eingeben!'); return; }
+
+    const ptTopL  = _pts.find(p => p.role === 'top_L');
+    const ptBaseL = _pts.find(p => p.role === 'base_L');
+    const ptTopR  = _pts.find(p => p.role === 'top_R');
+    const ptBaseR = _pts.find(p => p.role === 'base_R');
+    const ptP1    = _pts.find(p => p.role === 'p1');
+    const ptP2    = _pts.find(p => p.role === 'p2');
+
+    if (!ptTopL || !ptBaseL || !ptTopR || !ptBaseR || !ptP1 || !ptP2) { _status('Punkte fehlen!'); return; }
+
+    // Vertikale Kalibrierung: je ein k pro Mast (perspektiv-korrekt)
+    const mastPxL = ptBaseL.py - ptTopL.py;
+    const mastPxR = ptBaseR.py - ptTopR.py;
+    if (mastPxL <= 0) { _status('Linker Mastfuss muss unter der Mastspitze liegen.'); return; }
+    if (mastPxR <= 0) { _status('Rechter Mastfuss muss unter der Mastspitze liegen.'); return; }
+    const k_L = hmastL / mastPxL;   // [m/px] bei linkem Mast
+    const k_R = hmastR / mastPxR;   // [m/px] bei rechtem Mast
+
+    // dh: Höhenunterschied Ankerpunkte, gemessen mit lokalem k
+    // h_P1/h_P2 = Höhe über SOK des jeweiligen Masts (Canvas y wächst nach unten)
+    const h_P1 = (ptBaseL.py - ptP1.py) * k_L;
+    const h_P2 = (ptBaseR.py - ptP2.py) * k_R;
+    // Optional: Mastfuss-Höhe (m ü. M.) — wenn angegeben, SOK-Differenz addieren
+    const elevL = parseFloat(document.getElementById('foto-elev-L')?.value);
+    const elevR = parseFloat(document.getElementById('foto-elev-R')?.value);
+    const dhElev = (!isNaN(elevL) && !isNaN(elevR)) ? (elevL - elevR) : 0;
+    const dh   = h_P1 - h_P2 + dhElev;   // catSagAt: h > 0 wenn linker Anker höher
+
+    // Material / q
+    const matKey = document.getElementById('foto-mat')?.value;
+    const mat = (matKey && typeof MATERIALS !== 'undefined') ? MATERIALS[matKey] : null;
+    // q: aus Material, Fallback auf weight-ts (NFL/RFL Preset-Gewicht) oder foto-q Override
+    const qWeightTs = parseFloat(document.getElementById('weight-ts')?.value);
+    const q = mat?.q || (!isNaN(qWeightTs) && qWeightTs > 0 ? qWeightTs : null) || null;
+    if (!q) { _status('Material oder Leitergewicht (q) nicht verfügbar!'); return; }
+
+    let H = null, f = null, xC = null;
+
+    // Perspektivisch korrekte Abbildung t_img → t_real (dieselbe Formel wie im Overlay)
+    const _rPersp = (k_L > 0 && k_R > 0) ? k_R / k_L : 1;
+    const _toReal = t => (Math.abs(_rPersp - 1) < 1e-4) ? t
+                        : t / (_rPersp * (1 - t) + t);
+
+    if (mode === 'single') {
+      // Messpunkt irgendwo auf dem Leiter — Klick-x bestimmt t_img → t_real
+      const ptC = _pts.find(p => p.role === 'cmid');
+      if (!ptC) { _status('Leiterpunkt klicken!'); return; }
+      const t_img  = (ptC.px - ptP1.px) / (ptP2.px - ptP1.px);
+      const t_real = _toReal(Math.max(0.01, Math.min(0.99, t_img)));
+      xC = t_real * L;
+      const k_xc   = k_L + t_real * (k_R - k_L);
+      const chordY = ptP1.py + t_img * (ptP2.py - ptP1.py);  // Sehne im Bildraum
+      f = (ptC.py - chordY) * k_xc;
+      if (f <= 0) { _status('Leiterpunkt muss unterhalb der Ankersehne liegen.'); return; }
+      H = typeof solve3point === 'function' ? solve3point(L, dh, q, xC, f) : null;
+
+    } else {
+      // Modus B: Golden-Section auf H; perspektiv-korrekte Span-Positionen
+      const curvePts = _pts.filter(p => p.role === 'curve');
+      if (curvePts.length < 3) { _status('Mind. 3 Kurvenpunkte setzen!'); return; }
+
+      const measPts = curvePts.map(p => {
+        const t_img   = (p.px - ptP1.px) / (ptP2.px - ptP1.px);
+        const t_real  = _toReal(Math.max(0.01, Math.min(0.99, t_img)));
+        const k_i     = k_L + t_real * (k_R - k_L);
+        const chordPy = ptP1.py + t_img * (ptP2.py - ptP1.py);
+        return { xC: t_real * L, sag: (p.py - chordPy) * k_i };
+      }).filter(mp => mp.sag > 0);
+
+      if (measPts.length < 2) { _status('Kurvenpunkte müssen unterhalb der Sehne liegen.'); return; }
+
+      const cost = Htest => {
+        if (Htest <= 0) return 1e18;
+        return measPts.reduce((s, mp) => {
+          const sc = typeof catSagAt === 'function' ? catSagAt(Htest, q, L, dh, mp.xC) : 0;
+          return s + (sc - mp.sag) ** 2;
+        }, 0);
+      };
+      const phi = (Math.sqrt(5) - 1) / 2;
+      let lo = 50, hi = 60000;
+      for (let i = 0; i < 80; i++) {
+        const m1 = hi - phi * (hi - lo), m2 = lo + phi * (hi - lo);
+        if (cost(m1) < cost(m2)) hi = m2; else lo = m1;
+      }
+      H  = (lo + hi) / 2;
+      xC = L / 2;
+      f  = typeof catSagAt === 'function' ? catSagAt(H, q, L, dh, xC) : null;
+    }
+
+    if (!H || H <= 0 || !isFinite(H)) { _status('Berechnung fehlgeschlagen — Parameter prüfen.'); return; }
+
+    // Ergebnis anzeigen
+    const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    setEl('foto-f',  f  != null ? f.toFixed(3)  + ' m'    : '—');
+    setEl('foto-H',  H  != null ? (H/1000).toFixed(2) + ' kN (' + Math.round(H) + ' N)' : '—');
+    setEl('foto-xC', xC != null ? xC.toFixed(2) + ' m'    : '—');
+    setEl('foto-dh', dh != null ? dh.toFixed(3) + ' m'    : '—');
+    const hintEl = document.getElementById('foto-xc-hint');
+    if (hintEl && xC != null) {
+      const lHalf = (L / 2).toFixed(1);
+      const atMid = Math.abs(xC - L / 2) < 0.5;
+      hintEl.innerHTML = atMid
+        ? `f gemessen nahe Feldmitte (x<sub>C</sub> ≈ L/2 = ${lHalf} m) — Slider-f vergleichbar.`
+        : `f gemessen bei x<sub>C</sub> = ${xC.toFixed(1)} m, nicht bei Feldmitte (L/2 = ${lHalf} m) — Slider-f gilt für x = L/2.`;
+    }
+    setEl('foto-k',  `L: ${(k_L*1000).toFixed(2)} / R: ${(k_R*1000).toFixed(2)} mm/px`);
+    setEl('foto-T1-result', `${T1} °C`);
+    const nameL = document.getElementById('foto-name-L')?.value.trim() || '';
+    const nameR = document.getElementById('foto-name-R')?.value.trim() || '';
+    const mastLabel = [nameL, nameR].filter(Boolean).join(' — ');
+    const mastEl = document.getElementById('foto-mast-names');
+    if (mastEl) {
+      const _mastRow = document.getElementById('foto-mast-names-row');
+      if (_mastRow) _mastRow.style.display = mastLabel ? '' : 'none';
+      mastEl.textContent = mastLabel || '';
+    }
+    document.getElementById('foto-result').style.display = '';
+    // Messtemperatur-Label aktualisieren
+    const _tempLbl = document.getElementById('foto-result-temp');
+    if (_tempLbl) _tempLbl.textContent = `bei T₂ = ${T1}°C`;
+    _status('Messung abgeschlossen.');
+    _showCatenary = true;
+    _updateCatenaryBtn();
+    window._fotoResult = { H, xC, f, L, q, dh, k_L, k_R, T1, nameL, nameR,
+      h_P1, h_P2,
+      ptP1: { px: ptP1.px, py: ptP1.py }, ptP2: { px: ptP2.px, py: ptP2.py } };
+    // Bei aktivem Foto-Tab: Sidebar-Felder aus Messung befüllen
+    if (window._fotoTabActive) {
+      const h1El = document.getElementById('h1');
+      const h2El = document.getElementById('h2');
+      const tEl  = document.getElementById('tension');
+      if (h1El) h1El.value = h_P1.toFixed(2);
+      if (h2El) h2El.value = h_P2.toFixed(2);
+      if (tEl)  tEl.value  = Math.round(H);
+      // Hauptberechnung mit neuen Werten aktualisieren (Diagramm-Tab bleibt synchron)
+      if (typeof berechnen === 'function') berechnen();
+    }
+    // T₂-Regler aus Sidebar auslesen und Foto-Auswertung damit aktualisieren
+    _fotoTempOverride = null;
+    const T2cur = parseFloat(document.getElementById('temp2')?.value);
+    const tSldrVal = document.getElementById('foto-T-slider-val');
+    if (tSldrVal) tSldrVal.textContent = (!isNaN(T2cur) ? T2cur : T1) + ' °C';
+    // Montage-Referenz: T₁ aus Sidebar (Montagetemperatur), Fallback 10°C
+    const T1_mont = parseFloat(document.getElementById('temp1')?.value);
+    const T_mont  = !isNaN(T1_mont) ? T1_mont : 10;
+    const mont = _solveAtTemp(T_mont);
+    const montEl = document.getElementById('foto-H-mont');
+    if (montEl) montEl.textContent = mont ? (mont.H / 1000).toFixed(2) + ' kN' : '—';
+    // Montage-Label aktualisieren
+    const montLabel = document.querySelector('#foto-montage-ref .metric-label');
+    if (montLabel) montLabel.textContent = `Montage (${T_mont} °C)`;
+    // Anzeige bei aktueller T₂ befüllen (oder bei T1 wenn T2 nicht gesetzt)
+    const T2eff = !isNaN(T2cur) ? T2cur : T1;
+    const resT2 = _solveAtTemp(T2eff);
+    const hTempEl = document.getElementById('foto-H-temp');
+    const fTempEl = document.getElementById('foto-f-temp');
+    if (resT2) {
+      if (hTempEl) hTempEl.textContent = (resT2.H / 1000).toFixed(2) + ' kN  (' + Math.round(resT2.H) + ' N)';
+      if (fTempEl) fTempEl.textContent = resT2.f != null ? resT2.f.toFixed(3) + ' m' : '—';
+      _fotoTempOverride = resT2;
+    } else {
+      if (hTempEl) hTempEl.textContent = (H / 1000).toFixed(2) + ' kN  (' + Math.round(H) + ' N)';
+      if (fTempEl) fTempEl.textContent = f != null ? f.toFixed(3) + ' m' : '—';
+    }
+    // Soll/Ist-Block mit Messzustand initialisieren
+    const fAtHalf = (typeof catSagAt === 'function') ? catSagAt(H, q, L, dh, L / 2) : null;
+    _updateSollIst(T2eff, resT2 || { H, f: fAtHalf });
+    _draw();  // Seillinie als Overlay zeichnen
+    if (typeof window._fotoUpdateProbeOut === 'function') window._fotoUpdateProbeOut();
+  }
+  window.fotoCalculate = _calculate;
+  window.fotoRedraw    = _draw;
+  window.fotoRecalcIfReady = function() { if (window._fotoResult) _calculate(); };
+
+  // ── Seillinienhöhe an x-Position (für Probe-Readout im Foto-Tab) ──
+  function _fotoWireHeightAt(xM) {
+    const r = window._fotoResult;
+    if (!r || !xM || isNaN(xM) || typeof catSagAt !== 'function') return null;
+    if (xM < 0 || xM > r.L) return null;
+    const hAnker = r.h_P1 + (xM / r.L) * (r.h_P2 - r.h_P1);  // Ankerhöhe interpoliert
+    const H = _fotoTempOverride ? _fotoTempOverride.H : r.H;
+    const sag = catSagAt(H, r.q, r.L, r.dh, xM);
+    return hAnker - sag;
+  }
+
+  function _fotoUpdateProbeOut() {
+    const outEl  = document.getElementById('foto-probe-out');
+    const rowsEl = document.getElementById('foto-probe-rows');
+    if (!outEl || !rowsEl) return;
+    if (!window._fotoTabActive || !window._fotoResult) {
+      outEl.style.display = 'none'; return;
+    }
+    const shVal = parseFloat(document.getElementById('sh')?.value) || 0;
+    const badges = ['<span class="probe-mp-badge m1">M1</span>','<span class="probe-mp-badge m2">M2</span>','<span class="probe-mp-badge m3">M3</span>','<span class="probe-mp-badge m4">M4</span>'];
+    const ids    = ['probe-x1','probe-x2','probe-x3','probe-x4'];
+    let rows = '';
+    let any = false;
+    ids.forEach((id, i) => {
+      const x = parseFloat(document.getElementById(id)?.value);
+      if (isNaN(x) || x <= 0) return;
+      any = true;
+      const h = _fotoWireHeightAt(x);
+      if (h == null) { rows += `${badges[i]}<span>${x.toFixed(1)} m</span><span style="color:var(--muted)">—</span><span></span>`; return; }
+      const delta = shVal > 0 ? h - shVal : null;
+      const dColor = delta !== null ? (delta < 0 ? '#eb0000' : '#16a34a') : '';
+      const dStr   = delta !== null ? `<span style="color:${dColor};font-weight:600">Δ ${delta >= 0 ? '+' : ''}${delta.toFixed(2)} m</span>` : '<span></span>';
+      rows += `${badges[i]}<span style="color:var(--muted)">${x.toFixed(1)} m</span><span style="font-weight:600">${h.toFixed(2)} m ü.SOK</span>${dStr}`;
+    });
+    if (!any) { outEl.style.display = 'none'; return; }
+    rowsEl.innerHTML = rows;
+    outEl.style.display = '';
+  }
+  window._fotoUpdateProbeOut = _fotoUpdateProbeOut;
+
+  // ── Temperatur-Solver (Zustandsgleichung) ──
+  function _solveAtTemp(T_target) {
+    const r = window._fotoResult;
+    if (!r) return null;
+    const matKey = document.getElementById('foto-mat')?.value;
+    const mat = (typeof MATERIALS !== 'undefined') ? MATERIALS[matKey] : null;
+    if (!mat?.E || !mat?.AK || !mat?.alpha) return null;
+    const EA    = mat.E * mat.AK;
+    const alpha = mat.alpha;
+    const Lm    = Math.sqrt(r.L * r.L + r.dh * r.dh);
+    const dT    = T_target - r.T1;
+    const H2    = (typeof solveStateEq === 'function')
+                  ? solveStateEq(r.q, Lm, r.H, EA, alpha, dT)
+                  : null;
+    if (!H2 || !isFinite(H2) || H2 <= 0) return null;
+    const f2 = (typeof catSagAt === 'function') ? catSagAt(H2, r.q, r.L, r.dh, r.L / 2) : null;
+    return { H: H2, f: f2, T: T_target };
+  }
+  window.fotoSolveAtTemp = _solveAtTemp;
+
+  // ── Reglagewert-Interpolation ──
+  function _interpReglage(table, T) {
+    if (!table) return null;
+    const { temps, vals } = table;
+    const n = temps.length;
+    if (T <= temps[0]) return vals[0];
+    if (T >= temps[n - 1]) {
+      // Lineare Extrapolation ab letzten zwei Stützpunkten (physikalisch korrekt bis 80°C)
+      const slope = (vals[n - 1] - vals[n - 2]) / (temps[n - 1] - temps[n - 2]);
+      return Math.max(100, Math.round(vals[n - 1] + slope * (T - temps[n - 1])));
+    }
+    for (let i = 0; i < n - 1; i++) {
+      if (T >= temps[i] && T <= temps[i + 1]) {
+        const t = (T - temps[i]) / (temps[i + 1] - temps[i]);
+        return vals[i] + t * (vals[i + 1] - vals[i]);
+      }
+    }
+    return null;
+  }
+
+  function _updateSollIst(T, res) {
+    const r = window._fotoResult;
+    const matKey = document.getElementById('foto-mat')?.value;
+    const mat    = (typeof MATERIALS !== 'undefined') ? MATERIALS[matKey] : null;
+    // Tabelle suchen: direkt oder in erster Variante
+    const tbl    = mat?.H_reglage_table
+                || mat?.H_reglage_variants?.[0]?.H_reglage_table
+                || null;
+    const lref   = mat?.L_ref || null;
+
+    // L_ref-Hinweis
+    const lrefEl = document.getElementById('foto-lref-note');
+    if (lrefEl) lrefEl.textContent = lref ? `L₀ = ${lref} m` : 'kein Reglagewert';
+
+    // «H bei T₂ = X°C» Label mit aktueller Temperatur
+    const hTLabel = document.getElementById('foto-H-bei-T-label');
+    if (hTLabel) hTLabel.textContent = `H bei T₂ = ${T}°C`;
+
+    // Spannweiten-Hinweis wenn L ≠ L₀
+    const spanHint = document.getElementById('foto-span-hint');
+    if (spanHint && r && lref) {
+      const Leff = r.L;
+      if (Math.abs(Leff - lref) > 0.5) {
+        spanHint.textContent = `ⓘ Soll: L₀ = ${lref} m · Ist gemessen: L = ${Leff} m`;
+        spanHint.style.display = '';
+      } else {
+        spanHint.style.display = 'none';
+      }
+    } else if (spanHint) {
+      spanHint.style.display = 'none';
+    }
+
+    const H_reg = _interpReglage(tbl, T);
+    const f_reg = (H_reg != null && r && typeof catSagAt === 'function')
+                  ? catSagAt(H_reg, r.q, r.L, r.dh, r.L / 2) : null;
+
+    const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    // Ist-Werte
+    setEl('foto-H-ist', res ? (res.H / 1000).toFixed(2) + ' kN' : '—');
+    setEl('foto-f-ist', res?.f != null ? res.f.toFixed(3) + ' m' : '—');
+    // Soll-Werte
+    setEl('foto-H-reglage', H_reg != null ? (H_reg / 1000).toFixed(2) + ' kN' : '—');
+    setEl('foto-f-reglage', f_reg != null ? f_reg.toFixed(3) + ' m' : '—');
+    // Abweichungen
+    const dHEl = document.getElementById('foto-delta-H');
+    const dFEl = document.getElementById('foto-delta-f');
+    if (dHEl) {
+      if (H_reg && res) {
+        const d = (res.H - H_reg) / H_reg * 100;
+        dHEl.textContent = (d >= 0 ? '+' : '') + d.toFixed(1) + ' %';
+        dHEl.style.color = Math.abs(d) > 10 ? '#eb0000' : '#16a34a';
+      } else { dHEl.textContent = '—'; dHEl.style.color = ''; }
+    }
+    if (dFEl) {
+      if (f_reg != null && res?.f != null) {
+        const d = (res.f - f_reg) / f_reg * 100;
+        dFEl.textContent = (d >= 0 ? '+' : '') + d.toFixed(1) + ' %';
+        dFEl.style.color = Math.abs(d) > 10 ? '#eb0000' : '#16a34a';
+      } else { dFEl.textContent = '—'; dFEl.style.color = ''; }
+    }
+    // Block sichtbar/versteckt je nach Datenlage
+    const wrap = document.getElementById('foto-soll-ist-wrap');
+    if (wrap) wrap.style.display = tbl ? '' : 'none';
+  }
+
+  // ── Slider-Handler ──
+  window.fotoSliderChange = function(val) {
+    const T = parseFloat(val);
+    document.getElementById('foto-T-slider-val').textContent = T + ' °C';
+    const res = _solveAtTemp(T);
+    if (!res) return;
+    _fotoTempOverride = res;
+    const hEl = document.getElementById('foto-H-temp');
+    const fEl = document.getElementById('foto-f-temp');
+    if (hEl) hEl.textContent = (res.H / 1000).toFixed(2) + ' kN  (' + Math.round(res.H) + ' N)';
+    if (fEl) fEl.textContent = res.f != null ? res.f.toFixed(3) + ' m' : '—';
+    _updateSollIst(T, res);
+    if (_showCatenary && _img) _draw();
+    if (typeof window._fotoUpdateProbeOut === 'function') window._fotoUpdateProbeOut();
+  };
+
+  // ── Lupe ──
+  window.fotoLoupeMove = function(event) {
+    if (!_img) return;
+    const canvas = document.getElementById('foto-canvas');
+    const loupe  = document.getElementById('foto-loupe');
+    if (!canvas || !loupe) return;
+
+    // Nur anzeigen wenn Freeze aktiv UND Punkt gesetzt/gezogen wird
+    const isPlacing = _activeRole !== null;
+    const isDragging = _dragIdx !== null;
+    if (!_fotoPanLocked || (!isPlacing && !isDragging)) {
+      loupe.style.display = 'none';
+      return;
+    }
+
+    const rect = canvas.getBoundingClientRect();
+    const sx = canvas.width  / rect.width;
+    const sy = canvas.height / rect.height;
+    const src = event.touches ? event.touches[0] : event;
+    const mx = (src.clientX - rect.left) * sx;
+    const my = (src.clientY - rect.top)  * sy;
+
+    // Im Vollbild grössere Lupe (240 px statt 180 px)
+    const inFS     = !!document.fullscreenElement;
+    const loupeCss = inFS ? 240 : 180;
+    const zoom     = 4;
+    const srcR     = (loupeCss / 2 / zoom) * sx;
+    const lSz      = loupe.width;
+
+    loupe.style.width  = loupeCss + 'px';
+    loupe.style.height = loupeCss + 'px';
+
+    const ctx = loupe.getContext('2d');
+    ctx.clearRect(0, 0, lSz, lSz);
+
+    // Kreisausschnitt — Canvas-Inhalt (inkl. gerenderte Marker)
+    ctx.save();
+    ctx.beginPath(); ctx.arc(lSz/2, lSz/2, lSz/2 - 1, 0, Math.PI * 2); ctx.clip();
+    ctx.drawImage(canvas, mx - srcR, my - srcR, srcR * 2, srcR * 2, 0, 0, lSz, lSz);
+    ctx.restore();
+
+    // Absetzmarker: Farbe je nach Rolle oder gezogenem Punkt
+    const role = isPlacing ? _activeRole : (_pts[_dragIdx] ? _pts[_dragIdx].role : null);
+    const markerColor = (_colors[role] || '#eb0000');
+    const c  = lSz / 2;
+    const rr = lSz * 0.13;
+    const armIn  = rr * 1.3;
+    const armOut = rr * 2.2;
+
+    ctx.strokeStyle = markerColor;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([]);
+    // Arme
+    [[0,-1],[0,1],[1,0],[-1,0]].forEach(([dx,dy]) => {
+      ctx.beginPath();
+      ctx.moveTo(c + dx*armIn,  c + dy*armIn);
+      ctx.lineTo(c + dx*armOut, c + dy*armOut);
+      ctx.stroke();
+    });
+    // Ring
+    ctx.beginPath(); ctx.arc(c, c, rr, 0, Math.PI*2); ctx.stroke();
+    // Mittelpunkt
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(c, c, 2.5, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = markerColor; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(c, c, 2.5, 0, Math.PI*2); ctx.stroke();
+
+    // Randring
+    ctx.strokeStyle = 'rgba(30,30,30,.45)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(lSz/2, lSz/2, lSz/2 - 1, 0, Math.PI * 2); ctx.stroke();
+
+    loupe.style.left      = '50%';
+    loupe.style.right     = 'auto';
+    loupe.style.bottom    = '.6rem';
+    loupe.style.top       = 'auto';
+    loupe.style.transform = 'translateX(-50%)';
+    loupe.style.display   = 'block';
+  };
+
+  window.fotoLoupeHide = function() {
+    const loupe = document.getElementById('foto-loupe');
+    if (loupe) loupe.style.display = 'none';
+  };
+
+  // ── IndexedDB — Feldaufnahmen ──
+  let _feldDB = null;
+  function _openFeldDB(cb) {
+    if (_feldDB) { cb(_feldDB); return; }
+    const req = indexedDB.open('foto_feldaufnahmen', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('messungen', { keyPath: 'id', autoIncrement: true });
+    req.onsuccess = e => { _feldDB = e.target.result; cb(_feldDB); };
+    req.onerror   = () => _status('IndexedDB konnte nicht geöffnet werden.');
+  }
+
+  function _renderMessungenList() {
+    _openFeldDB(db => {
+      const all = [];
+      db.transaction('messungen').objectStore('messungen').openCursor().onsuccess = e => {
+        const cur = e.target.result;
+        if (cur) { all.push(cur.value); cur.continue(); }
+        else {
+          const ul = document.getElementById('foto-messungen-list');
+          if (!ul) return;
+          ul.innerHTML = all.length === 0
+            ? '<li style="color:var(--muted);font-size:.72rem;padding:.3rem 0">Keine gespeicherten Messungen</li>'
+            : all.reverse().map(rec => `
+                <li style="display:flex;align-items:center;gap:.4rem;padding:.25rem 0;border-bottom:1px solid var(--border)">
+                  <span style="flex:1;font-size:.75rem;cursor:pointer;color:var(--text)"
+                        onclick="fotoLoadMessung(${rec.id})">
+                    ${rec.label}
+                    <span style="color:var(--muted);font-size:.68rem;margin-left:.3rem">${new Date(rec.ts).toLocaleDateString('de-CH')}</span>
+                  </span>
+                  <button onclick="fotoDeleteMessung(${rec.id})"
+                    style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:0 .2rem"
+                    title="Löschen">✕</button>
+                </li>`).join('');
+        }
+      };
+    });
+  }
+
+  window.fotoToggleMessungenList = function() {
+    const panel = document.getElementById('foto-messungen-panel');
+    if (!panel) return;
+    const isOpen = panel.style.display !== 'none';
+    panel.style.display = isOpen ? 'none' : '';
+    if (!isOpen) _renderMessungenList();
+  };
+
+  window.fotoSaveMessung = function() {
+    if (!_img || !window._fotoResult) { _status('Keine abgeschlossene Messung vorhanden.'); return; }
+    const canvas = document.getElementById('foto-canvas');
+    const imageDataURL = canvas.toDataURL('image/jpeg', 0.75);
+    const g = id => document.getElementById(id)?.value ?? '';
+    const inputs = {
+      L: g('foto-L'), mat: g('foto-mat'), q: g('foto-q'), T1: g('foto-T1'),
+      mode: g('foto-mode'),
+      nameL: g('foto-name-L'), hmastL: g('foto-hmast-L'), elevL: g('foto-elev-L'),
+      nameR: g('foto-name-R'), hmastR: g('foto-hmast-R'), elevR: g('foto-elev-R'),
+    };
+    const fr = window._fotoResult;
+    const label = [inputs.nameL, inputs.nameR].filter(Boolean).join(' — ')
+                || `Messung ${new Date().toLocaleDateString('de-CH')}`;
+    const record = {
+      ts: Date.now(), label, imageDataURL, inputs,
+      pts:    _pts.map(p => ({ ...p })),
+      result: { H: fr.H, f: fr.f, xC: fr.xC, L: fr.L, q: fr.q, dh: fr.dh, T1: fr.T1,
+                k_L: fr.k_L, k_R: fr.k_R, nameL: fr.nameL, nameR: fr.nameR },
+    };
+    _openFeldDB(db => {
+      db.transaction('messungen', 'readwrite').objectStore('messungen').add(record)
+        .onsuccess = () => {
+          _status('Messung gespeichert.');
+          const panel = document.getElementById('foto-messungen-panel');
+          if (panel && panel.style.display !== 'none') _renderMessungenList();
+        };
+    });
+  };
+
+  window.fotoLoadMessung = function(id) {
+    _openFeldDB(db => {
+      db.transaction('messungen').objectStore('messungen').get(id).onsuccess = e => {
+        const rec = e.target.result;
+        if (!rec) return;
+        const iv = (elId, val) => { const el = document.getElementById(elId); if (el && val != null) el.value = val; };
+        iv('foto-L', rec.inputs.L); iv('foto-mat', rec.inputs.mat);
+        iv('foto-q', rec.inputs.q); iv('foto-T1', rec.inputs.T1);
+        iv('foto-mode', rec.inputs.mode);
+        iv('foto-name-L', rec.inputs.nameL); iv('foto-hmast-L', rec.inputs.hmastL); iv('foto-elev-L', rec.inputs.elevL);
+        iv('foto-name-R', rec.inputs.nameR); iv('foto-hmast-R', rec.inputs.hmastR); iv('foto-elev-R', rec.inputs.elevR);
+        _pts = rec.pts.map(p => ({ ...p }));
+        _img = new Image();
+        _img.onload = () => {
+          const ph = document.getElementById('foto-canvas-placeholder');
+          if (ph) ph.style.display = 'none';
+          _draw();
+          _calculate();
+        };
+        _img.src = rec.imageDataURL;
+        _status('Messung geladen.');
+      };
+    });
+  };
+
+  window.fotoDeleteMessung = function(id) {
+    _openFeldDB(db => {
+      db.transaction('messungen', 'readwrite').objectStore('messungen').delete(id)
+        .onsuccess = () => _renderMessungenList();
+    });
+  };
+
+  // ── In App übernehmen ──
+  window.fotoApplyToCalc = function() {
+    const fr = window._fotoResult;
+    if (!fr) return;
+    if (typeof spanMode !== 'undefined' && spanMode === 'ruling') {
+      const ok = confirm(
+        'Die Hauptberechnung ist im Mittelspannweite-Modus.\n' +
+        'Für die Übernahme wird auf Einzelspannweite gewechselt — fortfahren?'
+      );
+      if (!ok) return;
+      if (typeof setSpanMode === 'function') setSpanMode('single');
+    }
+    const spanEl = document.getElementById('span');
+    if (spanEl) spanEl.value = fr.L;
+    const h1El = document.getElementById('h1');
+    const h2El = document.getElementById('h2');
+    if (h1El && fr.h_P1 != null) h1El.value = fr.h_P1.toFixed(2);
+    if (h2El && fr.h_P2 != null) h2El.value = fr.h_P2.toFixed(2);
+    // Material nur im EL-Modus übernehmen; NFL/RFL nutzen Preset (bleibt erhalten)
+    const matKey = document.getElementById('foto-mat')?.value;
+    if (typeof sysMode === 'undefined' || sysMode === 'el') {
+      const elSel = document.getElementById('el-material-select');
+      if (matKey && elSel && Array.from(elSel.options).some(o => o.value === matKey)) {
+        elSel.value = matKey;
+        if (typeof elMaterialChanged === 'function') elMaterialChanged();
+      }
+    }
+    // H bei aktueller Montagetemperatur T₁ berechnen
+    const _T1mont = parseFloat(document.getElementById('temp1')?.value);
+    const _Tmont  = !isNaN(_T1mont) ? _T1mont : 10;
+    const H10 = (typeof fotoSolveAtTemp === 'function') ? fotoSolveAtTemp(_Tmont) : null;
+    const tensionEl = document.getElementById('tension');
+    if (H10 && tensionEl) {
+      tensionEl.value = Math.round(H10.H);
+      if (typeof _updateTensionFotoState === 'function') _updateTensionFotoState(true);
+    }
+    // T₁ bleibt unverändert (Benutzer-Einstellung)
+    // T₂ bleibt unverändert (Benutzer-Einstellung beibehalten)
+    // berechnen() aufrufen, danach Foto-H nochmals sichern (updateH_Ts_ubFromT1 würde es sonst überschreiben)
+    const _savedFotoH = H10 ? Math.round(H10.H) : null;
+    if (typeof berechnen === 'function') berechnen();
+    if (_savedFotoH && tensionEl) {
+      tensionEl.value = _savedFotoH;
+      if (typeof _updateTensionFotoState === 'function') _updateTensionFotoState(true);
+    }
+    const wb = document.getElementById('warn-box');
+    if (wb && H10) {
+      const h1Str = fr.h_P1 != null ? `, h₁ = ${fr.h_P1.toFixed(2)} m` : '';
+      const h2Str = fr.h_P2 != null ? `, h₂ = ${fr.h_P2.toFixed(2)} m` : '';
+      wb.innerHTML = `Foto-Messung übernommen &mdash; H = ${(H10.H/1000).toFixed(2)} kN bei 10 °C, ` +
+                     `L = ${fr.L} m, T₂ = ${fr.T1} °C${h1Str}${h2Str}.`;
+      wb.classList.remove('hidden');
+      setTimeout(() => wb.classList.add('hidden'), 6000);
+    }
+    if (typeof closeFotoModal === 'function') closeFotoModal();
+  };
+
+  // ── Bild speichern ──
+  window.fotoSaveImage = function() {
+    const canvas = document.getElementById('foto-canvas');
+    if (!canvas || !_img) return;
+    const link = document.createElement('a');
+    link.download = 'foto-auswertung.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+
+  // ── Reset ──
+  window.fotoReset = function() {
+    _pts = [];
+    _undoStack = [];
+    _gps = null;
+    _updateGpsDisplay();
+    document.getElementById('foto-result').style.display = 'none';
+    document.getElementById('foto-multi-btns').style.display = _mode() === 'multi' ? '' : 'none';
+    const cc = document.getElementById('foto-curve-count');
+    if (cc) cc.textContent = '';
+    window._fotoResult = null;
+    _fotoTempOverride  = null;
+    _dragIdx   = null;
+    _dragMoved = false;
+    _dimDrag   = null;
+    _dimOffsets = { L: 0, R: 0 };
+    _lastDimArms = { L: null, R: null };
+    _showCatenary = false;
+    _updateCatenaryBtn();
+    _updateUndoButtons();
+    if (_img) { _draw(); _updateStatus(); }
+    else _status('Foto laden, dann Punkte klicken');
+  };
+
+  // ── Projekt-Save / Load (Bild + Punkte + Ergebnis) ──────────────────────────
+  window._fotoGetProjectState = function() {
+    const state = {
+      pts:    _pts.map(p => ({ ...p })),
+      result: window._fotoResult ? { ...window._fotoResult } : null,
+      showCatenary: _showCatenary,
+    };
+    // Bild komprimiert, max 2 MB (base64 ≈ 2.8 MB string) → try/catch
+    if (_img) {
+      try {
+        const MAX_BYTES = 2 * 1024 * 1024;                   // 2 MB Binärgrösse
+        const MAX_B64   = Math.ceil(MAX_BYTES * 4 / 3);      // ≈ 2.74 MB base64-Länge
+        const MAX_W = 1280, MAX_H = 960;
+        const scale = Math.min(1, MAX_W / _img.naturalWidth, MAX_H / _img.naturalHeight);
+        const tw = Math.round(_img.naturalWidth  * scale);
+        const th = Math.round(_img.naturalHeight * scale);
+        const tmp = document.createElement('canvas');
+        tmp.width = tw; tmp.height = th;
+        tmp.getContext('2d').drawImage(_img, 0, 0, tw, th);
+        // Qualitätsstufen: von hoch nach niedrig bis unter 2 MB
+        let dataURL = '';
+        for (const q of [0.88, 0.78, 0.68, 0.58]) {
+          dataURL = tmp.toDataURL('image/jpeg', q);
+          if (dataURL.length <= MAX_B64) break;
+        }
+        // Notfall: nochmals auf 960px skalieren
+        if (dataURL.length > MAX_B64) {
+          const tmp2 = document.createElement('canvas');
+          const s2 = Math.min(1, 960 / tw);
+          tmp2.width = Math.round(tw * s2); tmp2.height = Math.round(th * s2);
+          tmp2.getContext('2d').drawImage(tmp, 0, 0, tmp2.width, tmp2.height);
+          dataURL = tmp2.toDataURL('image/jpeg', 0.72);
+        }
+        state.imgDataURL = dataURL;
+      } catch (e) { /* localStorage zu voll → Bild weglassen */ }
+    }
+    return state;
+  };
+
+  window._fotoSetProjectState = function(state) {
+    if (!state) return;
+    // Sync sidebar → foto-L / foto-T1 first so L/2 and Soll/Ist use correct values
+    if (typeof _fotoSidebarSync === 'function') _fotoSidebarSync();
+    _pts = (state.pts || []).map(p => ({ ...p }));
+    window._fotoResult = state.result || null;
+    _showCatenary = !!state.showCatenary;
+    _updateCatenaryBtn();
+    _updateRoleButtons();
+
+    function _restoreResultUI() {
+      const fr = window._fotoResult;
+      if (!fr) return;
+      document.getElementById('foto-result').style.display = '';
+      const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      setEl('foto-f',  fr.f  != null ? fr.f.toFixed(3)  + ' m' : '—');
+      setEl('foto-H',  fr.H  != null ? (fr.H/1000).toFixed(2) + ' kN (' + Math.round(fr.H) + ' N)' : '—');
+      setEl('foto-xC', fr.xC != null ? fr.xC.toFixed(2) + ' m' : '—');
+      setEl('foto-dh', fr.dh != null ? fr.dh.toFixed(3) + ' m' : '—');
+      setEl('foto-k',  fr.k_L != null ? `L: ${(fr.k_L*1000).toFixed(2)} / R: ${(fr.k_R*1000).toFixed(2)} mm/px` : '—');
+      const _tl = document.getElementById('foto-result-temp');
+      if (_tl && fr.T1 != null) _tl.textContent = `bei T₂ = ${fr.T1}°C`;
+      // Mast names
+      const mastLabel = [fr.nameL, fr.nameR].filter(Boolean).join(' — ');
+      const mastEl = document.getElementById('foto-mast-names');
+      if (mastEl) {
+        mastEl.textContent = mastLabel || '';
+        const _mastRow = document.getElementById('foto-mast-names-row');
+        if (_mastRow) _mastRow.style.display = mastLabel ? '' : 'none';
+      }
+      // Montage reference at T₁
+      const T1_mont = parseFloat(document.getElementById('temp1')?.value);
+      const T_mont  = !isNaN(T1_mont) ? T1_mont : 10;
+      const mont = _solveAtTemp(T_mont);
+      const montEl = document.getElementById('foto-H-mont');
+      if (montEl) montEl.textContent = mont ? (mont.H / 1000).toFixed(2) + ' kN' : '—';
+      const montLabel = document.querySelector('#foto-montage-ref .metric-label');
+      if (montLabel) montLabel.textContent = `Montage (${T_mont} °C)`;
+      // H/f at current T₂
+      const T2cur = parseFloat(document.getElementById('temp2')?.value);
+      const T2eff = !isNaN(T2cur) ? T2cur : fr.T1;
+      const tSldrVal = document.getElementById('foto-T-slider-val');
+      if (tSldrVal) tSldrVal.textContent = T2eff + ' °C';
+      const resT2 = _solveAtTemp(T2eff);
+      const hTempEl = document.getElementById('foto-H-temp');
+      const fTempEl = document.getElementById('foto-f-temp');
+      if (resT2) {
+        if (hTempEl) hTempEl.textContent = (resT2.H / 1000).toFixed(2) + ' kN  (' + Math.round(resT2.H) + ' N)';
+        if (fTempEl) fTempEl.textContent = resT2.f != null ? resT2.f.toFixed(3) + ' m' : '—';
+        _fotoTempOverride = resT2;
+      } else {
+        if (hTempEl) hTempEl.textContent = fr.H != null ? (fr.H / 1000).toFixed(2) + ' kN  (' + Math.round(fr.H) + ' N)' : '—';
+        if (fTempEl) fTempEl.textContent = fr.f != null ? fr.f.toFixed(3) + ' m' : '—';
+      }
+      // Soll/Ist block
+      const fAtHalf = (typeof catSagAt === 'function' && fr.q != null)
+        ? catSagAt(fr.H, fr.q, fr.L, fr.dh, fr.L / 2) : null;
+      _updateSollIst(T2eff, resT2 || { H: fr.H, f: fAtHalf });
+    }
+
+    if (state.imgDataURL) {
+      _fotoZoom = 1.0; _fotoPanX = 0; _fotoPanY = 0;
+      _updateFotoZoomUI();
+      _img = new Image();
+      _img.onload = () => {
+        const ph = document.getElementById('foto-canvas-placeholder');
+        if (ph) ph.style.display = 'none';
+        _setupFotoCanvasEvents();
+        _draw();
+        _restoreResultUI();
+        _status('Projekt geladen.');
+      };
+      _img.src = state.imgDataURL;
+    } else if (_pts.length > 0) {
+      _restoreResultUI();
+      _status('Punkte geladen — Foto bitte erneut laden.');
+    }
+  };
+
+  function _updateCatenaryBtn() {
+    const btn = document.getElementById('foto-catenary-toggle');
+    if (!btn) return;
+    btn.textContent = _showCatenary ? 'Seillinie ausblenden' : 'Seillinie einblenden';
+    btn.style.background    = 'none';
+    btn.style.color         = _showCatenary ? 'var(--text)' : 'var(--muted)';
+    btn.style.borderColor   = _showCatenary ? 'var(--text)' : 'var(--border)';
+    // Foto-Download nur wenn Foto geladen + Seillinie berechnet + eingeblendet
+    const dlBtn = document.getElementById('share-foto-dl');
+    if (dlBtn) dlBtn.style.display = (_img && _showCatenary && window._fotoResult) ? '' : 'none';
+  }
+  window.fotoToggleCatenary = function() {
+    _showCatenary = !_showCatenary;
+    _updateCatenaryBtn();
+    if (_img) _draw();
+  };
+
+  // ── Fluchtpunkt-Raster Toggle ──
+  window.fotoToggleGrid = function() {
+    _showGrid = !_showGrid;
+    const btn = document.getElementById('foto-grid-toggle');
+    if (btn) {
+      btn.textContent  = _showGrid ? 'Raster aus' : 'Raster';
+      btn.style.background  = 'none';
+      btn.style.color       = _showGrid ? 'var(--text)' : 'var(--muted)';
+      btn.style.borderColor = _showGrid ? 'var(--text)' : 'var(--border)';
+      btn.style.fontWeight  = _showGrid ? '600' : '400';
+    }
+    if (_img) _draw();
+  };
+
+  // ── Refresh: Darstellung neu aufbauen ──
+  window.fotoRefresh = function() {
+    if (!_img) { _status('Kein Foto geladen.'); return; }
+    const mode = _mode();
+    const allSet = _roles[mode].every(r => _pts.some(p => p.role === r));
+    if (allSet && window._fotoResult) {
+      _calculate(); // Vollständige Neuberechnung mit aktuellen Punkten
+    } else {
+      _draw();      // Nur Darstellung neu zeichnen
+    }
+    _status('Darstellung aktualisiert.');
+  };
+
+  // ── Mastlänge-Prompt: erscheint nach Setzen von Mastfuss ──────────────────
+  function _showMastLaengePrompt(side) {
+    const targetId = side === 'L' ? 'foto-hmast-L' : 'foto-hmast-R';
+    const existing = document.getElementById(targetId)?.value;
+    if (existing && parseFloat(existing) > 0) return; // bereits gesetzt → kein Prompt
+
+    const popup = document.getElementById('foto-mast-prompt');
+    if (!popup) return;
+    const sideEl = document.getElementById('foto-mast-prompt-side');
+    if (sideEl) sideEl.textContent = side === 'L' ? 'links' : 'rechts';
+    popup._mastSide = side;
+
+    // Position: Canvas-Koordinaten des Mastfuss-Punktes → CSS-Pixel im canvas-wrap
+    const role = side === 'L' ? 'base_L' : 'base_R';
+    const pt = _pts.find(p => p.role === role);
+    const canvas = document.getElementById('foto-canvas');
+    const wrap   = document.getElementById('foto-canvas-wrap');
+    if (pt && canvas && wrap && _img) {
+      const _S2  = canvas.width;
+      const _cs2 = Math.max(_S2 / _img.naturalWidth, _S2 / _img.naturalHeight);
+      const canPx = (pt.px - _img.naturalWidth/2  - _fotoPanX) * _cs2 * _fotoZoom + _S2/2;
+      const canPy = (pt.py - _img.naturalHeight/2 - _fotoPanY) * _cs2 * _fotoZoom + _S2/2;
+      const scaleX = canvas.clientWidth  / _S2;
+      const scaleY = canvas.clientHeight / _S2;
+      let left = canPx * scaleX + 14;   // leicht rechts vom Punkt
+      let top  = canPy * scaleY - 10;   // leicht über dem Punkt
+      // Rand-Clipping: Popup bleibt innerhalb des wrap
+      const popupW = 180, popupH = 70;
+      left = Math.min(left, wrap.clientWidth  - popupW - 8);
+      top  = Math.max(top,  8);
+      top  = Math.min(top,  wrap.clientHeight - popupH - 8);
+      popup.style.left = left + 'px';
+      popup.style.top  = top  + 'px';
+    }
+
+    popup.style.display = '';
+    setTimeout(() => document.getElementById('foto-mast-prompt-val')?.focus(), 60);
+  }
+
+  window._fotoMastPromptConfirm = function() {
+    const prompt = document.getElementById('foto-mast-prompt');
+    if (!prompt) return;
+    const val = parseFloat(document.getElementById('foto-mast-prompt-val')?.value);
+    const side = prompt._mastSide || 'L';
+    if (!isNaN(val) && val > 0.1) {
+      const targetId = side === 'L' ? 'foto-hmast-L' : 'foto-hmast-R';
+      const el = document.getElementById(targetId);
+      if (el && (!el.value || parseFloat(el.value) <= 0)) {
+        el.value = val;
+        fotoRecalcIfReady();
+      }
+    }
+    _fotoMastPromptDismiss();
+  };
+
+  window._fotoMastPromptDismiss = function() {
+    const prompt = document.getElementById('foto-mast-prompt');
+    if (prompt) prompt.style.display = 'none';
+    const inp = document.getElementById('foto-mast-prompt-val');
+    if (inp) inp.value = '';
+  };
+})();
+// ── Foto Vollbild ─────────────────────────────────────────────────────────
+window.fotoToggleFullscreen = function() {
+  const area = document.getElementById('foto-canvas-area');
+  if (!area) return;
+  if (!document.fullscreenElement) {
+    area.requestFullscreen && area.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen && document.exitFullscreen().catch(() => {});
+  }
+};
+document.addEventListener('fullscreenchange', function() {
+  const inFS   = !!document.fullscreenElement;
+  const btn    = document.getElementById('foto-fullscreen-btn');
+  const statusMain = document.getElementById('foto-status');
+  const statusFS   = document.getElementById('foto-status-fs');
+  if (btn) {
+    btn.title = inFS ? 'Vollbild beenden (Esc)' : 'Vollbild';
+    btn.innerHTML = inFS
+      ? '<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M5 1v4H1M15 5h-4V1M1 11h4v4M11 15v-4h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      : '<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M1 5V1h4M11 1h4v4M1 11v4h4M15 11v4h-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  // Status-Kopie in der Rollen-Leiste zeigen (sichtbar im Vollbild)
+  if (statusFS) statusFS.style.display = inFS ? '' : 'none';
+  if (statusMain && statusFS) statusFS.textContent = statusMain.textContent;
+});
+// Status-Sync: Änderungen an foto-status auch in foto-status-fs spiegeln
+const _fotoStatusObs = new MutationObserver(() => {
+  const s = document.getElementById('foto-status');
+  const fs = document.getElementById('foto-status-fs');
+  if (s && fs && document.fullscreenElement) fs.textContent = s.textContent;
+});
+document.addEventListener('DOMContentLoaded', () => {
+  const s = document.getElementById('foto-status');
+  if (s) _fotoStatusObs.observe(s, { childList: true, characterData: true, subtree: true });
+});
+// ── Ende Foto-Auswertung ───────────────────────────────────────────────────
+
 function openReglageModal()  { document.getElementById('reglage-modal').classList.add('open'); renderReglageElTable(); }
 function closeReglageModal() { document.getElementById('reglage-modal').classList.remove('open'); }
 
@@ -2363,6 +4734,95 @@ let yCInputMode = 'sag';  // 'sag' = Durchhang unter Sehne | 'sok' = Höhe ab SO
 // Preset-Referenz für T1-abhängige H_Ts_ub-Berechnung
 let activePresetRef = null; // { H_Ts_ub_table } or null
 let _tensionAutoFilling = false; // Verhindert Zirkel beim Auto-Befüllen
+let _hFromFoto = false; // H wurde durch Foto-Feldaufnahme überschrieben
+
+// Δ H zum theoretischen Reglagewert anzeigen
+function _updateTensionDelta() {
+  const deltaEl = document.getElementById('tension-delta');
+  if (!deltaEl) return;
+  // Delta nur bei Foto-Feldaufnahme (äussere Box steuert Sichtbarkeit)
+  if (!_hFromFoto) { deltaEl.style.display = 'none'; return; }
+
+  const H_ist = parseFloat(document.getElementById('tension')?.value);
+  if (isNaN(H_ist)) { deltaEl.style.display = 'none'; return; }
+
+  // Theoretischen H-Wert ermitteln: aus Reglage-Tabelle bei aktuellem T1
+  let H_soll = null;
+  const tbl = activePresetRef?.H_Ts_ub_table
+           || activePresetP?.H_reglage_table
+           || activePresetP?.H_reglage_variants?.[0]?.H_reglage_table;
+  if (tbl) {
+    const T1 = parseFloat(document.getElementById('temp1')?.value);
+    if (!isNaN(T1)) {
+      const { temps, vals } = tbl;
+      const n = temps.length;
+      if (T1 <= temps[0]) H_soll = vals[0];
+      else if (T1 >= temps[n-1]) {
+        const slope = (vals[n-1] - vals[n-2]) / (temps[n-1] - temps[n-2]);
+        H_soll = Math.max(100, vals[n-1] + slope * (T1 - temps[n-1]));
+      } else {
+        for (let i = 0; i < n-1; i++) {
+          if (T1 >= temps[i] && T1 <= temps[i+1]) {
+            const fr = (T1 - temps[i]) / (temps[i+1] - temps[i]);
+            H_soll = vals[i] + fr * (vals[i+1] - vals[i]);
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  if (H_soll === null) { deltaEl.style.display = 'none'; return; }
+  const delta = H_ist - H_soll;
+  const pct   = Math.round((delta / H_soll) * 100);
+  const sign  = delta >= 0 ? '+' : '';
+  deltaEl.textContent  = `${sign}${pct} %`;
+  deltaEl.style.color  = Math.abs(pct) <= 5 ? '#16a34a' : delta < 0 ? '#eb0000' : '#d97706';
+  deltaEl.style.display = '';
+}
+
+// Visueller Zustand des H-Felds: normal / foto-override
+function _updateTensionFotoState(fromFoto) {
+  _hFromFoto = fromFoto;
+  const wrap = document.getElementById('tension-wrap');
+  const note = document.getElementById('tension-foto-note');
+  if (wrap) {
+    wrap.style.outline        = fromFoto ? '2px solid #f59e0b' : '';
+    wrap.style.outlineOffset  = fromFoto ? '-1px' : '';
+    wrap.style.borderRadius   = fromFoto ? '8px' : '';
+  }
+  if (note) note.style.display = fromFoto ? '' : 'none';
+  _updateTensionResetBtn();
+  _updateTensionDelta();
+}
+
+// Reset-Button sichtbar wenn: H manuell geändert (activePresetRef === null) oder aus Foto,
+// UND ein Reglage-Datensatz verfügbar ist.
+function _updateTensionResetBtn() {
+  const btn = document.getElementById('tension-reset-btn');
+  if (!btn) return;
+  const hasTbl = !!(activePresetRef?.H_Ts_ub_table
+                 || activePresetP?.H_reglage_table
+                 || activePresetP?.H_reglage_variants?.[0]?.H_reglage_table);
+  const isOverridden = _hFromFoto;  // Reset-Button nur bei Foto-Override
+  btn.style.display = (hasTbl && isOverridden) ? '' : 'none';
+}
+
+// H auf Reglagetabellenwert zurücksetzen
+function resetHToReglage() {
+  // Tabelle aus activePresetRef (EL via applyElVariant) ODER activePresetP (NFL/RFL Presets)
+  const tbl = activePresetRef?.H_Ts_ub_table
+           || activePresetP?.H_reglage_table
+           || activePresetP?.H_reglage_variants?.[elBasiskraftIdx ?? 0]?.H_reglage_table
+           || null;
+  if (!tbl) return;
+  if (!activePresetRef) activePresetRef = { H_Ts_ub_table: tbl };
+  _hFromFoto = false; // Guard zuerst löschen damit updateH_Ts_ubFromT1 durchläuft
+  updateH_Ts_ubFromT1();
+  _updateTensionFotoState(false);
+  _updateTensionDelta();
+  berechnen();
+}
 let elBasiskraftIdx = 0;   // Aktive Basiskraft-Variante im Einzelleiter-Modus
 let activePresetP   = null; // Aktives Preset-Objekt für dynamische Note-Aktualisierung
 
@@ -2431,6 +4891,58 @@ function updateSokMumUI() {
 
 // Alias (wird von h1/h2 oninput aufgerufen)
 function onSokMumInput() { updateSokMumUI(); }
+
+// ── Mastbezeichnung: Name/Nr. + KM kombiniert ────────────────────────────────
+function _buildMastLabel(side) {
+  const num = document.getElementById(side === 'left' ? 'mast-num-left' : 'mast-num-right')?.value?.trim();
+  const km  = document.getElementById(side === 'left' ? 'mast-km-left'  : 'mast-km-right')?.value?.trim();
+  if (!num && !km) return '';
+  if (num && km) return `${num}  ·  ${km}`;
+  return num || km;
+}
+
+// ── KM-Autofill rechts = links + L ───────────────────────────────────────────
+function _formatKm(v) {
+  if (isNaN(v) || v === null) return '';
+  const neg  = v < 0;
+  const abs  = Math.abs(v);
+  const int  = Math.floor(abs);
+  const frac = Math.round((abs - int) * 1000);
+  return (neg ? '-' : '') + String(int).padStart(3, '0') + '.' + String(frac).padStart(3, '0');
+}
+
+function _autoFillKmRight() {
+  const kmLeftEl  = document.getElementById('mast-km-left');
+  const kmRightEl = document.getElementById('mast-km-right');
+  const spanEl    = document.getElementById('span');
+  if (!kmLeftEl || !kmRightEl || !spanEl) return;
+  if (kmRightEl.dataset.userEdited) return;   // Nutzer hat rechts manuell eingegeben → nicht überschreiben
+  const kmL = parseFloat(kmLeftEl.value.replace(',', '.'));
+  const L   = parseFloat(spanEl.value);
+  if (!isNaN(kmL) && !isNaN(L) && L > 0) {
+    kmRightEl.value = _formatKm(kmL + L / 1000); // L in m → km
+  } else {
+    kmRightEl.value = '';
+  }
+}
+
+// KM-rechts als "user edited" markieren wenn manuell geändert
+document.addEventListener('DOMContentLoaded', () => {
+  const kmR = document.getElementById('mast-km-right');
+  if (kmR) kmR.addEventListener('input', () => { kmR.dataset.userEdited = '1'; });
+});
+
+// ── Foto-Name-Brücke: mast-num-left/right als Quelle für Foto-Auswertung ─────
+function _syncMastNames() {
+  // foto-name-L/R → werden intern im Foto-IIFE gelesen; wir halten sie synchron
+  const nL = document.getElementById('mast-num-left')?.value  || '';
+  const nR = document.getElementById('mast-num-right')?.value || '';
+  const fL = document.getElementById('foto-name-L');
+  const fR = document.getElementById('foto-name-R');
+  if (fL) fL.value = nL;
+  if (fR) fR.value = nR;
+  if (typeof fotoRedraw === 'function') fotoRedraw();
+}
 
 function toggleSpanInfo(e) {
   e.stopPropagation();
@@ -2834,6 +5346,8 @@ function onT2Slider(val, active = false) {
   updateT2Float(v, active);
   updateEislastVisibility();
   berechnen();
+  // Foto-Tab: foto-T1 neu synchronisieren und vollständig neu berechnen
+  if (window._fotoTabActive && typeof _fotoSidebarSync === 'function') _fotoSidebarSync();
 }
 
 function onT2Input(val) {
@@ -2844,6 +5358,7 @@ function onT2Input(val) {
   updateT2Float(v, false);
   updateEislastVisibility();
   berechnen();
+  if (window._fotoTabActive && typeof _fotoSidebarSync === 'function') _fotoSidebarSync();
 }
 
 function updateEislastVisibility() {
@@ -2935,13 +5450,21 @@ function setSysMode(mode) {
     activePresetP   = null;
     rebuildPresetDropdown(mode);
     document.getElementById('sh').value = mode === 'rfl' ? 1.60 : 2.40;
+    // Foto-H-Status bei NFL/RFL beibehalten (kein Reglage-Vergleich mehr → Delta ausblenden)
+    if (_hFromFoto) { _updateTensionResetBtn(); _updateTensionDelta(); }
   } else {
-    // Einzelleiter: Standardmaterial setzen; H wird von elMaterialChanged() aus Reglagetabelle gesetzt
+    // Einzelleiter: Foto-H sichern, damit elMaterialChanged() es nicht überschreibt
+    const _savedFotoH = _hFromFoto ? parseFloat(document.getElementById('tension')?.value) : null;
     elMaterialChanged();
     // Fallback: wenn kein Reglagewert für das gewählte Material, 5000 N als Vorgabe
     const selMat = MATERIALS[document.getElementById('el-material-select').value];
     if (!selMat || selMat.H_reglage === null || selMat.H_reglage === undefined) {
       document.getElementById('tension').value = 5000;
+    }
+    // Foto-H nach Material-Setup wiederherstellen
+    if (_savedFotoH != null) {
+      document.getElementById('tension').value = _savedFotoH;
+      if (typeof _updateTensionFotoState === 'function') _updateTensionFotoState(true);
     }
   }
   berechnen();
@@ -3173,7 +5696,12 @@ function getProjectState() {
     'preset-select','el-material-select',
     'sok-mum-left','sok-mum-right','zl-eis',
     'probe-x1','probe-x2','probe-x3','probe-x4','display-span',
-    'probe-h1','probe-h2','probe-h3','probe-h4','min-clearance-input'
+    'probe-h1','probe-h2','probe-h3','probe-h4','min-clearance-input',
+    // Höheneingabe / Mastangaben
+    'foto-hmast-L','foto-hmast-R',
+    'mast-num-left','mast-num-right',
+    'mast-km-left','mast-km-right',
+    'mast-delta-sok-left','mast-delta-sok-right'
   ];
   const fields = {};
   FIELD_IDS.forEach(id => {
@@ -3185,7 +5713,9 @@ function getProjectState() {
     const el = document.getElementById(`span-${i}`);
     if (el) spans.push(parseFloat(el.value) || 50);
   }
-  return { sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx };
+  const fotoState = typeof window._fotoGetProjectState === 'function'
+                    ? window._fotoGetProjectState() : null;
+  return { sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx, fotoState };
 }
 
 // ── State wiederherstellen ──
@@ -3235,11 +5765,19 @@ function setProjectState(s) {
   const FIELDS = ['span','h1','h2','temp1','temp2','tension','tension-fd','sh',
     'material-ts','material-fd','weight-ts','weight-fd','alpha-ts','alpha-fd',
     'sok-mum-left','sok-mum-right','zl-eis',
-    'probe-x1','probe-x2','probe-x3','probe-x4','display-span'];
+    'probe-x1','probe-x2','probe-x3','probe-x4','display-span',
+    // Höheneingabe / Mastangaben
+    'foto-hmast-L','foto-hmast-R',
+    'mast-num-left','mast-num-right',
+    'mast-km-left','mast-km-right',
+    'mast-delta-sok-left','mast-delta-sok-right'];
   FIELDS.forEach(id => {
     const el = document.getElementById(id);
     if (el && flds[id] != null) el.value = flds[id];
   });
+  // KM-rechts: userEdited-Flag wiederherstellen falls Wert gesetzt
+  const kmR = document.getElementById('mast-km-right');
+  if (kmR && flds['mast-km-right']) kmR.dataset.userEdited = '1';
 
   // Messpunkte: globale JS-Variablen aus gespeicherten Feldwerten wiederherstellen
   const _pf = v => { const n = parseFloat(v); return isNaN(n) ? null : n; };
@@ -3260,6 +5798,15 @@ function setProjectState(s) {
   minClearance = _pf(flds['min-clearance-input']);
   { const mcInp = document.getElementById('min-clearance-input');
     if (mcInp) mcInp.value = minClearance !== null ? minClearance : ''; }
+  // Mastnamen-Brücke synchronisieren (foto-name-L/R hidden inputs)
+  if (typeof _syncMastNames === 'function') _syncMastNames();
+
+  // Foto-Zustand wiederherstellen (Bild, Punkte, Ergebnis)
+  if (s.fotoState && typeof window._fotoSetProjectState === 'function') {
+    // Verzögert damit der Tab ggf. gerendert ist
+    setTimeout(() => window._fotoSetProjectState(s.fotoState), 100);
+  }
+
   // Zeichnungs-Einstellungen
   drawingVEx = s.drawingVEx || 1;
   { const vexSel = document.getElementById('vex-select');
@@ -3498,10 +6045,37 @@ function saveToProject(id) {
   entry.updatedAt = new Date().toISOString();
   saveProjMeta(meta);
   const state = getProjectState();
-  localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...state, name: entry.name }));
+  const _doSave = (s) => {
+    localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...s, name: entry.name }));
+  };
+  try {
+    _doSave(state);
+  } catch(e) {
+    // Quota überschritten → nochmals ohne Foto-Bild versuchen
+    if (state.fotoState?.imgDataURL) {
+      try {
+        const lean = { ...state, fotoState: { ...state.fotoState, imgDataURL: null } };
+        _doSave(lean);
+        const btn = document.getElementById('quick-save-btn');
+        if (btn) { btn.title = 'Gespeichert (Foto-Bild weggelassen — Speicher voll)'; }
+      } catch(e2) {
+        alert('Speichern fehlgeschlagen: Browser-Speicher voll.\nBitte alte Projekte löschen.');
+        return;
+      }
+    } else {
+      alert('Speichern fehlgeschlagen: Browser-Speicher voll.');
+      return;
+    }
+  }
   currentProjectId = id;
   renderProjectList();
   updateProjectBadge();
+}
+
+function totalReset() {
+  if (!confirm('Alle Eingaben zurücksetzen auf Standardwerte?\nNicht gespeicherte Daten gehen verloren.')) return;
+  currentProjectId = null;
+  window.location.href = window.location.pathname;
 }
 
 function quickSave() {
@@ -3926,17 +6500,21 @@ function closeProjectsModal() { document.getElementById('projects-modal').classL
 // Lineares Interpolieren zwischen Tabellenstützpunkten; ausserhalb klemmen.
 function updateH_Ts_ubFromT1() {
   if (!activePresetRef || !activePresetRef.H_Ts_ub_table) return;
+  if (_hFromFoto) return; // Foto-H schützen — T₁-Änderung darf es nicht überschreiben
   const T1 = parseFloat(document.getElementById('temp1').value);
   if (isNaN(T1)) return;
   const { temps, vals } = activePresetRef.H_Ts_ub_table;
 
+  const n = temps.length;
   let H_new = null;
   if (T1 <= temps[0]) {
     H_new = vals[0];
-  } else if (T1 >= temps[temps.length - 1]) {
-    H_new = vals[vals.length - 1];
+  } else if (T1 >= temps[n - 1]) {
+    // Lineare Extrapolation für T > Tabellenende (bis 80°C)
+    const slope = (vals[n - 1] - vals[n - 2]) / (temps[n - 1] - temps[n - 2]);
+    H_new = Math.max(100, Math.round(vals[n - 1] + slope * (T1 - temps[n - 1])));
   } else {
-    for (let i = 0; i < temps.length - 1; i++) {
+    for (let i = 0; i < n - 1; i++) {
       if (T1 >= temps[i] && T1 <= temps[i + 1]) {
         const frac = (T1 - temps[i]) / (temps[i + 1] - temps[i]);
         H_new = Math.round(vals[i] + frac * (vals[i + 1] - vals[i]));
@@ -3951,6 +6529,10 @@ function updateH_Ts_ubFromT1() {
     _tensionAutoFilling = false;
     refreshPresetNote(); // Infobox-Note mit aktuellem T1 / H_Ts_ub aktualisieren
     if (elReglageOpen) renderReglageEditPanel(); // T1-Markierung in Tabelle aktualisieren
+    // H kommt jetzt aus Reglage → Foto-Override-Indikator zurücksetzen
+    if (_hFromFoto) _updateTensionFotoState(false);
+    _updateTensionResetBtn();
+    _updateTensionDelta();
   }
 }
 
@@ -3995,7 +6577,7 @@ function renderReglageEditPanel() {
   const { mat, tbl, H_max, L_ref } = _reglageBase();
   if (!mat) { panel.innerHTML = ''; return; }
 
-  const temps    = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40];
+  const temps    = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80];
   const canCalc  = H_max && mat.E && mat.AK;
   const hasOvr   = elReglageHmaxOvr !== null || elReglageLrefOvr !== null;
   const T1cur    = parseFloat(document.getElementById('temp1')?.value) ?? 10;
@@ -4009,6 +6591,11 @@ function renderReglageEditPanel() {
         const i = tbl.temps.indexOf(T);
         if (i >= 0) {
           H = tbl.vals[i];
+        } else if (T > tbl.temps[tbl.temps.length - 1]) {
+          // Lineare Extrapolation für T > Tabellenende
+          const nn = tbl.temps.length;
+          const slope = (tbl.vals[nn-1] - tbl.vals[nn-2]) / (tbl.temps[nn-1] - tbl.temps[nn-2]);
+          H = Math.max(100, tbl.vals[nn-1] + slope * (T - tbl.temps[nn-1]));
         } else {
           for (let j = 0; j < tbl.temps.length - 1; j++) {
             if (T > tbl.temps[j] && T < tbl.temps[j+1]) {
@@ -4956,14 +7543,6 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         <span class="metric-value">${(q_Ts + q_Fd + 0.02*9.81).toFixed(3)}<span class="metric-unit">N/m</span></span></div>
     </div>`;
 
-  const dxfBtn = `<button id="dxf-btn" onclick="exportDxf()" title="3D DXF exportieren (1:100)">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 2V14M2 5.5L14 5.5M2 10.5L14 10.5" stroke="currentColor" stroke-width="1" stroke-linejoin="round" opacity="0.5"/></svg>
-          3D DXF (1:100)
-        </button>`;
-  const pdfBtn = `<button id="pdf-btn" onclick="pdfExport()">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span id="pdf-btn-label">${t('btn.pdf')}</span>
-        </button>${dxfBtn}`;
   if (sysMode === 'rfl') {
     const hasZL = ZL > 0;
     document.getElementById('results').innerHTML = hasZL ? `
@@ -4977,16 +7556,14 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
           <div class="metric-list">${col(c2, '')}</div>
         </div>
       </div>
-      ${fdBlock}
-      <div class="delta-bar">${pdfBtn}</div>` : `
+      ${fdBlock}` : `
       <div class="results-grid" style="grid-template-columns:1fr">
         <div>
           <div class="results-col-title">${t('res.rfl.title')}</div>
           <div class="metric-list">${col(c1, 'ref')}</div>
         </div>
       </div>
-      ${fdBlock}
-      <div class="delta-bar">${pdfBtn}</div>`;
+      ${fdBlock}`;
   } else if (isEl) {
     // Einzelleiter: zweispaltig mit T1/T2, kein fdBlock
     const df = c2Display.sag - c1.sag, dH = c2.H - c1.H;
@@ -5021,7 +7598,6 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         ${chip(t('res.delta.durchhang'), df, 'm', c1.sag)}
         ${chip(t('res.delta.zugkraft'), dH, 'N', c1.H)}
         <div class="delta-chip">α·ΔT = ${(alpha * deltaT * 1e6).toFixed(2)} × 10⁻⁶</div>
-        ${pdfBtn}
       </div>`;
   } else {
     const df = c2Display.sag - c1.sag, dH = c2.H - c1.H;
@@ -5048,11 +7624,6 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
         ${chip(t('res.delta.durchhang') + ' ' + t('dyn.ts'), df, 'm', c1.sag)}
         ${chip(t('res.delta.zugkraft') + ' ' + t('dyn.ts'), dH, 'N', c1.H)}
         <div class="delta-chip">α·ΔT = ${(alpha * deltaT * 1e6).toFixed(2)} × 10⁻⁶</div>
-        <button id="pdf-btn" onclick="pdfExport()">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span id="pdf-btn-label">${t('btn.pdf')}</span>
-        </button>
-        ${dxfBtn}
       </div>`;
   }
   updateHighlightCard();
@@ -5352,6 +7923,31 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   }
   heightLabel(h1px, h1py, h1d, h1, 'left');
   heightLabel(h2px, h2py, h2d, h2, 'right');
+
+  // ── Mastbezeichnungen (optional) ──
+  const _mkL = _buildMastLabel('left');
+  const _mkR = _buildMastLabel('right');
+  if (_mkL || _mkR) {
+    ctx.save();
+    const _nmH = 14;
+    [[_mkL, cx(0)], [_mkR, cx(L)]].forEach(([label, npx]) => {
+      if (!label) return;
+      ctx.font = 'bold 9px Segoe UI';
+      const nmW = ctx.measureText(label).width;
+      const nmY = padT + plotH - 5;
+      ctx.fillStyle = 'rgba(255,255,255,.88)';
+      ctx.beginPath();
+      ctx.roundRect(npx - nmW/2 - 5, nmY - _nmH + 2, nmW + 10, _nmH, 3);
+      ctx.fill();
+      ctx.strokeStyle = '#d1d5db'; ctx.lineWidth = 0.8;
+      ctx.stroke();
+      ctx.fillStyle = '#374151';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText(label, npx, nmY);
+    });
+    ctx.textBaseline = 'alphabetic';
+    ctx.restore();
+  }
 
   // Store anchor canvas positions for hit testing
   view.h1x = h1px; view.h1y = h1py;
@@ -6425,6 +9021,45 @@ ${mode3pt && threePtMark ? `
   </p>
 </div>
 
+${(() => {
+  const fr = window._fotoResult;
+  const fc = document.getElementById('foto-canvas');
+  if (!fr || !fc || !fc.width) return '';
+  // Eingabe-Felder auslesen
+  const fL      = document.getElementById('foto-L')?.value;
+  const fHmL    = document.getElementById('foto-hmast-L')?.value;
+  const fHmR    = document.getElementById('foto-hmast-R')?.value;
+  const fElL    = document.getElementById('foto-elev-L')?.value;
+  const fElR    = document.getElementById('foto-elev-R')?.value;
+  const fMatKey = document.getElementById('foto-mat')?.value;
+  const fMatNm  = (fMatKey && typeof MATERIALS !== 'undefined' && MATERIALS[fMatKey])
+                  ? MATERIALS[fMatKey].name : (fMatKey || '—');
+  const fImg    = fc.toDataURL('image/jpeg', 0.88);
+  const H_mont = (typeof fotoSolveAtTemp === 'function') ? fotoSolveAtTemp(10) : null;
+  const rows = [
+    fr.nameL || fr.nameR ? `<tr><td>Mast links</td><td><strong>${fr.nameL || '—'}</strong></td><td>Mast rechts</td><td><strong>${fr.nameR || '—'}</strong></td></tr>` : '',
+    `<tr><td>Spannweite L</td><td><strong>${fL ? fL + ' m' : '—'}</strong></td><td>Leitermaterial</td><td>${fMatNm}</td></tr>`,
+    `<tr><td>Masthöhe L</td><td>${fHmL ? fHmL + ' m' : '—'}</td><td>Masthöhe R</td><td>${fHmR ? fHmR + ' m' : ('= L')}</td></tr>`,
+    (fElL || fElR) ? `<tr><td>Mastfuss L</td><td>${fElL ? fElL + ' m ü.M.' : '—'}</td><td>Mastfuss R</td><td>${fElR ? fElR + ' m ü.M.' : '—'}</td></tr>` : '',
+    `<tr><td>Messtemperatur</td><td>${fr.T1 != null ? fr.T1 + ' °C' : '—'}</td><td>Höhenunterschied dh</td><td>${fr.dh != null ? fr.dh.toFixed(3) + ' m' : '—'}</td></tr>`,
+    `<tr><td>Gemessener Durchhang f</td><td><strong style="color:#eb0000">${fr.f != null ? fr.f.toFixed(3) + ' m' : '—'}</strong></td><td>Berechnete Zugkraft H</td><td><strong style="color:#eb0000">${fr.H != null ? (fr.H/1000).toFixed(2) + ' kN' : '—'}</strong></td></tr>`,
+    H_mont ? `<tr><td>Montagekontrolle H (10 °C)</td><td><strong>${(H_mont.H/1000).toFixed(2)} kN</strong></td><td>Istzustand T</td><td>${fr.T1 != null ? fr.T1 + ' °C' : '—'}</td></tr>` : '',
+  ].filter(Boolean).join('');
+  return `
+<!-- ── Foto-Auswertung ── -->
+<h2 class="green" style="page-break-before:always">Foto-Auswertung — Feldmessung</h2>
+<div class="step">
+  <table class="inp" style="table-layout:fixed">
+    <colgroup><col style="width:22%"><col style="width:28%"><col style="width:22%"><col style="width:28%"></colgroup>
+    ${rows}
+  </table>
+</div>
+<div class="diagram" style="margin-top:10px">
+  <img src="${fImg}" alt="Foto-Auswertung" style="width:100%;max-height:180mm;object-fit:contain;border:1px solid #d2d2d2;border-radius:6px">
+  <p style="font-size:7.5pt;color:#b7b7b7;margin-top:4px">Feldaufnahme mit Messpunkten und berechneter Seillinie (H = ${fr.H != null ? (fr.H/1000).toFixed(2) + ' kN' : '—'} bei ${fr.T1 != null ? fr.T1 + ' °C' : '?'})</p>
+</div>`;
+})()}
+
 <footer>${t('pdf.footer')} &nbsp;·&nbsp; v2.1 &nbsp;|&nbsp; ${new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE')} &nbsp;|&nbsp; Statikteam, Fachentwicklung FS &nbsp;|&nbsp; ${t('pdf.quelle')}</footer>`;
   return bodyHtml;
 }
@@ -6432,7 +9067,7 @@ ${mode3pt && threePtMark ? `
 // ── Massstäbliche Zeichnung (A4 Querformat, SVG) ──────────────────────────
 function buildScaleDrawingPage(stripInSvg = false) {
   if (!calcState) return '';
-  const { c1, c2, L, h1, h2, T1, T2, sh, H_Fd } = calcState;
+  const { c1, c2, L, h1, h2, T1, T2, sh, H_Fd, q_Fd, Lm } = calcState;
   const isNFL  = sysMode === 'nfl';
   const isRFL  = sysMode === 'rfl';
   const isEl   = sysMode === 'el';
@@ -6440,6 +9075,16 @@ function buildScaleDrawingPage(stripInSvg = false) {
   const c3data = (showT3 && calcState.c3) ? calcState.c3 : null;
   const cDisp  = (isNFL && calcState.c2_vem) ? calcState.c2_vem : c2;
   const catY   = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
+
+  // H_Fd bei T2 per thermischer Zustandsgleichung (für RFL-Kettenlinienkrümmung)
+  const _matFdKey = document.getElementById('material-fd')?.value;
+  const _matFd    = _matFdKey && typeof MATERIALS !== 'undefined' ? MATERIALS[_matFdKey] : null;
+  const _EA_Fd    = _matFd ? _matFd.E * _matFd.AK : null;
+  const _al_Fd    = _matFd ? _matFd.alpha : null;
+  const _dT_fd    = T2 - T1;
+  const H_Fd_T2   = (_EA_Fd && _al_Fd != null && _dT_fd !== 0 && q_Fd > 0)
+    ? solveStateEq(q_Fd, Lm || L, H_Fd, _EA_Fd, _al_Fd, _dT_fd)
+    : H_Fd;
 
   // SOK
   const sokL  = getSokMumLeft();
@@ -6456,11 +9101,19 @@ function buildScaleDrawingPage(stripInSvg = false) {
   const sokYL = hasSok ? sokLv : 0;
   const sokYR = hasSok ? sokRv : 0;
 
-  // Fahrdraht height at x (absolute): Solllage + Ts-Verschiebung für NFL
+  // Fahrdraht height at x (absolute): Solllage + Ts-Verschiebung (NFL) + Kettenlinienkrümmung (RFL)
   const fdY = (x) => {
-    const fdSoll = (h1 - sh) + (h2 - h1) * x / L; // relative to SOK-left
+    const fdSoll  = (h1 - sh) + (h2 - h1) * x / L;
     const tsShift = isNFL ? catY(x, cDisp) - catY(x, c1) : 0;
-    return absY(x, fdSoll + tsShift);
+    // RFL: eigene Kettenlinie des Fd — bei T1 gerade (Solllage), bei T2≠T1 gekrümmt
+    let fdCurve = 0;
+    if (!isNFL && q_Fd > 0 && isFinite(H_Fd_T2) && H_Fd_T2 > 0) {
+      const dh_fd = h2 - h1;
+      const sag1  = catSagAt(H_Fd,    q_Fd, L, dh_fd, x);
+      const sag2  = catSagAt(H_Fd_T2, q_Fd, L, dh_fd, x);
+      if (isFinite(sag1) && isFinite(sag2)) fdCurve = sag2 - sag1;
+    }
+    return absY(x, fdSoll + tsShift - fdCurve);
   };
 
   // Sample curves for Y-range (including Fd) + find sag-max position
@@ -6482,7 +9135,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
 
   // Layout in SVG mm — viewBox = 267 × 180 mm (A4 landscape usable at 15mm margin)
   const VW = 267, VH = 180;
-  const titleH = stripInSvg ? 13 : 2, footH = 14;
+  const titleH = stripInSvg ? 20 : 2, footH = 14;
   const axisL  = 22, axisR = 4;
   const drawX0 = axisL, drawX1 = VW - axisR;
   const drawY0 = titleH, drawY1 = VH - footH;
@@ -6550,7 +9203,12 @@ function buildScaleDrawingPage(stripInSvg = false) {
   // Strip dimensions — declared early so grid and spanDim can reference them
   const _probesEarlyCount = [probeX1, probeX2, probeX3, probeX4].filter(x => x !== null).length;
   const _stripRowH_early  = 5.5;
-  const _stripNRows_early = 2 + 1 + (c3data ? 1 : 0) + (hasSok ? 2 : 0) + (hasSok && c3data ? 1 : 0);
+  // H-Punkt Zeilen: Header + H[m ü.M.] + Abstand = 3 Zeilen (nur wenn SOK + mind. 1 H-Punkt gesetzt)
+  const _hPtCount_early  = hasSok ? [[probeX1,probeH1],[probeX2,probeH2],[probeX3,probeH3],[probeX4,probeH4]]
+                            .filter(([x,h]) => x !== null && h !== null).length : 0;
+  const _hasHPunkt_early = _hPtCount_early > 0;
+  const _stripNRows_early = 2 + 1 + (c3data ? 1 : 0) + (hasSok ? 2 : 0) + (hasSok && c3data ? 1 : 0)
+                          + (_hasHPunkt_early ? 3 : 0);
   const _stripH_early     = _stripNRows_early * _stripRowH_early + 0.5;
 
   // Grid lines
@@ -6596,12 +9254,12 @@ function buildScaleDrawingPage(stripInSvg = false) {
     const mastMidYL = (sy(sokYL) + sy(h1abs)) / 2;
     const mastMidYR = (sy(sokYR) + sy(h2abs)) / 2;
     anchLbl += `
-  <text x="${(sx(0)+1.5).toFixed(2)}" y="${(mastMidYL+0.8).toFixed(2)}" font-size="${fs(2.0)}" fill="#888">h<sub>1</sub> = ${h1.toFixed(3)} m</text>
-  <text x="${(sx(L)-1.5).toFixed(2)}" y="${(mastMidYR+0.8).toFixed(2)}" font-size="${fs(2.0)}" text-anchor="end" fill="#888">h<sub>2</sub> = ${h2.toFixed(3)} m</text>`;
+  <text x="${(sx(0)+1.5).toFixed(2)}" y="${(mastMidYL+0.8).toFixed(2)}" font-size="${fs(2.0)}" fill="#888">h&#x2081; = ${h1.toFixed(3)} m</text>
+  <text x="${(sx(L)-1.5).toFixed(2)}" y="${(mastMidYR+0.8).toFixed(2)}" font-size="${fs(2.0)}" text-anchor="end" fill="#888">h&#x2082; = ${h2.toFixed(3)} m</text>`;
   } else {
     anchLbl = `
-  <text x="${(sx(0)+2).toFixed(2)}" y="${(sy(h1abs)-2).toFixed(2)}" font-size="${fs(2.3)}" fill="#555">h<sub>1</sub> = ${h1.toFixed(3)} m</text>
-  <text x="${(sx(L)-2).toFixed(2)}" y="${(sy(h2abs)-2).toFixed(2)}" font-size="${fs(2.3)}" text-anchor="end" fill="#555">h<sub>2</sub> = ${h2.toFixed(3)} m</text>`;
+  <text x="${(sx(0)+2).toFixed(2)}" y="${(sy(h1abs)-2).toFixed(2)}" font-size="${fs(2.3)}" fill="#555">h&#x2081; = ${h1.toFixed(3)} m</text>
+  <text x="${(sx(L)-2).toFixed(2)}" y="${(sy(h2abs)-2).toFixed(2)}" font-size="${fs(2.3)}" text-anchor="end" fill="#555">h&#x2082; = ${h2.toFixed(3)} m</text>`;
   }
 
   // Probe list and strip dimensions — reuse early-computed values
@@ -6695,6 +9353,11 @@ function buildScaleDrawingPage(stripInSvg = false) {
     ...(hasSok ? ['T2 [m ü.M.]'] : []),
     ...(hasSok && c3data ? ['T3 [m ü.M.]'] : []),
     ...(hasSok ? ['SOK [m ü.M.]'] : []),
+    ...(_hasHPunkt_early ? [
+      'H-Punkt',
+      'H [m ü.M.]',
+      `↕ Abstand${minClearance ? ' ≥' + minClearance.toFixed(2) + ' m' : ' [m]'}`,
+    ] : []),
   ];
   const stripNRows   = _stripNRows;
   const stripH       = _stripH;
@@ -6892,6 +9555,22 @@ function buildScaleDrawingPage(stripInSvg = false) {
     _drawingObstData.push({ xFrac: ox / VW, name: lbl, badge, h: obsAbsH, xVal: xv, clear: parseFloat(clear.toFixed(3)), nearLbl, violated: vio });
   });
 
+  // H-Punkt SVG-Strip Zellen (PDF-Export)
+  if (stripInSvg && _hasHPunkt_early && _drawingObstData.length > 0) {
+    const hOff   = stripNRows - 3;  // H-Punkt Header bei Row hOff, H-Wert bei hOff+1, Abstand bei hOff+2
+    const rowY   = (r) => (stripY0 + r * stripRowH + stripRowH * 0.65).toFixed(2);
+    const obsClrS = '#3a3a3a';
+    _drawingObstData.forEach(({ xFrac, h, clear, violated }) => {
+      const px = (xFrac * VW).toFixed(2);
+      // H-Wert
+      probesSvg += `<text x="${px}" y="${rowY(hOff+1)}" font-size="2.3" font-weight="600" text-anchor="middle" fill="${obsClrS}">${h.toFixed(3)}</text>`;
+      // Abstandswert (rot wenn verletzt)
+      const clrV = violated ? '#eb0000' : obsClrS;
+      const warnS = violated ? ' ⚠' : '';
+      probesSvg += `<text x="${px}" y="${rowY(hOff+2)}" font-size="2.3" font-weight="700" text-anchor="middle" fill="${clrV}">${clear.toFixed(3)}${warnS}</text>`;
+    });
+  }
+
   // Footer: scale bars + legend (PDF only)
   const _t3v_foot = c3data
     ? (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value))
@@ -6935,22 +9614,22 @@ function buildScaleDrawingPage(stripInSvg = false) {
     const lw  = 10;
 
     s += `<line x1="${lx.toFixed(1)}" y1="${lY.toFixed(1)}" x2="${(lx+lw).toFixed(1)}" y2="${lY.toFixed(1)}" stroke="#bbb" stroke-width="0.6" stroke-dasharray="3,2"/>`;
-    s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="#999">Ts bei T<sub>1</sub> = ${T1}°C</text>`;
+    s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="#999">Ts bei T&#x2081; = ${T1}°C</text>`;
     lx += 34;
 
     s += `<line x1="${lx.toFixed(1)}" y1="${lY.toFixed(1)}" x2="${(lx+lw).toFixed(1)}" y2="${lY.toFixed(1)}" stroke="${t2clr}" stroke-width="1.0"/>`;
-    s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" font-weight="600" fill="${t2clr}">Ts bei T<sub>2</sub> = ${T2}°C</text>`;
+    s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" font-weight="600" fill="${t2clr}">Ts bei T&#x2082; = ${T2}°C</text>`;
     lx += 34;
 
     if (showFd) {
       s += `<line x1="${lx.toFixed(1)}" y1="${lY.toFixed(1)}" x2="${(lx+lw).toFixed(1)}" y2="${lY.toFixed(1)}" stroke="${fdClr}" stroke-width="0.5"/>`;
-      s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="#888">Fd bei T<sub>2</sub></text>`;
+      s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="#888">Fd bei T&#x2082;</text>`;
       lx += 26;
     }
 
     if (c3data && _t3v_foot !== null) {
       s += `<line x1="${lx.toFixed(1)}" y1="${lY.toFixed(1)}" x2="${(lx+lw).toFixed(1)}" y2="${lY.toFixed(1)}" stroke="${t3clr}" stroke-width="0.6" stroke-dasharray="3,2"/>`;
-      s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="${t3clr}">Ts bei T<sub>3</sub> = ${_t3v_foot}°C</text>`;
+      s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="${t3clr}">Ts bei T&#x2083; = ${_t3v_foot}°C</text>`;
     }
 
     return s;
@@ -6975,17 +9654,30 @@ function buildScaleDrawingPage(stripInSvg = false) {
   const sokNoteSvg = ''; // Note moved to HTML strip footer
 
   // Title block — System + Spannweite als Haupttitel
-  const projN  = currentProjectId ? (getProjMeta().find(m => m.id === currentProjectId)?.name || '') : '';
+  const _allMeta  = getProjMeta();
+  const _docEntry = currentProjectId ? _allMeta.find(m => m.id === currentProjectId) : null;
+  const _docName  = _docEntry?.name  || '';
+  const _grpEntry = _docEntry?.parentId ? _allMeta.find(m => m.id === _docEntry.parentId) : null;
+  const _grpName  = _grpEntry?.name  || '';
   const dateS  = new Date().toLocaleDateString('de-DE');
   const sysLbl = isNFL ? 'N-FL' : isRFL ? 'R-FL' : 'Einzelleiter';
   const mainTitle = `${sysLbl}  ·  L = ${L} m`;
   const t3v_pdf = c3data ? (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value)) : null;
+  // Projekt- / Dateiname-Zeile (Zeile 2)
+  const _nameParts = [_grpName, _docName].filter(Boolean);
+  const _nameLine  = _nameParts.join('  /  ');
+  // Parameter-Zeile (Zeile 3)
+  const _vScalePdf = Math.round(scale / (vEx || 1));
+  const _sagPdf    = cDisp.sag;
+  let _paramLine = `h&#x2081; = ${h1.toFixed(3)} m    h&#x2082; = ${h2.toFixed(3)} m    f = ${_sagPdf.toFixed(3)} m    L = ${L.toFixed(2)} m    Masstab H 1:${scale}    Masstab V 1:${_vScalePdf}${vEx > 1 ? `  (${vEx}×)` : ''}    T&#x2081; = ${T1}°C    T&#x2082; = ${T2}°C`;
+  if (c3data && t3v_pdf !== null) _paramLine += `    T&#x2083; = ${t3v_pdf}°C`;
   const titleSvg = stripInSvg ? `
   <rect x="0" y="0" width="${VW}" height="${titleH}" fill="#f8f9fa"/>
   <line x1="0" y1="${titleH}" x2="${VW}" y2="${titleH}" stroke="#d2d2d2" stroke-width="0.3"/>
-  <text x="3" y="8.5" font-size="5.5" font-weight="700" fill="#212121">${mainTitle}</text>
-  ${projN ? `<text x="3" y="12" font-size="2.5" fill="#888">Projekt: ${projN}</text>` : ''}
-  <text x="${VW-3}" y="11.5" font-size="2.3" text-anchor="end" fill="#bbb">${dateS}</text>` : '';
+  <text x="3" y="7.8" font-size="4.2" font-weight="700" fill="#212121">${mainTitle}</text>
+  <text x="${VW-3}" y="7.8" font-size="2.2" text-anchor="end" fill="#bbb">${dateS}</text>
+  ${_nameLine ? `<text x="3" y="12.5" font-size="2.7" fill="#555">${_nameLine}</text>` : ''}
+  <text x="3" y="${_nameLine ? '17.5' : '13'}" font-size="2.45" fill="#888">${_paramLine}</text>` : '';
 
   // Frame and Y-axis
   const frameSvg   = stripInSvg ? `<rect x="${drawX0}" y="${drawY0}" width="${drawW}" height="${drawH}" fill="none" stroke="#d8d8d8" stroke-width="0.3"/>` : '';
@@ -7004,7 +9696,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
   ${mastSvg}
   ${catPath(c1, `${(5.5*symSc).toFixed(2)},${(3.5*symSc).toFixed(2)}`, (0.5*symSc).toFixed(3))} stroke="#c0c0c0" opacity="0.7"/>
   ${catPath(cDisp, '', (1.0*symSc).toFixed(3))} stroke="${t2clr}"/>
-  ${showFd ? makePath(fdY, '', (0.55*symSc).toFixed(3)) + ` stroke="${fdClr}"/>` : ''}
+  ${showFd ? makePath(fdY, '', (0.32*symSc).toFixed(3)) + ` stroke="${fdClr}"/>` : ''}
   ${c3data ? catPath(c3data, `${(2.5*symSc).toFixed(2)},${(1.5*symSc).toFixed(2)}`, (0.65*symSc).toFixed(3)) + ` stroke="${t3clr}"/>` : ''}
   ${minClearSvg}
   ${anchLbl}
@@ -7094,11 +9786,8 @@ function adjustDrawingZoom(newZoom) {
   updateStripVisibility();
   updateEdgeIndicators();
 
-  const pct    = Math.round(drawingZoom * 100);
-  const lbl    = document.getElementById('drawing-zoom-label');
-  const slider = document.getElementById('zoom-slider');
-  if (lbl)    lbl.textContent = pct + '%';
-  if (slider) slider.value    = pct;
+  const lbl = document.getElementById('drawing-zoom-label');
+  if (lbl) lbl.textContent = Math.round(drawingZoom * 100) + '%';
 }
 
 function setDrawingVEx(val) {
@@ -7253,6 +9942,26 @@ svg { display: block; width: 267mm; height: 180mm; }
   w.addEventListener('load', () => { w.focus(); w.print(); });
 }
 
+function toggleShareMenu(e) {
+  const menu = document.getElementById('share-menu');
+  if (!menu) return;
+  if (e) e.stopPropagation();
+  const open = menu.style.display !== 'none';
+  menu.style.display = open ? 'none' : 'block';
+  if (!open) {
+    setTimeout(() => document.addEventListener('click', function _close(ev) {
+      if (!menu.contains(ev.target)) {
+        menu.style.display = 'none';
+        document.removeEventListener('click', _close);
+      }
+    }), 0);
+  }
+}
+function closeShareMenu() {
+  const menu = document.getElementById('share-menu');
+  if (menu) menu.style.display = 'none';
+}
+
 function toggleCanvasFullscreen() {
   const card = document.querySelector('.canvas-card');
   const isFs = card.classList.toggle('canvas-fullscreen');
@@ -7262,9 +9971,73 @@ function toggleCanvasFullscreen() {
   setTimeout(() => { quickDraw(); _triggerDrawingRebuild(); _syncHighlightFsVisibility(); }, 50);
 }
 
+// Foto-Tab: globaler Flag
+window._fotoTabActive = false;
+let _fotoSyncListeners = null;
+
+function _fotoGreyOut(active) {
+  const grey = (el, on) => {
+    if (!el) return;
+    if (on) { el.dataset.fotoOff = '1'; el.style.opacity = '0.42'; el.style.pointerEvents = 'none'; }
+    else if (el.dataset.fotoOff) { el.style.opacity = ''; el.style.pointerEvents = ''; delete el.dataset.fotoOff; }
+  };
+  // Mastlänge-Felder nur im Foto-Tab einblenden
+  const mastRow = document.getElementById('mastlaenge-row');
+  if (mastRow) mastRow.style.display = active ? '' : 'none';
+  ['h1','h2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (active) { el.readOnly = true; el.style.color = 'var(--muted)'; el.style.cursor = 'default'; }
+    else        { el.readOnly = false; el.style.color = ''; el.style.cursor = ''; }
+  });
+  const tensionEl = document.getElementById('tension');
+  if (tensionEl) {
+    if (active) { tensionEl.readOnly = true; tensionEl.style.color = 'var(--muted)'; tensionEl.style.cursor = 'default'; }
+    else        { tensionEl.readOnly = false; tensionEl.style.color = ''; tensionEl.style.cursor = ''; }
+  }
+  grey(document.getElementById('three-pt-btn'), active);
+  grey(document.getElementById('three-pt-panel'), active);
+  const xcField = document.getElementById('xC')?.closest('.field');
+  const ycField = document.getElementById('yC')?.closest('.field');
+  grey(xcField, active); grey(ycField, active);
+  const t3card = document.querySelector('#temp3')?.closest('.card');
+  grey(t3card, active);
+  const shLabel = document.getElementById('sh-label');
+  if (shLabel) shLabel.textContent = active ? 'Mindestabstand' : 'Systemhöhe sh';
+  const bpHint = document.getElementById('bp-drag-hint');
+  if (bpHint) bpHint.textContent = active ? 'h₁/h₂ werden aus Foto-Auswertung befüllt' : 'Ankerpunkte im Diagramm verschiebbar';
+  const probeHint = document.getElementById('probe-hint');
+  if (probeHint) probeHint.textContent = active
+    ? 'x-Wert eingeben → Seillinienhöhe über SOK'
+    : 'Messpunkte: ins Diagramm klicken / ziehen oder x-Wert eingeben';
+}
+
+function _fotoSidebarSync() {
+  const get = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  set('foto-L',     get('span'));
+  set('foto-T1',    get('temp2'));  // Messtemperatur = aktuelle Feldtemperatur T₂
+  set('foto-elev-L', get('sok-mum-left'));
+  set('foto-elev-R', get('sok-mum-right'));
+  const matSel = document.getElementById('foto-mat');
+  // Material-Quelle je nach Systemmodus: NFL/RFL → Ts-Leiter, EL → el-material-select
+  const _matSrcId = (typeof sysMode !== 'undefined' && sysMode !== 'el')
+                    ? 'material-ts' : 'el-material-select';
+  const sbMat  = get(_matSrcId);
+  if (matSel && sbMat) {
+    if (!Array.from(matSel.options).some(o => o.value === sbMat)) {
+      if (typeof window._fotoPopulateMat === 'function') window._fotoPopulateMat();
+    }
+    matSel.value = sbMat;
+  }
+  if (typeof fotoRecalcIfReady === 'function') fotoRecalcIfReady();
+}
+
 function setCanvasView(view) {
   const isScale   = view === 'zeichnung';
+  const isFoto    = view === 'foto';
   const scaleDiv  = document.getElementById('scale-view');
+  const fotoDiv   = document.getElementById('foto-view');
   const svgCont   = document.getElementById('scale-svg-container');
   const canvas    = document.getElementById('main-canvas');
   const legend    = document.getElementById('legend');
@@ -7272,7 +10045,72 @@ function setCanvasView(view) {
   const dragHint  = document.getElementById('canvas-drag-hint');
   const segDiag   = document.getElementById('view-seg-diagramm');
   const segZeich  = document.getElementById('view-seg-zeichnung');
+  const segFoto   = document.getElementById('view-seg-foto');
   const resultCard = document.getElementById('result-card');
+
+  // Foto-Tab verlassen (falls vorher aktiv)
+  if (window._fotoTabActive && !isFoto) {
+    window._fotoTabActive = false;
+    if (fotoDiv) fotoDiv.style.display = 'none';
+    const _fhs = document.getElementById('foto-status');
+    if (_fhs) _fhs.style.display = 'none';
+    _fotoGreyOut(false);
+    if (_fotoSyncListeners) {
+      _fotoSyncListeners.forEach(({ el, fn }) => {
+        el.removeEventListener('change', fn);
+        el.removeEventListener('input',  fn);
+      });
+      _fotoSyncListeners = null;
+    }
+    if (segFoto) segFoto.classList.remove('active');
+  }
+
+  // Foto-Tab aktivieren
+  if (isFoto) {
+    window._fotoTabActive = true;
+    scaleViewActive = false;
+    if (svgCont) { svgCont.innerHTML = ''; svgCont.removeEventListener('wheel', _onDrawingWheel); if (_dragListeners) { svgCont.removeEventListener('mousedown', _dragListeners.onMouseDown); document.removeEventListener('mousemove', _dragListeners.onMouseMove); document.removeEventListener('mouseup', _dragListeners.onMouseUp); _dragListeners = null; } }
+    scaleDiv.style.display  = 'none';
+    canvas.style.display    = 'none';
+    if (fotoDiv) fotoDiv.style.display = 'flex';
+    if (legend)   legend.style.display   = 'none';
+    if (probeRo)  probeRo.style.display  = 'none';  // Messpunkte im Foto-Modus ausblenden
+    if (dragHint) dragHint.style.visibility = 'hidden';
+    if (resultCard) resultCard.style.display = 'none';
+    const sokNote = document.getElementById('scale-sok-note');
+    if (sokNote) sokNote.style.display = 'none';
+    // Status wird jetzt als Overlay auf dem Canvas angezeigt (nicht im Banner)
+    _fotoGreyOut(true);
+    if (typeof window._fotoPopulateMat === 'function') window._fotoPopulateMat();
+    _fotoSidebarSync();
+    const syncIds = ['span','el-material-select','material-ts','temp2','sok-mum-left','sok-mum-right'];
+    _fotoSyncListeners = syncIds.map(id => {
+      const el = document.getElementById(id);
+      if (!el) return null;
+      const fn = () => _fotoSidebarSync();
+      el.addEventListener('change', fn);
+      el.addEventListener('input',  fn);
+      return { el, fn };
+    }).filter(Boolean);
+    if (segDiag)  segDiag.classList.remove('active');
+    if (segZeich) segZeich.classList.remove('active');
+    if (segFoto)  segFoto.classList.add('active');
+    const vexCtrl = document.getElementById('vex-header-ctrl');
+    if (vexCtrl) vexCtrl.style.display = 'none';
+    const scrollArea = document.getElementById('canvas-scroll-area');
+    if (scrollArea) scrollArea.style.flex = '1';
+    // Probe-Inputs auch für Foto-Höhen-Anzeige registrieren
+    ['probe-x1','probe-x2','probe-x3','probe-x4','sh'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const fn = () => { if (typeof window._fotoUpdateProbeOut === 'function') window._fotoUpdateProbeOut(); };
+      el.addEventListener('input',  fn);
+      el.addEventListener('change', fn);
+      _fotoSyncListeners.push({ el, fn });
+    });
+    _syncHighlightFsVisibility();
+    return;
+  }
 
   if (isScale) {
     if (resultCard) resultCard.style.display = 'none';
@@ -7306,11 +10144,8 @@ function setCanvasView(view) {
       if (svgFit && svgCont) svgCont.innerHTML = svgFit;
     }
     // Sync UI
-    { const pct = Math.round(drawingZoom * 100);
-      const lbl = document.getElementById('drawing-zoom-label');
-      const sl  = document.getElementById('zoom-slider');
-      if (lbl) lbl.textContent = pct + '%';
-      if (sl)  sl.value = pct; }
+    { const lbl = document.getElementById('drawing-zoom-label');
+      if (lbl) lbl.textContent = Math.round(drawingZoom * 100) + '%'; }
     applyViewBox();
     buildInteractiveStrip();
     updateEdgeIndicators();
@@ -7370,6 +10205,7 @@ function setCanvasView(view) {
   }
   if (segDiag)  segDiag.classList.toggle('active', !isScale);
   if (segZeich) segZeich.classList.toggle('active',  isScale);
+  if (segFoto)  segFoto.classList.remove('active');
   const vexCtrl = document.getElementById('vex-header-ctrl');
   if (vexCtrl) vexCtrl.style.display = isScale ? 'flex' : 'none';
   // In fullscreen: Zeichnung → scroll area yields all space to drawing; Diagramm → scroll area fills remainder
@@ -7390,10 +10226,8 @@ function _onDrawingWheel(e) {
   const svgMx = _panX + mxF * (180 * _ar / drawingZoom);
   const svgMy = _panY + myF * (180 / drawingZoom);
 
-  const prevZoom = drawingZoom;
   drawingZoom = Math.round(Math.max(0.5, Math.min(4.0, drawingZoom + (e.deltaY < 0 ? 0.25 : -0.25))) * 4) / 4;
 
-  // Keep the point under the mouse fixed
   _panX = svgMx - mxF * (180 * _ar / drawingZoom);
   _panY = svgMy - myF * (180 / drawingZoom);
 
@@ -7401,11 +10235,8 @@ function _onDrawingWheel(e) {
   updateStripVisibility();
   updateEdgeIndicators();
 
-  const pct = Math.round(drawingZoom * 100);
-  const lbl    = document.getElementById('drawing-zoom-label');
-  const slider = document.getElementById('zoom-slider');
-  if (lbl)    lbl.textContent = pct + '%';
-  if (slider) slider.value    = pct;
+  const lbl = document.getElementById('drawing-zoom-label');
+  if (lbl) lbl.textContent = Math.round(drawingZoom * 100) + '%';
 }
 
 // Rückwärtskompatibilität
@@ -8771,8 +11602,6 @@ function setLang(lang) {
   if (cmDel) cmDel.textContent = t('cm.delete');
 
   // ── Buttons ───────────────────────────────────────────────────
-  const pdfBtnLabel = document.getElementById('pdf-btn-label');
-  if (pdfBtnLabel) { pdfBtnLabel.textContent = t('btn.pdf'); }
   const segDiag  = document.getElementById('view-seg-diagramm');
   if (segDiag)  segDiag.textContent  = t('canvas.title');
   const segZeich = document.getElementById('view-seg-zeichnung');
@@ -9218,6 +12047,36 @@ renderObstacleList();
       <span style="font-size:.7rem;color:var(--muted);flex:1;text-align:right">
         Daten werden nur lokal im Browser gespeichert
       </span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Foto-Auswertung (Anleitung) ── -->
+<div class="modal-overlay" id="foto-modal" onclick="if(event.target===this)closeFotoModal()" style="align-items:center;padding:1.5rem 1rem">
+  <div class="modal-card" style="max-width:480px;width:100%">
+    <div class="modal-header">
+      <div class="modal-title">Foto-Auswertung — Ablauf</div>
+      <button class="modal-close" onclick="closeFotoModal()" title="Schliessen">✕</button>
+    </div>
+    <div style="padding:.75rem 1.25rem 1.25rem;font-size:.82rem;line-height:1.65;color:#374151">
+      <p style="margin-bottom:.5rem"><strong>Ablauf (7-Klick Modus):</strong></p>
+      <ol style="margin:.3rem 0 .65rem 1.3rem;line-height:1.8">
+        <li>Mastspitze links → Mastfuss links</li>
+        <li>Mastspitze rechts → Mastfuss rechts</li>
+        <li>Ankerpunkt links (P1) → Ankerpunkt rechts (P2)</li>
+        <li>Führungslinie bei L/2 erscheint — Leiter dort anklicken</li>
+      </ol>
+      <p style="margin-bottom:.35rem"><strong>Hinweise:</strong></p>
+      <ul style="margin:.3rem 0 .6rem 1.3rem;line-height:1.7">
+        <li>Mastlänge in der Sidebar unter «Foto — Mastangaben» eintragen</li>
+        <li>L, Material und Temperatur werden aus der Sidebar übernommen</li>
+        <li>Kamera waagrecht halten — horizontaler Winkel irrelevant</li>
+        <li>Punkte können nach dem Setzen verschoben werden</li>
+      </ul>
+      <button onclick="closeFotoModal()"
+        style="margin-top:.35rem;background:#eb0000;color:#fff;border:none;border-radius:6px;padding:.3rem 1rem;font-size:.78rem;cursor:pointer;font-family:inherit">
+        Schliessen
+      </button>
     </div>
   </div>
 </div>
