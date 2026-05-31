@@ -1519,7 +1519,7 @@ button.header-manual-link:hover {
         <div class="field">
           <label id="span-L-label">Spannweite L</label>
           <div class="input-wrap">
-            <input type="number" id="span" value="45" min="0.1" step="0.1" oninput="_autoFillKmRight();berechnen()" onchange="_autoFillKmRight();berechnen()">
+            <input type="number" id="span" value="45" min="0.1" step="0.1" oninput="berechnen()" onchange="berechnen()">
             <span class="input-unit">m</span>
           </div>
         </div>
@@ -1651,7 +1651,7 @@ button.header-manual-link:hover {
           <span style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM links</span>
           <span style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM rechts</span>
           <input type="text" id="mast-km-left" placeholder="000.000"
-            oninput="_autoFillKmRight()" onchange="_autoFillKmRight()"
+            oninput="_triggerDrawingRebuild()" onchange="_triggerDrawingRebuild()"
             style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%;letter-spacing:.03em">
           <input type="text" id="mast-km-right" placeholder="000.000"
             style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%;letter-spacing:.03em">
@@ -2122,7 +2122,7 @@ button.header-manual-link:hover {
           <div id="foto-canvas-placeholder" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#999;pointer-events:none">
             Kein Foto geladen
           </div>
-          <div id="foto-status-overlay" style="display:none;position:absolute;bottom:.55rem;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);color:#fff;font-size:.68rem;font-family:inherit;padding:.22rem .65rem;border-radius:20px;white-space:nowrap;pointer-events:none;z-index:5;letter-spacing:.01em"></div>
+          <div id="foto-status-overlay" style="display:none;position:absolute;top:.55rem;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);color:#fff;font-size:.68rem;font-family:inherit;padding:.22rem .65rem;border-radius:20px;white-space:nowrap;pointer-events:none;z-index:5;letter-spacing:.01em"></div>
           <canvas id="foto-loupe" width="300" height="300"
             style="display:none;position:absolute;width:180px;height:180px;border-radius:50%;box-shadow:0 0 0 2px #333,0 2px 10px rgba(0,0,0,.4);pointer-events:none;z-index:10"></canvas>
 
@@ -2311,13 +2311,6 @@ button.header-manual-link:hover {
           </div>
         </div>
       </div>
-      <!-- Foto-Modus: Seillinienhöhe an x-Position -->
-      <div id="foto-probe-out" style="display:none;margin-top:.4rem;padding:.3rem .4rem;background:#f0f7ff;border:1px solid #bfdbfe;border-radius:6px;font-size:.72rem">
-        <div style="font-size:.6rem;font-weight:600;letter-spacing:.04em;color:#1d4ed8;text-transform:uppercase;margin-bottom:.25rem">Seillinienhöhe über SOK</div>
-        <div id="foto-probe-rows" style="display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:.18rem .5rem;align-items:baseline;color:var(--muted)">
-          <!-- befüllt per JS -->
-        </div>
-      </div>
       <!-- H-Eingaben (nur wenn SOK aktiv) -->
       <div id="probe-h-section" style="display:none;margin-top:.45rem">
         <div style="font-size:.6rem;font-weight:600;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;margin-bottom:.3rem;padding-top:.35rem;border-top:1px solid rgba(0,0,0,.07)">
@@ -2355,8 +2348,13 @@ button.header-manual-link:hover {
         </div>
       </div>
       <div id="probe-h-footnote" style="display:none;margin-top:.45rem">
-        <div style="font-size:.6rem;font-weight:600;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;margin-bottom:.3rem;padding-top:.35rem;border-top:1px solid rgba(0,0,0,.07)">
-          Mindestabstand
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:.6rem;font-weight:600;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;margin-bottom:.3rem;padding-top:.35rem;border-top:1px solid rgba(0,0,0,.07)">
+          <span>Mindestabstand</span>
+          <label style="display:flex;align-items:center;gap:.25rem;cursor:pointer;font-weight:400;letter-spacing:0;text-transform:none;font-size:.65rem">
+            <input type="checkbox" id="min-clearance-show" checked style="cursor:pointer;accent-color:var(--primary)"
+              onchange="_showMinClearance=this.checked;_triggerDrawingRebuild()">
+            anzeigen
+          </label>
         </div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem">
           <div class="probe-m-group">
@@ -2371,7 +2369,6 @@ button.header-manual-link:hover {
       </div>
     </div>
     <div class="obs-section" id="obs-section" style="display:none"></div>
-    <div id="highlight-card-fs" style="display:none;padding:.75rem 1rem .5rem;border-top:1px solid rgba(0,0,0,.06)"></div>
     </div><!-- /canvas-scroll-area -->
   </div>
 
@@ -2379,7 +2376,6 @@ button.header-manual-link:hover {
   <div class="results-card" id="result-card" style="grid-column: 2">
     <div id="error-box" class="alert alert-error hidden"></div>
     <div id="warn-box"  class="alert alert-warn  hidden"></div>
-    <div id="highlight-card"></div>
     <div id="results"></div>
   </div>
 
@@ -2415,7 +2411,8 @@ let _obsIdCounter  = 1;
 let _drawingObstData = []; // [{xFrac, name, h, clearance}] für HTML-Strip
 // H-Punkte pro Messpunkt (absolute Höhe m ü.M., nur wenn hasSok)
 let probeH1 = null, probeH2 = null, probeH3 = null, probeH4 = null;
-let minClearance = null; // Mindestabstand H-Punkt → Leiter [m]
+let minClearance = null;      // Mindestabstand H-Punkt → Leiter [m]
+let _showMinClearance = true; // Mindestabstand-Zone ein-/ausblenden
 let showT3 = false;
 let t2BeforeRfl = 80; // T2-Wert vor R-FL-Modus sichern
 
@@ -3445,10 +3442,12 @@ function _extractExifGps(buf) {
       if (nameL) {
         ctx.font = `bold ${fs}px Arial`;
         const tw = ctx.measureText(nameL).width;
-        const lx = ptTopL.px - tw / 2, ly = ptTopL.py - r * 1.8;
+        const _p = Math.max(2, 3 * _iz * dpr);
+        const lx = ptBaseL.px - tw / 2, ly = ptBaseL.py + r * 2 + fs;
         ctx.fillStyle = 'rgba(22,163,74,.15)';
-        ctx.fillRect(lx - 4, ly - fs + 2, tw + 8, fs + 4);
+        ctx.beginPath(); ctx.roundRect(lx - _p, ly - fs, tw + 2*_p, fs + _p, _p); ctx.fill();
         ctx.fillStyle = '#16a34a';
+        ctx.textBaseline = 'alphabetic';
         ctx.fillText(nameL, lx, ly);
       }
     }
@@ -3460,10 +3459,12 @@ function _extractExifGps(buf) {
       if (nameR) {
         ctx.font = `bold ${fs}px Arial`;
         const tw = ctx.measureText(nameR).width;
-        const lx = ptTopR.px - tw / 2, ly = ptTopR.py - r * 1.8;
+        const _p = Math.max(2, 3 * _iz * dpr);
+        const lx = ptBaseR.px - tw / 2, ly = ptBaseR.py + r * 2 + fs;
         ctx.fillStyle = 'rgba(37,99,235,.15)';
-        ctx.fillRect(lx - 4, ly - fs + 2, tw + 8, fs + 4);
+        ctx.beginPath(); ctx.roundRect(lx - _p, ly - fs, tw + 2*_p, fs + _p, _p); ctx.fill();
         ctx.fillStyle = '#2563eb';
+        ctx.textBaseline = 'alphabetic';
         ctx.fillText(nameR, lx, ly);
       }
     }
@@ -3540,9 +3541,10 @@ function _extractExifGps(buf) {
         const tw_f  = ctx.measureText(lbl_f).width;
         const lx_f  = goRight ? armX + r * 1.2 : armX - r * 1.2 - tw_f;
         const ly_f  = (yTop + yBot) / 2 + fsDim * 0.38;
+        const _fp = Math.max(2, 3 * _iz * dpr);
         ctx.fillStyle = 'rgba(255,255,255,0.82)';
         ctx.beginPath();
-        ctx.roundRect(lx_f - 3, ly_f - fsDim - 1, tw_f + 6, fsDim + 6, 3);
+        ctx.roundRect(lx_f - _fp, ly_f - fsDim - _fp * 0.3, tw_f + 2 * _fp, fsDim + _fp * 1.5, _fp);
         ctx.fill();
         ctx.fillStyle = '#2563eb';
         ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
@@ -3657,9 +3659,10 @@ function _extractExifGps(buf) {
       const tw = ctx.measureText(label).width;
       const lx = side === 'L' ? armX - tw - r * 1.2 : armX + r * 1.2;
       const ly = midY + fsDim * 0.38;
+      const _dp = Math.max(2, 3 * _iz * dpr);
       ctx.fillStyle = 'rgba(255,255,255,0.82)';
       ctx.beginPath();
-      ctx.roundRect(lx - 3, ly - fsDim - 1, tw + 6, fsDim + 6, 3);
+      ctx.roundRect(lx - _dp, ly - fsDim - _dp * 0.3, tw + 2 * _dp, fsDim + _dp * 1.5, _dp);
       ctx.fill();
       ctx.fillStyle = color;
       ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
@@ -3701,8 +3704,8 @@ function _extractExifGps(buf) {
         ctx.save();
         ctx.shadowColor = 'transparent';
         ctx.shadowBlur  = 0;
-        ctx.strokeStyle = 'rgba(235,0,0,0.45)';
-        ctx.lineWidth   = lw * 1.1;
+        ctx.strokeStyle = 'rgba(235,0,0,0.70)';
+        ctx.lineWidth   = lw * 2.5;
         ctx.setLineDash([]);
         ctx.beginPath();
         for (let i = 0; i <= steps; i++) {
@@ -3728,8 +3731,9 @@ function _extractExifGps(buf) {
         const label = `H = ${(H/1000).toFixed(2)} kN`;
         const tw = ctx.measureText(label).width;
         const lblY = midCy + r * 1.6 + lblFs;
+        const _hp = Math.max(2, 4 * _iz * dpr);
         ctx.fillStyle = 'rgba(255,255,255,0.78)';
-        ctx.fillRect(midCx - tw/2 - 5, lblY - lblFs, tw + 10, lblFs + 4);
+        ctx.beginPath(); ctx.roundRect(midCx - tw/2 - _hp, lblY - lblFs - _hp * 0.3, tw + 2 * _hp, lblFs + _hp * 1.5, _hp); ctx.fill();
         ctx.fillStyle = '#eb0000';
         ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
         ctx.fillText(label, midCx, lblY);
@@ -3898,6 +3902,7 @@ function _extractExifGps(buf) {
     const T1_mont = parseFloat(document.getElementById('temp1')?.value);
     const T_mont  = !isNaN(T1_mont) ? T1_mont : 10;
     const mont = _solveAtTemp(T_mont);
+    if (window._fotoResult && mont) window._fotoResult.H_T1 = mont.H;
     const montEl = document.getElementById('foto-H-mont');
     if (montEl) montEl.textContent = mont ? (mont.H / 1000).toFixed(2) + ' kN' : '—';
     // Montage-Label aktualisieren
@@ -3938,12 +3943,7 @@ function _extractExifGps(buf) {
   }
 
   function _fotoUpdateProbeOut() {
-    const outEl  = document.getElementById('foto-probe-out');
-    const rowsEl = document.getElementById('foto-probe-rows');
-    if (!outEl || !rowsEl) return;
-    if (!window._fotoTabActive || !window._fotoResult) {
-      outEl.style.display = 'none'; return;
-    }
+    return; // Box entfernt
     const shVal = parseFloat(document.getElementById('sh')?.value) || 0;
     const badges = ['<span class="probe-mp-badge m1">M1</span>','<span class="probe-mp-badge m2">M2</span>','<span class="probe-mp-badge m3">M3</span>','<span class="probe-mp-badge m4">M4</span>'];
     const ids    = ['probe-x1','probe-x2','probe-x3','probe-x4'];
@@ -4218,8 +4218,12 @@ function _extractExifGps(buf) {
 
   window.fotoSaveMessung = function() {
     if (!_img || !window._fotoResult) { _status('Keine abgeschlossene Messung vorhanden.'); return; }
-    const canvas = document.getElementById('foto-canvas');
-    const imageDataURL = canvas.toDataURL('image/jpeg', 0.75);
+    // Rohbild ohne Overlays speichern (Original-Auflösung, kein Canvas-Screenshot)
+    const rawCanvas = document.createElement('canvas');
+    rawCanvas.width  = _img.naturalWidth;
+    rawCanvas.height = _img.naturalHeight;
+    rawCanvas.getContext('2d').drawImage(_img, 0, 0);
+    const imageDataURL = rawCanvas.toDataURL('image/jpeg', 0.90);
     const g = id => document.getElementById(id)?.value ?? '';
     const inputs = {
       L: g('foto-L'), mat: g('foto-mat'), q: g('foto-q'), T1: g('foto-T1'),
@@ -4232,6 +4236,16 @@ function _extractExifGps(buf) {
                 || `Messung ${new Date().toLocaleDateString('de-CH')}`;
     const record = {
       ts: Date.now(), label, imageDataURL, inputs,
+      gps: _gps || null,
+      viewState: {
+        opacity:      _fotoOpacity,
+        showCatenary: _showCatenary,
+        showGrid:     _showGrid,
+        dimOffsets:   { L: _dimOffsets.L, R: _dimOffsets.R },
+        zoom:         _fotoZoom,
+        panX:         _fotoPanX,
+        panY:         _fotoPanY,
+      },
       pts:    _pts.map(p => ({ ...p })),
       result: { H: fr.H, f: fr.f, xC: fr.xC, L: fr.L, q: fr.q, dh: fr.dh, T1: fr.T1,
                 k_L: fr.k_L, k_R: fr.k_R, nameL: fr.nameL, nameR: fr.nameR },
@@ -4258,6 +4272,29 @@ function _extractExifGps(buf) {
         iv('foto-name-L', rec.inputs.nameL); iv('foto-hmast-L', rec.inputs.hmastL); iv('foto-elev-L', rec.inputs.elevL);
         iv('foto-name-R', rec.inputs.nameR); iv('foto-hmast-R', rec.inputs.hmastR); iv('foto-elev-R', rec.inputs.elevR);
         _pts = rec.pts.map(p => ({ ...p }));
+        _gps = rec.gps || null;
+        _updateGpsDisplay();
+        // View-State wiederherstellen
+        const vs = rec.viewState || {};
+        _fotoOpacity  = vs.opacity      ?? 1.0;
+        _showCatenary = !!vs.showCatenary;
+        _showGrid     = !!vs.showGrid;
+        _dimOffsets   = { L: vs.dimOffsets?.L ?? 0, R: vs.dimOffsets?.R ?? 0 };
+        _fotoZoom     = vs.zoom ?? 1.0;
+        _fotoPanX     = vs.panX ?? 0;
+        _fotoPanY     = vs.panY ?? 0;
+        // UI-Buttons synchronisieren
+        const _opBtn = document.getElementById('foto-opacity-btn');
+        if (_opBtn) _opBtn.textContent = Math.round(_fotoOpacity * 100) + '%';
+        _updateCatenaryBtn();
+        const _grdBtn = document.getElementById('foto-grid-toggle');
+        if (_grdBtn) {
+          _grdBtn.textContent       = _showGrid ? 'Raster aus' : 'Raster';
+          _grdBtn.style.color       = _showGrid ? 'var(--text)' : 'var(--muted)';
+          _grdBtn.style.borderColor = _showGrid ? 'var(--text)' : 'var(--border)';
+          _grdBtn.style.fontWeight  = _showGrid ? '600' : '400';
+        }
+        _updateFotoZoomUI();
         _img = new Image();
         _img.onload = () => {
           const ph = document.getElementById('foto-canvas-placeholder');
@@ -4305,10 +4342,12 @@ function _extractExifGps(buf) {
         if (typeof elMaterialChanged === 'function') elMaterialChanged();
       }
     }
-    // H bei aktueller Montagetemperatur T₁ berechnen
+    // H bei Montagetemperatur T₁ — gespeicherter Wert aus _calculate() bevorzugen
     const _T1mont = parseFloat(document.getElementById('temp1')?.value);
     const _Tmont  = !isNaN(_T1mont) ? _T1mont : 10;
-    const H10 = (typeof fotoSolveAtTemp === 'function') ? fotoSolveAtTemp(_Tmont) : null;
+    const H10 = fr.H_T1
+      ? { H: fr.H_T1 }
+      : ((typeof fotoSolveAtTemp === 'function') ? fotoSolveAtTemp(_Tmont) : null);
     const tensionEl = document.getElementById('tension');
     if (H10 && tensionEl) {
       tensionEl.value = Math.round(H10.H);
@@ -4777,7 +4816,7 @@ function _updateTensionDelta() {
   const pct   = Math.round((delta / H_soll) * 100);
   const sign  = delta >= 0 ? '+' : '';
   deltaEl.textContent  = `${sign}${pct} %`;
-  deltaEl.style.color  = Math.abs(pct) <= 5 ? '#16a34a' : delta < 0 ? '#eb0000' : '#d97706';
+  deltaEl.style.color  = '';
   deltaEl.style.display = '';
 }
 
@@ -4900,8 +4939,13 @@ function _buildMastLabel(side) {
   if (num && km) return `${num}  ·  ${km}`;
   return num || km;
 }
+function _buildMastParts(side) {
+  const num = document.getElementById(side === 'left' ? 'mast-num-left' : 'mast-num-right')?.value?.trim() || '';
+  const km  = document.getElementById(side === 'left' ? 'mast-km-left'  : 'mast-km-right')?.value?.trim()  || '';
+  return { num, km };
+}
 
-// ── KM-Autofill rechts = links + L ───────────────────────────────────────────
+// ── KM-Format-Hilfsfunktion ───────────────────────────────────────────────────
 function _formatKm(v) {
   if (isNaN(v) || v === null) return '';
   const neg  = v < 0;
@@ -4910,27 +4954,6 @@ function _formatKm(v) {
   const frac = Math.round((abs - int) * 1000);
   return (neg ? '-' : '') + String(int).padStart(3, '0') + '.' + String(frac).padStart(3, '0');
 }
-
-function _autoFillKmRight() {
-  const kmLeftEl  = document.getElementById('mast-km-left');
-  const kmRightEl = document.getElementById('mast-km-right');
-  const spanEl    = document.getElementById('span');
-  if (!kmLeftEl || !kmRightEl || !spanEl) return;
-  if (kmRightEl.dataset.userEdited) return;   // Nutzer hat rechts manuell eingegeben → nicht überschreiben
-  const kmL = parseFloat(kmLeftEl.value.replace(',', '.'));
-  const L   = parseFloat(spanEl.value);
-  if (!isNaN(kmL) && !isNaN(L) && L > 0) {
-    kmRightEl.value = _formatKm(kmL + L / 1000); // L in m → km
-  } else {
-    kmRightEl.value = '';
-  }
-}
-
-// KM-rechts als "user edited" markieren wenn manuell geändert
-document.addEventListener('DOMContentLoaded', () => {
-  const kmR = document.getElementById('mast-km-right');
-  if (kmR) kmR.addEventListener('input', () => { kmR.dataset.userEdited = '1'; });
-});
 
 // ── Foto-Name-Brücke: mast-num-left/right als Quelle für Foto-Auswertung ─────
 function _syncMastNames() {
@@ -7925,25 +7948,38 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   heightLabel(h2px, h2py, h2d, h2, 'right');
 
   // ── Mastbezeichnungen (optional) ──
-  const _mkL = _buildMastLabel('left');
-  const _mkR = _buildMastLabel('right');
-  if (_mkL || _mkR) {
+  const _mkL = _buildMastParts('left');
+  const _mkR = _buildMastParts('right');
+  if ((_mkL.num || _mkL.km) || (_mkR.num || _mkR.km)) {
     ctx.save();
-    const _nmH = 14;
-    [[_mkL, cx(0)], [_mkR, cx(L)]].forEach(([label, npx]) => {
-      if (!label) return;
-      ctx.font = 'bold 9px Segoe UI';
-      const nmW = ctx.measureText(label).width;
-      const nmY = padT + plotH - 5;
+    const lineH = 13;
+    [[_mkL, cx(0)], [_mkR, cx(L)]].forEach(([parts, npx]) => {
+      if (!parts.num && !parts.km) return;
+      const rows = [];
+      if (parts.num) rows.push({ text: parts.num,          bold: true,  size: 9 });
+      if (parts.km)  rows.push({ text: 'KM ' + parts.km,  bold: false, size: 8 });
+      let maxW = 0;
+      rows.forEach(r => {
+        ctx.font = `${r.bold ? 'bold ' : ''}${r.size}px Segoe UI`;
+        maxW = Math.max(maxW, ctx.measureText(r.text).width);
+      });
+      const boxH = rows.length * lineH + 4;
+      const boxW = maxW + 10;
+      const nmY  = padT + plotH + 5;
+      const boxX = Math.max(padL, Math.min(npx - boxW/2, CW - padR - boxW));
+      const txtX = boxX + boxW/2;
       ctx.fillStyle = 'rgba(255,255,255,.88)';
       ctx.beginPath();
-      ctx.roundRect(npx - nmW/2 - 5, nmY - _nmH + 2, nmW + 10, _nmH, 3);
+      ctx.roundRect(boxX, nmY, boxW, boxH, 3);
       ctx.fill();
       ctx.strokeStyle = '#d1d5db'; ctx.lineWidth = 0.8;
       ctx.stroke();
-      ctx.fillStyle = '#374151';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-      ctx.fillText(label, npx, nmY);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      rows.forEach((r, i) => {
+        ctx.font = `${r.bold ? 'bold ' : ''}${r.size}px Segoe UI`;
+        ctx.fillStyle = r.bold ? '#374151' : '#6b7280';
+        ctx.fillText(r.text, txtX, nmY + 2 + i * lineH);
+      });
     });
     ctx.textBaseline = 'alphabetic';
     ctx.restore();
@@ -8130,15 +8166,56 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.restore();
   }
 
-  // ── Mindestabstand-Kurve (gestrichelt, sehr leicht) ──
-  if (hasSok && minClearance !== null) {
-    const cT2mc = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
+  // ── Mindestabstand-Zone (Schraffur + gestrichelte Randlinie) ──
+  if (hasSok && minClearance !== null && _showMinClearance) {
+    const cT2mc  = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
     const offsets = isEl ? [+minClearance, -minClearance] : [+minClearance];
     ctx.save();
+    // Clip auf Plot-Bereich
+    ctx.beginPath();
+    ctx.rect(padL, padT, plotW, plotH);
+    ctx.clip();
+    // Schraffur-Pattern
+    const patSz = 7;
+    const patC  = document.createElement('canvas');
+    patC.width  = patC.height = patSz;
+    const pctx  = patC.getContext('2d');
+    pctx.strokeStyle = t2Clr;
+    pctx.lineWidth   = 0.7;
+    pctx.beginPath();
+    pctx.moveTo(0, patSz); pctx.lineTo(patSz, 0);
+    pctx.moveTo(-patSz/2, patSz/2); pctx.lineTo(patSz/2, -patSz/2);
+    pctx.moveTo(patSz/2, patSz * 1.5); pctx.lineTo(patSz * 1.5, patSz/2);
+    pctx.stroke();
+    const pat = ctx.createPattern(patC, 'repeat');
+    // Schraffierte Fläche T2
+    offsets.forEach(off => {
+      ctx.beginPath();
+      for (let i = 0; i <= 300; i++) {
+        const x = (i / 300) * L;
+        const y = catYD(x, cT2mc) + off;
+        i === 0 ? ctx.moveTo(cx(x), cy(y)) : ctx.lineTo(cx(x), cy(y));
+      }
+      if (!isEl && off > 0) {
+        // NFL/RFL: Gefahrenraum bis Diagrammunterrand
+        ctx.lineTo(cx(L), padT + plotH);
+        ctx.lineTo(cx(0), padT + plotH);
+      } else {
+        for (let i = 300; i >= 0; i--) {
+          const x = (i / 300) * L;
+          ctx.lineTo(cx(x), cy(catYD(x, cT2mc)));
+        }
+      }
+      ctx.closePath();
+      ctx.globalAlpha = 0.15;
+      ctx.fillStyle = pat;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+    // Gestrichelte Randlinie T2
     ctx.setLineDash([4, 5]);
     ctx.lineWidth = 1;
     ctx.globalAlpha = 0.35;
-    // T2 Mindestabstand-Linie(n)
     offsets.forEach(off => {
       ctx.strokeStyle = t2Clr;
       ctx.beginPath();
@@ -8149,7 +8226,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
       }
       ctx.stroke();
     });
-    // T3 Mindestabstand-Linie(n) (falls vorhanden)
+    // T3 (falls vorhanden) — nur gestrichelte Linie
     if (showT3 && c3) {
       const _t3Rmc = parseFloat(document.getElementById('temp3')?.value);
       const _t3Vmc = isNaN(_t3Rmc) ? 80 : _t3Rmc;
@@ -8165,13 +8242,6 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
       });
     }
     ctx.setLineDash([]); ctx.globalAlpha = 1;
-    // Label am rechten Rand der oberen Linie
-    const xLbl = L * 0.97;
-    const yLbl = catYD(xLbl, cT2mc) + minClearance;
-    ctx.font = '8px Segoe UI'; ctx.fillStyle = '#6b7280';
-    ctx.textAlign = 'right'; ctx.globalAlpha = 0.7;
-    ctx.fillText(`Mindestabstand zu Leiter (${minClearance.toFixed(2)} m)`, cx(xLbl), cy(yLbl) - 3);
-    ctx.globalAlpha = 1;
     ctx.restore();
   }
 
@@ -8187,41 +8257,77 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     const hClr = '#3a3a3a';
     const cT2h = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
 
-    hPairs.forEach(({ xv, hMum, badge, lbl }) => {
-      const obsAbsH = hMum;
+    // Pass 1: Grundpositionen berechnen
+    const hItems = hPairs.map(({ xv, hMum, badge, lbl }) => {
+      const obsAbsH  = hMum;
       const tsT2AbsH = catYD(xv, cT2h);
-      let nearAbsH = tsT2AbsH;
+      let nearAbsH   = tsT2AbsH;
       if (showT3 && c3) {
         const tsT3AbsH = catYD(xv, c3);
-        if (Math.abs(obsAbsH - tsT3AbsH) < Math.abs(obsAbsH - tsT2AbsH)) {
-          nearAbsH = tsT3AbsH;
+        if (Math.abs(obsAbsH - tsT3AbsH) < Math.abs(obsAbsH - tsT2AbsH)) nearAbsH = tsT3AbsH;
+      }
+      const clear   = obsAbsH - nearAbsH;
+      const vio     = minClearance !== null && (isEl ? Math.abs(clear) < minClearance : clear < minClearance);
+      const hpx     = cx(xv);
+      const hpy     = cy(obsAbsH);
+      const onRight = (hpx + 85) < (padL + plotW);
+      const lblW    = 82;
+      const lblH    = 26;
+      return { hpx, hpy, badge, lbl, clear, vio, onRight, lblW, lblH,
+               lblY: hpy - 2 };
+    });
+
+    // Pass 2: Kollisionsvermeidung (nutzt drawnBoxes der Probe-Badges)
+    const allBoxes = [...drawnBoxes];
+    hItems.sort((a, b) => a.lblY - b.lblY);
+    for (const item of hItems) {
+      const boxX = item.onRight ? item.hpx + 5 : item.hpx - item.lblW - 5;
+      let boxY   = item.lblY - 2;
+      let changed = true, iters = 0;
+      while (changed && iters++ < 12) {
+        changed = false;
+        for (const box of allBoxes) {
+          const xOvlp = boxX < box.x + box.w + 4 && boxX + item.lblW + 4 > box.x;
+          if (!xOvlp) continue;
+          const yOvlp = boxY < box.y + box.h + 4 && boxY + item.lblH > box.y - 4;
+          if (!yOvlp) continue;
+          const below = box.y + box.h + 5;
+          const above = box.y - item.lblH - 5;
+          if (below + item.lblH <= padT + plotH) boxY = below;
+          else if (above >= padT)                boxY = above;
+          changed = true; break;
         }
       }
-      const clear = obsAbsH - nearAbsH; // positiv = H oberhalb Leiter
-      const vio = minClearance !== null && (isEl ? Math.abs(clear) < minClearance : clear < minClearance);
-      const hpx = cx(xv);
-      const hpy = cy(obsAbsH);
-      const npy = cy(nearAbsH);
+      item.lblY = Math.max(padT + 2, Math.min(boxY + 2, padT + plotH - item.lblH));
+      allBoxes.push({ x: boxX, y: boxY, w: item.lblW, h: item.lblH });
+    }
 
-      // Kleiner Punkt am H-Punkt
-      ctx.save();
+    // Pass 3: Zeichnen
+    hItems.forEach(({ hpx, hpy, badge, lbl, clear, vio, onRight, lblY }) => {
       const dotClr = vio ? '#eb0000' : hClr;
+      const lblX   = onRight ? hpx + 7 : hpx - 7;
+      const align  = onRight ? 'left' : 'right';
+      ctx.save();
+      // Verbindungslinie wenn Label verschoben
+      if (Math.abs(lblY - (hpy - 2)) > 8) {
+        ctx.strokeStyle = dotClr; ctx.lineWidth = 0.7; ctx.globalAlpha = 0.35;
+        ctx.setLineDash([2, 3]);
+        ctx.beginPath(); ctx.moveTo(hpx, hpy); ctx.lineTo(lblX, lblY + 10); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 1;
+      }
+      // Punkt am H-Punkt
       ctx.beginPath(); ctx.arc(hpx, hpy, 3.5, 0, Math.PI * 2);
       ctx.fillStyle = dotClr; ctx.fill();
       ctx.beginPath(); ctx.arc(hpx, hpy, 3.5, 0, Math.PI * 2);
       ctx.strokeStyle = 'white'; ctx.lineWidth = 1.2; ctx.stroke();
-
-      // Label + Abstand rechts/links neben dem Punkt
-      const onRightH = (hpx + 72) < (padL + plotW);
-      const lblX = onRightH ? hpx + 7 : hpx - 7;
-      const align = onRightH ? 'left' : 'right';
+      // Label
       ctx.textAlign = align;
       ctx.fillStyle = dotClr;
       ctx.font = 'bold 10px Segoe UI';
-      ctx.fillText(`${badge} (${lbl})`, lblX, hpy - 2);
+      ctx.fillText(`${badge} (${lbl})`, lblX, lblY);
       ctx.font = '9px Segoe UI';
       ctx.fillStyle = vio ? '#eb0000' : '#6b7280';
-      ctx.fillText(`${clear >= 0 ? '+' : ''}${clear.toFixed(2)} m${vio ? ' ⚠' : ''}`, lblX, hpy + 10);
+      ctx.fillText(`${clear >= 0 ? '+' : ''}${clear.toFixed(2)} m${vio ? ' ⚠' : ''}`, lblX, lblY + 12);
       ctx.restore();
     });
   }
@@ -8325,8 +8431,7 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b72
 }
 
 function updateHighlightCard() {
-  const el = document.getElementById('highlight-card');
-  if (!calcState) { el.innerHTML = ''; return; }
+  return; // Box entfernt
   const { c1, c2, h1, h2, L, sh, flCombo, c2_vem, c3: _c3state } = calcState;
   const _c3curve = (showT3 && _c3state) ? _c3state : null;
   const _t3clr   = _c3curve ? t2TempColor((v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value))) : null;
@@ -8414,18 +8519,6 @@ function updateHighlightCard() {
         </div>
       </div>`;
   }
-  // Mirror to fullscreen overlay
-  const elFs = document.getElementById('highlight-card-fs');
-  if (elFs) elFs.innerHTML = el.innerHTML;
-}
-
-function _syncHighlightFsVisibility() {
-  const elFs = document.getElementById('highlight-card-fs');
-  if (!elFs) return;
-  const isFs = !!document.querySelector('.canvas-card.canvas-fullscreen');
-  const isDiagr = !!document.getElementById('main-canvas') &&
-    document.getElementById('main-canvas').style.display !== 'none';
-  elFs.style.display = (isFs && isDiagr) ? '' : 'none';
 }
 
 function clearMesspunkte() {
@@ -9968,7 +10061,7 @@ function toggleCanvasFullscreen() {
   document.getElementById('fullscreen-icon-enter').style.display = isFs ? 'none' : '';
   document.getElementById('fullscreen-icon-exit').style.display  = isFs ? ''     : 'none';
   document.body.style.overflow = isFs ? 'hidden' : '';
-  setTimeout(() => { quickDraw(); _triggerDrawingRebuild(); _syncHighlightFsVisibility(); }, 50);
+  setTimeout(() => { quickDraw(); _triggerDrawingRebuild(); }, 50);
 }
 
 // Foto-Tab: globaler Flag
@@ -10108,7 +10201,6 @@ function setCanvasView(view) {
       el.addEventListener('change', fn);
       _fotoSyncListeners.push({ el, fn });
     });
-    _syncHighlightFsVisibility();
     return;
   }
 
