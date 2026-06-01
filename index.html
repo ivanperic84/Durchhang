@@ -1459,11 +1459,22 @@ button.header-manual-link:hover {
         <div class="seg-ctrl" id="el-basis-btns" style="width:100%"></div>
       </div>
 
+      <!-- Einzelleiter: Berechnungsart -->
+      <div id="berechnungsart-row" style="display:none;margin-top:.5rem">
+        <label style="font-size:.72rem;font-weight:500;color:var(--muted);display:block;margin-bottom:.25rem">Berechnungsart</label>
+        <div class="seg-ctrl" style="width:100%">
+          <button class="seg-btn active" id="seg-ba-ausg" onclick="setBerechnungsart('ausgleichend')">Ausgleichend</button>
+          <button class="seg-btn"        id="seg-ba-starr" onclick="setBerechnungsart('starr')">Starr</button>
+        </div>
+      </div>
+
       <!-- Einzelleiter: Reglagewert-Info -->
       <div id="el-reglage-info" class="reglage-info-box" style="display:none;margin-top:.5rem">
         <div class="reglage-hdr">
           <div class="info-title" id="el-reglage-title"></div>
-          <button id="el-reglage-edit-btn" onclick="toggleReglageEdit()">Bearbeiten</button>
+          <button id="el-reglage-info-btn" onclick="toggleReglageEdit()"
+            style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.2);background:none;color:var(--muted);font-size:.6rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"
+            title="Reglagetabelle anzeigen">i</button>
         </div>
         <div class="info-note" id="el-reglage-note"></div>
         <div id="el-reglage-edit-panel" style="display:none"></div>
@@ -1945,16 +1956,6 @@ button.header-manual-link:hover {
         </div>
         <!-- Status-Info (nur im Foto-Tab sichtbar) -->
         <span id="foto-status" style="display:none;font-size:.71rem;color:#2563eb;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">Foto laden, dann Punkte klicken</span>
-        <div id="vex-header-ctrl" style="display:none;align-items:center;gap:.35rem;font-size:.7rem;color:var(--muted)">
-          <span style="white-space:nowrap">Überhöhung</span>
-          <select id="vex-select" onchange="setDrawingVEx(this.value)"
-            style="font-size:.72rem;padding:.15rem .3rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer">
-            <option value="1">1:1</option>
-            <option value="2">2×</option>
-            <option value="5">5×</option>
-            <option value="10">10×</option>
-          </select>
-        </div>
       </div>
       <div style="display:flex;align-items:center;gap:.5rem">
         <span class="drag-hint" id="canvas-drag-hint" style="display:none"></span>
@@ -2012,6 +2013,33 @@ button.header-manual-link:hover {
           <button class="zoom-btn" onclick="adjustDrawingZoom(drawingZoom + 0.25)" title="Vergrössern">+</button>
           <span class="zoom-level-lbl" id="drawing-zoom-label">100%</span>
           <button class="zoom-reset-btn" onclick="adjustDrawingZoom(1)" title="Zoom zurücksetzen">↺</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:.6rem">
+          <!-- Überhöhung -->
+          <div style="display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--muted)">
+            <span style="white-space:nowrap">Überhöhung</span>
+            <select id="vex-select" onchange="setDrawingVEx(this.value)"
+              style="font-size:.72rem;padding:.15rem .3rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer">
+              <option value="1">1:1</option>
+              <option value="2">2×</option>
+              <option value="5">5×</option>
+              <option value="10">10×</option>
+            </select>
+          </div>
+          <!-- Trennlinie -->
+          <span style="width:1px;height:14px;background:var(--border);flex-shrink:0"></span>
+          <!-- Darstellung (vertikaler Ausschnitt) -->
+          <div style="display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--muted)">
+            <span style="white-space:nowrap">Darstellung</span>
+            <div style="display:flex;gap:.2rem">
+              <button id="seg-ext-sok" onclick="setDrawingExtent('sok')"
+                class="zoom-btn active" style="width:auto;padding:0 .45rem;font-size:.65rem"
+                title="Vollständige Darstellung bis SOK">bis SOK</button>
+              <button id="seg-ext-cat" onclick="setDrawingExtent('catenary')"
+                class="zoom-btn" style="width:auto;padding:0 .45rem;font-size:.65rem"
+                title="Nur Kettenwerk / Einzelleiter">Kettenwerk</button>
+            </div>
+          </div>
         </div>
       </div>
       <div id="drawing-viewport">
@@ -2348,15 +2376,10 @@ button.header-manual-link:hover {
         </div>
       </div>
       <div id="probe-h-footnote" style="display:none;margin-top:.45rem">
-        <div style="display:flex;align-items:center;justify-content:space-between;font-size:.6rem;font-weight:600;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;margin-bottom:.3rem;padding-top:.35rem;border-top:1px solid rgba(0,0,0,.07)">
-          <span>Mindestabstand</span>
-          <label style="display:flex;align-items:center;gap:.25rem;cursor:pointer;font-weight:400;letter-spacing:0;text-transform:none;font-size:.65rem">
-            <input type="checkbox" id="min-clearance-show" checked style="cursor:pointer;accent-color:var(--primary)"
-              onchange="_showMinClearance=this.checked;_triggerDrawingRebuild()">
-            anzeigen
-          </label>
+        <div style="font-size:.6rem;font-weight:600;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;margin-bottom:.3rem;padding-top:.35rem;border-top:1px solid rgba(0,0,0,.07)">
+          Mindestabstand
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem">
+        <div style="display:flex;align-items:center;gap:.5rem">
           <div class="probe-m-group">
             <span class="probe-h-badge">a</span>
             <div class="probe-input-wrap">
@@ -2365,6 +2388,14 @@ button.header-manual-link:hover {
               <span class="probe-mp-unit">m</span>
             </div>
           </div>
+          <label style="display:inline-flex;align-items:center;cursor:pointer;flex-shrink:0" title="Mindestabstand anzeigen">
+            <input type="checkbox" id="min-clearance-show" checked
+              style="position:absolute;opacity:0;width:0;height:0"
+              onchange="_showMinClearance=this.checked;document.getElementById('mc-tog-knob').style.left=this.checked?'13px':'2px';document.getElementById('mc-tog-bg').style.background=this.checked?'var(--primary)':'#d1d5db';_triggerDrawingRebuild()">
+            <span id="mc-tog-bg" style="display:inline-block;width:26px;height:15px;background:var(--primary);border-radius:8px;position:relative;transition:background .15s;flex-shrink:0">
+              <span id="mc-tog-knob" style="position:absolute;width:11px;height:11px;background:white;border-radius:50%;top:2px;left:13px;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.18)"></span>
+            </span>
+          </label>
         </div>
       </div>
     </div>
@@ -4423,8 +4454,8 @@ function _extractExifGps(buf) {
         const MAX_B64   = Math.ceil(MAX_BYTES * 4 / 3);      // ≈ 2.74 MB base64-Länge
         const MAX_W = 1280, MAX_H = 960;
         const scale = Math.min(1, MAX_W / _img.naturalWidth, MAX_H / _img.naturalHeight);
-        const tw = Math.round(_img.naturalWidth  * scale);
-        const th = Math.round(_img.naturalHeight * scale);
+        let tw = Math.round(_img.naturalWidth  * scale);
+        let th = Math.round(_img.naturalHeight * scale);
         const tmp = document.createElement('canvas');
         tmp.width = tw; tmp.height = th;
         tmp.getContext('2d').drawImage(_img, 0, 0, tw, th);
@@ -4441,8 +4472,28 @@ function _extractExifGps(buf) {
           tmp2.width = Math.round(tw * s2); tmp2.height = Math.round(th * s2);
           tmp2.getContext('2d').drawImage(tmp, 0, 0, tmp2.width, tmp2.height);
           dataURL = tmp2.toDataURL('image/jpeg', 0.72);
+          tw = tmp2.width; th = tmp2.height;
         }
         state.imgDataURL = dataURL;
+
+        // ── Koordinaten auf komprimierte Bildgrösse skalieren ──
+        // _pts und _fotoResult wurden im Koordinatensystem des Originalbilds gesetzt.
+        // Das gespeicherte Bild kann kleiner sein (scale < 1); alle Pixelwerte
+        // müssen entsprechend umgerechnet werden, damit Marker nach dem Laden
+        // exakt auf den Bildmerkmalen liegen — unabhängig von der Auflösung.
+        const scX = tw / _img.naturalWidth;
+        const scY = th / _img.naturalHeight;
+        if (scX !== 1 || scY !== 1) {
+          state.pts = _pts.map(p => ({ ...p, px: p.px * scX, py: p.py * scY }));
+          if (state.result) {
+            state.result = { ...state.result };
+            if (state.result.ptP1) state.result.ptP1 = { px: state.result.ptP1.px * scX, py: state.result.ptP1.py * scY };
+            if (state.result.ptP2) state.result.ptP2 = { px: state.result.ptP2.px * scX, py: state.result.ptP2.py * scY };
+            // k_L / k_R (m/px): grössere Pixel → mehr Meter pro Pixel
+            if (state.result.k_L != null) state.result.k_L = state.result.k_L / scX;
+            if (state.result.k_R != null) state.result.k_R = state.result.k_R / scX;
+          }
+        }
       } catch (e) { /* localStorage zu voll → Bild weglassen */ }
     }
     return state;
@@ -5302,9 +5353,22 @@ function updateSysModeUI(mode) {
   if (fdItem)  fdItem.style.display   = 'none';   // Fd nicht mehr im Diagramm
   if (fdSoll)  fdSoll.style.display   = 'none';   // Fd Solllage nicht mehr im Diagramm
 
-  // Mittelspannweite: bei R-FL deaktivieren
-  document.getElementById('seg-ruling').style.display = isRfl ? 'none' : '';
-  if (isRfl && spanMode === 'ruling') setSpanMode('single');
+  // Mittelspannweite: bei R-FL und bei Berechnungsart=Starr deaktivieren
+  const _rulingHidden = isRfl || elBerechnungsart === 'starr';
+  document.getElementById('seg-ruling').style.display = _rulingHidden ? 'none' : '';
+  if (_rulingHidden && spanMode === 'ruling') setSpanMode('single');
+
+  // Berechnungsart: nur Einzelleiter
+  const baRow = document.getElementById('berechnungsart-row');
+  if (baRow) baRow.style.display = isEl ? '' : 'none';
+  // Beim Wechsel weg von Einzelleiter → Berechnungsart zurücksetzen
+  if (!isEl && elBerechnungsart !== 'ausgleichend') {
+    elBerechnungsart = 'ausgleichend';
+    const ba = document.getElementById('seg-ba-ausg');
+    const bs = document.getElementById('seg-ba-starr');
+    if (ba) ba.classList.add('active');
+    if (bs) bs.classList.remove('active');
+  }
 }
 
 function t2TempColor(temp) {
@@ -5388,7 +5452,7 @@ function onT2Input(val) {
 function updateEislastVisibility() {
   const T2  = parseFloat(document.getElementById('temp2').value);
   const row = document.getElementById('eislast-row');
-  const show = (sysMode === 'nfl' || sysMode === 'rfl') && T2 === -5;
+  const show = (sysMode === 'nfl' || sysMode === 'rfl' || sysMode === 'el') && T2 === -5;
   row.style.display = show ? '' : 'none';
   if (!show) document.getElementById('zl-eis').value = 0;
   // Sub-label immer sichtbar (bei T<sub>2</sub> = −5 °C gilt für NFL und RFL)
@@ -5574,7 +5638,7 @@ function elMaterialChanged() {
     elBasiskraftIdx = 0;
     // Overrides + Edit-Panel zurücksetzen bei Materialwechsel
     elReglageHmaxOvr = null; elReglageLrefOvr = null;
-    if (elReglageOpen) { elReglageOpen = false; const p=document.getElementById('el-reglage-edit-panel'); const b=document.getElementById('el-reglage-edit-btn'); if(p){p.style.display='none';p.innerHTML='';} if(b) b.textContent='Bearbeiten'; }
+    if (elReglageOpen) { elReglageOpen = false; const p=document.getElementById('el-reglage-edit-panel'); if(p){p.style.display='none';p.innerHTML='';} }
     applyElVariant(0);
   }
   berechnen();
@@ -5731,7 +5795,7 @@ function getProjectState() {
   }
   const fotoState = typeof window._fotoGetProjectState === 'function'
                     ? window._fotoGetProjectState() : null;
-  return { sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx, fotoState };
+  return { sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx, drawingExtent, fotoState, elBerechnungsart };
 }
 
 // ── State wiederherstellen ──
@@ -5775,6 +5839,12 @@ function setProjectState(s) {
 
   // System-Modus
   sysMode = s.sysMode ?? 'nfl';
+  // Berechnungsart vor updateSysModeUI setzen (damit Ruling-Span-Visibility korrekt)
+  elBerechnungsart = s.elBerechnungsart ?? 'ausgleichend';
+  { const ba = document.getElementById('seg-ba-ausg');
+    const bs = document.getElementById('seg-ba-starr');
+    if (ba) ba.classList.toggle('active', elBerechnungsart === 'ausgleichend');
+    if (bs) bs.classList.toggle('active', elBerechnungsart === 'starr'); }
   updateSysModeUI(sysMode);
 
   // Einfache Felder setzen
@@ -5827,6 +5897,12 @@ function setProjectState(s) {
   drawingVEx = s.drawingVEx || 1;
   { const vexSel = document.getElementById('vex-select');
     if (vexSel) vexSel.value = drawingVEx; }
+  { const ext = s.drawingExtent || 'sok';
+    drawingExtent = ext;
+    const bSok = document.getElementById('seg-ext-sok');
+    const bCat = document.getElementById('seg-ext-cat');
+    if (bSok) bSok.classList.toggle('active', ext === 'sok');
+    if (bCat) bCat.classList.toggle('active', ext === 'catenary'); }
 
   // Preset / Material
   if (sysMode !== 'el') {
@@ -6558,6 +6634,23 @@ function updateH_Ts_ubFromT1() {
 let elReglageHmaxOvr = null;   // H bei −20 °C, Benutzer-Override
 let elReglageLrefOvr = null;   // L Referenzspannweite, Benutzer-Override
 let elReglageOpen    = false;  // Edit-Panel geöffnet
+let elBerechnungsart = 'ausgleichend'; // 'ausgleichend' | 'starr' (Lref=25m)
+
+function setBerechnungsart(art) {
+  elBerechnungsart = art;
+  const btnAusg = document.getElementById('seg-ba-ausg');
+  const btnStarr = document.getElementById('seg-ba-starr');
+  if (btnAusg) btnAusg.classList.toggle('active', art === 'ausgleichend');
+  if (btnStarr) btnStarr.classList.toggle('active', art === 'starr');
+  // Starr = nur Einzelspannweite (keine Mittelspannweite)
+  const segRuling = document.getElementById('seg-ruling');
+  if (segRuling) segRuling.style.display = art === 'starr' ? 'none' : '';
+  if (art === 'starr' && spanMode === 'ruling') setSpanMode('single');
+  // Manuelle L_ref-Overrides verwerfen
+  elReglageLrefOvr = null;
+  _applyReglageOvr();
+  berechnen();
+}
 let _elMatEdits  = {};     // { 'cu95': { H_max: 6000, L_ref: 45 }, ... } — modal overrides
 let _rglElEditMode = false; // Bearbeiten-Modus im Modal
 
@@ -6569,11 +6662,13 @@ function _reglageBase() {
   if (!mat) return { mat: null, variant: null, tbl: null, H_max: null, L_ref: 45 };
   const variant = mat.H_reglage_variants ? mat.H_reglage_variants[elBasiskraftIdx] : mat;
   const rawTbl  = variant?.H_reglage_table ?? mat.H_reglage_table ?? null;
-  const useRaw  = rawTbl && elReglageHmaxOvr === null && elReglageLrefOvr === null;
+  // Starr-Berechnungsart erzwingt L_ref=25 → Raw-Tabelle (bei Materiall-Lref) nicht verwenden
+  const useRaw  = rawTbl && elReglageHmaxOvr === null && elReglageLrefOvr === null && elBerechnungsart !== 'starr';
   const matKey  = sel + (mat.H_reglage_variants && mat.H_reglage_variants.length > 1 ? '_' + elBasiskraftIdx : '');
   const matEdit = _elMatEdits[matKey];
   const H_max   = elReglageHmaxOvr ?? matEdit?.H_max ?? (rawTbl ? rawTbl.vals[0] : 6000);
-  const L_ref   = elReglageLrefOvr ?? matEdit?.L_ref ?? (variant?.L_ref ?? mat.L_ref ?? 45);
+  const lrefStarr = elBerechnungsart === 'starr' ? 25 : null;
+  const L_ref   = elReglageLrefOvr ?? lrefStarr ?? matEdit?.L_ref ?? (variant?.L_ref ?? mat.L_ref ?? 45);
   return { mat, variant, tbl: useRaw ? rawTbl : null, H_max, L_ref };
 }
 
@@ -6635,31 +6730,15 @@ function renderReglageEditPanel() {
     }
   }
 
-  panel.innerHTML = `
-    <div class="rp-params">
-      <span class="rp-lbl">H (−20 °C)</span>
-      <input type="number" class="rp-input" id="rp-hmax" value="${H_max ?? ''}" placeholder="N"
-        step="100" min="100"
-        oninput="elReglageHmaxOvr=parseFloat(this.value)||null;_applyReglageOvr()">
-      <span class="rp-lbl">N</span>
-      <span class="rp-lbl">L ref</span>
-      <input type="number" class="rp-input" id="rp-lref" value="${L_ref}" placeholder="m"
-        step="1" min="1" max="300"
-        oninput="elReglageLrefOvr=parseFloat(this.value)||null;_applyReglageOvr()">
-      <span class="rp-lbl">m</span>
-      ${hasOvr ? `<div class="rp-reset"><button onclick="elReglageHmaxOvr=null;elReglageLrefOvr=null;_applyReglageOvr()"
-        style="font-size:.63rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:0 .2rem">↺ Reset</button></div>` : ''}
-    </div>
-    ${canCalc
-      ? `<table class="rtbl">
-          <thead><tr>
-            <th>T</th><th>H [N]</th>
-            <th>f [m] <span style="font-weight:400;opacity:.6">(L = ${L_ref} m)</span></th>
-          </tr></thead>
-          <tbody>${rows}</tbody>
-        </table>`
-      : `<p style="font-size:.67rem;color:var(--muted);margin:.35rem 0 0">H bei −20 °C eingeben, um Tabelle zu berechnen.</p>`}
-  `;
+  panel.innerHTML = canCalc
+    ? `<table class="rtbl">
+        <thead><tr>
+          <th>T</th><th>H [N]</th>
+          <th>f [m] <span style="font-weight:400;opacity:.6">(L = ${L_ref} m)</span></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`
+    : `<p style="font-size:.67rem;color:var(--muted);margin:.35rem 0 0">Kein Reglagewert verfügbar.</p>`;
 }
 
 // Übernimmt Override in activePresetRef → aktualisiert Zugkraft + Diagramm
@@ -6681,9 +6760,7 @@ function _applyReglageOvr() {
 function toggleReglageEdit() {
   elReglageOpen = !elReglageOpen;
   const panel = document.getElementById('el-reglage-edit-panel');
-  const btn   = document.getElementById('el-reglage-edit-btn');
   if (panel) panel.style.display = elReglageOpen ? '' : 'none';
-  if (btn)   btn.textContent     = elReglageOpen ? 'Schliessen' : 'Bearbeiten';
   if (elReglageOpen) renderReglageEditPanel();
 }
 
@@ -7272,7 +7349,7 @@ function readInputs() {
     const H_el = H_Ts_ub; // direkte Zugkraft (kein unbelastet → belastet)
     return { L, Lm, H_Ts: H_el, H_Ts_ub: H_el, H_Fd: 0, h1, h2, T1, T2,
              q_Ts: q_el, q_Fd: 0, q_Fd_base: 0, sh: 0,
-             q_ges: q_el, EA, EA_Ts, alpha, deltaT, flCombo: null, ZL: 0 };
+             q_ges: q_el, EA, EA_Ts, alpha, deltaT, flCombo: null, ZL };
   }
 
   return { L, Lm, H_Ts, H_Ts_ub, H_Fd, h1, h2, T1, T2, q_Ts, q_Fd, q_Fd_base, sh,
@@ -7362,12 +7439,12 @@ function berechnen() {
     try {
       let H2 = null;
       if (EA !== null) {
-        H2 = solveStateEq(q_ges, Lm, H_Ts, EA, alpha, deltaT);
+        H2 = solveStateEq(q_ges + ZL, Lm, H_Ts, EA, alpha, deltaT);
       } else {
         const s2 = c1.s * (1 + alpha * deltaT);
         c2 = computeThermal(L, c1.W, s2, h1, h2);
       }
-      if (H2 !== null) c2 = computeBase(L, q_ges, H2, h1, h2);
+      if (H2 !== null) c2 = computeBase(L, q_ges + ZL, H2, h1, h2);
     } catch (e) { errorBox.textContent = 'Zielzustand: ' + e.message; errorBox.classList.remove('hidden'); return; }
   } else {
     // R-FL: konstante Zugkraft; ZL (Eislast) teilt sich auf Ts+Fd auf: f_ZL = ZL·c²/(8·(H_Ts+H_Fd))
@@ -7481,7 +7558,7 @@ function quickDraw() {
     } else if (isEl) {
       // Einzelleiter: einfache Zustandsgleichung
       c2 = EA !== null
-        ? computeBase(L, q_ges, solveStateEq(q_ges, Lm, H_Ts, EA, alpha, T2 - T1), h1, h2)
+        ? computeBase(L, q_ges + ZL, solveStateEq(q_ges + ZL, Lm, H_Ts, EA, alpha, T2 - T1), h1, h2)
         : computeThermal(L, c1.W, c1.s * (1 + alpha * (T2 - T1)), h1, h2);
       drawCanvas(c1, c2, L, h1, h2, sh, true, null, _qc3);
     } else {
@@ -8219,11 +8296,52 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
       }
       ctx.stroke();
     });
-    // T3 (falls vorhanden) — nur gestrichelte Linie
+    // T3 (falls vorhanden) — Schraffur + gestrichelte Randlinie
     if (showT3 && c3) {
       const _t3Rmc = parseFloat(document.getElementById('temp3')?.value);
       const _t3Vmc = isNaN(_t3Rmc) ? 80 : _t3Rmc;
-      ctx.strokeStyle = t2TempColor(_t3Vmc);
+      const t3Clr  = t2TempColor(_t3Vmc);
+      // Schraffur-Pattern T3
+      const patT3C = document.createElement('canvas');
+      patT3C.width = patT3C.height = patSz;
+      const pt3ctx = patT3C.getContext('2d');
+      pt3ctx.strokeStyle = t3Clr;
+      pt3ctx.lineWidth   = 0.7;
+      pt3ctx.beginPath();
+      pt3ctx.moveTo(0, patSz); pt3ctx.lineTo(patSz, 0);
+      pt3ctx.moveTo(-patSz/2, patSz/2); pt3ctx.lineTo(patSz/2, -patSz/2);
+      pt3ctx.moveTo(patSz/2, patSz * 1.5); pt3ctx.lineTo(patSz * 1.5, patSz/2);
+      pt3ctx.stroke();
+      const patT3 = ctx.createPattern(patT3C, 'repeat');
+      // Schraffierte Fläche T3
+      ctx.setLineDash([]);
+      offsets.forEach(off => {
+        ctx.beginPath();
+        for (let i = 0; i <= 300; i++) {
+          const x = (i / 300) * L;
+          const y = catYD(x, c3) + off;
+          i === 0 ? ctx.moveTo(cx(x), cy(y)) : ctx.lineTo(cx(x), cy(y));
+        }
+        if (!isEl && off > 0) {
+          ctx.lineTo(cx(L), padT + plotH);
+          ctx.lineTo(cx(0), padT + plotH);
+        } else {
+          for (let i = 300; i >= 0; i--) {
+            const x = (i / 300) * L;
+            ctx.lineTo(cx(x), cy(catYD(x, c3)));
+          }
+        }
+        ctx.closePath();
+        ctx.globalAlpha = 0.15;
+        ctx.fillStyle = patT3;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+      // Gestrichelte Randlinie T3
+      ctx.setLineDash([4, 5]);
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = t3Clr;
       offsets.forEach(off => {
         ctx.beginPath();
         for (let i = 0; i <= 300; i++) {
@@ -9216,7 +9334,10 @@ function buildScaleDrawingPage(stripInSvg = false) {
   }
 
   // Y display range (add headroom above anchors)
-  const yMin   = Math.min(sokYL, sokYR, yCrvMin) - 0.3;
+  // 'catenary': nur Kettenwerk/Leiter, SOK aus der Ausdehnung ausschliessen
+  const yMin   = drawingExtent === 'catenary'
+    ? yCrvMin - 0.3
+    : Math.min(sokYL, sokYR, yCrvMin) - 0.3;
   const yMax   = Math.max(h1abs, h2abs) + 0.6;
   const yRange = yMax - yMin;
 
@@ -9401,23 +9522,91 @@ function buildScaleDrawingPage(stripInSvg = false) {
   <text x="${(sx(x0T2)+1.5).toFixed(2)}" y="${((sy(yChordT2)+sy(y0T2))/2+0.9).toFixed(2)}"
     font-size="${fs(2.2)}" fill="${t2clr}" opacity="0.85">f = ${sagVal.toFixed(3)} m</text>` : '';
 
-  // Mindestabstand-Kurven (parallel zur T2-Kurve, versetzt)
+  // Mindestabstand-Kurven (parallel zur T2-Kurve, versetzt) — mit Schraffur-Füllung
   let minClearSvg = '';
+  let minClearDefsSvg = '';
   const _minC = minClearance;
   if (_minC !== null && _minC > 0) {
-    const _mcOffsets = (sysMode === 'el') ? [+_minC, -_minC] : [+_minC];
+    const _isEl   = sysMode === 'el';
+    const _mcOffsets = _isEl ? [+_minC, -_minC] : [+_minC];
     const _mcSw   = (0.38 * symSc).toFixed(3);
     const _mcDash = `${(2.8*symSc).toFixed(2)},${(2.2*symSc).toFixed(2)}`;
+
+    // SVG-Schraffurmuster — exakte Replikation des Canvas-Musters (kein patternTransform)
+    // Canvas: moveTo(0,patSz)→lineTo(patSz,0) = Diagonale von unten-links nach oben-rechts (/)
+    // SVG: gleiche 3 Linien pro Kachel direkt ohne Rotation, damit der Winkel identisch ist
+    const _pid2  = 'mcp-t2', _pid3 = 'mcp-t3';
+    const _psz   = 3.2;        // Kachelgrösse [mm] — entspricht patSz=7px bei typischer DPI
+    const _psw   = 0.28;       // Strichstärke [mm] — entspricht lineWidth=0.7px
+    const _ph    = _psz;
+    const _hh    = _psz / 2;
+    // Die drei Linien erzeugen eine nahtlose Diagonalkachelung (wie Canvas):
+    //   Hauptlinie: (0,_psz)→(_psz,0)  +  Randergänzungen für lückenloses Kacheln
+    const _hatchLines = (clr) =>
+      `<line x1="0" y1="${_ph}" x2="${_ph}" y2="0" stroke="${clr}" stroke-width="${_psw}"/>` +
+      `<line x1="${-_hh}" y1="${_hh}" x2="${_hh}" y2="${-_hh}" stroke="${clr}" stroke-width="${_psw}"/>` +
+      `<line x1="${_hh}" y1="${_ph + _hh}" x2="${_ph + _hh}" y2="${_hh}" stroke="${clr}" stroke-width="${_psw}"/>`;
+    minClearDefsSvg = `<defs>
+      <pattern id="${_pid2}" x="0" y="0" width="${_psz}" height="${_psz}" patternUnits="userSpaceOnUse">
+        ${_hatchLines(t2clr)}
+      </pattern>
+      ${c3data ? `<pattern id="${_pid3}" x="0" y="0" width="${_psz}" height="${_psz}" patternUnits="userSpaceOnUse">
+        ${_hatchLines(t3clr)}
+      </pattern>` : ''}
+    </defs>`;
+
+    // Gefülltes Schraffur-Polygon für eine Kurve
+    const _mcFillPoly = (c, pid) => {
+      let s = '';
+      const offs = _isEl ? [+_minC, -_minC] : [+_minC];
+      offs.forEach(off => {
+        let d = '';
+        // Vorwärts entlang der Offset-Kurve
+        for (let i = 0; i <= N; i++) {
+          const x = L * i / N;
+          const y = absY(x, catY(x, c)) + off;
+          d += (i === 0 ? 'M' : 'L') + sx(x).toFixed(2) + ',' + sy(y).toFixed(2) + ' ';
+        }
+        if (!_isEl && off > 0) {
+          // NFL/RFL: Polygon bis SOK-Linie (oder Zeichnungsunterrand wenn nur Kettenwerk)
+          if (hasSok && drawingExtent !== 'catenary') {
+            // Entlang SOK von rechts nach links
+            for (let i = N; i >= 0; i--) {
+              const x = L * i / N;
+              d += `L${sx(x).toFixed(2)},${sy(sokAt(x)).toFixed(2)} `;
+            }
+          } else {
+            // Zeichnungsunterrand (flach)
+            const flatY = (sy(yMin) + 1).toFixed(2);
+            d += `L${sx(L).toFixed(2)},${flatY} L${sx(0).toFixed(2)},${flatY} `;
+          }
+        } else {
+          // Einzelleiter: Rückweg entlang der Kettenlinie
+          for (let i = N; i >= 0; i--) {
+            const x = L * i / N;
+            d += `L${sx(x).toFixed(2)},${sy(absY(x, catY(x, c))).toFixed(2)} `;
+          }
+        }
+        d += 'Z';
+        s += `<path d="${d.trim()}" fill="url(#${pid})" opacity="0.15" stroke="none"/>`;
+      });
+      return s;
+    };
+
+    // Schraffur-Füllung (vor den Randlinien, damit Linien obenauf liegen)
+    minClearSvg += _mcFillPoly(cDisp, _pid2);
+    if (c3data) minClearSvg += _mcFillPoly(c3data, _pid3);
+
+    // Gestrichelte Randlinien (wie bisher)
     _mcOffsets.forEach(off => {
-      // T2 offset curve
       minClearSvg += makePath(x => absY(x, catY(x, cDisp)) + off, _mcDash, _mcSw) +
         ` stroke="${t2clr}" opacity="0.3"/>`;
-      // T3 offset curve (wenn vorhanden)
       if (c3data) {
         minClearSvg += makePath(x => absY(x, catY(x, c3data)) + off, _mcDash, _mcSw) +
           ` stroke="${t3clr}" opacity="0.25"/>`;
       }
     });
+
     // Label am rechten Rand der oberen Kurve
     const _xLbl   = L * 0.97;
     const _yLblAbs = absY(_xLbl, catY(_xLbl, cDisp)) + _minC;
@@ -9775,6 +9964,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
     ${svgSize} viewBox="0 0 ${VW} ${VH}"
     preserveAspectRatio="xMidYMid meet"
     font-family="'Segoe UI',Arial,sans-serif">
+  ${minClearDefsSvg}
   ${titleSvg}
   ${frameSvg}
   ${gridSvg}
@@ -9803,6 +9993,16 @@ let scaleViewActive   = false;
 let _lastDrawingScale = null;
 let drawingZoom       = 1.0;
 let drawingVEx        = 1;   // Überhöhungsfaktor (1 = keine Überhöhung)
+let drawingExtent     = 'sok'; // 'sok' = bis SOK | 'catenary' = nur Kettenwerk/Leiter
+
+function setDrawingExtent(val) {
+  drawingExtent = val;
+  const bSok = document.getElementById('seg-ext-sok');
+  const bCat = document.getElementById('seg-ext-cat');
+  if (bSok) bSok.classList.toggle('active', val === 'sok');
+  if (bCat) bCat.classList.toggle('active', val === 'catenary');
+  refreshScaleViewIfActive();
+}
 let _panX             = 0;   // viewBox origin X (SVG units, 0–267)
 let _panY             = 0;   // viewBox origin Y (SVG units, 0–180)
 let _drawingContentBounds = null; // {x,y,w,h} content bounds in SVG units
@@ -10182,8 +10382,6 @@ function setCanvasView(view) {
     if (segDiag)  segDiag.classList.remove('active');
     if (segZeich) segZeich.classList.remove('active');
     if (segFoto)  segFoto.classList.add('active');
-    const vexCtrl = document.getElementById('vex-header-ctrl');
-    if (vexCtrl) vexCtrl.style.display = 'none';
     const scrollArea = document.getElementById('canvas-scroll-area');
     if (scrollArea) scrollArea.style.flex = '1';
     // Probe-Inputs auch für Foto-Höhen-Anzeige registrieren
@@ -10292,8 +10490,6 @@ function setCanvasView(view) {
   if (segDiag)  segDiag.classList.toggle('active', !isScale);
   if (segZeich) segZeich.classList.toggle('active',  isScale);
   if (segFoto)  segFoto.classList.remove('active');
-  const vexCtrl = document.getElementById('vex-header-ctrl');
-  if (vexCtrl) vexCtrl.style.display = isScale ? 'flex' : 'none';
   // In fullscreen: Zeichnung → scroll area yields all space to drawing; Diagramm → scroll area fills remainder
   const scrollArea = document.getElementById('canvas-scroll-area');
   if (scrollArea) scrollArea.style.flex = isScale ? '0 0 auto' : '1';
