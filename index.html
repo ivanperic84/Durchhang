@@ -2376,6 +2376,7 @@ button.header-manual-link:hover {
   <div class="results-card" id="result-card" style="grid-column: 2">
     <div id="error-box" class="alert alert-error hidden"></div>
     <div id="warn-box"  class="alert alert-warn  hidden"></div>
+    <div id="highlight-card"></div>
     <div id="results"></div>
   </div>
 
@@ -5407,11 +5408,11 @@ function toggleT3() {
   if (showT3) {
     const v = (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3').value));
     updateT3Float(v, false);
-    // Neu eingeblendeten Bereich in den sichtbaren Bereich scrollen
+    // Neu eingeblendeten Bereich vollständig in Sicht scrollen
     setTimeout(() => {
-      const sec = document.getElementById('t3-section');
-      if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 50);
+      const card = document.getElementById('t3-card');
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 80);
   }
   berechnen();
 }
@@ -5468,26 +5469,18 @@ function onT3Input(val) {
 function setSysMode(mode) {
   sysMode = mode;
   updateSysModeUI(mode);
+  // Foto-H-Override beim Moduswechsel immer löschen — nur „In App übernehmen" soll H setzen
+  if (_hFromFoto && typeof _updateTensionFotoState === 'function') _updateTensionFotoState(false);
   if (mode !== 'el') {
-    activePresetRef = null; // El-Tabellen-Referenz beim Moduswechsel löschen
+    activePresetRef = null;
     activePresetP   = null;
     rebuildPresetDropdown(mode);
     document.getElementById('sh').value = mode === 'rfl' ? 1.60 : 2.40;
-    // Foto-H-Status bei NFL/RFL beibehalten (kein Reglage-Vergleich mehr → Delta ausblenden)
-    if (_hFromFoto) { _updateTensionResetBtn(); _updateTensionDelta(); }
   } else {
-    // Einzelleiter: Foto-H sichern, damit elMaterialChanged() es nicht überschreibt
-    const _savedFotoH = _hFromFoto ? parseFloat(document.getElementById('tension')?.value) : null;
     elMaterialChanged();
-    // Fallback: wenn kein Reglagewert für das gewählte Material, 5000 N als Vorgabe
     const selMat = MATERIALS[document.getElementById('el-material-select').value];
     if (!selMat || selMat.H_reglage === null || selMat.H_reglage === undefined) {
       document.getElementById('tension').value = 5000;
-    }
-    // Foto-H nach Material-Setup wiederherstellen
-    if (_savedFotoH != null) {
-      document.getElementById('tension').value = _savedFotoH;
-      if (typeof _updateTensionFotoState === 'function') _updateTensionFotoState(true);
     }
   }
   berechnen();
@@ -8431,7 +8424,8 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b72
 }
 
 function updateHighlightCard() {
-  return; // Box entfernt
+  const el = document.getElementById('highlight-card');
+  if (!calcState) { if (el) el.innerHTML = ''; return; }
   const { c1, c2, h1, h2, L, sh, flCombo, c2_vem, c3: _c3state } = calcState;
   const _c3curve = (showT3 && _c3state) ? _c3state : null;
   const _t3clr   = _c3curve ? t2TempColor((v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value))) : null;
