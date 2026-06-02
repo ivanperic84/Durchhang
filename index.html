@@ -1551,10 +1551,10 @@ button.header-manual-link:hover {
         <div style="margin-top:.4rem;margin-bottom:.05rem">
           <span style="font-size:.62rem;color:var(--muted);display:block;margin-bottom:.2rem">Formel</span>
           <div class="seg-ctrl" id="lm-formula-btns" style="margin-bottom:0">
-            <button class="seg-btn active" id="seg-lm-ruling" onclick="setLmFormula('ruling')">Ausgleichend</button>
-            <button class="seg-btn"        id="seg-lm-arith"  onclick="setLmFormula('arith')">Arithmetisch</button>
+            <button class="seg-btn active" id="seg-lm-arith"  onclick="setLmFormula('arith')"  style="font-size:.68rem;white-space:nowrap">Arithmetisch</button>
+            <button class="seg-btn"        id="seg-lm-ruling" onclick="setLmFormula('ruling')" style="font-size:.68rem;white-space:nowrap">Ideelle Spannweite</button>
           </div>
-          <div id="lm-formula-hint" style="font-size:.6rem;color:var(--muted);opacity:.5;margin-top:.15rem;letter-spacing:.01em">Lm = &#x221A;(&#x03A3;L&#xB3; / &#x03A3;L)</div>
+          <div id="lm-formula-hint" style="font-size:.6rem;color:var(--muted);opacity:.5;margin-top:.15rem;letter-spacing:.01em">Lm = &#x03A3;L / n</div>
         </div>
         <!-- Lm-Feld: immer editierbar; sobald Wert getippt → Buttons ausgegraut -->
         <div style="display:flex;align-items:center;gap:.3rem;margin-top:.3rem">
@@ -5754,7 +5754,7 @@ function getSpanLengths() {
   return out;
 }
 
-let lmFormula = 'ruling'; // 'ruling' | 'arith'
+let lmFormula = 'arith'; // 'ruling' | 'arith'
 
 const _LM_HINTS = {
   ruling: 'Lm = √(ΣL³ / ΣL)',
@@ -5877,32 +5877,16 @@ function getProjectState() {
   }
   const fotoState = typeof window._fotoGetProjectState === 'function'
                     ? window._fotoGetProjectState() : null;
-  return { sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx, drawingExtent, fotoState, elBerechnungsart, lmOvr, lmFormula };
+  return { sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx, drawingExtent, fotoState, elBerechnungsart, lmOvr, lmFormula, showMinClearance: _showMinClearance };
 }
 
 // ── State wiederherstellen ──
 function setProjectState(s) {
   const flds = s.fields || {};
-  // Globals
+  // Globals (mode3pt + yCInputMode werden nach updateSysModeUI gesetzt)
   spanMode       = s.spanMode       ?? 'single';
   spanCount      = s.spanCount      ?? 3;
-  yCInputMode    = s.yCInputMode    ?? 'sag';
   elBasiskraftIdx = s.elBasiskraftIdx ?? 0;
-  mode3pt        = s.mode3pt        ?? false;
-  // 3-Punkte-Modus UI wiederherstellen
-  { const btn = document.getElementById('three-pt-btn');
-    const panel = document.getElementById('three-pt-panel');
-    const ti = document.getElementById('tension');
-    if (mode3pt) {
-      if (panel) panel.style.display = '';
-      if (btn) { btn.style.background='#e0f2fe'; btn.style.borderColor='#7dd3fc'; btn.style.color='#eb0000'; }
-      if (ti) { ti.readOnly=true; ti.style.background='var(--bg)'; ti.style.color='var(--muted)'; ti.style.cursor='default'; }
-    } else {
-      if (panel) panel.style.display = 'none';
-      if (btn) { btn.style.background='none'; btn.style.borderColor='var(--border)'; btn.style.color='var(--muted)'; }
-      if (ti) { ti.readOnly=false; ti.style.background=''; ti.style.color=''; ti.style.cursor=''; }
-    }
-  }
 
   // Span-Modus UI (ohne berechnen)
   document.getElementById('seg-single').classList.toggle('active', spanMode === 'single');
@@ -5919,7 +5903,7 @@ function setProjectState(s) {
     updateLm();
   }
 
-  // System-Modus
+  // System-Modus VOR mode3pt setzen (updateSysModeUI wuerde mode3pt=true zuruecksetzen)
   sysMode = s.sysMode ?? 'nfl';
   // Berechnungsart vor updateSysModeUI setzen (damit Ruling-Span-Visibility korrekt)
   elBerechnungsart = s.elBerechnungsart ?? 'ausgleichend';
@@ -5927,7 +5911,27 @@ function setProjectState(s) {
     const bs = document.getElementById('seg-ba-starr');
     if (ba) ba.classList.toggle('active', elBerechnungsart === 'ausgleichend');
     if (bs) bs.classList.toggle('active', elBerechnungsart === 'starr'); }
+  mode3pt = false;  // kurz false, damit updateSysModeUI nichts zuruecksetzt
   updateSysModeUI(sysMode);
+
+  // 3-Punkte-Modus NACH updateSysModeUI wiederherstellen
+  mode3pt = s.mode3pt ?? false;
+  { const btn = document.getElementById('three-pt-btn');
+    const panel = document.getElementById('three-pt-panel');
+    const ti = document.getElementById('tension');
+    if (mode3pt) {
+      if (panel) panel.style.display = '';
+      if (btn) { btn.style.background='#ebebeb'; btn.style.borderColor='var(--border)'; btn.style.color='var(--text)'; }
+      if (ti) { ti.readOnly=true; ti.style.background='var(--bg)'; ti.style.color='var(--muted)'; ti.style.cursor='default'; }
+    } else {
+      if (panel) panel.style.display = 'none';
+      if (btn) { btn.style.background='none'; btn.style.borderColor='var(--border)'; btn.style.color='var(--muted)'; }
+      if (ti) { ti.readOnly=false; ti.style.background=''; ti.style.color=''; ti.style.cursor=''; }
+    }
+  }
+  // yCInputMode NACH 3pt wiederherstellen + Button-UI aktualisieren
+  yCInputMode = s.yCInputMode ?? 'sag';
+  setYCMode(yCInputMode);
 
   // Einfache Felder setzen
   const FIELDS = ['span','h1','h2','temp1','temp2','tension','tension-fd','sh',
@@ -5966,6 +5970,14 @@ function setProjectState(s) {
   minClearance = _pf(flds['min-clearance-input']);
   { const mcInp = document.getElementById('min-clearance-input');
     if (mcInp) mcInp.value = minClearance !== null ? minClearance : ''; }
+  // Mindestabstand-Toggle wiederherstellen
+  _showMinClearance = s.showMinClearance ?? true;
+  { const mcChk  = document.getElementById('min-clearance-show');
+    const mcKnob = document.getElementById('mc-tog-knob');
+    const mcBg   = document.getElementById('mc-tog-bg');
+    if (mcChk)  mcChk.checked            = _showMinClearance;
+    if (mcKnob) mcKnob.style.left        = _showMinClearance ? '13px' : '2px';
+    if (mcBg)   mcBg.style.background    = _showMinClearance ? 'var(--primary)' : '#d1d5db'; }
   // Mastnamen-Brücke synchronisieren (foto-name-L/R hidden inputs)
   if (typeof _syncMastNames === 'function') _syncMastNames();
 
@@ -5988,46 +6000,34 @@ function setProjectState(s) {
 
   // Lm-Formel + Override wiederherstellen — via setLmFormula für korrekte UI-Sync
   lmOvr = s.lmOvr ?? null;
-  setLmFormula(s.lmFormula ?? 'ruling');
+  setLmFormula(s.lmFormula ?? 'arith');
 
   // Preset / Material
   if (sysMode !== 'el') {
-    rebuildPresetDropdown(sysMode);
+    rebuildPresetDropdown(sysMode);  // befuellt Dropdown + wendet erstes Preset an
     const presetKey = flds['preset-select'] ?? '';
     document.getElementById('preset-select').value = presetKey;
-    const p = KETTENWERK_PRESETS[presetKey];
-    const infoEl = document.getElementById('combo-info');
-    if (p) {
-      activePresetRef = p.H_Ts_ub_table ? { H_Ts_ub_table: p.H_Ts_ub_table } : null;
-      activePresetP   = p;
-      currentWearMax  = p.wear_max || 30;
-      const wearLbl = document.getElementById('wear-max-label');
-      if (wearLbl) wearLbl.textContent = currentWearMax;
-      document.getElementById('wear-row').style.display = '';
-      if (infoEl) {
-        infoEl.style.background = ''; infoEl.style.borderColor = '';
-        document.getElementById('combo-title').style.color = '';
-        document.getElementById('combo-title').textContent = buildPresetTitle(p);
-        const T1c = flds['temp1'] != null ? parseFloat(flds['temp1']) : null;
-        const Hub = flds['tension'] != null ? parseInt(flds['tension']) : null;
-        document.getElementById('combo-note').textContent = buildPresetNote(p, Hub, T1c);
-        infoEl.style.display = '';
-      }
+    // Korrektes gespeichertes Preset anwenden
+    // (rebuildPresetDropdown hatte erstes Preset angewendet -> material-ts/fd, tension-fd, sh, tension falsch)
+    if (presetKey) {
+      applyPreset();  // setzt material-ts/fd, weight-ts/fd, alpha-ts, tension-fd, sh, tension, temp1
     } else {
-      activePresetRef = null; activePresetP = null;
+      const infoEl = document.getElementById('combo-info');
       if (infoEl) infoEl.style.display = 'none';
     }
+    // Abnutzung NACH applyPreset() setzen (applyPreset setzt wearPct=0)
     wearPct = s.wearPct ?? 0;
     document.getElementById('wear-btn-0')?.classList.toggle('active', wearPct === 0);
     document.getElementById('wear-btn-max')?.classList.toggle('active', wearPct !== 0);
     // Benutzerwerte nach applyPreset() wiederherstellen
-    // (applyPreset überschreibt temp1, sh, tension mit Preset-Defaults)
-    if (flds['tension'] != null) document.getElementById('tension').value = flds['tension'];
-    if (flds['temp1']   != null) document.getElementById('temp1').value   = flds['temp1'];
-    if (flds['sh']      != null) document.getElementById('sh').value      = flds['sh'];
-    if (flds['h1']      != null) document.getElementById('h1').value      = parseFloat(flds['h1']).toFixed(2);
-    if (flds['h2']      != null) document.getElementById('h2').value      = parseFloat(flds['h2']).toFixed(2);
-    if (flds['span']    != null) document.getElementById('span').value    = flds['span'];
+    // (applyPreset setzt Preset-Defaults; gespeicherte Nutzerwerte haben Vorrang)
+    if (flds['tension']    != null) document.getElementById('tension').value    = flds['tension'];
+    if (flds['tension-fd'] != null) document.getElementById('tension-fd').value = flds['tension-fd'];
+    if (flds['temp1']      != null) document.getElementById('temp1').value      = flds['temp1'];
+    if (flds['sh']         != null) document.getElementById('sh').value         = flds['sh'];
+    if (flds['h1']         != null) document.getElementById('h1').value         = parseFloat(flds['h1']).toFixed(2);
+    if (flds['h2']         != null) document.getElementById('h2').value         = parseFloat(flds['h2']).toFixed(2);
+    if (flds['span']       != null) document.getElementById('span').value       = flds['span'];
   } else {
     activePresetRef = null; activePresetP = null;
     const matKey = flds['el-material-select'] ?? 'cu95';
