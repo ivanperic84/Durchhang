@@ -1602,7 +1602,7 @@ button.header-manual-link:hover {
       <!-- Mastlänge (für Foto-Kalibrierung) — nur im Foto-Tab sichtbar -->
       <div id="mastlaenge-row" class="field-row" style="display:none;margin-top:.5rem">
         <div class="field">
-          <label>Mastlänge links</label>
+          <label id="foto-mastlaenge-li-lbl">Mastlänge links</label>
           <div class="input-wrap">
             <input type="text" inputmode="decimal" id="foto-hmast-L" placeholder="m"
               onblur="const v=parseFloat(this.value);if(!isNaN(v)&&v>0)this.value=v;const r=document.getElementById('foto-hmast-R');if(r&&!r.value)r.value=this.value;fotoRecalcIfReady();"
@@ -1611,9 +1611,9 @@ button.header-manual-link:hover {
           </div>
         </div>
         <div class="field">
-          <label>Mastlänge rechts <span style="font-weight:400;color:var(--tertiary);font-size:.8em">leer = links</span></label>
+          <label id="foto-mastlaenge-re-lbl">Mastlänge rechts <span id="foto-mastlaenge-re-sub" style="font-weight:400;color:var(--tertiary);font-size:.8em">leer = links</span></label>
           <div class="input-wrap">
-            <input type="text" inputmode="decimal" id="foto-hmast-R" placeholder="= links"
+            <input type="text" inputmode="decimal" id="foto-hmast-R" placeholder="= links" data-placeholder-key="foto.mast.re.placeholder"
               onblur="const v=parseFloat(this.value);if(!isNaN(v)&&v>0)this.value=v;fotoRecalcIfReady();"
               onchange="fotoRecalcIfReady()">
             <span class="input-unit">m</span>
@@ -1624,7 +1624,7 @@ button.header-manual-link:hover {
       <!-- Δ Mastfuss-SOK -->
       <div class="field-row" style="margin-top:.5rem">
         <div class="field">
-          <label style="white-space:nowrap">&#x394; Mastfuss-SOK li</label>
+          <label id="bp-delta-sok-li-lbl" style="white-space:nowrap">&#x394; Mastfuss-SOK li</label>
           <div class="input-wrap">
             <input type="number" id="mast-delta-sok-left" step="0.01" placeholder="0.00"
               oninput="berechnen()" onchange="berechnen()"
@@ -1633,7 +1633,7 @@ button.header-manual-link:hover {
           </div>
         </div>
         <div class="field">
-          <label style="white-space:nowrap">&#x394; Mastfuss-SOK re</label>
+          <label id="bp-delta-sok-re-lbl" style="white-space:nowrap">&#x394; Mastfuss-SOK re</label>
           <div class="input-wrap">
             <input type="number" id="mast-delta-sok-right" step="0.01" placeholder="0.00"
               oninput="berechnen()" onchange="berechnen()"
@@ -1669,18 +1669,18 @@ button.header-manual-link:hover {
 
       <!-- Mastbezeichnung: Name/Nr. + KM -->
       <div style="margin-top:.6rem">
-        <label style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.28rem">Bezeichnung <span style="font-weight:400;color:var(--tertiary)">(optional)</span></label>
+        <label id="bp-bez-label" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.28rem">Bezeichnung <span id="bp-bez-optional" style="font-weight:400;color:var(--tertiary)">(optional)</span></label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.25rem .4rem">
-          <span style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem">Name / Nr. links</span>
-          <span style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem">Name / Nr. rechts</span>
+          <span id="bp-name-li-lbl" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem">Name / Nr. links</span>
+          <span id="bp-name-re-lbl" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem">Name / Nr. rechts</span>
           <input type="text" id="mast-num-left" placeholder="Nr."
             oninput="_syncMastNames();berechnen()"
             style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%">
           <input type="text" id="mast-num-right" placeholder="Nr."
             oninput="_syncMastNames();berechnen()"
             style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%">
-          <span style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM links</span>
-          <span style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM rechts</span>
+          <span id="bp-km-li-lbl" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM links</span>
+          <span id="bp-km-re-lbl" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM rechts</span>
           <input type="text" id="mast-km-left" placeholder="000.000"
             oninput="_triggerDrawingRebuild()" onchange="_triggerDrawingRebuild()"
             style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%;letter-spacing:.03em">
@@ -1989,10 +1989,10 @@ button.header-manual-link:hover {
               <path d="M3 12h10M8 3v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
               <path d="M5 6l3-3 3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            Teilen
+            <span id="share-btn-txt">Teilen</span>
           </button>
           <div id="share-menu" style="display:none;position:absolute;right:0;top:calc(100% + 5px);background:var(--bg);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:215px;z-index:200;overflow:hidden">
-            <button class="share-item" onclick="pdfExport();closeShareMenu()">
+            <button class="share-item" id="share-item-calc-pdf" onclick="pdfExport();closeShareMenu()">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
               Berechnung PDF
             </button>
@@ -2001,7 +2001,7 @@ button.header-manual-link:hover {
               3D DXF (1:100)
             </button>
             <div style="height:1px;background:var(--border);margin:.1rem 0"></div>
-            <button class="share-item" onclick="pdfExportDrawing();closeShareMenu()">
+            <button class="share-item" id="share-item-draw-pdf" onclick="pdfExportDrawing();closeShareMenu()">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
               Zeichnung PDF
             </button>
@@ -2037,7 +2037,7 @@ button.header-manual-link:hover {
         <div style="display:flex;align-items:center;gap:.6rem">
           <!-- Überhöhung -->
           <div style="display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--muted)">
-            <span style="white-space:nowrap">Überhöhung</span>
+            <span id="drawing-ueberhoeung-lbl" style="white-space:nowrap">Überhöhung</span>
             <select id="vex-select" onchange="setDrawingVEx(this.value)"
               style="font-size:.72rem;padding:.15rem .3rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer">
               <option value="1">1:1</option>
@@ -2050,7 +2050,7 @@ button.header-manual-link:hover {
           <span style="width:1px;height:14px;background:var(--border);flex-shrink:0"></span>
           <!-- Darstellung (vertikaler Ausschnitt) -->
           <div style="display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--muted)">
-            <span style="white-space:nowrap">Darstellung</span>
+            <span id="drawing-darstellung-lbl" style="white-space:nowrap">Darstellung</span>
             <div style="display:flex;gap:.2rem">
               <button id="seg-ext-sok" onclick="setDrawingExtent('sok')"
                 class="zoom-btn active" style="width:auto;padding:0 .45rem;font-size:.65rem"
@@ -2081,7 +2081,7 @@ button.header-manual-link:hover {
       <!-- Toolbar -->
       <div style="display:flex;gap:.32rem;align-items:center;padding:.38rem .6rem;border-bottom:1px solid var(--border);background:#fafafa;flex-wrap:wrap">
         <label style="cursor:pointer;background:#1e293b;border:1px solid #1e293b;border-radius:6px;padding:.28rem .8rem;font-size:.72rem;font-weight:600;color:#fff;white-space:nowrap;letter-spacing:.02em;box-shadow:0 1px 3px rgba(0,0,0,.18)">
-          Foto laden
+          <span id="foto-load-label-txt">Foto laden</span>
           <input type="file" accept="image/*" capture="environment" onchange="fotoLoadImage(event)" style="display:none">
         </label>
         <select id="foto-mode" onchange="fotoModeChanged()"
@@ -2105,7 +2105,7 @@ button.header-manual-link:hover {
 
       <!-- Klick-Ziel Buttons -->
       <div id="foto-role-btns" style="display:flex;flex-wrap:wrap;gap:.28rem;padding:.32rem .6rem;border-bottom:1px solid var(--border);background:#fafafa;align-items:center">
-        <span style="font-size:.66rem;color:var(--muted);white-space:nowrap">Klick-Ziel:</span>
+        <span id="foto-klickziel-lbl" style="font-size:.66rem;color:var(--muted);white-space:nowrap">Klick-Ziel:</span>
         <button id="foto-btn-top_L"  onclick="fotoSetRole('top_L')"  class="foto-role-btn">&#9650; L</button>
         <button id="foto-btn-base_L" onclick="fotoSetRole('base_L')" class="foto-role-btn">&#9660; L</button>
         <span style="color:var(--border);font-size:.65rem">|</span>
@@ -2119,9 +2119,9 @@ button.header-manual-link:hover {
         <button id="foto-btn-curve"  onclick="fotoSetRole('curve')"  class="foto-role-btn" style="display:none">+ Kurve</button>
         <span id="foto-status-fs" style="font-size:.7rem;color:var(--muted);display:none;margin-left:.3rem"></span>
         <span style="color:#d1d5db;font-size:.65rem;margin-left:.15rem">|</span>
-        <button onclick="fotoReset()" title="Alle Klick-Eingaben zurücksetzen"
+        <button id="foto-reset-btn" onclick="fotoReset()" title="Alle Klick-Eingaben zurücksetzen"
           style="background:none;border:1px solid var(--border);border-radius:6px;padding:.18rem .45rem;font-size:.69rem;color:var(--muted);cursor:pointer;font-family:inherit;white-space:nowrap">Reset</button>
-        <button onclick="fotoRefresh()" title="Darstellung aktualisieren"
+        <button id="foto-refresh-btn" onclick="fotoRefresh()" title="Darstellung aktualisieren"
           style="background:none;border:1px solid var(--border);border-radius:6px;padding:.18rem .45rem;font-size:.69rem;color:var(--muted);cursor:pointer;font-family:inherit;white-space:nowrap">Refresh</button>
       </div>
 
@@ -2154,7 +2154,7 @@ button.header-manual-link:hover {
       <!-- Canvas + GPS + Multi-berechnen -->
       <div id="foto-canvas-area">
         <div id="foto-multi-btns" style="display:none;padding:.3rem .6rem;border-bottom:1px solid var(--border)">
-          <button onclick="fotoCalculate()" style="background:#1e293b;color:#fff;border:none;border-radius:6px;padding:.22rem .7rem;font-size:.73rem;cursor:pointer;font-family:inherit">
+          <button id="foto-calculate-btn" onclick="fotoCalculate()" style="background:#1e293b;color:#fff;border:none;border-radius:6px;padding:.22rem .7rem;font-size:.73rem;cursor:pointer;font-family:inherit">
             Berechnen (ab 3 Kurvenpunkten)
           </button>
           <span id="foto-curve-count" style="font-size:.72rem;color:var(--muted);margin-left:.5rem"></span>
@@ -2178,7 +2178,7 @@ button.header-manual-link:hover {
           <div id="foto-mast-prompt"
             style="display:none;position:absolute;z-index:20;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:.45rem .6rem;min-width:168px">
             <div style="font-size:.67rem;color:var(--muted);font-weight:600;letter-spacing:.03em;text-transform:uppercase;margin-bottom:.3rem;white-space:nowrap">
-              Mastlänge <span id="foto-mast-prompt-side">links</span>
+              <span id="foto-mast-prompt-lbl">Mastlänge</span> <span id="foto-mast-prompt-side">links</span>
             </div>
             <div style="display:flex;align-items:center;gap:.3rem">
               <input type="number" id="foto-mast-prompt-val" min="0.5" step="0.1" placeholder="—"
@@ -2204,47 +2204,47 @@ button.header-manual-link:hover {
             <!-- Linke Spalte: Messwerte -->
             <div>
               <div class="results-col-title" style="display:flex;justify-content:space-between;align-items:center">
-                <span>Messung</span>
+                <span id="foto-col-messung">Messung</span>
                 <span id="foto-result-temp" style="font-style:italic;font-weight:400;text-transform:none;letter-spacing:0;font-size:.69rem;color:var(--muted)">—</span>
               </div>
               <div class="metric-list">
                 <div id="foto-mast-names-row" class="metric-row" style="display:none">
-                  <span class="metric-label">Masten</span>
+                  <span class="metric-label" id="foto-label-masten">Masten</span>
                   <span id="foto-mast-names" class="metric-value" style="font-size:.78rem;color:#2563eb">—</span>
                 </div>
                 <div class="metric-row">
-                  <span class="metric-label">Durchhang f</span>
+                  <span class="metric-label" id="foto-label-f">Durchhang f</span>
                   <span id="foto-f" class="metric-value">—</span>
                 </div>
                 <div class="metric-row">
-                  <span class="metric-label">Zugkraft H</span>
+                  <span class="metric-label" id="foto-label-H">Zugkraft H</span>
                   <span id="foto-H" class="metric-value warm">—</span>
                 </div>
                 <div class="metric-row">
-                  <span class="metric-label" style="font-size:.72rem;color:var(--tertiary)">Position x&#x1D436;</span>
+                  <span class="metric-label" id="foto-label-xC" style="font-size:.72rem;color:var(--tertiary)">Position x&#x1D436;</span>
                   <span id="foto-xC" class="metric-value ref">—</span>
                 </div>
                 <div class="metric-row">
-                  <span class="metric-label" style="font-size:.72rem;color:var(--tertiary)">Höhendiff. dh</span>
+                  <span class="metric-label" id="foto-label-dh" style="font-size:.72rem;color:var(--tertiary)">Höhendiff. dh</span>
                   <span id="foto-dh" class="metric-value ref">—</span>
                 </div>
                 <div class="metric-row" style="display:none" id="foto-k-row">
-                  <span class="metric-label" style="font-size:.65rem;color:var(--tertiary)">Skala k</span>
+                  <span class="metric-label" id="foto-label-k" style="font-size:.65rem;color:var(--tertiary)">Skala k</span>
                   <span id="foto-k" class="metric-value ref" style="font-size:.72rem">—</span>
                 </div>
               </div>
               <p id="foto-xc-hint" style="margin:.3rem .3rem 0;font-size:.65rem;color:var(--tertiary);line-height:1.3"></p>
               <p style="margin:.4rem .3rem 0;font-size:.63rem;color:var(--tertiary);line-height:1.4;font-style:italic">
-                T₂-Regler in der Sidebar anpassen um andere Temperaturen zu berechnen.
+                <span id="foto-t2-hint">T₂-Regler in der Sidebar anpassen um andere Temperaturen zu berechnen.</span>
               </p>
             </div>
 
             <!-- Rechte Spalte: Montage + Soll/Ist -->
             <div>
-              <div class="results-col-title">Referenz</div>
+              <div class="results-col-title" id="foto-col-referenz">Referenz</div>
               <div class="metric-list">
                 <div id="foto-montage-ref" class="metric-row">
-                  <span class="metric-label">Montage (10 °C)</span>
+                  <span class="metric-label" id="foto-label-montage">Montage (10 °C)</span>
                   <strong id="foto-H-mont" class="metric-value">—</strong>
                 </div>
               </div>
@@ -2252,7 +2252,7 @@ button.header-manual-link:hover {
               <!-- Soll / Ist (nur wenn Reglagetabelle vorhanden) -->
               <div id="foto-soll-ist-wrap" style="display:none;margin-top:.6rem">
                 <div class="results-col-title" style="display:flex;justify-content:space-between;align-items:center">
-                  <span>Soll / Ist</span>
+                  <span id="foto-col-soll-ist">Soll / Ist</span>
                   <span id="foto-lref-note" style="font-style:italic;font-weight:400;text-transform:none;letter-spacing:0;font-size:.69rem">—</span>
                 </div>
                 <div class="metric-list">
@@ -2265,7 +2265,7 @@ button.header-manual-link:hover {
                     </span>
                   </div>
                   <div class="metric-row">
-                    <span class="metric-label">f bei L/2</span>
+                    <span class="metric-label" id="foto-label-f-half">f bei L/2</span>
                     <span style="display:flex;gap:.5rem;align-items:baseline">
                       <span id="foto-f-ist"     class="metric-value" style="font-size:.83rem">—</span>
                       <span id="foto-f-reglage" class="metric-value ref">—</span>
@@ -2281,7 +2281,7 @@ button.header-manual-link:hover {
 
           <!-- Aktion -->
           <div style="margin-top:.85rem;border-top:1px solid var(--border);padding-top:.75rem">
-            <button onclick="fotoApplyToCalc()"
+            <button id="foto-apply-btn" onclick="fotoApplyToCalc()"
               style="background:none;color:var(--text);border:1px solid var(--border);border-radius:6px;padding:.3rem .9rem;font-size:.76rem;cursor:pointer;font-family:inherit;font-weight:500;transition:background .15s"
               onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='none'">
               In App übernehmen
@@ -2362,7 +2362,7 @@ button.header-manual-link:hover {
       <!-- H-Eingaben (nur wenn SOK aktiv) -->
       <div id="probe-h-section" style="display:none;margin-top:.45rem">
         <div style="font-size:.6rem;font-weight:600;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;margin-bottom:.3rem;padding-top:.35rem;border-top:1px solid rgba(0,0,0,.07)">
-          H-Punkt: z.B. Unterkante Brücke / Bauwerk
+          <span id="probe-h-hdr-txt">H-Punkt: z.B. Unterkante Brücke / Bauwerk</span>
         </div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem">
           <div class="probe-m-group">
@@ -2397,7 +2397,7 @@ button.header-manual-link:hover {
       </div>
       <div id="probe-h-footnote" style="display:none;margin-top:.45rem">
         <div style="font-size:.6rem;font-weight:600;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;margin-bottom:.3rem;padding-top:.35rem;border-top:1px solid rgba(0,0,0,.07)">
-          Mindestabstand
+          <span id="min-clear-hdr-txt">Mindestabstand</span>
         </div>
         <div style="display:flex;align-items:center;gap:.5rem">
           <div class="probe-m-group">
@@ -4606,7 +4606,7 @@ function _extractExifGps(buf) {
   function _updateCatenaryBtn() {
     const btn = document.getElementById('foto-catenary-toggle');
     if (!btn) return;
-    btn.textContent = _showCatenary ? 'Seillinie ausblenden' : 'Seillinie einblenden';
+    btn.textContent = _showCatenary ? t('foto.catenary.off') : t('foto.catenary.on');
     btn.style.background    = 'none';
     btn.style.color         = _showCatenary ? 'var(--text)' : 'var(--muted)';
     btn.style.borderColor   = _showCatenary ? 'var(--text)' : 'var(--border)';
@@ -4625,7 +4625,7 @@ function _extractExifGps(buf) {
     _showGrid = !_showGrid;
     const btn = document.getElementById('foto-grid-toggle');
     if (btn) {
-      btn.textContent  = _showGrid ? 'Raster aus' : 'Raster';
+      btn.textContent  = _showGrid ? t('foto.grid.on') : t('foto.grid.off');
       btn.style.background  = 'none';
       btn.style.color       = _showGrid ? 'var(--text)' : 'var(--muted)';
       btn.style.borderColor = _showGrid ? 'var(--text)' : 'var(--border)';
@@ -4656,7 +4656,7 @@ function _extractExifGps(buf) {
     const popup = document.getElementById('foto-mast-prompt');
     if (!popup) return;
     const sideEl = document.getElementById('foto-mast-prompt-side');
-    if (sideEl) sideEl.textContent = side === 'L' ? 'links' : 'rechts';
+    if (sideEl) sideEl.textContent = side === 'L' ? t('foto.side.li') : t('foto.side.re');
     popup._mastSide = side;
 
     // Position: Canvas-Koordinaten des Mastfuss-Punktes → CSS-Pixel im canvas-wrap
@@ -10938,7 +10938,20 @@ const LANG = {
     'bp.sok.label':         'SOK m ü. M. (optional)',
     'bp.sok.clear':         '✕ löschen',
     'bp.drag.hint':         'Ankerpunkte im Diagramm verschiebbar',
-    'bp.befestigung.li':    'Befestigung li',
+    // Δ Mastfuss-SOK / Bezeichnung / KM
+    'bp.delta.sok.li':     'Δ Mastfuss-SOK li',
+    'bp.delta.sok.re':     'Δ Mastfuss-SOK re',
+    'bp.bez.label':        'Bezeichnung',
+    'bp.bez.optional':     '(optional)',
+    'bp.name.li':          'Name / Nr. links',
+    'bp.name.re':          'Name / Nr. rechts',
+    'bp.km.li':            'KM links',
+    'bp.km.re':            'KM rechts',
+    // H-Punkt / Mindestabstand
+    'probe.h.hdr':         'H-Punkt: z.B. Unterkante Brücke / Bauwerk',
+    'probe.h.placeholder': 'Höhe',
+    'probe.mindest.hdr':   'Mindestabstand',
+    'bp.befestigung.li':   'Befestigung li',
     'bp.befestigung.re':    'Befestigung re',
     'bp.mum.abbrev':        'm ü.M.',
     // Spannweite
@@ -11186,6 +11199,66 @@ const LANG = {
     'lm.formel':            'Formel',
     'lm.arith':             'Arithmetisch',
     'lm.ruling':            'Ideelle Spannweite',
+    // Zeichnung-Toolbar
+    'draw.ueberhoeung':  'Überhöhung',
+    'draw.darstellung':  'Darstellung',
+    'draw.bis.sok':      'bis SOK',
+    'draw.kettenwerk':   'Kettenwerk',
+    // Share/Export
+    'share.btn':         'Exportieren',
+    'share.calc.pdf':    'Berechnung PDF',
+    'share.draw.pdf':    'Zeichnung PDF',
+    'share.foto.png':    'Fotoaufnahme PNG',
+    // Sidebar Mastlänge
+    'foto.mast.li':      'Mastlänge links',
+    'foto.mast.re':      'Mastlänge rechts',
+    'foto.mast.re.sub':  'leer = links',
+    'foto.mast.re.placeholder': '= links',
+    // Foto-Toolbar
+    'foto.load.btn':     'Foto laden',
+    'foto.mode.7click':  '7-Klick Modus',
+    'foto.mode.multi':   'Kurven-Fit (6+)',
+    'foto.klickziel':    'Klick-Ziel:',
+    'foto.catenary.on':  'Seillinie einblenden',
+    'foto.catenary.off': 'Seillinie ausblenden',
+    'foto.grid.off':     'Raster',
+    'foto.grid.on':      'Raster aus',
+    'foto.reset.btn':    'Reset',
+    'foto.refresh.btn':  'Aktualisieren',
+    // Foto-Canvas
+    'foto.no.image':     'Kein Foto geladen',
+    'foto.mast.popup':   'Mastlänge',
+    'foto.side.li':      'links',
+    'foto.side.re':      'rechts',
+    'foto.calc.btn':     'Berechnen (ab 3 Kurvenpunkten)',
+    // Foto-Ergebnis
+    'foto.col.messung':  'Messung',
+    'foto.label.masten': 'Masten',
+    'foto.label.f':      'Durchhang f',
+    'foto.label.H':      'Zugkraft H',
+    'foto.label.xC':     'Position x\u1D436',
+    'foto.label.dh':     'Höhendiff. dh',
+    'foto.label.k':      'Skala k',
+    'foto.t2.hint':      'T₂-Regler in der Sidebar anpassen um andere Temperaturen zu berechnen.',
+    'foto.col.referenz': 'Referenz',
+    'foto.label.montage':'Montage (10 °C)',
+    'foto.col.soll.ist': 'Soll / Ist',
+    'foto.label.H.t2':   'H bei T\u2082',
+    'foto.label.f.half': 'f bei L/2',
+    'foto.apply.btn':    'In App übernehmen',
+    // Reglage-Modal
+    'reglage.modal.title': 'Reglagewerte — Übersicht',
+    // Datei/Projekte-Modal
+    'proj.modal.title':  'Datei',
+    'proj.warning.title':'Lokale Speicherung:',
+    'proj.warning.body': 'Projektdaten werden im Browser-Cache gespeichert und gehen beim Löschen der Browserdaten verloren. Für eine sichere Aufbewahrung Projekte als JSON-Datei exportieren.',
+    'proj.save.title':   'Neue Berechnung speichern',
+    'proj.speicherort':  'Speicherort',
+    'proj.projektname':  'Projektname',
+    'proj.bez.label':    'Bezeichnung',
+    'proj.save.btn':     'Speichern',
+    'proj.import.btn':   'JSON importieren',
+    'proj.local.note':   'Daten werden nur lokal im Browser gespeichert',
   },
   fr: {
     'app.subtitle':         'Caténaire — courbe du câble avec influence de la température',
@@ -11207,7 +11280,20 @@ const LANG = {
     'bp.sok.label':         'DRS m s.n.m. (optionnel)',
     'bp.sok.clear':         '✕ effacer',
     'bp.drag.hint':         'Points d\'ancrage déplaçables dans le diagramme',
-    'bp.befestigung.li':    'Fixation gauche',
+    // Δ Pied de poteau / Désignation / KM
+    'bp.delta.sok.li':     'Δ Pied poteau-DRS gauche',
+    'bp.delta.sok.re':     'Δ Pied poteau-DRS droit',
+    'bp.bez.label':        'Désignation',
+    'bp.bez.optional':     '(optionnel)',
+    'bp.name.li':          'Nom / No. gauche',
+    'bp.name.re':          'Nom / No. droit',
+    'bp.km.li':            'KM gauche',
+    'bp.km.re':            'KM droit',
+    // Point H / Distance minimale
+    'probe.h.hdr':         'Point H: p.ex. sous-face pont / ouvrage',
+    'probe.h.placeholder': 'Hauteur',
+    'probe.mindest.hdr':   'Distance minimale',
+    'bp.befestigung.li':   'Fixation gauche',
     'bp.befestigung.re':    'Fixation droite',
     'bp.mum.abbrev':        'm s.n.m.',
     // Spannweite
@@ -11455,6 +11541,66 @@ const LANG = {
     'lm.formel':            'Formule',
     'lm.arith':             'Arithmétique',
     'lm.ruling':            'Portée idéale',
+    // Zeichnung-Toolbar
+    'draw.ueberhoeung':  'Surélévation',
+    'draw.darstellung':  'Représentation',
+    'draw.bis.sok':      "jusqu'à DRS",
+    'draw.kettenwerk':   'Caténaire',
+    // Share/Export
+    'share.btn':         'Exporter',
+    'share.calc.pdf':    'Calcul PDF',
+    'share.draw.pdf':    'Dessin PDF',
+    'share.foto.png':    'Photo PNG',
+    // Sidebar Mastlänge
+    'foto.mast.li':      'Hauteur poteau gauche',
+    'foto.mast.re':      'Hauteur poteau droit',
+    'foto.mast.re.sub':  'vide = gauche',
+    'foto.mast.re.placeholder': '= gauche',
+    // Foto-Toolbar
+    'foto.load.btn':     'Charger photo',
+    'foto.mode.7click':  'Mode 7 clics',
+    'foto.mode.multi':   'Ajust. courbe (6+)',
+    'foto.klickziel':    'Cible de clic:',
+    'foto.catenary.on':  'Afficher courbe',
+    'foto.catenary.off': 'Masquer courbe',
+    'foto.grid.off':     'Grille',
+    'foto.grid.on':      'Grille off',
+    'foto.reset.btn':    'Réinitialiser',
+    'foto.refresh.btn':  'Actualiser',
+    // Foto-Canvas
+    'foto.no.image':     'Aucune photo chargée',
+    'foto.mast.popup':   'Hauteur poteau',
+    'foto.side.li':      'gauche',
+    'foto.side.re':      'droit',
+    'foto.calc.btn':     'Calculer (dès 3 pts courbe)',
+    // Foto-Ergebnis
+    'foto.col.messung':  'Mesure',
+    'foto.label.masten': 'Poteaux',
+    'foto.label.f':      'Flèche f',
+    'foto.label.H':      'Force traction H',
+    'foto.label.xC':     'Position x\u1D436',
+    'foto.label.dh':     'Diff. hauteur dh',
+    'foto.label.k':      'Échelle k',
+    'foto.t2.hint':      "Ajuster le curseur T₂ dans la barre latérale pour calculer d'autres températures.",
+    'foto.col.referenz': 'Référence',
+    'foto.label.montage':'Pose (10 °C)',
+    'foto.col.soll.ist': 'Nominal / Réel',
+    'foto.label.H.t2':   'H à T\u2082',
+    'foto.label.f.half': 'f à L/2',
+    'foto.apply.btn':    "Appliquer dans l'app",
+    // Reglage-Modal
+    'reglage.modal.title': 'Valeurs de réglage — Aperçu',
+    // Datei/Projekte-Modal
+    'proj.modal.title':  'Fichier',
+    'proj.warning.title':'Stockage local:',
+    'proj.warning.body': 'Les données du projet sont enregistrées dans le cache du navigateur et seront perdues lors de la suppression des données du navigateur. Pour une conservation sécurisée, exporter les projets en fichier JSON.',
+    'proj.save.title':   'Enregistrer nouveau calcul',
+    'proj.speicherort':  'Emplacement',
+    'proj.projektname':  'Nom du projet',
+    'proj.bez.label':    'Désignation',
+    'proj.save.btn':     'Enregistrer',
+    'proj.import.btn':   'Importer JSON',
+    'proj.local.note':   'Données enregistrées uniquement en local',
   },
   it: {
     'app.subtitle':         'Catenaria — curva del cavo con influenza della temperatura',
@@ -11476,7 +11622,20 @@ const LANG = {
     'bp.sok.label':         'PRF m s.l.m. (opzionale)',
     'bp.sok.clear':         '✕ cancella',
     'bp.drag.hint':         'Punti di ancoraggio spostabili nel diagramma',
-    'bp.befestigung.li':    'Fissaggio sinistro',
+    // Δ Piede palo / Denominazione / KM
+    'bp.delta.sok.li':     'Δ Piede palo-PRF sinistro',
+    'bp.delta.sok.re':     'Δ Piede palo-PRF destro',
+    'bp.bez.label':        'Denominazione',
+    'bp.bez.optional':     '(opzionale)',
+    'bp.name.li':          'Nome / Nr. sinistro',
+    'bp.name.re':          'Nome / Nr. destro',
+    'bp.km.li':            'KM sinistro',
+    'bp.km.re':            'KM destro',
+    // Punto H / Distanza minima
+    'probe.h.hdr':         'Punto H: p.es. intradosso ponte / opera',
+    'probe.h.placeholder': 'Altezza',
+    'probe.mindest.hdr':   'Distanza minima',
+    'bp.befestigung.li':   'Fissaggio sinistro',
     'bp.befestigung.re':    'Fissaggio destro',
     'bp.mum.abbrev':        'm s.l.m.',
     // Spannweite
@@ -11724,6 +11883,66 @@ const LANG = {
     'lm.formel':            'Formula',
     'lm.arith':             'Aritmetica',
     'lm.ruling':            'Campata ideale',
+    // Zeichnung-Toolbar
+    'draw.ueberhoeung':  'Sovralzo',
+    'draw.darstellung':  'Rappresentazione',
+    'draw.bis.sok':      'fino a PRF',
+    'draw.kettenwerk':   'Catenaria',
+    // Share/Export
+    'share.btn':         'Esporta',
+    'share.calc.pdf':    'Calcolo PDF',
+    'share.draw.pdf':    'Disegno PDF',
+    'share.foto.png':    'Foto PNG',
+    // Sidebar Mastlänge
+    'foto.mast.li':      'Altezza palo sinistro',
+    'foto.mast.re':      'Altezza palo destro',
+    'foto.mast.re.sub':  'vuoto = sinistra',
+    'foto.mast.re.placeholder': '= sinistra',
+    // Foto-Toolbar
+    'foto.load.btn':     'Carica foto',
+    'foto.mode.7click':  'Modalità 7 clic',
+    'foto.mode.multi':   'Adatt. curva (6+)',
+    'foto.klickziel':    'Dest. clic:',
+    'foto.catenary.on':  'Mostra curva',
+    'foto.catenary.off': 'Nascondi curva',
+    'foto.grid.off':     'Griglia',
+    'foto.grid.on':      'Griglia off',
+    'foto.reset.btn':    'Reimposta',
+    'foto.refresh.btn':  'Aggiorna',
+    // Foto-Canvas
+    'foto.no.image':     'Nessuna foto caricata',
+    'foto.mast.popup':   'Altezza palo',
+    'foto.side.li':      'sinistra',
+    'foto.side.re':      'destra',
+    'foto.calc.btn':     'Calcola (da 3 punti curva)',
+    // Foto-Ergebnis
+    'foto.col.messung':  'Misura',
+    'foto.label.masten': 'Pali',
+    'foto.label.f':      'Freccia f',
+    'foto.label.H':      'Forza tiro H',
+    'foto.label.xC':     'Posizione x\u1D436',
+    'foto.label.dh':     'Diff. altezza dh',
+    'foto.label.k':      'Scala k',
+    'foto.t2.hint':      'Regolare il cursore T₂ nella barra laterale per calcolare altre temperature.',
+    'foto.col.referenz': 'Riferimento',
+    'foto.label.montage':'Posa (10 °C)',
+    'foto.col.soll.ist': 'Nominale / Reale',
+    'foto.label.H.t2':   'H a T\u2082',
+    'foto.label.f.half': 'f a L/2',
+    'foto.apply.btn':    "Applica nell'app",
+    // Reglage-Modal
+    'reglage.modal.title': 'Valori di regolazione — Panoramica',
+    // Datei/Projekte-Modal
+    'proj.modal.title':  'File',
+    'proj.warning.title':'Salvataggio locale:',
+    'proj.warning.body': 'I dati del progetto vengono salvati nella cache del browser e andranno persi alla cancellazione dei dati del browser. Per una conservazione sicura, esportare i progetti come file JSON.',
+    'proj.save.title':   'Salva nuovo calcolo',
+    'proj.speicherort':  'Posizione',
+    'proj.projektname':  'Nome progetto',
+    'proj.bez.label':    'Denominazione',
+    'proj.save.btn':     'Salva',
+    'proj.import.btn':   'Importa JSON',
+    'proj.local.note':   'Dati salvati solo localmente',
   },
 };
 
@@ -11758,6 +11977,38 @@ function setLang(lang) {
   if (sokOptLbl) sokOptLbl.textContent = t('bp.sok.label');
   const sokClearBtn = document.getElementById('sok-clear-btn');
   if (sokClearBtn) sokClearBtn.textContent = t('bp.sok.clear');
+
+  // Δ Mastfuss-SOK Labels
+  const bpDeltaLi = document.getElementById('bp-delta-sok-li-lbl');
+  if (bpDeltaLi) bpDeltaLi.textContent = t('bp.delta.sok.li');
+  const bpDeltaRe = document.getElementById('bp-delta-sok-re-lbl');
+  if (bpDeltaRe) bpDeltaRe.textContent = t('bp.delta.sok.re');
+
+  // Bezeichnung / Name / KM
+  const bpBezLbl = document.getElementById('bp-bez-label');
+  const bpBezOpt = document.getElementById('bp-bez-optional');
+  if (bpBezLbl) bpBezLbl.childNodes[0].textContent = t('bp.bez.label') + ' ';
+  if (bpBezOpt) bpBezOpt.textContent = t('bp.bez.optional');
+  const bpNamLi = document.getElementById('bp-name-li-lbl');
+  if (bpNamLi) bpNamLi.textContent = t('bp.name.li');
+  const bpNamRe = document.getElementById('bp-name-re-lbl');
+  if (bpNamRe) bpNamRe.textContent = t('bp.name.re');
+  const bpKmLi = document.getElementById('bp-km-li-lbl');
+  if (bpKmLi) bpKmLi.textContent = t('bp.km.li');
+  const bpKmRe = document.getElementById('bp-km-re-lbl');
+  if (bpKmRe) bpKmRe.textContent = t('bp.km.re');
+
+  // H-Punkt Header + Mindestabstand Header
+  const probeHHdr = document.getElementById('probe-h-hdr-txt');
+  if (probeHHdr) probeHHdr.textContent = t('probe.h.hdr');
+  const minClearHdr = document.getElementById('min-clear-hdr-txt');
+  if (minClearHdr) minClearHdr.textContent = t('probe.mindest.hdr');
+
+  // H-Punkt Placeholders
+  [1,2,3,4].forEach(i => {
+    const el = document.getElementById('probe-h' + i);
+    if (el) el.placeholder = t('probe.h.placeholder');
+  });
   const bpDragHint = document.getElementById('bp-drag-hint');
   if (bpDragHint) bpDragHint.textContent = t('bp.drag.hint');
   const sokPlaceholder = `— ${t('dyn.ueber.mum')}`;
@@ -11926,6 +12177,118 @@ function setLang(lang) {
   if (legSehne) legSehne.textContent = t('leg.sehne');
   const legFdSoll = document.getElementById('leg-fd-solllage-label');
   if (legFdSoll) legFdSoll.innerHTML = t('leg.fd.solllage');
+
+
+  // ── Zeichnung-Toolbar ────────────────────────────────────────────────────
+  const drawUeberh = document.getElementById('drawing-ueberhoeung-lbl');
+  if (drawUeberh) drawUeberh.textContent = t('draw.ueberhoeung');
+  const drawDarst  = document.getElementById('drawing-darstellung-lbl');
+  if (drawDarst)  drawDarst.textContent  = t('draw.darstellung');
+  const segExtSok  = document.getElementById('seg-ext-sok');
+  if (segExtSok)  segExtSok.textContent  = t('draw.bis.sok');
+  const segExtCat  = document.getElementById('seg-ext-cat');
+  if (segExtCat)  segExtCat.textContent  = t('draw.kettenwerk');
+
+  // ── Share/Export ─────────────────────────────────────────────────────────
+  const shareBtnTxt = document.getElementById('share-btn-txt');
+  if (shareBtnTxt) shareBtnTxt.textContent = t('share.btn');
+  const shareCalcPdf = document.getElementById('share-item-calc-pdf');
+  if (shareCalcPdf) { const svg = shareCalcPdf.querySelector('svg'); shareCalcPdf.innerHTML = ''; if(svg) shareCalcPdf.appendChild(svg); shareCalcPdf.append(' ' + t('share.calc.pdf')); }
+  const shareDrawPdf = document.getElementById('share-item-draw-pdf');
+  if (shareDrawPdf) { const svg = shareDrawPdf.querySelector('svg'); shareDrawPdf.innerHTML = ''; if(svg) shareDrawPdf.appendChild(svg); shareDrawPdf.append(' ' + t('share.draw.pdf')); }
+  const shareFotoPng = document.getElementById('share-foto-dl');
+  if (shareFotoPng) { const svg = shareFotoPng.querySelector('svg'); shareFotoPng.innerHTML = ''; if(svg) shareFotoPng.appendChild(svg); shareFotoPng.append(' ' + t('share.foto.png')); }
+
+  // ── Sidebar Mastlänge ────────────────────────────────────────────────────
+  const mastLiLbl = document.getElementById('foto-mastlaenge-li-lbl');
+  if (mastLiLbl) mastLiLbl.textContent = t('foto.mast.li');
+  const mastReLbl = document.getElementById('foto-mastlaenge-re-lbl');
+  if (mastReLbl) { mastReLbl.childNodes[0].textContent = t('foto.mast.re') + ' '; const subEl = document.getElementById('foto-mastlaenge-re-sub'); if(subEl) subEl.textContent = t('foto.mast.re.sub'); }
+  const mastReInp = document.getElementById('foto-hmast-R');
+  if (mastReInp) mastReInp.placeholder = t('foto.mast.re.placeholder');
+
+  // ── Foto-Toolbar ─────────────────────────────────────────────────────────
+  const fotoLoadLbl = document.getElementById('foto-load-label-txt');
+  if (fotoLoadLbl) fotoLoadLbl.textContent = t('foto.load.btn');
+  const fotoMode = document.getElementById('foto-mode');
+  if (fotoMode && fotoMode.options.length >= 2) {
+    fotoMode.options[0].text = t('foto.mode.7click');
+    fotoMode.options[1].text = t('foto.mode.multi');
+  }
+  const fotoKlickziel = document.getElementById('foto-klickziel-lbl');
+  if (fotoKlickziel) fotoKlickziel.textContent = t('foto.klickziel');
+  // Catenary-Toggle: Zustand via inline-style ermitteln (color='var(--text)' = eingeblendet)
+  { const catBtn = document.getElementById('foto-catenary-toggle');
+    if (catBtn) catBtn.textContent = catBtn.style.color === 'var(--text)' ? t('foto.catenary.off') : t('foto.catenary.on'); }
+  // Grid-Toggle: aktuellen Zustand beibehalten
+  const gridBtn = document.getElementById('foto-grid-toggle');
+  if (gridBtn) { const isOn = gridBtn.style.fontWeight === '600'; gridBtn.textContent = isOn ? t('foto.grid.on') : t('foto.grid.off'); }
+  const fotoResetBtn = document.getElementById('foto-reset-btn');
+  if (fotoResetBtn) fotoResetBtn.textContent = t('foto.reset.btn');
+  const fotoRefreshBtn = document.getElementById('foto-refresh-btn');
+  if (fotoRefreshBtn) fotoRefreshBtn.textContent = t('foto.refresh.btn');
+
+  // ── Foto-Canvas ──────────────────────────────────────────────────────────
+  const fotoPlaceholder = document.getElementById('foto-canvas-placeholder');
+  if (fotoPlaceholder) fotoPlaceholder.textContent = t('foto.no.image');
+  const fotoMastPopupLbl = document.getElementById('foto-mast-prompt-lbl');
+  if (fotoMastPopupLbl) fotoMastPopupLbl.textContent = t('foto.mast.popup');
+  const fotoCalcBtn = document.getElementById('foto-calculate-btn');
+  if (fotoCalcBtn) fotoCalcBtn.textContent = t('foto.calc.btn');
+
+  // ── Foto-Ergebnis ────────────────────────────────────────────────────────
+  const fotoColMess = document.getElementById('foto-col-messung');
+  if (fotoColMess) fotoColMess.textContent = t('foto.col.messung');
+  const fotoLblMast = document.getElementById('foto-label-masten');
+  if (fotoLblMast) fotoLblMast.textContent = t('foto.label.masten');
+  const fotoLblF = document.getElementById('foto-label-f');
+  if (fotoLblF) fotoLblF.textContent = t('foto.label.f');
+  const fotoLblH = document.getElementById('foto-label-H');
+  if (fotoLblH) fotoLblH.textContent = t('foto.label.H');
+  const fotoLblXc = document.getElementById('foto-label-xC');
+  if (fotoLblXc) fotoLblXc.innerHTML = t('foto.label.xC');
+  const fotoLblDh = document.getElementById('foto-label-dh');
+  if (fotoLblDh) fotoLblDh.textContent = t('foto.label.dh');
+  const fotoLblK = document.getElementById('foto-label-k');
+  if (fotoLblK) fotoLblK.textContent = t('foto.label.k');
+  const fotoT2Hint = document.getElementById('foto-t2-hint');
+  if (fotoT2Hint) fotoT2Hint.textContent = t('foto.t2.hint');
+  const fotoColRef = document.getElementById('foto-col-referenz');
+  if (fotoColRef) fotoColRef.textContent = t('foto.col.referenz');
+  const fotoLblMontage = document.getElementById('foto-label-montage');
+  if (fotoLblMontage) fotoLblMontage.textContent = t('foto.label.montage');
+  const fotoColSollIst = document.getElementById('foto-col-soll-ist');
+  if (fotoColSollIst) fotoColSollIst.textContent = t('foto.col.soll.ist');
+  const fotoLblHT2 = document.getElementById('foto-H-bei-T-label');
+  if (fotoLblHT2) fotoLblHT2.textContent = t('foto.label.H.t2');
+  const fotoLblFHalf = document.getElementById('foto-label-f-half');
+  if (fotoLblFHalf) fotoLblFHalf.textContent = t('foto.label.f.half');
+  const fotoApplyBtn = document.getElementById('foto-apply-btn');
+  if (fotoApplyBtn) fotoApplyBtn.textContent = t('foto.apply.btn');
+
+  // ── Reglage-Modal ────────────────────────────────────────────────────────
+  const reglageTitle = document.getElementById('reglage-modal-title');
+  if (reglageTitle) reglageTitle.textContent = t('reglage.modal.title');
+
+  // ── Datei/Projekte-Modal ─────────────────────────────────────────────────
+  const projModalTitle = document.getElementById('proj-modal-title-txt');
+  if (projModalTitle) projModalTitle.textContent = t('proj.modal.title');
+  const projWarnTxt = document.getElementById('proj-warning-txt');
+  if (projWarnTxt) projWarnTxt.innerHTML = `<strong id="proj-warning-title">${t('proj.warning.title')}</strong> ${t('proj.warning.body')}`;
+  const projSaveTitle = document.getElementById('proj-save-title');
+  if (projSaveTitle) projSaveTitle.textContent = t('proj.save.title');
+  const projSpeichLbl = document.getElementById('proj-speicherort-lbl');
+  if (projSpeichLbl) projSpeichLbl.textContent = t('proj.speicherort');
+  const projNameLbl = document.getElementById('proj-name-lbl');
+  if (projNameLbl) projNameLbl.textContent = t('proj.projektname');
+  const projBezLbl = document.getElementById('proj-bez-lbl');
+  if (projBezLbl) projBezLbl.textContent = t('proj.bez.label');
+  const projSaveCta = document.getElementById('proj-save-cta');
+  if (projSaveCta) projSaveCta.textContent = t('proj.save.btn');
+  const projImportLbl = document.getElementById('proj-import-lbl');
+  if (projImportLbl) projImportLbl.textContent = t('proj.import.btn');
+  const projLocalNote = document.getElementById('proj-local-note');
+  if (projLocalNote) projLocalNote.textContent = t('proj.local.note');
 
   // ── Handbuch modal (if open or preload) ───────────────────────
   translateHandbuch();
@@ -12311,37 +12674,37 @@ renderObstacleList();
     <div class="modal-header">
       <div class="modal-title">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-.15em;margin-right:.4rem"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-        Datei
+        <span id="proj-modal-title-txt">Datei</span>
       </div>
       <button class="modal-close" onclick="closeProjectsModal()" title="Schliessen">✕</button>
     </div>
 
     <div class="proj-warning">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L14.5 13H1.5L8 1.5z" stroke="#d97706" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.5v.5" stroke="#d97706" stroke-width="1.4" stroke-linecap="round"/></svg>
-      <span><strong>Lokale Speicherung:</strong> Projektdaten werden im Browser-Cache gespeichert und gehen beim Löschen der Browserdaten verloren. Für eine sichere Aufbewahrung Projekte als <strong>JSON-Datei exportieren</strong>.</span>
+      <span id="proj-warning-txt"><strong id="proj-warning-title">Lokale Speicherung:</strong> Projektdaten werden im Browser-Cache gespeichert und gehen beim Löschen der Browserdaten verloren. Für eine sichere Aufbewahrung Projekte als <strong>JSON-Datei exportieren</strong>.</span>
     </div>
 
     <!-- Berechnung speichern -->
     <div class="proj-save-block">
-      <div class="proj-save-section-title">Neue Berechnung speichern</div>
+      <div class="proj-save-section-title" id="proj-save-title">Neue Berechnung speichern</div>
       <!-- Speicherort -->
       <div style="margin-bottom:.38rem">
-        <div class="proj-save-label">Speicherort</div>
+        <div class="proj-save-label" id="proj-speicherort-lbl">Speicherort</div>
         <select id="proj-group-sel" class="proj-save-inp" onchange="onProjGroupSelChange()"></select>
       </div>
       <!-- Neues Projekt — nur bei "__new__" sichtbar -->
       <div id="proj-new-grp-row" style="display:none;margin-bottom:.38rem">
-        <div class="proj-save-label">Projektname</div>
+        <div class="proj-save-label" id="proj-name-lbl">Projektname</div>
         <input type="text" id="proj-new-grp-name" class="proj-save-inp" placeholder="Projekt A"
                onkeydown="if(event.key==='Enter')saveCurrentCalc()">
       </div>
       <!-- Bezeichnung -->
       <div style="margin-bottom:.45rem">
-        <div class="proj-save-label">Bezeichnung</div>
+        <div class="proj-save-label" id="proj-bez-lbl">Bezeichnung</div>
         <input type="text" id="proj-calc-name" class="proj-save-inp" placeholder="N-FL 1"
                onkeydown="if(event.key==='Enter')saveCurrentCalc()">
       </div>
-      <button class="proj-btn cta" onclick="saveCurrentCalc()">Speichern</button>
+      <button class="proj-btn cta" id="proj-save-cta" onclick="saveCurrentCalc()">Speichern</button>
     </div>
 
     <!-- Projektliste -->
@@ -12352,11 +12715,11 @@ renderObstacleList();
     <div class="proj-footer">
       <button class="proj-btn" onclick="document.getElementById('proj-import-input').click()">
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-.1em;margin-right:.25rem"><path d="M3 10v3h10v-3M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        JSON importieren
+        <span id="proj-import-lbl">JSON importieren</span>
       </button>
       <input type="file" id="proj-import-input" accept=".json" style="display:none" onchange="importProjectFile(this)">
       <span style="font-size:.7rem;color:var(--muted);flex:1;text-align:right">
-        Daten werden nur lokal im Browser gespeichert
+        <span id="proj-local-note">Daten werden nur lokal im Browser gespeichert</span>
       </span>
     </div>
   </div>
@@ -13642,7 +14005,7 @@ renderObstacleList();
 <div class="modal-overlay" id="reglage-modal" onclick="if(event.target===this)closeReglageModal()" style="align-items:flex-start;padding:2rem 1rem;overflow-y:auto">
   <div class="modal-card" style="max-width:720px;width:100%;max-height:none">
     <div class="modal-header">
-      <div class="modal-title">Reglagewerte — Übersicht</div>
+      <div class="modal-title" id="reglage-modal-title">Reglagewerte — Übersicht</div>
       <button class="modal-close" onclick="closeReglageModal()" title="Schliessen">✕</button>
     </div>
     <div style="padding:.5rem 1.25rem 1.25rem">
