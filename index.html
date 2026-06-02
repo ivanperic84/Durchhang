@@ -1336,8 +1336,6 @@ button.header-manual-link:hover {
 </head>
 <body>
 
-<!-- ── Beta-Wasserzeichen ── -->
-<div id="dev-badge" style="position:fixed;inset:0;pointer-events:none;z-index:9998;overflow:hidden"></div>
 
 <div class="header">
   <div class="header-icon">
@@ -1982,7 +1980,7 @@ button.header-manual-link:hover {
         <!-- Teilen / Export -->
         <div style="position:relative">
           <button id="share-btn" onclick="toggleShareMenu(event)" title="Export / Teilen"
-            style="padding:.25rem .5rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:.3rem;font-size:.72rem;font-family:inherit;transition:background .15s,color .15s"
+            style="padding:.25rem .5rem;border-radius:6px;border:none;background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:.3rem;font-size:.72rem;font-family:inherit;transition:background .15s,color .15s"
             onmouseover="this.style.background='#f1f5f9';this.style.color='var(--text)'"
             onmouseout="this.style.background='none';this.style.color='var(--muted)'">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
@@ -12337,26 +12335,6 @@ berechnen();
 { const v = (v => isNaN(v) ? 40 : v)(parseFloat(document.getElementById('temp2').value));
   document.getElementById('temp2-slider').value = v;
   updateT2Float(v, false); }
-// Beta-Wasserzeichen gekachelt (DOM-Elemente, kein SVG-Clipping)
-(function(){
-  const b = document.getElementById('dev-badge');
-  if (!b) return;
-  const colStep = 230, rowStep = 145, offX = 115;
-  const W = window.innerWidth + 400, H = window.innerHeight + 400;
-  const style = 'position:absolute;font-size:58px;font-weight:900;font-family:system-ui,sans-serif;' +
-    'letter-spacing:8px;color:transparent;-webkit-text-stroke:1.2px rgba(0,0,0,0.07);' +
-    'transform:rotate(-30deg);white-space:nowrap;user-select:none;pointer-events:none';
-  for (let row = -1; row * rowStep < H; row++) {
-    for (let col = -1; col * colStep < W; col++) {
-      const x = col * colStep + (row % 2 !== 0 ? offX : 0) - 80;
-      const y = row * rowStep - 60;
-      const el = document.createElement('div');
-      el.style.cssText = style + ';left:' + x + 'px;top:' + y + 'px';
-      el.textContent = 'Beta';
-      b.appendChild(el);
-    }
-  }
-})();
 // Apply saved language (after first berechnen so all elements exist)
 if (currentLang !== 'de') setLang(currentLang);
 
@@ -14188,7 +14166,7 @@ renderObstacleList();
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
-  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span style="opacity:.6">v2.1</span>
+  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span style="opacity:.6">v3.0</span>
 </footer>
 
 </body>
