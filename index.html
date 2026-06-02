@@ -5853,10 +5853,11 @@ let currentProjectId   = null; // aktuell geladenes Projekt
 // ── State erfassen ──
 function getProjectState() {
   const FIELD_IDS = [
-    'span','h1','h2','temp1','temp2','tension','tension-fd','sh',
+    'span','h1','h2','temp1','temp2','temp3','tension','tension-fd','sh',
     'material-ts','material-fd','weight-ts','weight-fd','alpha-ts','alpha-fd',
     'preset-select','el-material-select',
     'sok-mum-left','sok-mum-right','zl-eis',
+    'xC','yC',
     'probe-x1','probe-x2','probe-x3','probe-x4','display-span',
     'probe-h1','probe-h2','probe-h3','probe-h4','min-clearance-input',
     // Höheneingabe / Mastangaben
@@ -5877,7 +5878,7 @@ function getProjectState() {
   }
   const fotoState = typeof window._fotoGetProjectState === 'function'
                     ? window._fotoGetProjectState() : null;
-  return { sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx, drawingExtent, fotoState, elBerechnungsart, lmOvr, lmFormula, showMinClearance: _showMinClearance };
+  return { sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx, drawingExtent, fotoState, elBerechnungsart, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: _elMatEdits };
 }
 
 // ── State wiederherstellen ──
@@ -5986,6 +5987,12 @@ function setProjectState(s) {
     // Verzögert damit der Tab ggf. gerendert ist
     setTimeout(() => window._fotoSetProjectState(s.fotoState), 100);
   }
+  // Foto-H-Override-Indikator wiederherstellen (Zugkraft bereits aus Feldern gesetzt)
+  if (s.hFromFoto && typeof _updateTensionFotoState === 'function') {
+    _updateTensionFotoState(true);
+  } else {
+    _hFromFoto = false;
+  }
 
   // Zeichnungs-Einstellungen
   drawingVEx = s.drawingVEx || 1;
@@ -5998,9 +6005,25 @@ function setProjectState(s) {
     if (bSok) bSok.classList.toggle('active', ext === 'sok');
     if (bCat) bCat.classList.toggle('active', ext === 'catenary'); }
 
-  // Lm-Formel + Override wiederherstellen — via setLmFormula für korrekte UI-Sync
-  lmOvr = s.lmOvr ?? null;
+  // T3-Vergleichskurve — NACH updateSysModeUI (das showT3 bei R-FL zurücksetzt)
+  showT3 = (s.showT3 ?? false) && sysMode !== 'rfl';
+  { const sec     = document.getElementById('t3-section');
+    const txt     = document.getElementById('t3-toggle-txt');
+    const legItem = document.getElementById('leg-ts3-item');
+    if (sec)     sec.style.display     = showT3 ? '' : 'none';
+    if (txt)     txt.innerHTML         = showT3 ? 'T<sub>3</sub> Vergleichskurve ausblenden' : 'T<sub>3</sub> Vergleichskurve einblenden';
+    if (legItem) legItem.style.display = showT3 ? '' : 'none'; }
+
+  // Lm-Formel + Override wiederherstellen
+  // Reihenfolge wichtig: setLmFormula setzt lmOvr=null → Override danach setzen
   setLmFormula(s.lmFormula ?? 'arith');
+  lmOvr = s.lmOvr ?? null;
+  if (lmOvr !== null) {
+    const inp  = document.getElementById('lm-display');
+    const btns = document.getElementById('lm-formula-btns');
+    if (inp)  { inp.value = lmOvr.toFixed(2); inp.style.color = 'var(--primary)'; }
+    if (btns) btns.style.opacity = '0.35';
+  }
 
   // Preset / Material
   if (sysMode !== 'el') {
@@ -6062,6 +6085,11 @@ function setProjectState(s) {
       }
     }
     if (flds['tension'] != null) document.getElementById('tension').value = flds['tension'];
+    // EL Reglage-Overrides wiederherstellen (NACH Material-Setup)
+    elReglageHmaxOvr = s.elReglageHmaxOvr ?? null;
+    elReglageLrefOvr = s.elReglageLrefOvr ?? null;
+    _elMatEdits      = s.elMatEdits       ?? {};
+    if (elReglageHmaxOvr !== null || elReglageLrefOvr !== null) _applyReglageOvr();
   }
   // T2-Slider synchronisieren und Eislast-Sichtbarkeit aktualisieren
   if (flds['temp2'] != null) {
@@ -6070,6 +6098,14 @@ function setProjectState(s) {
       const sl = document.getElementById('temp2-slider');
       if (sl) sl.value = t2v;
       updateT2Float(t2v, false);
+    }
+  }
+  // T3-Slider synchronisieren
+  if (flds['temp3'] != null) {
+    const t3v = parseFloat(flds['temp3']);
+    if (!isNaN(t3v)) {
+      const sl3 = document.getElementById('temp3-slider');
+      if (sl3) sl3.value = t3v;
     }
   }
   updateEislastVisibility();
