@@ -1547,7 +1547,27 @@ button.header-manual-link:hover {
           </div>
         </div>
         <div class="span-list" id="spans-list"></div>
-        <div class="lm-display" id="lm-display">Lm = — m</div>
+        <!-- Formel-Toggle + Formelhinweis -->
+        <div style="margin-top:.4rem;margin-bottom:.05rem">
+          <span style="font-size:.62rem;color:var(--muted);display:block;margin-bottom:.2rem">Formel</span>
+          <div class="seg-ctrl" id="lm-formula-btns" style="margin-bottom:0">
+            <button class="seg-btn active" id="seg-lm-ruling" onclick="setLmFormula('ruling')">Ausgleichend</button>
+            <button class="seg-btn"        id="seg-lm-arith"  onclick="setLmFormula('arith')">Arithmetisch</button>
+          </div>
+          <div id="lm-formula-hint" style="font-size:.6rem;color:var(--muted);opacity:.5;margin-top:.15rem;letter-spacing:.01em">Lm = &#x221A;(&#x03A3;L&#xB3; / &#x03A3;L)</div>
+        </div>
+        <!-- Lm-Feld: immer editierbar; sobald Wert getippt → Buttons ausgegraut -->
+        <div style="display:flex;align-items:center;gap:.3rem;margin-top:.3rem">
+          <label style="font-size:.72rem;font-weight:500;color:var(--muted);white-space:nowrap;min-width:2rem">Lm</label>
+          <div class="input-wrap" style="flex:1">
+            <input type="number" id="lm-display" step="0.1" min="1"
+              oninput="onLmInput(this.value)"
+              onblur="if(lmOvr!==null&&this.value.trim())this.value=parseFloat(this.value).toFixed(2);else if(lmOvr===null){this.value='';updateLm();}"
+              onfocus="this.select()">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+        <div style="font-size:.59rem;color:var(--muted);opacity:.5;margin-top:.12rem;padding-left:2.3rem">Wert überschreibbar — Feld leeren zum Zurücksetzen</div>
         <div class="field" style="margin-top:.5rem">
           <label id="span-display-label">Dargestelltes Feld</label>
           <div class="input-wrap">
@@ -2855,6 +2875,11 @@ function _extractExifGps(buf) {
   window.fotoModeChanged = function() {
     const mode = _mode();
     document.getElementById('foto-multi-btns').style.display = mode === 'multi' ? '' : 'none';
+    // Modusspezifische Klick-Ziel-Buttons ein-/ausblenden
+    const btnCmid  = document.getElementById('foto-btn-cmid');
+    const btnCurve = document.getElementById('foto-btn-curve');
+    if (btnCmid)  btnCmid.style.display  = mode === 'single' ? '' : 'none';
+    if (btnCurve) btnCurve.style.display = mode === 'multi'  ? '' : 'none';
     // Aktive Rolle anpassen wenn sie im neuen Modus nicht vorkommt
     const required = _roles[mode];
     if (_activeRole !== 'curve' && !required.includes(_activeRole)) {
@@ -5592,7 +5617,7 @@ function applyElVariant(idx) {
       }
     }
     document.getElementById('el-reglage-title').innerHTML =
-      `H = ${variant.H_reglage.toLocaleString('de-CH')} N  (${t('preset.el.reglage')})`;
+      `H = ${variant.H_reglage.toLocaleString('de-CH')} N  (Reglage bei T<sub>1</sub> = 10 °C, Lm = ${_reglageBase().L_ref} m)`;
     document.getElementById('el-reglage-note').innerHTML =
       variant.reglage_note_key ? t(variant.reglage_note_key) : (variant.reglage_note || '');
   } else {
@@ -5729,17 +5754,73 @@ function getSpanLengths() {
   return out;
 }
 
+let lmFormula = 'ruling'; // 'ruling' | 'arith'
+
+const _LM_HINTS = {
+  ruling: 'Lm = √(ΣL³ / ΣL)',
+  arith:  'Lm = ΣL / n',
+};
+
+function setLmFormula(f) {
+  lmFormula = f;
+  const bR = document.getElementById('seg-lm-ruling');
+  const bA = document.getElementById('seg-lm-arith');
+  if (bR) bR.classList.toggle('active', f === 'ruling');
+  if (bA) bA.classList.toggle('active', f === 'arith');
+  const hint = document.getElementById('lm-formula-hint');
+  if (hint) hint.textContent = _LM_HINTS[f] || '';
+  // Klick auf Button löscht manuellen Override
+  lmOvr = null;
+  const inp = document.getElementById('lm-display');
+  if (inp) { inp.value = ''; inp.style.color = ''; }
+  const btns = document.getElementById('lm-formula-btns');
+  if (btns) btns.style.opacity = '';
+  updateLm();
+  berechnen();
+}
+
 function computeRulingSpan(spans) {
+  if (lmFormula === 'arith')
+    return spans.reduce((s, l) => s + l, 0) / spans.length;
   const sumL3 = spans.reduce((s, l) => s + l ** 3, 0);
   const sumL  = spans.reduce((s, l) => s + l,      0);
   return Math.sqrt(sumL3 / sumL);
 }
 
+let lmOvr = null; // manueller Lm-Override (null = auto-berechnet)
+
+function onLmInput(val) {
+  const v = parseFloat(val);
+  lmOvr = (val.trim() === '' || isNaN(v)) ? null : v;
+  const inp  = document.getElementById('lm-display');
+  const btns = document.getElementById('lm-formula-btns');
+  if (lmOvr !== null) {
+    // Manueller Wert → Buttons ausgrauen, Feld primärfarbe
+    if (inp)  inp.style.color   = 'var(--primary)';
+    if (btns) btns.style.opacity = '0.35';
+  } else {
+    // Feld geleert → Buttons zurück, berechneten Wert anzeigen
+    if (inp)  inp.style.color   = '';
+    if (btns) btns.style.opacity = '';
+    updateLm();
+  }
+  berechnen();
+}
+
 function updateLm() {
   const spans = getSpanLengths();
   if (spans.length < 1) return;
-  const Lm = computeRulingSpan(spans);
-  document.getElementById('lm-display').textContent = `Lm = ${Lm.toFixed(2)} m`;
+  const calc = computeRulingSpan(spans);
+  const inp  = document.getElementById('lm-display');
+  if (inp) {
+    // Feld nur aktualisieren wenn kein manueller Override und nicht gerade fokussiert
+    if (lmOvr === null && document.activeElement !== inp) {
+      inp.value = calc.toFixed(2);
+      inp.style.color = '';
+    }
+    // Placeholder immer aktuell halten (sichtbar wenn Feld leer)
+    inp.placeholder = calc.toFixed(2);
+  }
   // Dropdown-Optionen live mit aktuellem Wert aktualisieren
   spans.forEach((v, i) => {
     const opt = document.getElementById(`display-span-opt-${i}`);
@@ -5758,6 +5839,7 @@ function getActiveSpan() {
 
 function getEffectiveSpan() {
   if (spanMode === 'single') return getActiveSpan();
+  if (lmOvr !== null) return lmOvr;
   return computeRulingSpan(getSpanLengths());
 }
 
@@ -5795,7 +5877,7 @@ function getProjectState() {
   }
   const fotoState = typeof window._fotoGetProjectState === 'function'
                     ? window._fotoGetProjectState() : null;
-  return { sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx, drawingExtent, fotoState, elBerechnungsart };
+  return { sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx, drawingExtent, fotoState, elBerechnungsart, lmOvr, lmFormula };
 }
 
 // ── State wiederherstellen ──
@@ -5904,6 +5986,10 @@ function setProjectState(s) {
     if (bSok) bSok.classList.toggle('active', ext === 'sok');
     if (bCat) bCat.classList.toggle('active', ext === 'catenary'); }
 
+  // Lm-Formel + Override wiederherstellen — via setLmFormula für korrekte UI-Sync
+  lmOvr = s.lmOvr ?? null;
+  setLmFormula(s.lmFormula ?? 'ruling');
+
   // Preset / Material
   if (sysMode !== 'el') {
     rebuildPresetDropdown(sysMode);
@@ -5968,7 +6054,7 @@ function setProjectState(s) {
         activePresetRef = variant.H_reglage_table ? { H_Ts_ub_table: variant.H_reglage_table } : null;
         if (variant.H_reglage != null) {
           document.getElementById('el-reglage-title').innerHTML =
-            `H = ${variant.H_reglage.toLocaleString('de-CH')} N  (${t('preset.el.reglage')})`;
+            `H = ${variant.H_reglage.toLocaleString('de-CH')} N  (Reglage bei T<sub>1</sub> = 10 °C, Lm = ${_reglageBase().L_ref} m)`;
           document.getElementById('el-reglage-note').textContent =
             variant.reglage_note_key ? t(variant.reglage_note_key) : (variant.reglage_note || '');
           document.getElementById('el-reglage-info').style.display = '';
@@ -6007,7 +6093,45 @@ function nextCalcName(parentId) {
   return `${lbl} ${count + 1}`;
 }
 
-// ── Neues Projekt-Feld ein-/ausblenden ──
+// ── Letzter Speicher-/Ladeort ──
+const _LAST_GRP_KEY = 'dh_last_save_group';
+function _getLastGrpId()    { return localStorage.getItem(_LAST_GRP_KEY) || null; }
+function _setLastGrpId(id)  { if (id) localStorage.setItem(_LAST_GRP_KEY, id); }
+
+// ── Speicherort-Dropdown befüllen ──
+function populateSaveGroupSel() {
+  const sel  = document.getElementById('proj-group-sel');
+  if (!sel) return;
+  const meta   = getProjMeta();
+  const groups = meta.filter(m => m.isGroup);
+  const lastId = _getLastGrpId();
+  sel.innerHTML = '';
+  // Bestehendes Projekt — zuletzt genutztes zuerst
+  const sorted = [
+    ...groups.filter(g => g.id === lastId),
+    ...groups.filter(g => g.id !== lastId),
+  ];
+  sorted.forEach(g => {
+    const o = document.createElement('option');
+    o.value = g.id;
+    o.textContent = g.name;
+    sel.appendChild(o);
+  });
+  // Trennlinie + Option "Neues Projekt"
+  if (sorted.length > 0) {
+    const sep = document.createElement('option');
+    sep.disabled = true; sep.textContent = '──────────────';
+    sel.appendChild(sep);
+  }
+  const newOpt = document.createElement('option');
+  newOpt.value = '__new__'; newOpt.textContent = '+ Neues Projekt anlegen';
+  sel.appendChild(newOpt);
+  // Vorauswahl: letzter Ort oder "__new__" wenn noch kein Projekt
+  sel.value = (lastId && sorted.some(g => g.id === lastId)) ? lastId : (sorted.length ? sorted[0].id : '__new__');
+  onProjGroupSelChange();
+}
+
+// ── Speicherort-Toggle: Neues-Projekt-Feld ein-/ausblenden ──
 function onProjGroupSelChange() {
   const val = document.getElementById('proj-group-sel')?.value;
   const row = document.getElementById('proj-new-grp-row');
@@ -6017,14 +6141,24 @@ function onProjGroupSelChange() {
 // ── Hauptspeicher-Funktion ──
 function saveCurrentCalc() {
   const meta = getProjMeta();
+  const selVal = document.getElementById('proj-group-sel')?.value;
 
-  // Immer neues Projekt anlegen
-  const nameInp = document.getElementById('proj-new-grp-name');
-  const gName   = nameInp?.value.trim() || nextProjectName();
-  const groupId = 'g' + Date.now() + Math.random().toString(36).slice(2,5);
-  meta.unshift({ id: groupId, name: gName, isGroup: true, parentId: null,
-                 createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
-  if (nameInp) nameInp.value = '';
+  let groupId;
+  if (selVal === '__new__' || !selVal) {
+    // Neues Projekt anlegen
+    const nameInp = document.getElementById('proj-new-grp-name');
+    const gName   = nameInp?.value.trim() || nextProjectName();
+    groupId = 'g' + Date.now() + Math.random().toString(36).slice(2,5);
+    meta.unshift({ id: groupId, name: gName, isGroup: true, parentId: null,
+                   createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    if (nameInp) nameInp.value = '';
+  } else {
+    // In bestehendes Projekt speichern
+    groupId = selVal;
+  }
+
+  // Letzten Speicherort merken
+  _setLastGrpId(groupId);
 
   // Berechnung anlegen
   const calcInp  = document.getElementById('proj-calc-name');
@@ -6039,6 +6173,8 @@ function saveCurrentCalc() {
   collapsedGroups.delete(groupId);
   renderProjectList();
   updateProjectBadge();
+  // Dropdown neu befüllen (neues Projekt ggf. sichtbar)
+  populateSaveGroupSel();
 }
 function saveProjMeta(arr)    { localStorage.setItem(PROJ_META_KEY, JSON.stringify(arr)); }
 function genProjId()          { return 'p' + Date.now() + Math.random().toString(36).slice(2,5); }
@@ -6197,6 +6333,10 @@ function loadProjectById(id) {
     setProjectState(state);
     currentProjectId = id;
     updateProjectBadge();
+    // Letzten Ladeort merken (Elterngruppe der Berechnung)
+    const meta = getProjMeta();
+    const entry = meta.find(m => m.id === id);
+    if (entry?.parentId) _setLastGrpId(entry.parentId);
     closeProjectsModal();
   } catch(e) { alert('Fehler beim Laden: ' + e.message); }
 }
@@ -6509,8 +6649,7 @@ function renderProjectList() {
         <div class="proj-item-date">Gespeichert: ${fmtDate(m.updatedAt)}</div>
         <div class="proj-item-actions">
           <button class="proj-btn pri" onclick="loadProjectById('${m.id}')">Laden</button>
-          <button class="proj-btn" onclick="saveToProject('${m.id}')">Speichern</button>
-          <button class="proj-btn" onclick="exportProjectById('${m.id}')">JSON</button>
+          <button class="proj-btn" onclick="exportProjectById('${m.id}')">Export</button>
           ${moveOptions}
           <button class="proj-btn danger icon-only" onclick="deleteProjectById('${m.id}')" title="Löschen"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </div>
@@ -6532,11 +6671,8 @@ function renderProjectList() {
     const childIds = children.map(c => c.id);
     const checkFn = `(function(e){e.stopPropagation();var ch=${JSON.stringify(childIds)};var all=${allChildrenSelected};ch.forEach(function(id){if(all)selectedIds.delete(id);else selectedIds.add(id);});renderProjectList();})(event)`;
 
-    return `<div class="proj-group-wrap${hasActive ? ' has-active' : ''}">
+    return `<div class="proj-group-wrap${hasActive ? ' has-active' : ''}" data-grp-id="${g.id}">
       <div class="proj-group-header" onclick="${toggleFn}">
-        <input type="checkbox" class="proj-check" ${allChildrenSelected ? 'checked' : ''}
-          style="${someSelected && !allChildrenSelected ? 'opacity:.5' : ''}"
-          onclick="${checkFn}">
         <span class="proj-collapse-icon" style="transform:rotate(${collapsed ? '0' : '90'}deg)">▶</span>
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;color:#6b7280"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
         <span class="proj-group-name">${g.name}</span>
@@ -6544,8 +6680,7 @@ function renderProjectList() {
         <span class="proj-group-count">${children.length} Berechnung${children.length !== 1 ? 'en' : ''}</span>
         <div class="proj-item-actions" style="flex-wrap:nowrap" onclick="event.stopPropagation()">
           <button class="proj-rename-btn" onclick="renameEntry('${g.id}')" title="Projekt umbenennen">${_penSvg}</button>
-          <button class="proj-btn pri" onclick="saveToGroup('${g.id}')" title="Aktuelle Berechnung unter diesem Projekt speichern">+ Speichern</button>
-          <button class="proj-btn" onclick="exportWholeProject('${g.id}')" title="Gesamtes Projekt als JSON exportieren">JSON</button>
+          <button class="proj-btn" onclick="exportWholeProject('${g.id}')" title="Gesamtes Projekt als JSON exportieren">Export</button>
           <button class="proj-btn danger icon-only" onclick="deleteProjectById('${g.id}')" title="Löschen"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </div>
       </div>
@@ -6578,13 +6713,23 @@ function renderProjectList() {
 
 function openProjectsModal() {
   selectedIds.clear();
+  // Letzten Ladeort expandieren (nicht zuklappen)
+  let lastGrp = null;
+  try { lastGrp = _getLastGrpId(); } catch(e) {}
+  if (lastGrp) collapsedGroups.delete(lastGrp);
   renderProjectList();
-  // Reset save form fields
+  // Speicherort-Dropdown befüllen + Calc-Name leeren
+  try { populateSaveGroupSel(); } catch(e) { console.warn('populateSaveGroupSel:', e); }
   const calcInp = document.getElementById('proj-calc-name');
-  const grpInp  = document.getElementById('proj-new-grp-name');
   if (calcInp) calcInp.value = '';
-  if (grpInp)  grpInp.value  = '';
   document.getElementById('projects-modal').classList.add('open');
+  // Letztes Projekt sichtbar scrollen
+  if (lastGrp) {
+    setTimeout(() => {
+      const el = document.querySelector(`[data-grp-id="${lastGrp}"]`);
+      if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }, 80);
+  }
 }
 function closeProjectsModal() { document.getElementById('projects-modal').classList.remove('open'); }
 
@@ -12300,17 +12445,22 @@ renderObstacleList();
     <!-- Berechnung speichern -->
     <div class="proj-save-block">
       <div class="proj-save-section-title">Neue Berechnung speichern</div>
-      <div class="proj-save-grid">
-        <div>
-          <div class="proj-save-label">Projektname (optional)</div>
-          <input type="text" id="proj-new-grp-name" class="proj-save-inp" placeholder="Projekt A"
-                 onkeydown="if(event.key==='Enter')saveCurrentCalc()">
-        </div>
-        <div>
-          <div class="proj-save-label">Bezeichnung (optional)</div>
-          <input type="text" id="proj-calc-name" class="proj-save-inp" placeholder="N-FL 1"
-                 onkeydown="if(event.key==='Enter')saveCurrentCalc()">
-        </div>
+      <!-- Speicherort -->
+      <div style="margin-bottom:.38rem">
+        <div class="proj-save-label">Speicherort</div>
+        <select id="proj-group-sel" class="proj-save-inp" onchange="onProjGroupSelChange()"></select>
+      </div>
+      <!-- Neues Projekt — nur bei "__new__" sichtbar -->
+      <div id="proj-new-grp-row" style="display:none;margin-bottom:.38rem">
+        <div class="proj-save-label">Projektname</div>
+        <input type="text" id="proj-new-grp-name" class="proj-save-inp" placeholder="Projekt A"
+               onkeydown="if(event.key==='Enter')saveCurrentCalc()">
+      </div>
+      <!-- Bezeichnung -->
+      <div style="margin-bottom:.45rem">
+        <div class="proj-save-label">Bezeichnung</div>
+        <input type="text" id="proj-calc-name" class="proj-save-inp" placeholder="N-FL 1"
+               onkeydown="if(event.key==='Enter')saveCurrentCalc()">
       </div>
       <button class="proj-btn cta" onclick="saveCurrentCalc()">Speichern</button>
     </div>
