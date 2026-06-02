@@ -1461,7 +1461,7 @@ button.header-manual-link:hover {
 
       <!-- Einzelleiter: Berechnungsart -->
       <div id="berechnungsart-row" style="display:none;margin-top:.5rem">
-        <label style="font-size:.72rem;font-weight:500;color:var(--muted);display:block;margin-bottom:.25rem">Berechnungsart</label>
+        <label id="berechnungsart-label" style="font-size:.72rem;font-weight:500;color:var(--muted);display:block;margin-bottom:.25rem">Berechnungsart</label>
         <div class="seg-ctrl" style="width:100%">
           <button class="seg-btn active" id="seg-ba-ausg" onclick="setBerechnungsart('ausgleichend')">Ausgleichend</button>
           <button class="seg-btn"        id="seg-ba-starr" onclick="setBerechnungsart('starr')">Starr</button>
@@ -1549,7 +1549,7 @@ button.header-manual-link:hover {
         <div class="span-list" id="spans-list"></div>
         <!-- Formel-Toggle + Formelhinweis -->
         <div style="margin-top:.4rem;margin-bottom:.05rem">
-          <span style="font-size:.62rem;color:var(--muted);display:block;margin-bottom:.2rem">Formel</span>
+          <span id="lm-formel-label" style="font-size:.62rem;color:var(--muted);display:block;margin-bottom:.2rem">Formel</span>
           <div class="seg-ctrl" id="lm-formula-btns" style="margin-bottom:0">
             <button class="seg-btn active" id="seg-lm-arith"  onclick="setLmFormula('arith')"  style="font-size:.68rem;white-space:nowrap">Arithmetisch</button>
             <button class="seg-btn"        id="seg-lm-ruling" onclick="setLmFormula('ruling')" style="font-size:.68rem;white-space:nowrap">Ideelle Spannweite</button>
@@ -2411,8 +2411,8 @@ button.header-manual-link:hover {
           <label style="display:inline-flex;align-items:center;cursor:pointer;flex-shrink:0" title="Mindestabstand anzeigen">
             <input type="checkbox" id="min-clearance-show" checked
               style="position:absolute;opacity:0;width:0;height:0"
-              onchange="_showMinClearance=this.checked;document.getElementById('mc-tog-knob').style.left=this.checked?'13px':'2px';document.getElementById('mc-tog-bg').style.background=this.checked?'var(--primary)':'#d1d5db';_triggerDrawingRebuild()">
-            <span id="mc-tog-bg" style="display:inline-block;width:26px;height:15px;background:var(--primary);border-radius:8px;position:relative;transition:background .15s;flex-shrink:0">
+              onchange="_showMinClearance=this.checked;document.getElementById('mc-tog-knob').style.left=this.checked?'13px':'2px';document.getElementById('mc-tog-bg').style.background=this.checked?'#6b7280':'#d1d5db';_triggerDrawingRebuild()">
+            <span id="mc-tog-bg" style="display:inline-block;width:26px;height:15px;background:#6b7280;border-radius:8px;position:relative;transition:background .15s;flex-shrink:0">
               <span id="mc-tog-knob" style="position:absolute;width:11px;height:11px;background:white;border-radius:50%;top:2px;left:13px;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.18)"></span>
             </span>
           </label>
@@ -2818,16 +2818,16 @@ function _extractExifGps(buf) {
     single: ['top_L', 'base_L', 'top_R', 'base_R', 'p1', 'p2', 'cmid'],
     multi:  ['top_L', 'base_L', 'top_R', 'base_R', 'p1', 'p2'],
   };
-  const _labels = {
-    top_L:  'Mastspitze links',
-    base_L: 'Mastfuss / SOK links',
-    top_R:  'Mastspitze rechts',
-    base_R: 'Mastfuss / SOK rechts',
-    p1:     'Linker Ankerpunkt (Leiterbefestigung)',
-    p2:     'Rechter Ankerpunkt (Leiterbefestigung)',
-    cmid:   'Leiter bei Mittspan (L/2) klicken',
-    curve:  'Punkt auf Leiter',
-  };
+  const _labels = () => ({
+    top_L:  t('foto.lbl.top_L'),
+    base_L: t('foto.lbl.base_L'),
+    top_R:  t('foto.lbl.top_R'),
+    base_R: t('foto.lbl.base_R'),
+    p1:     t('foto.lbl.p1'),
+    p2:     t('foto.lbl.p2'),
+    cmid:   t('foto.lbl.cmid'),
+    curve:  t('foto.lbl.curve'),
+  });
   const _colors = {
     top_L:'#16a34a', base_L:'#16a34a',
     top_R:'#2563eb', base_R:'#2563eb',
@@ -3273,7 +3273,7 @@ function _extractExifGps(buf) {
   window.fotoSetRole = function(role) {
     _activeRole = role;
     _updateRoleButtons();
-    _status(`Klick: ${_labels[role]}`);
+    _status(`Klick: ${_labels()[role]}`);
   };
 
   // ── Rollen-Buttons aktualisieren ──
@@ -3348,9 +3348,9 @@ function _extractExifGps(buf) {
 
   // ── Status-Zeile ──
   function _updateStatus() {
-    if (!_img) { _status('Foto laden, dann Punkte klicken'); return; }
-    if (!_activeRole) { _status('Alle Punkte gesetzt — Ergebnis unten.'); return; }
-    _status(`Klick: ${_labels[_activeRole]}`);
+    if (!_img) { _status(t('foto.load.hint')); return; }
+    if (!_activeRole) { _status(t('foto.done.hint')); return; }
+    _status(`${t('foto.lbl.' + _activeRole)}`);
   }
 
   // ── Draw canvas ──
@@ -4790,32 +4790,33 @@ function applyPreset() {
   }
   const titleEl = document.getElementById('combo-title');
   const noteEl  = document.getElementById('combo-note');
-  const p = KETTENWERK_PRESETS[key];
-  if (!p) return;
+  const preset = KETTENWERK_PRESETS[key];
+  if (!preset) return;
 
   // Materialeigenschaften in versteckte Felder übernehmen
-  const mTs = MATERIALS[p.matTs], mFd = MATERIALS[p.matFd];
-  document.getElementById('material-ts').value  = p.matTs;
-  document.getElementById('weight-ts').value    = mTs.q;
-  document.getElementById('alpha-ts').value     = (mTs.alpha * 1e6).toFixed(1);
-  document.getElementById('material-fd').value  = p.matFd;
-  document.getElementById('weight-fd').value    = mFd.q;
-  document.getElementById('tension-fd').value   = p.H_Fd;
+  const matTs = MATERIALS[preset.matTs];
+  const matFd = MATERIALS[preset.matFd];
+  document.getElementById('material-ts').value  = preset.matTs;
+  document.getElementById('weight-ts').value    = matTs.q;
+  document.getElementById('alpha-ts').value     = (matTs.alpha * 1e6).toFixed(1);
+  document.getElementById('material-fd').value  = preset.matFd;
+  document.getElementById('weight-fd').value    = matFd.q;
+  document.getElementById('tension-fd').value   = preset.H_Fd;
 
   // Sichtbare Eingabefelder setzen
-  document.getElementById('sh').value      = p.sh;
+  document.getElementById('sh').value      = preset.sh;
   // N-FL: Unbelastet-Zugkraft als Eingabe; H_belastet wird in readInputs() berechnet
-  document.getElementById('tension').value = (p.sysMode === 'nfl' && p.H_Ts_ub != null) ? p.H_Ts_ub : p.H_Ts;
-  document.getElementById('temp1').value   = p.T1;
+  document.getElementById('tension').value = (preset.sysMode === 'nfl' && preset.H_Ts_ub != null) ? preset.H_Ts_ub : preset.H_Ts;
+  document.getElementById('temp1').value   = preset.T1;
 
   // Infobox unter dem Dropdown anzeigen (Standard-Stil zurücksetzen)
   infoEl.style.background = ''; infoEl.style.borderColor = '';
-  titleEl.style.color = ''; titleEl.textContent = buildPresetTitle(p);
-  noteEl.textContent  = buildPresetNote(p);
+  titleEl.style.color = ''; titleEl.textContent = buildPresetTitle(preset);
+  noteEl.textContent  = buildPresetNote(preset);
   infoEl.style.display = '';
 
   // Abnutzungs-Selector zurücksetzen
-  currentWearMax = p.wear_max || 30;
+  currentWearMax = preset.wear_max || 30;
   wearPct = 0;
   const wearRow = document.getElementById('wear-row');
   const wearLbl = document.getElementById('wear-max-label');
@@ -4825,14 +4826,14 @@ function applyPreset() {
   document.getElementById('wear-btn-max').classList.remove('active');
 
   // Systemwechsel durch Preset (N-FL ↔ R-FL) abfangen
-  if (p.sysMode !== sysMode) {
-    sysMode = p.sysMode;
+  if (preset.sysMode !== sysMode) {
+    sysMode = preset.sysMode;
     updateSysModeUI(sysMode);
   }
   // Referenzwerte für T1-abhängige H_Ts_ub-Berechnung speichern
-  if (p.sysMode === 'nfl' && p.H_Ts_ub_table != null) {
-    activePresetRef = { H_Ts_ub_table: p.H_Ts_ub_table };
-    activePresetP   = p;
+  if (preset.sysMode === 'nfl' && preset.H_Ts_ub_table != null) {
+    activePresetRef = { H_Ts_ub_table: preset.H_Ts_ub_table };
+    activePresetP   = preset;
   } else {
     activePresetRef = null;
     activePresetP   = null;
@@ -4950,9 +4951,6 @@ function getSokMumRight() {
   const v = parseFloat(document.getElementById('sok-mum-right').value);
   return isNaN(v) ? null : v;
 }
-// Rückwärtskompatibilität
-function getSokMum() { return getSokMumLeft(); }
-
 // Linkes SOK-Feld geändert → rechtes synchronisieren (falls nicht manuell bearbeitet)
 function onSokMumLeftInput() {
   const leftEl  = document.getElementById('sok-mum-left');
@@ -5350,7 +5348,7 @@ function updateSysModeUI(mode) {
     const txt = document.getElementById('t3-toggle-txt');
     const leg = document.getElementById('leg-ts3-item');
     if (s) s.style.display = 'none';
-    if (txt) txt.innerHTML = 'T<sub>3</sub> Vergleichskurve einblenden';
+    if (txt) txt.innerHTML = t('t3.show');
     if (leg) leg.style.display = 'none';
   }
 
@@ -5492,7 +5490,7 @@ function toggleT3() {
   const txt     = document.getElementById('t3-toggle-txt');
   const legItem = document.getElementById('leg-ts3-item');
   section.style.display = showT3 ? '' : 'none';
-  if (txt)  txt.innerHTML  = showT3 ? 'T<sub>3</sub> Vergleichskurve ausblenden' : 'T<sub>3</sub> Vergleichskurve einblenden';
+  if (txt)  txt.innerHTML  = showT3 ? t('t3.hide') : t('t3.show');
   if (legItem) legItem.style.display = showT3 ? '' : 'none';
   if (showT3) {
     const v = (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3').value));
@@ -5682,8 +5680,12 @@ function getAlphaTs()        { return parseFloat(document.getElementById('alpha-
 function getEATs()           { const sel = document.getElementById('material-ts').value; if (sel === 'custom-ts') { const v = parseFloat(document.getElementById('ea-ts').value); return isNaN(v) ? null : v; } const m = MATERIALS[sel]; if (!m || m.E == null || m.AK == null) return null; return m.E * m.AK; }
 function getEAFd()           { const sel = document.getElementById('material-fd').value; if (sel === 'custom-fd') { const v = parseFloat(document.getElementById('ea-fd').value); return isNaN(v) || v === 0 ? null : v; } return MATERIALS[sel].E * MATERIALS[sel].AK; }
 function getAlphaFd()        { const sel = document.getElementById('material-fd').value; if (sel === 'custom-fd') { const v = parseFloat(document.getElementById('alpha-fd').value); return isNaN(v) ? null : v * 1e-6; } return MATERIALS[sel].alpha; }
-function getMaterialNameTs() { const sel = document.getElementById('material-ts').value; return sel === 'custom-ts' ? 'Benutzerdefiniert' : MATERIALS[sel].name; }
-function getMaterialNameFd() { const sel = document.getElementById('material-fd').value; return sel === 'custom-fd' ? 'Benutzerdefiniert' : MATERIALS[sel].name; }
+function _getMaterialName(type) {
+  const sel = document.getElementById(`material-${type}`).value;
+  return sel === `custom-${type}` ? 'Benutzerdefiniert' : MATERIALS[sel]?.name ?? '—';
+}
+function getMaterialNameTs() { return _getMaterialName('ts'); }
+function getMaterialNameFd() { return _getMaterialName('fd'); }
 
 // ═══════════════════════════════════════════════════════════════
 // SPANNWEITEN-MODUS
@@ -5779,6 +5781,9 @@ function setLmFormula(f) {
   berechnen();
 }
 
+// Berechnet Lm je nach gewählter Formel:
+//   Arithmetisch:     Lm = ΣL / n
+//   Ideelle Spannweite: Lm = √(ΣL³ / ΣL)  (EN 50119 / SBB-Standard)
 function computeRulingSpan(spans) {
   if (lmFormula === 'arith')
     return spans.reduce((s, l) => s + l, 0) / spans.length;
@@ -5954,19 +5959,12 @@ function setProjectState(s) {
 
   // Messpunkte: globale JS-Variablen aus gespeicherten Feldwerten wiederherstellen
   const _pf = v => { const n = parseFloat(v); return isNaN(n) ? null : n; };
-  probeX1 = _pf(flds['probe-x1']);
-  probeX2 = _pf(flds['probe-x2']);
-  probeX3 = _pf(flds['probe-x3']);
-  probeX4 = _pf(flds['probe-x4']);
-  probeH1 = _pf(flds['probe-h1']);
-  probeH2 = _pf(flds['probe-h2']);
-  probeH3 = _pf(flds['probe-h3']);
-  probeH4 = _pf(flds['probe-h4']);
+  [probeX1, probeX2, probeX3, probeX4] = [1,2,3,4].map(i => _pf(flds[`probe-x${i}`]));
+  [probeH1, probeH2, probeH3, probeH4] = [1,2,3,4].map(i => _pf(flds[`probe-h${i}`]));
   // Restore H-Punkt DOM inputs
   [1,2,3,4].forEach(i => {
     const el = document.getElementById(`probe-h${i}`);
-    const v  = flds[`probe-h${i}`];
-    if (el) el.value = (v != null && v !== '') ? v : '';
+    if (el) el.value = flds[`probe-h${i}`] ?? '';
   });
   minClearance = _pf(flds['min-clearance-input']);
   { const mcInp = document.getElementById('min-clearance-input');
@@ -5978,7 +5976,7 @@ function setProjectState(s) {
     const mcBg   = document.getElementById('mc-tog-bg');
     if (mcChk)  mcChk.checked            = _showMinClearance;
     if (mcKnob) mcKnob.style.left        = _showMinClearance ? '13px' : '2px';
-    if (mcBg)   mcBg.style.background    = _showMinClearance ? 'var(--primary)' : '#d1d5db'; }
+    if (mcBg)   mcBg.style.background    = _showMinClearance ? '#6b7280' : '#d1d5db'; }
   // Mastnamen-Brücke synchronisieren (foto-name-L/R hidden inputs)
   if (typeof _syncMastNames === 'function') _syncMastNames();
 
@@ -6011,7 +6009,7 @@ function setProjectState(s) {
     const txt     = document.getElementById('t3-toggle-txt');
     const legItem = document.getElementById('leg-ts3-item');
     if (sec)     sec.style.display     = showT3 ? '' : 'none';
-    if (txt)     txt.innerHTML         = showT3 ? 'T<sub>3</sub> Vergleichskurve ausblenden' : 'T<sub>3</sub> Vergleichskurve einblenden';
+    if (txt)     txt.innerHTML         = showT3 ? t('t3.hide') : t('t3.show');
     if (legItem) legItem.style.display = showT3 ? '' : 'none'; }
 
   // Lm-Formel + Override wiederherstellen
@@ -10895,252 +10893,6 @@ ${bodyContent}
   win.onload = () => win.print();
 }
 
-function dxfExport() { return; } // removed
-
-function dxfExport_disabled() {
-  if (!calcState) return;
-  const { L, h1, h2, sh, T1, T2, H_Ts, H_Fd, q_ges, c1, c2, matTs, matFd } = calcState;
-  const isNFL = sysMode === 'nfl';
-  const isEl  = sysMode === 'el';
-
-  // ── SOK-Referenz ──────────────────────────────────────────────
-  const sokL   = getSokMumLeft();
-  const sokR   = getSokMumRight();
-  const hasSok = sokL !== null || sokR !== null;
-  const sokLv  = sokL ?? sokR ?? 0;
-  const sokRv  = sokR ?? sokL ?? 0;
-  const sokAtX = x => sokLv + (sokRv - sokLv) * x / L;
-  // Koordinatentransformation: intern (über SOK) → Zeichnung (abs. wenn SOK gesetzt)
-  const aY    = (x, y) => hasSok ? y + sokAtX(x) : y;
-
-  // ── Zeichnungskoordinaten ──────────────────────────────────────
-  const catY  = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
-  const catYD = (x, c) => aY(x, catY(x, c));
-  const h1d   = aY(0, h1);
-  const h2d   = aY(L, h2);
-  const sokYL = hasSok ? sokLv : 0;
-  const sokYR = hasSok ? sokRv : 0;
-  const cIst  = (isNFL || isEl) ? c2 : c1;  // Auslegungszustand
-
-  // ── Masszahlen (relativ zur Spannweite) ───────────────────────
-  const TH = Math.max(0.30, L / 110);   // Texthöhe [m]
-  const SR = TH * 0.40;                 // Symbolradius [m]
-  const N  = 120;                       // Stützpunkte Kettenlinie
-
-  // ── DXF-Buffer & Helfer ───────────────────────────────────────
-  const buf = [];
-  const g   = (code, val) => buf.push(`${code}\n${val}`);
-
-  // LWPOLYLINE (offene Polylinie mit N+1 Punkten)
-  function dPolyline(layer, pts) {
-    g(0,'LWPOLYLINE'); g(8,layer);
-    g(90, pts.length); g(70, 0);
-    pts.forEach(([x, y]) => { g(10, x.toFixed(4)); g(20, y.toFixed(4)); });
-  }
-
-  // LINE
-  function dLine(layer, x1, y1, x2, y2) {
-    g(0,'LINE'); g(8,layer);
-    g(10,x1.toFixed(4)); g(20,y1.toFixed(4)); g(30,'0.0');
-    g(11,x2.toFixed(4)); g(21,y2.toFixed(4)); g(31,'0.0');
-  }
-
-  // CIRCLE
-  function dCircle(layer, cx, cy, r) {
-    g(0,'CIRCLE'); g(8,layer);
-    g(10,cx.toFixed(4)); g(20,cy.toFixed(4)); g(30,'0.0');
-    g(40,r.toFixed(4));
-  }
-
-  // MTEXT  (Attachment: 1=TL 2=TC 3=TR  4=ML 5=MC 6=MR  7=BL 8=BC 9=BR)
-  // \P = Zeilenumbruch in MTEXT
-  function dText(layer, x, y, txt, att = 7, ht = TH) {
-    g(0,'MTEXT'); g(8,layer);
-    g(10,x.toFixed(4)); g(20,y.toFixed(4)); g(30,'0.0');
-    g(40, ht.toFixed(4));
-    g(41,'0.0');   // Breite 0 = unbegrenzt
-    g(71, att);
-    g(1, txt);
-  }
-
-  // Kettenlinie abtasten
-  const sampleCat = c => Array.from({length: N + 1}, (_, i) => {
-    const x = L * i / N;
-    return [x, catYD(x, c)];
-  });
-
-  // ── HEADER ────────────────────────────────────────────────────
-  g(0,'SECTION'); g(2,'HEADER');
-  g(9,'$ACADVER');     g(1,'AC1015');  // R2000
-  g(9,'$INSUNITS');    g(70,6);        // 6 = Meter
-  g(9,'$LUNITS');      g(70,2);        // dezimal
-  g(9,'$LUPREC');      g(70,4);        // 4 Nachkommastellen
-  g(9,'$MEASUREMENT'); g(70,1);        // metrisch
-  g(0,'ENDSEC');
-
-  // ── TABLES ────────────────────────────────────────────────────
-  g(0,'SECTION'); g(2,'TABLES');
-
-  // Linientypen
-  g(0,'TABLE'); g(2,'LTYPE'); g(70,2);
-  g(0,'LTYPE'); g(2,'CONTINUOUS');
-    g(70,0); g(3,'Durchgezogen'); g(72,65); g(73,0); g(40,0);
-  g(0,'LTYPE'); g(2,'DASHED');
-    g(70,0); g(3,'-- -- --'); g(72,65); g(73,2); g(40,0.6); g(49,0.3); g(74,0); g(49,-0.3); g(74,0);
-  g(0,'ENDTABLE');
-
-  // Layer  (Farb-Index: 5=Blau, 30=Orange, 3=Grün, 8=Grau, 7=Schwarz/Weiss, 1=Rot, 253=Dunkelgrau)
-  const layerDefs = [
-    ['TS-T1',        5,  'CONTINUOUS'],  // Blau
-    ['TS-T2',        30, 'CONTINUOUS'],  // Orange
-    ['FD-SOLLLAGE',  8,  'DASHED'],      // Grau gestrichelt
-    ['SOK',          3,  'DASHED'],      // Grün gestrichelt
-    ['MAST',         7,  'CONTINUOUS'],  // Schwarz
-    ['SEHNE',        8,  'DASHED'],      // Grau gestrichelt
-    ['BEFESTIGUNG',  7,  'CONTINUOUS'],  // Schwarz
-    ['TIEFPUNKT',    30, 'CONTINUOUS'],  // Orange
-    ['MESSPUNKTE',   1,  'CONTINUOUS'],  // Rot
-    ['TEXT',         7,  'CONTINUOUS'],  // Schwarz
-    ['LEGENDE',      253,'CONTINUOUS'],  // Dunkelgrau
-  ];
-  g(0,'TABLE'); g(2,'LAYER'); g(70, layerDefs.length);
-  layerDefs.forEach(([name, color, ltype]) => {
-    g(0,'LAYER'); g(2,name); g(70,0); g(62,color); g(6,ltype);
-  });
-  g(0,'ENDTABLE');
-  g(0,'ENDSEC');
-
-  // ── ENTITIES ──────────────────────────────────────────────────
-  g(0,'SECTION'); g(2,'ENTITIES');
-
-  // ── SOK-Referenzlinie ─────────────────────────────────────────
-  if (hasSok) {
-    dLine('SOK', -L * 0.04, sokLv, L * 1.04, sokRv);
-    dText('TEXT', -TH * 0.5, sokLv, `SOK Mast li: ${sokLv.toFixed(3)} m ü.M.`, 6, TH * 0.85);
-    dText('TEXT',  L + TH * 0.5, sokYR, `SOK Mast re: ${sokRv.toFixed(3)} m ü.M.`, 4, TH * 0.85);
-  } else {
-    dLine('SOK', -L * 0.04, 0, L * 1.04, 0);
-    dText('TEXT', -TH * 0.5, 0, 'SOK', 6, TH * 0.85);
-  }
-
-  // ── Mastlinien ────────────────────────────────────────────────
-  dLine('MAST', 0, sokYL, 0, h1d);
-  dLine('MAST', L, sokYR, L, h2d);
-  // Mast-Symbole (kleines Kreuz)
-  dLine('MAST', -SR, h1d, SR, h1d);
-  dLine('MAST', L - SR, h2d, L + SR, h2d);
-
-  // ── Sehne ─────────────────────────────────────────────────────
-  dLine('SEHNE', 0, h1d, L, h2d);
-
-  // ── Kettenlinie T1 ────────────────────────────────────────────
-  dPolyline('TS-T1', sampleCat(c1));
-  // T1-Label an Tiefpunkt
-  const xLow1 = c1.x_low;
-  const yLow1D = catYD(xLow1, c1);
-  dText('TS-T1', xLow1, yLow1D - TH * 0.3,
-    `T1 = ${T1} °C  |  H = ${Math.round(c1.H)} N  |  f = ${c1.sag.toFixed(3)} m`, 2, TH * 0.80);
-
-  // ── Kettenlinie T2 (N-FL / Einzelleiter) ─────────────────────
-  if (isNFL || isEl) {
-    dPolyline('TS-T2', sampleCat(c2));
-    const xLow2  = c2.x_low;
-    const yLow2D = catYD(xLow2, c2);
-    dText('TS-T2', xLow2, yLow2D - TH * 0.3,
-      `T2 = ${T2} °C  |  H = ${Math.round(c2.H)} N  |  f = ${c2.sag.toFixed(3)} m`, 2, TH * 0.80);
-  }
-
-  // ── Fahrdraht-Solllage ────────────────────────────────────────
-  if (!isEl) {
-    const fdL = aY(0, h1 - sh);
-    const fdR = aY(L, h2 - sh);
-    dLine('FD-SOLLLAGE', 0, fdL, L, fdR);
-    dText('FD-SOLLLAGE', L * 0.5, (fdL + fdR) / 2 - TH * 0.3,
-      `Fd-Solllage  |  sh = ${sh} m  |  H_Fd = ${Math.round(H_Fd)} N`, 8, TH * 0.80);
-  }
-
-  // ── Befestigungspunkte ────────────────────────────────────────
-  dCircle('BEFESTIGUNG', 0, h1d, SR * 1.4);
-  dCircle('BEFESTIGUNG', L, h2d, SR * 1.4);
-
-  const bfLabel = (h, hd, tag) => hasSok
-    ? `${tag}\\Ph = ${h.toFixed(3)} m ü.SOK\\P(${hd.toFixed(3)} m ü.M.)`
-    : `${tag}\\Ph = ${h.toFixed(3)} m ü.SOK`;
-  dText('TEXT', -TH * 0.5, h1d + TH * 0.3, bfLabel(h1, h1d, 'Mast li'), 9);  // BR
-  dText('TEXT',  L + TH * 0.5, h2d + TH * 0.3, bfLabel(h2, h2d, 'Mast re'), 7);  // BL
-
-  // ── Tiefpunkt (Auslegungszustand) ─────────────────────────────
-  const xLowI  = cIst.x_low;
-  const yLowID = catYD(xLowI, cIst);
-  dCircle('TIEFPUNKT', xLowI, yLowID, SR);
-  dLine('TIEFPUNKT', xLowI, yLowID + SR, xLowI, yLowID + TH * 5);
-  const tpLbl = hasSok
-    ? `Tiefpunkt\\Px = ${xLowI.toFixed(2)} m\\P${yLowID.toFixed(3)} m ü.M.\\Pf = ${cIst.sag.toFixed(3)} m`
-    : `Tiefpunkt\\Px = ${xLowI.toFixed(2)} m\\P${cIst.y_low.toFixed(3)} m ü.SOK\\Pf = ${cIst.sag.toFixed(3)} m`;
-  dText('TIEFPUNKT', xLowI, yLowID + TH * 5.3, tpLbl, 8);
-
-  // ── Messpunkte M1–M4 ─────────────────────────────────────────
-  [[probeX1,'M1'],[probeX2,'M2'],[probeX3,'M3'],[probeX4,'M4']]
-    .filter(([x]) => x !== null)
-    .forEach(([xv, badge], idx) => {
-      const yRaw = catY(xv, cIst);
-      const yDrw = aY(xv, yRaw);
-      const ldH  = TH * (7 + idx * 3);   // Leader-Höhe (gestaffelt)
-      dCircle('MESSPUNKTE', xv, yDrw, SR * 1.3);
-      dLine('MESSPUNKTE', xv, yDrw + SR * 1.3, xv, yDrw + ldH);
-      const mpLbl = hasSok
-        ? `${badge}  x = ${xv.toFixed(2)} m\\P${yRaw.toFixed(3)} m ü.SOK\\P(${yDrw.toFixed(3)} m ü.M.)`
-        : `${badge}  x = ${xv.toFixed(2)} m\\P${yRaw.toFixed(3)} m ü.SOK`;
-      dText('MESSPUNKTE', xv, yDrw + ldH + TH * 0.2, mpLbl, 8);
-    });
-
-  // ── Legende (unterhalb der Zeichnung) ─────────────────────────
-  const sysLabel = isEl ? 'Einzelleiter' : isNFL ? 'N-FL' : 'R-FL';
-  const legY     = sokYL - TH * 2.5;
-  const legLines = [
-    `Kettenwerk-Rechner  |  ${sysLabel}`,
-    isEl ? matTs : `${matTs}  +  ${matFd}`,
-    `L = ${L.toFixed(2)} m  |  h1 = ${h1.toFixed(3)} m  |  h2 = ${h2.toFixed(3)} m`,
-    !isEl
-      ? `sh = ${sh} m  |  H_Ts = ${Math.round(H_Ts)} N  |  H_Fd = ${Math.round(H_Fd)} N`
-      : `H = ${Math.round(H_Ts)} N  |  q = ${q_ges.toFixed(4)} N/m`,
-    (isNFL || isEl)
-      ? `T1 = ${T1} °C  →  T2 = ${T2} °C  |  Durchhang T2 = ${c2.sag.toFixed(3)} m`
-      : `T = ${T1} °C  |  Durchhang = ${c1.sag.toFixed(3)} m`,
-    hasSok
-      ? `SOK Mast li = ${sokLv.toFixed(3)} m ü.M.  |  SOK Mast re = ${sokRv.toFixed(3)} m ü.M.`
-      : null,
-    `Datum: ${new Date().toLocaleDateString('de-CH')}  |  Kettenwerk-Rechner v2.1  |  SBB Fachentwicklung FS`,
-  ].filter(Boolean);
-
-  legLines.forEach((txt, i) => {
-    dText('LEGENDE', 0, legY - i * TH * 1.7, txt, 1, TH * 0.82);
-  });
-
-  // ── Spannweiten-Bemaßung (einfache Linie + Text) ──────────────
-  const dimY = sokYL - TH * 0.8;
-  dLine('TEXT', 0, dimY, L, dimY);                       // Maßlinie
-  dLine('TEXT', 0, dimY - SR, 0, dimY + SR);             // Abschlusspfeil li
-  dLine('TEXT', L, dimY - SR, L, dimY + SR);             // Abschlusspfeil re
-  dText('TEXT', L / 2, dimY + TH * 0.2,
-    `L = ${L.toFixed(2)} m`, 8, TH * 0.90);
-
-  g(0,'ENDSEC');
-  g(0,'EOF');
-
-  // ── Download ──────────────────────────────────────────────────
-  const content = buf.join('\n');
-  const blob    = new Blob([content], { type: 'application/dxf;charset=utf-8' });
-  const url     = URL.createObjectURL(blob);
-  const a       = Object.assign(document.createElement('a'), {
-    href: url,
-    download: `kettenwerk_${sysLabel}_${new Date().toISOString().slice(0,10)}.dxf`
-  });
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 
 // ═══════════════════════════════════════════════════════════════
 // INITIALISIERUNG & POLYFILLS
@@ -11411,6 +11163,29 @@ const LANG = {
     'pdf.ts.label':         'Tragseil',
     'pdf.mum.short':        'ü.M.',
     'pdf.sok.short':        'ü.SOK',
+    // Foto-Tab
+    'btn.foto':             'Foto',
+    'foto.load.hint':       'Foto laden, dann Punkte klicken',
+    'foto.done.hint':       'Alle Punkte gesetzt — Ergebnis unten.',
+    'foto.lbl.top_L':      'Mastspitze links',
+    'foto.lbl.base_L':     'Mastfuss / SOK links',
+    'foto.lbl.top_R':      'Mastspitze rechts',
+    'foto.lbl.base_R':     'Mastfuss / SOK rechts',
+    'foto.lbl.p1':         'Linker Ankerpunkt (Leiterbefestigung)',
+    'foto.lbl.p2':         'Rechter Ankerpunkt (Leiterbefestigung)',
+    'foto.lbl.cmid':       'Leiter bei Mittspan (L/2) klicken',
+    'foto.lbl.curve':      'Punkt auf Leiter',
+    // T3 Vergleichskurve
+    't3.show':              'T<sub>3</sub> Vergleichskurve einblenden',
+    't3.hide':              'T<sub>3</sub> Vergleichskurve ausblenden',
+    // Berechnungsart (Einzelleiter)
+    'par.berechnungsart':   'Berechnungsart',
+    'par.ba.ausg':          'Ausgleichend',
+    'par.ba.starr':         'Starr',
+    // Lm-Formel
+    'lm.formel':            'Formel',
+    'lm.arith':             'Arithmetisch',
+    'lm.ruling':            'Ideelle Spannweite',
   },
   fr: {
     'app.subtitle':         'Caténaire — courbe du câble avec influence de la température',
@@ -11657,6 +11432,29 @@ const LANG = {
     'pdf.ts.label':         'Câble porteur',
     'pdf.mum.short':        'alt.',
     'pdf.sok.short':        's.DRS',
+    // Foto-Tab
+    'btn.foto':             'Photo',
+    'foto.load.hint':       'Charger la photo, puis cliquer les points',
+    'foto.done.hint':       'Tous les points définis — résultat ci-dessous.',
+    'foto.lbl.top_L':      'Sommet poteau gauche',
+    'foto.lbl.base_L':     'Pied de poteau / DRS gauche',
+    'foto.lbl.top_R':      'Sommet poteau droit',
+    'foto.lbl.base_R':     'Pied de poteau / DRS droit',
+    'foto.lbl.p1':         "Point d'ancrage gauche (fixation conducteur)",
+    'foto.lbl.p2':         "Point d'ancrage droit (fixation conducteur)",
+    'foto.lbl.cmid':       'Cliquer conducteur au milieu de travée (L/2)',
+    'foto.lbl.curve':      'Point sur le conducteur',
+    // T3 Courbe comparative
+    't3.show':              'T<sub>3</sub> Afficher courbe comparative',
+    't3.hide':              'T<sub>3</sub> Masquer courbe comparative',
+    // Mode de calcul (conducteur seul)
+    'par.berechnungsart':   'Mode de calcul',
+    'par.ba.ausg':          'Compensé',
+    'par.ba.starr':         'Rigide',
+    // Formule Lm
+    'lm.formel':            'Formule',
+    'lm.arith':             'Arithmétique',
+    'lm.ruling':            'Portée idéale',
   },
   it: {
     'app.subtitle':         'Catenaria — curva del cavo con influenza della temperatura',
@@ -11903,6 +11701,29 @@ const LANG = {
     'pdf.ts.label':         'Fune portante',
     'pdf.mum.short':        's.l.m.',
     'pdf.sok.short':        's.PRF',
+    // Foto-Tab
+    'btn.foto':             'Foto',
+    'foto.load.hint':       'Caricare la foto, poi fare clic sui punti',
+    'foto.done.hint':       'Tutti i punti impostati — risultato sotto.',
+    'foto.lbl.top_L':      'Cima palo sinistro',
+    'foto.lbl.base_L':     'Piede palo / PRF sinistro',
+    'foto.lbl.top_R':      'Cima palo destro',
+    'foto.lbl.base_R':     'Piede palo / PRF destro',
+    'foto.lbl.p1':         'Punto di ancoraggio sinistro (fissaggio conduttore)',
+    'foto.lbl.p2':         'Punto di ancoraggio destro (fissaggio conduttore)',
+    'foto.lbl.cmid':       'Fare clic sul conduttore a metà campata (L/2)',
+    'foto.lbl.curve':      'Punto sul conduttore',
+    // T3 Curva comparativa
+    't3.show':              'T<sub>3</sub> Mostra curva comparativa',
+    't3.hide':              'T<sub>3</sub> Nascondi curva comparativa',
+    // Modalità di calcolo (conduttore singolo)
+    'par.berechnungsart':   'Modalità di calcolo',
+    'par.ba.ausg':          'Compensato',
+    'par.ba.starr':         'Rigido',
+    // Formula Lm
+    'lm.formel':            'Formula',
+    'lm.arith':             'Aritmetica',
+    'lm.ruling':            'Campata ideale',
   },
 };
 
@@ -12069,6 +11890,28 @@ function setLang(lang) {
   if (segDiag)  segDiag.textContent  = t('canvas.title');
   const segZeich = document.getElementById('view-seg-zeichnung');
   if (segZeich) segZeich.textContent = t('btn.drawing');
+  const segFoto  = document.getElementById('view-seg-foto');
+  if (segFoto)  segFoto.textContent  = t('btn.foto');
+
+  // ── Berechnungsart (Einzelleiter) ─────────────────────────────────────
+  const baLbl = document.getElementById('berechnungsart-label');
+  if (baLbl)  baLbl.textContent  = t('par.berechnungsart');
+  const segBaAusg  = document.getElementById('seg-ba-ausg');
+  if (segBaAusg)  segBaAusg.textContent  = t('par.ba.ausg');
+  const segBaStarr = document.getElementById('seg-ba-starr');
+  if (segBaStarr) segBaStarr.textContent = t('par.ba.starr');
+
+  // ── Lm-Formel-Toggle ─────────────────────────────────────────────────
+  const lmFormelLbl = document.getElementById('lm-formel-label');
+  if (lmFormelLbl)  lmFormelLbl.textContent  = t('lm.formel');
+  const segLmArith  = document.getElementById('seg-lm-arith');
+  if (segLmArith)  segLmArith.textContent  = t('lm.arith');
+  const segLmRuling = document.getElementById('seg-lm-ruling');
+  if (segLmRuling) segLmRuling.textContent = t('lm.ruling');
+
+  // ── T3 Vergleichskurve ────────────────────────────────────────────────
+  const t3txt = document.getElementById('t3-toggle-txt');
+  if (t3txt) t3txt.innerHTML = showT3 ? t('t3.hide') : t('t3.show');
 
   // ── Canvas ────────────────────────────────────────────────────
   const canvasDrag = document.getElementById('canvas-drag-hint');
@@ -12565,6 +12408,9 @@ renderObstacleList();
       <a href="#hb-leiter"       style="color:#444444;text-decoration:none">4 Leiterkennwerte</a> &nbsp;·&nbsp;
       <a href="#hb-kombinationen" style="color:#444444;text-decoration:none">5 Kettenwerke</a> &nbsp;·&nbsp;
       <a href="#hb-werkzeuge"    style="color:#444444;text-decoration:none">6 Werkzeuge</a> &nbsp;·&nbsp;
+      <a href="#hb-spannweite"   style="color:#444444;text-decoration:none">6.7 Lm-Formel</a> &nbsp;·&nbsp;
+      <a href="#hb-berechnungsart" style="color:#444444;text-decoration:none">6.8 Berechnungsart</a> &nbsp;·&nbsp;
+      <a href="#hb-projekte"     style="color:#444444;text-decoration:none">6.9 Projekte</a> &nbsp;·&nbsp;
       <a href="#hb-beispiel"     style="color:#444444;text-decoration:none">7 Beispielrechnung</a> &nbsp;·&nbsp;
       <a href="#hb-quellen"      style="color:#444444;text-decoration:none">8 Quellen</a> &nbsp;·&nbsp;
       <a href="#hb-glossar"      style="color:#444444;text-decoration:none">9 Glossar</a>
@@ -12959,6 +12805,8 @@ renderObstacleList();
           <li>Messpunkt-Callouts zeigen zweilagig: Bezeichnung (M1–M4) oben, Höhenwert unten.</li>
           <li>Die orangefarbene Tiefpunkt-Karte zeigt ebenfalls m ü. M., wenn SOK gesetzt.</li>
           <li>PDF-Export: Das Berechnungsprotokoll enthält alle Eingaben, Ergebnisse und das Diagramm.</li>
+          <li><strong>T<sub>3</sub>-Vergleichskurve</strong> — über «T<sub>3</sub> Vergleichskurve einblenden» (unter dem Diagramm) wird eine dritte Temperaturkurve eingeblendet. Temperatur frei wählbar (Standard 80 °C).</li>
+          <li><strong>Mindestabstand</strong> — der Schraffurbereich lässt sich mit dem Ein/Aus-Schalter neben dem Mindestabstand-Feld ein- oder ausblenden.</li>
         </ul>
       </div><!-- /hb-de -->
 
@@ -12997,6 +12845,8 @@ renderObstacleList();
           <li>Les callouts des points de mesure sont sur deux niveaux: désignation (M1–M4) en haut, valeur de hauteur en bas.</li>
           <li>La carte orange du point le plus bas indique également m s.n.m. si DRS est défini.</li>
           <li>Export PDF: le protocole de calcul contient toutes les saisies, résultats et le diagramme.</li>
+          <li><strong>Courbe comparative T<sub>3</sub></strong> — via «Afficher courbe comparative T<sub>3</sub>» (sous le diagramme) une troisième courbe de température est affichée. Température librement sélectionnable (défaut 80 °C).</li>
+          <li><strong>Distance minimale</strong> — la zone hachurée peut être affichée ou masquée avec le commutateur On/Off à côté du champ Distance minimale.</li>
         </ul>
       </div><!-- /hb-fr -->
 
@@ -13035,6 +12885,8 @@ renderObstacleList();
           <li>Le callout dei punti di misura sono su due livelli: denominazione (M1–M4) in alto, valore di altezza in basso.</li>
           <li>La scheda arancione del punto più basso mostra anch'essa m s.l.m. se PRF è impostato.</li>
           <li>Esportazione PDF: il protocollo di calcolo contiene tutti gli inserimenti, risultati e il diagramma.</li>
+          <li><strong>Curva comparativa T<sub>3</sub></strong> — tramite «Mostra curva comparativa T<sub>3</sub>» (sotto il diagramma) viene visualizzata una terza curva di temperatura. Temperatura liberamente selezionabile (predefinita 80 °C).</li>
+          <li><strong>Distanza minima</strong> — la zona tratteggiata può essere mostrata o nascosta con il commutatore On/Off accanto al campo Distanza minima.</li>
         </ul>
       </div><!-- /hb-it -->
 
@@ -13043,7 +12895,7 @@ renderObstacleList();
       <!-- DE -->
       <div class="hb-lang hb-de">
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.5 &nbsp;Einzelleiter — Reglagewerte &amp; Basiszugkraft</p>
-        <p>Im Modus <em>Einzelleiter</em> zeigt die Seitenleiste eine Infobox <strong>Reglagewerte</strong> mit der temperaturabhängigen Reglagezugkraft. Über die Schaltfläche <strong>Bearbeiten</strong> können zwei Referenzparameter angepasst werden:</p>
+        <p>Im Modus <em>Einzelleiter</em> zeigt die Seitenleiste eine Infobox <strong>Reglagewerte</strong> mit der temperaturabhängigen Reglagezugkraft. Das <strong>ⓘ</strong>-Symbol blendet die Reglagetabelle zur Information ein. Um Referenzparameter zu ändern, die globale <strong>Reglagetabelle</strong> (Tabellen-Icon im Header) öffnen und auf <strong>Bearbeiten</strong> klicken:</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
           <tr style="background:#f3f4f6">
             <td class="hb-tab-param" style="padding:4px 8px;font-weight:600;width:32%">Parameter</td>
@@ -13059,7 +12911,7 @@ renderObstacleList();
       <!-- FR -->
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.5 &nbsp;Conducteur seul — Valeurs de réglage &amp; force de base</p>
-        <p>En mode <em>Conducteur seul</em>, la barre latérale affiche une boîte d'information <strong>Valeurs de réglage</strong> avec la force de traction de réglage dépendante de la température. Via le bouton <strong>Modifier</strong>, deux paramètres de référence peuvent être ajustés:</p>
+        <p>En mode <em>Conducteur seul</em>, la barre latérale affiche une boîte d'information <strong>Valeurs de réglage</strong>. L'icône <strong>ⓘ</strong> affiche le tableau de réglage en lecture seule. Pour modifier les paramètres de référence, ouvrir le <strong>Tableau de réglage</strong> global (icône tableau dans l'en-tête) et cliquer sur <strong>Modifier</strong>:</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
           <tr style="background:#f3f4f6">
             <td style="padding:4px 8px;font-weight:600;width:32%">Paramètre</td>
@@ -13075,7 +12927,7 @@ renderObstacleList();
       <!-- IT -->
       <div class="hb-lang hb-it" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.5 &nbsp;Conduttore singolo — Valori di regolazione &amp; forza di base</p>
-        <p>In modalità <em>Conduttore singolo</em>, la barra laterale mostra una casella informativa <strong>Valori di regolazione</strong> con la forza di tiro di regolazione dipendente dalla temperatura. Tramite il pulsante <strong>Modifica</strong>, è possibile adattare due parametri di riferimento:</p>
+        <p>In modalità <em>Conduttore singolo</em>, la barra laterale mostra una casella informativa <strong>Valori di regolazione</strong>. L'icona <strong>ⓘ</strong> mostra la tabella di regolazione in sola lettura. Per modificare i parametri di riferimento, aprire la <strong>Tabella di regolazione</strong> globale (icona tabella nell'intestazione) e fare clic su <strong>Modifica</strong>:</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
           <tr style="background:#f3f4f6">
             <td style="padding:4px 8px;font-weight:600;width:32%">Parametro</td>
@@ -13124,6 +12976,181 @@ renderObstacleList();
           <li><strong>Import CSV</strong> — carica un file CSV precedentemente esportato e applica tutti i valori. Le colonne sconosciute vengono ignorate; vengono accettati solo numeri validi.</li>
         </ul>
         <p style="font-size:.8rem;color:#6b7280">I valori importati valgono come sostituzione di sessione e non vengono salvati al ricaricamento della pagina. Per i dati di progetto permanenti utilizzare la funzione Salva (file di progetto).</p>
+      </div><!-- /hb-it -->
+
+
+      <!-- ══ 6.7 Mittelspannweite & Lm-Formel ══ -->
+      <h3 id="hb-spannweite" style="font-size:.95rem;font-weight:700;color:#212121;margin:1.4rem 0 .4rem;border-bottom:2px solid #e5e5e5;padding-bottom:.25rem"></h3>
+
+      <!-- DE -->
+      <div class="hb-lang hb-de">
+        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.7 &nbsp;Mittelspannweite &amp; Lm-Formel</p>
+        <p>Im Panel <em>Spannweite</em> kann zwischen <strong>Einzelspannweite</strong> und <strong>Mittelspannweite</strong> (2–10 Felder) gewählt werden. Im Mittelspannweite-Modus bestimmt Lm die Zustandsgleichung; das Durchhangdiagramm zeigt die gewählte Einzelspannweite (Display-Feld).</p>
+        <p style="margin-top:.5rem">Zwei Formeln stehen zur Auswahl:</p>
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
+          <tr style="background:#f3f4f6">
+            <td class="hb-tab-param" style="padding:4px 8px;font-weight:600;width:38%">Formel</td>
+            <td class="hb-tab-desc" style="padding:4px 8px;font-weight:600">Beschreibung</td>
+          </tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">Arithmetisch</td><td style="padding:3px 8px">Lm = ΣL / n — einfaches Mittel aller Spannweiten. Schnelle Überschlagsrechnung.</td></tr>
+          <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">Ideelle Spannweite</td><td style="padding:3px 8px">Lm = √(ΣL³ / ΣL) — SBB-Standard nach EN 50119. Gewichtet lange Felder stärker.</td></tr>
+        </table>
+        <p>Das Lm-Feld ist <strong>frei überschreibbar</strong>: eigenen Wert eintippen → Feld wird blau, Formel-Buttons grau. Feld leeren → automatische Berechnung wird wiederhergestellt. Der manuelle Wert wird mit dem Projekt gespeichert.</p>
+      </div><!-- /hb-de -->
+
+      <!-- FR -->
+      <div class="hb-lang hb-fr" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.7 &nbsp;Portée équivalente &amp; formule Lm</p>
+        <p>Dans le panneau <em>Portée</em>, il est possible de choisir entre <strong>portée unique</strong> et <strong>portée équivalente</strong> (2–10 travées). En mode portée équivalente, Lm détermine l'équation d'état; le diagramme de flèche affiche la portée unitaire sélectionnée (champ Display).</p>
+        <p style="margin-top:.5rem">Deux formules sont disponibles:</p>
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
+          <tr style="background:#f3f4f6">
+            <td style="padding:4px 8px;font-weight:600;width:38%">Formule</td>
+            <td style="padding:4px 8px;font-weight:600">Description</td>
+          </tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">Arithmétique</td><td style="padding:3px 8px">Lm = ΣL / n — moyenne simple de toutes les portées. Calcul rapide approximatif.</td></tr>
+          <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">Portée idéale</td><td style="padding:3px 8px">Lm = √(ΣL³ / ΣL) — standard SBB selon EN 50119. Pondère davantage les grandes portées.</td></tr>
+        </table>
+        <p>Le champ Lm est <strong>librement modifiable</strong>: entrer sa propre valeur → le champ devient bleu, les boutons de formule gris. Vider le champ → le calcul automatique est rétabli. La valeur manuelle est sauvegardée avec le projet.</p>
+      </div><!-- /hb-fr -->
+
+      <!-- IT -->
+      <div class="hb-lang hb-it" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.7 &nbsp;Campata equivalente &amp; formula Lm</p>
+        <p>Nel pannello <em>Campata</em> è possibile scegliere tra <strong>campata singola</strong> e <strong>campata equivalente</strong> (2–10 campate). In modalità campata equivalente, Lm determina l'equazione di stato; il diagramma di freccia visualizza la campata singola selezionata (campo Display).</p>
+        <p style="margin-top:.5rem">Sono disponibili due formule:</p>
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
+          <tr style="background:#f3f4f6">
+            <td style="padding:4px 8px;font-weight:600;width:38%">Formula</td>
+            <td style="padding:4px 8px;font-weight:600">Descrizione</td>
+          </tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">Aritmetica</td><td style="padding:3px 8px">Lm = ΣL / n — media semplice di tutte le campate. Calcolo approssimativo rapido.</td></tr>
+          <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">Campata ideale</td><td style="padding:3px 8px">Lm = √(ΣL³ / ΣL) — standard SBB secondo EN 50119. Pondera maggiormente le campate lunghe.</td></tr>
+        </table>
+        <p>Il campo Lm è <strong>liberamente modificabile</strong>: inserire un valore proprio → il campo diventa blu, i pulsanti formula grigi. Svuotare il campo → il calcolo automatico viene ripristinato. Il valore manuale viene salvato con il progetto.</p>
+      </div><!-- /hb-it -->
+
+      <!-- ══ 6.8 Einzelleiter Berechnungsart ══ -->
+      <h3 id="hb-berechnungsart" style="font-size:.95rem;font-weight:700;color:#212121;margin:1.4rem 0 .4rem;border-bottom:2px solid #e5e5e5;padding-bottom:.25rem"></h3>
+
+      <!-- DE -->
+      <div class="hb-lang hb-de">
+        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.8 &nbsp;Einzelleiter — Berechnungsart</p>
+        <p>Im Modus <em>Einzelleiter</em> erscheint unterhalb der Basiskraft-Auswahl der Schalter <strong>Berechnungsart</strong>:</p>
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
+          <tr style="background:#f3f4f6">
+            <td class="hb-tab-param" style="padding:4px 8px;font-weight:600;width:32%">Einstellung</td>
+            <td class="hb-tab-desc" style="padding:4px 8px;font-weight:600">Wirkung</td>
+          </tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">Ausgleichend</td><td style="padding:3px 8px">L<sub>ref</sub> = Materialwert (45 m Cu, 30 m Aldrey). Mittelspannweite-Modus verfügbar.</td></tr>
+          <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">Starr</td><td style="padding:3px 8px">L<sub>ref</sub> = 25 m (fixiert). Für starr abgespannte Leitungen. Mittelspannweite-Modus deaktiviert.</td></tr>
+        </table>
+        <p style="font-size:.82rem;color:#6b7280">Die Berechnungsart beeinflusst die Reglagezugkraft-Tabelle und den aus T<sub>1</sub> abgeleiteten H-Wert. Bei «Starr» wird die Zustandsgleichung mit L<sub>ref</sub> = 25 m gerechnet, unabhängig vom Materialwert.</p>
+      </div><!-- /hb-de -->
+
+      <!-- FR -->
+      <div class="hb-lang hb-fr" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.8 &nbsp;Conducteur seul — Mode de calcul</p>
+        <p>En mode <em>Conducteur seul</em>, le commutateur <strong>Mode de calcul</strong> apparaît sous la sélection de la force de base:</p>
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
+          <tr style="background:#f3f4f6">
+            <td style="padding:4px 8px;font-weight:600;width:32%">Paramètre</td>
+            <td style="padding:4px 8px;font-weight:600">Effet</td>
+          </tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">Compensé</td><td style="padding:3px 8px">L<sub>réf</sub> = valeur matériau (45 m Cu, 30 m Aldrey). Mode portée équivalente disponible.</td></tr>
+          <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">Rigide</td><td style="padding:3px 8px">L<sub>réf</sub> = 25 m (fixe). Pour conducteurs à ancrage rigide. Mode portée équivalente désactivé.</td></tr>
+        </table>
+        <p style="font-size:.82rem;color:#6b7280">Le mode de calcul influence le tableau des forces de traction de réglage et la valeur H dérivée de T<sub>1</sub>. En mode «Rigide», l'équation d'état est calculée avec L<sub>réf</sub> = 25 m.</p>
+      </div><!-- /hb-fr -->
+
+      <!-- IT -->
+      <div class="hb-lang hb-it" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.8 &nbsp;Conduttore singolo — Modalità di calcolo</p>
+        <p>In modalità <em>Conduttore singolo</em>, il commutatore <strong>Modalità di calcolo</strong> appare sotto la selezione della forza di base:</p>
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
+          <tr style="background:#f3f4f6">
+            <td style="padding:4px 8px;font-weight:600;width:32%">Impostazione</td>
+            <td style="padding:4px 8px;font-weight:600">Effetto</td>
+          </tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">Compensato</td><td style="padding:3px 8px">L<sub>rif</sub> = valore materiale (45 m Cu, 30 m Aldrey). Modalità campata equivalente disponibile.</td></tr>
+          <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">Rigido</td><td style="padding:3px 8px">L<sub>rif</sub> = 25 m (fisso). Per conduttori ad ancoraggio rigido. Modalità campata equivalente disattivata.</td></tr>
+        </table>
+        <p style="font-size:.82rem;color:#6b7280">La modalità di calcolo influenza la tabella delle forze di tiro di regolazione e il valore H derivato da T<sub>1</sub>. Con «Rigido» l'equazione di stato viene calcolata con L<sub>rif</sub> = 25 m.</p>
+      </div><!-- /hb-it -->
+
+      <!-- ══ 6.9 Projekte speichern & laden ══ -->
+      <h3 id="hb-projekte" style="font-size:.95rem;font-weight:700;color:#212121;margin:1.4rem 0 .4rem;border-bottom:2px solid #e5e5e5;padding-bottom:.25rem"></h3>
+
+      <!-- DE -->
+      <div class="hb-lang hb-de">
+        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.9 &nbsp;Projekte speichern &amp; laden</p>
+        <p>Berechnungen werden im Browser-Speicher (localStorage) als Projekte abgelegt. Das Datei-Icon im Header öffnet die <strong>Projektverwaltung</strong>.</p>
+        <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Speichern</p>
+        <ul style="margin:.1rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li>Im Dropdown <em>Speicherort</em> bestehende Projektgruppe wählen oder «+ Neues Projekt anlegen».</li>
+          <li>Optional eine Bezeichnung für die Berechnung eingeben, dann <strong>Speichern</strong>.</li>
+          <li>Der zuletzt verwendete Speicherort wird automatisch vorausgewählt.</li>
+          <li><strong>Schnellspeichern</strong> (💾-Icon im Header) überschreibt das aktuell geladene Projekt ohne Dialog.</li>
+        </ul>
+        <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Laden</p>
+        <ul style="margin:.1rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li>Projekt in der Liste anklicken — alle Eingaben, Ergebnisse und Einstellungen werden wiederhergestellt.</li>
+          <li>Die zuletzt verwendete Projektgruppe wird beim nächsten Öffnen aufgeklappt angezeigt.</li>
+        </ul>
+        <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Export / Import</p>
+        <ul style="margin:.1rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>Export</strong> speichert eine Berechnung als JSON-Datei (Backup oder Übertragung auf anderes Gerät).</li>
+          <li><strong>Import</strong> (Datei-Icon im Header) lädt eine JSON-Exportdatei und stellt den Zustand wieder her.</li>
+        </ul>
+        <p style="font-size:.8rem;color:#6b7280">Alle Daten bleiben lokal im Browser — kein Server, keine Cloud. Bei Löschung des Browser-Cache gehen die Projekte verloren; regelmässige JSON-Exporte empfohlen.</p>
+      </div><!-- /hb-de -->
+
+      <!-- FR -->
+      <div class="hb-lang hb-fr" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.9 &nbsp;Sauvegarder &amp; charger des projets</p>
+        <p>Les calculs sont stockés dans la mémoire du navigateur (localStorage) comme projets. L'icône fichier dans l'en-tête ouvre la <strong>Gestion des projets</strong>.</p>
+        <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Sauvegarder</p>
+        <ul style="margin:.1rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li>Dans le menu déroulant <em>Emplacement</em>, choisir un groupe de projet existant ou «+ Créer nouveau projet».</li>
+          <li>Entrer optionnellement un nom pour le calcul, puis <strong>Enregistrer</strong>.</li>
+          <li>Le dernier emplacement utilisé est automatiquement présélectionné.</li>
+          <li><strong>Sauvegarde rapide</strong> (icône 💾 dans l'en-tête) écrase le projet actuellement chargé sans dialogue.</li>
+        </ul>
+        <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Charger</p>
+        <ul style="margin:.1rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li>Cliquer sur un projet dans la liste — toutes les saisies, résultats et paramètres sont restaurés.</li>
+          <li>Le dernier groupe de projet utilisé est déplié à la prochaine ouverture.</li>
+        </ul>
+        <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Export / Import</p>
+        <ul style="margin:.1rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>Export</strong> sauvegarde un calcul comme fichier JSON (sauvegarde ou transfert vers un autre appareil).</li>
+          <li><strong>Import</strong> (icône fichier dans l'en-tête) charge un fichier JSON exporté et restaure l'état.</li>
+        </ul>
+        <p style="font-size:.8rem;color:#6b7280">Toutes les données restent localement dans le navigateur — pas de serveur, pas de cloud. En cas de suppression du cache, les projets sont perdus; des exports JSON réguliers sont recommandés.</p>
+      </div><!-- /hb-fr -->
+
+      <!-- IT -->
+      <div class="hb-lang hb-it" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.9 &nbsp;Salvare &amp; caricare progetti</p>
+        <p>I calcoli vengono salvati nella memoria del browser (localStorage) come progetti. L'icona file nell'intestazione apre la <strong>Gestione progetti</strong>.</p>
+        <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Salvare</p>
+        <ul style="margin:.1rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li>Nel menu a discesa <em>Posizione di salvataggio</em>, scegliere un gruppo di progetto esistente o «+ Crea nuovo progetto».</li>
+          <li>Inserire facoltativamente un nome per il calcolo, poi <strong>Salva</strong>.</li>
+          <li>L'ultima posizione utilizzata viene automaticamente preselezionata.</li>
+          <li><strong>Salvataggio rapido</strong> (icona 💾 nell'intestazione) sovrascrive il progetto attualmente caricato senza dialogo.</li>
+        </ul>
+        <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Caricare</p>
+        <ul style="margin:.1rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li>Fare clic su un progetto nell'elenco — tutti gli inserimenti, risultati e impostazioni vengono ripristinati.</li>
+          <li>L'ultimo gruppo di progetto utilizzato viene espanso alla prossima apertura.</li>
+        </ul>
+        <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Export / Import</p>
+        <ul style="margin:.1rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>Export</strong> salva un calcolo come file JSON (backup o trasferimento su un altro dispositivo).</li>
+          <li><strong>Import</strong> (icona file nell'intestazione) carica un file JSON esportato e ripristina lo stato.</li>
+        </ul>
+        <p style="font-size:.8rem;color:#6b7280">Tutti i dati rimangono localmente nel browser — nessun server, nessun cloud. In caso di eliminazione della cache, i progetti vengono persi; si raccomandano esportazioni JSON regolari.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 7 Beispielberechnung ══ -->
