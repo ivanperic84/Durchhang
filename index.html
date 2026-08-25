@@ -2,8 +2,23 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Durchhang N-FL / R-FL Kettenwerk</title>
+
+<!-- ── Installierbare Anwendung (PWA) ──────────────────────────────────────
+     Das Manifest gibt der App eine eigene Kennung (id). Ohne diese leiten
+     Browser die Identität aus der Startadresse ab — mehrere Anwendungen unter
+     derselben Herkunft (z. B. ivanperic84.github.io) verdrängen sich dann
+     gegenseitig in der Taskleiste. -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#eb0000">
+<meta name="description" content="Berechnung des Durchhangs von Fahrleitungen und Einzelleitern mit Temperatureinfluss, Zeichnungsansicht und Foto-Auswertung.">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Durchhang">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -11925,6 +11940,9 @@ const LANG = {
     'foto.kein.bild': 'Kein Foto geladen.',
     'foto.btn.cmid':        'f Leiter',
     'foto.bei.temp':        'bei',
+    // Aktualisierungshinweis der installierten Anwendung
+    'pwa.update':     'Eine neue Fassung steht bereit.',
+    'pwa.update.btn': 'Jetzt laden',
     'msg.mat.aktualisiert': '{n} Materialien aktualisiert.',
     // Zeichnung-Toolbar
     'draw.ueberhoeung':  'Überhöhung',
@@ -12368,6 +12386,9 @@ const LANG = {
     'foto.kein.bild':       'Aucune photo chargée.',
     'foto.btn.cmid':        'f conducteur',
     'foto.bei.temp':        'à',
+    // Avis de mise à jour
+    'pwa.update':     'Une nouvelle version est disponible.',
+    'pwa.update.btn': 'Charger maintenant',
     'msg.mat.aktualisiert': '{n} matériaux mis à jour.',
     // Zeichnung-Toolbar
     'draw.ueberhoeung':  'Surélévation',
@@ -12811,6 +12832,9 @@ const LANG = {
     'foto.kein.bild':       'Nessuna foto caricata.',
     'foto.btn.cmid':        'f conduttore',
     'foto.bei.temp':        'a',
+    // Avviso di aggiornamento
+    'pwa.update':     'È disponibile una nuova versione.',
+    'pwa.update.btn': 'Carica ora',
     'msg.mat.aktualisiert': '{n} materiali aggiornati.',
     // Zeichnung-Toolbar
     'draw.ueberhoeung':  'Sovralzo',
@@ -13069,6 +13093,36 @@ berechnen();
   updateT2Float(v, false); }
 // Apply saved language (after first berechnen so all elements exist)
 if (currentLang !== 'de') setLang(currentLang);
+
+// ── Service Worker: macht die Anwendung offline verfügbar ──────────────────
+// Nur über http/https — bei einer lokal geöffneten Datei (file://) gibt es
+// keinen Service Worker, und der Aufruf würde eine Ausnahme werfen.
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      // Neue Fassung gefunden → erst melden, wenn die alte noch aktiv ist
+      reg.addEventListener('updatefound', () => {
+        const neu = reg.installing;
+        if (!neu) return;
+        neu.addEventListener('statechange', () => {
+          if (neu.state === 'installed' && navigator.serviceWorker.controller) {
+            const el = meldung(t('pwa.update'), 'info', 0);
+            if (!el) return;
+            const btn = document.createElement('button');
+            btn.className = 'meldung-zu';
+            btn.style.cssText = 'font-size:.75rem;text-decoration:underline;color:var(--primary)';
+            btn.textContent = t('pwa.update.btn');
+            btn.onclick = () => {
+              neu.postMessage('jetzt-aktualisieren');
+              location.reload();
+            };
+            el.insertBefore(btn, el.querySelector('.meldung-zu'));
+          }
+        });
+      });
+    }).catch(e => _spur('ServiceWorker', e));
+  });
+}
 
 // ── Sidebar-Fade: oben + unten ──
 { const scroll = document.querySelector('.sidebar-scroll');
