@@ -2,12 +2,18 @@
 Grundlagen SBB/
 *.xlsm
 *.xlsx
+*.pdf
 
 # ── Sicherungen und Zwischenstände ──
-Backup/
+[Bb]ackup*/
 *.bak
 index_backup_*.html
 kettenlinie_*_backup_*.html
+# Auffangmuster fuer kuenftige Sicherungen unter neuem Namen.
+# Zeichenklassen, weil Git-Muster auf Linux Gross- und Kleinschreibung
+# unterscheidet — «_Backup» wuerde von «*_backup*» sonst nicht erfasst.
+*_[Bb]ackup*
+*_[Aa]lt.html
 index_sbb_cd.html
 vem_durchhang_analyse.html
 vergleich_bericht.html
