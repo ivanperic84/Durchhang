@@ -10,7 +10,7 @@
  * CACHE_VERSION bei jeder Veröffentlichung erhöhen — alte Zwischenspeicher
  * werden beim Aktivieren automatisch entfernt.
  */
-const CACHE_VERSION = 'durchhang-v3.0.0';
+const CACHE_VERSION = 'durchhang-v3.0.1';
 
 /* Bestandteile der Anwendung. Relative Pfade, damit es sowohl unter
    /Durchhang/ auf GitHub Pages als auch in einem Unterordner funktioniert. */
@@ -32,7 +32,9 @@ self.addEventListener('install', e => {
       try { await cache.add(new Request(pfad, { cache: 'reload' })); }
       catch (err) { console.warn('[SW] nicht zwischengespeichert:', pfad, err.message); }
     }));
-    await self.skipWaiting();
+    // Bewusst KEIN skipWaiting() hier: die neue Fassung wartet, bis der Nutzer
+    // im Hinweis «Jetzt laden» drückt. Sonst würde eine bereits laufende Seite
+    // mitten im Betrieb von einem neuen Service Worker übernommen.
   })());
 });
 
@@ -59,8 +61,12 @@ self.addEventListener('fetch', e => {
     e.respondWith((async () => {
       try {
         const antwort = await fetch(req);
-        const cache = await caches.open(CACHE_VERSION);
-        cache.put(req, antwort.clone());
+        // Nur Erfolgreiches ablegen — sonst landet eine 404- oder 500-Seite
+        // im Zwischenspeicher und wird offline dauerhaft ausgeliefert.
+        if (antwort.ok) {
+          const cache = await caches.open(CACHE_VERSION);
+          cache.put(req, antwort.clone());
+        }
         return antwort;
       } catch (err) {
         return (await caches.match(req)) ||

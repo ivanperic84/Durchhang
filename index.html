@@ -16,6 +16,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Durchhang">
@@ -50,6 +51,7 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ── Header ── */
@@ -64,6 +66,11 @@ body {
   position: sticky;
   top: 0;
   z-index: 50;
+  /* viewport-fit=cover blendet den Inhalt bis unter Statusleiste und
+     Seitenkerben. Im installierten Vollbild sonst verdeckte Kopfzeile. */
+  padding-top: calc(.85rem + env(safe-area-inset-top, 0px));
+  padding-left: calc(2rem + env(safe-area-inset-left, 0px));
+  padding-right: calc(2rem + env(safe-area-inset-right, 0px));
 }
 .header-icon {
   width: 36px; height: 36px;
@@ -13098,26 +13105,41 @@ if (currentLang !== 'de') setLang(currentLang);
 // Nur über http/https — bei einer lokal geöffneten Datei (file://) gibt es
 // keinen Service Worker, und der Aufruf würde eine Ausnahme werfen.
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+
+  // Nach dem Wechsel auf die neue Fassung genau einmal neu laden.
+  let _neuLaden = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (_neuLaden) return;
+    _neuLaden = true;
+    location.reload();
+  });
+
+  // Hinweis mit «Jetzt laden» einblenden. Wird nur aufgerufen, wenn bereits
+  // eine ältere Fassung aktiv ist — beim ersten Besuch gibt es nichts zu melden.
+  function _updateHinweis(wartend) {
+    const el = meldung(t('pwa.update'), 'info', 0);
+    if (!el) return;
+    const btn = document.createElement('button');
+    btn.className = 'meldung-zu';
+    btn.style.cssText = 'font-size:.75rem;text-decoration:underline;color:var(--primary)';
+    btn.textContent = t('pwa.update.btn');
+    // Kein location.reload() hier: das übernimmt controllerchange, sobald die
+    // neue Fassung tatsächlich aktiv ist.
+    btn.onclick = () => wartend.postMessage('jetzt-aktualisieren');
+    el.insertBefore(btn, el.querySelector('.meldung-zu'));
+  }
+
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').then(reg => {
-      // Neue Fassung gefunden → erst melden, wenn die alte noch aktiv ist
+      // Eine Fassung kann schon warten, wenn die Seite zwischenzeitlich ohne
+      // Klick auf «Jetzt laden» neu geladen wurde.
+      if (reg.waiting && navigator.serviceWorker.controller) _updateHinweis(reg.waiting);
+
       reg.addEventListener('updatefound', () => {
         const neu = reg.installing;
         if (!neu) return;
         neu.addEventListener('statechange', () => {
-          if (neu.state === 'installed' && navigator.serviceWorker.controller) {
-            const el = meldung(t('pwa.update'), 'info', 0);
-            if (!el) return;
-            const btn = document.createElement('button');
-            btn.className = 'meldung-zu';
-            btn.style.cssText = 'font-size:.75rem;text-decoration:underline;color:var(--primary)';
-            btn.textContent = t('pwa.update.btn');
-            btn.onclick = () => {
-              neu.postMessage('jetzt-aktualisieren');
-              location.reload();
-            };
-            el.insertBefore(btn, el.querySelector('.meldung-zu'));
-          }
+          if (neu.state === 'installed' && navigator.serviceWorker.controller) _updateHinweis(neu);
         });
       });
     }).catch(e => _spur('ServiceWorker', e));
