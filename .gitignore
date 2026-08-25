@@ -1,0 +1,22 @@
+# ── Interne SBB-Unterlagen — gehören NICHT in ein öffentliches Repository ──
+Grundlagen SBB/
+*.xlsm
+*.xlsx
+
+# ── Sicherungen und Zwischenstände ──
+Backup/
+*.bak
+index_backup_*.html
+kettenlinie_*_backup_*.html
+index_sbb_cd.html
+vem_durchhang_analyse.html
+vergleich_bericht.html
+vergleich.py
+
+# ── Werkzeug-Konfiguration ──
+.claude/
+
+# ── Windows / WSL ──
+*:Zone.Identifier
+Thumbs.db
+desktop.ini
