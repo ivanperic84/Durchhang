@@ -13,6 +13,9 @@ vem_durchhang_analyse.html
 vergleich_bericht.html
 vergleich.py
 
+# ── Interne Notizen ──
+sbb-tool.md
+
 # ── Werkzeug-Konfiguration ──
 .claude/
 
