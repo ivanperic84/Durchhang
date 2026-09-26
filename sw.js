@@ -2,26 +2,35 @@
  *
  * Die App ist eine einzige HTML-Datei; der Zwischenspeicher ist entsprechend
  * klein. Strategie:
- *   HTML  → «network first»: online immer die neueste Fassung, offline die
+ *   HTML und eigene Skripte (.js)
+ *         → «network first»: online immer die neueste Fassung, offline die
  *           zwischengespeicherte. Verhindert, dass nach einer Aktualisierung
- *           eine veraltete Datei hängen bleibt.
- *   Rest  → «cache first»: Icons und Schriften ändern sich praktisch nie.
+ *           eine veraltete Datei hängen bleibt — und dass eine neue Seite
+ *           mit einem alten Rechenkern (rechenkern.js) zusammentrifft.
+ *   Rest  → «cache first»: Icons und Schriften (fonts/) ändern sich praktisch nie.
  *
  * CACHE_VERSION bei jeder Veröffentlichung erhöhen — alte Zwischenspeicher
  * werden beim Aktivieren automatisch entfernt.
  */
-const CACHE_VERSION = 'durchhang-v3.0.1';
+const CACHE_VERSION = 'durchhang-v3.9.1';
 
 /* Bestandteile der Anwendung. Relative Pfade, damit es sowohl unter
    /Durchhang/ auf GitHub Pages als auch in einem Unterordner funktioniert. */
 const APP_DATEIEN = [
   './',
   './index.html',
+  './rechenkern.js',
+  './export3d.js',
+  './abschnitt.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
   './icon-maskable-512.png',
   './favicon-32.png',
+  './icon.svg',
+  './apple-touch-icon.png',
+  './fonts/inter-latin-wght-normal.woff2',
+  './fonts/inter-latin-ext-wght-normal.woff2',
 ];
 
 self.addEventListener('install', e => {
@@ -55,8 +64,10 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   const istHtml = req.mode === 'navigate' ||
                   (req.headers.get('accept') || '').includes('text/html');
+  const istEigenesSkript = url.origin === self.location.origin &&
+                           url.pathname.endsWith('.js');
 
-  if (istHtml) {
+  if (istHtml || istEigenesSkript) {
     // Netz zuerst, Zwischenspeicher als Rückfall
     e.respondWith((async () => {
       try {
@@ -69,6 +80,8 @@ self.addEventListener('fetch', e => {
         }
         return antwort;
       } catch (err) {
+        if (istEigenesSkript) return (await caches.match(req)) ||
+               new Response('', { status: 504 });
         return (await caches.match(req)) ||
                (await caches.match('./index.html')) ||
                (await caches.match('./')) ||
@@ -85,10 +98,8 @@ self.addEventListener('fetch', e => {
     if (treffer) return treffer;
     try {
       const antwort = await fetch(req);
-      // Nur Eigenes und die Google-Schriften dauerhaft ablegen
-      const ablegen = url.origin === self.location.origin ||
-                      url.hostname.endsWith('googleapis.com') ||
-                      url.hostname.endsWith('gstatic.com');
+      // Nur Eigenes dauerhaft ablegen (Schriften liegen seit v3.1 in fonts/)
+      const ablegen = url.origin === self.location.origin;
       if (ablegen && (antwort.ok || antwort.type === 'opaque')) {
         const cache = await caches.open(CACHE_VERSION);
         cache.put(req, antwort.clone());

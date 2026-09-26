@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Durchhang: Kettenwerk mit zwei Masten. Farben wie App «Vierendeel». -->
+  <rect width="100" height="100" rx="22" fill="#14161c"/>
+  <g stroke-linecap="round" fill="none">
+    <!-- Masten -->
+    <line x1="20" y1="26" x2="20" y2="78" stroke="#6b6e79" stroke-width="4.2"/>
+    <line x1="80" y1="26" x2="80" y2="78" stroke="#6b6e79" stroke-width="4.2"/>
+    <!-- Hänger -->
+    <g stroke="#6b6e79" stroke-width="1.6">
+      <line x1="35" y1="40.6" x2="35" y2="56"/>
+      <line x1="50" y1="44.5" x2="50" y2="56"/>
+      <line x1="65" y1="40.6" x2="65" y2="56"/>
+    </g>
+    <!-- Fahrdraht -->
+    <line x1="20" y1="56" x2="80" y2="56" stroke="#b8bac4" stroke-width="3"/>
+    <!-- Tragseil (Kettenlinie) -->
+    <path d="M20 30 Q50 59 80 30" stroke="#7c8de0" stroke-width="6"/>
+  </g>
+</svg>

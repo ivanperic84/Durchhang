@@ -1,0 +1,30 @@
+# Führt bei jedem Hochladen die Tests aus.
+# Ein rotes Kreuz auf GitHub heisst: eine Änderung hat Rechenergebnisse verändert
+# oder eine Funktion der App läuft in einen Fehler.
+name: Testrechnungen
+on:
+  push:
+  pull_request:
+jobs:
+  tests:
+    name: Rechenkern und Export
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+
+  browser:
+    name: App im Browser (Rundgang, 288 Rechenfälle)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
