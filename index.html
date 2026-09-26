@@ -1670,13 +1670,14 @@ button.header-manual-link:hover {
         <div class="seg-ctrl" id="el-basis-btns" style="width:100%"></div>
       </div>
 
-      <!-- Einzelleiter: Berechnungsart -->
+      <!-- Berechnungsart (Einzelleiter und N-FL) -->
       <div id="berechnungsart-row" style="display:none;margin-top:.5rem">
         <label id="berechnungsart-label" data-i18n="par.berechnungsart" style="font-size:.72rem;font-weight:500;color:var(--muted);display:block;margin-bottom:.25rem">Berechnungsart</label>
         <div class="seg-ctrl" style="width:100%">
           <button class="seg-btn active" id="seg-ba-ausg" data-i18n="par.ba.ausg" onclick="setBerechnungsart('ausgleichend')">Ausgleichend</button>
           <button class="seg-btn"        id="seg-ba-starr" data-i18n="par.ba.starr" onclick="setBerechnungsart('starr')">Starr</button>
         </div>
+        <div id="ba-hint" style="font-size:.65rem;color:var(--tertiary);margin-top:.25rem"></div>
       </div>
 
       <!-- Einzelleiter: Reglagewert-Info -->
@@ -2134,7 +2135,7 @@ button.header-manual-link:hover {
             </div>
             <!-- N-FL: berechnete Belastet-Zugkraft (passiv) -->
             <div id="h-belastet-display" style="margin-top:.4rem">
-              <label id="h-belastet-lbl" style="font-size:.72rem;font-weight:500;color:var(--muted)">H Ts belastet <span style="font-weight:400;color:var(--tertiary)">(berechnet)</span></label>
+              <label id="h-belastet-lbl" style="font-size:.72rem;font-weight:500;color:var(--muted)">H Ts belastet <span style="font-weight:400;color:var(--tertiary)">(berechnet, bei 10 °C)</span></label>
               <div class="input-wrap" style="margin-top:.18rem">
                 <input type="number" id="tension-belastet" readonly tabindex="-1"
                   style="background:var(--bg);color:var(--muted);cursor:default;pointer-events:none">
@@ -2927,9 +2928,11 @@ const MATERIALS = {
 // MTS: Gewichtskraft Ts unbelastet [N/m]
 // E, AL, AK: Elastizitätsmodul, Ausdehnungskoeff., Querschnitt des Tragseils
 const FL_COMBINATIONS = {
-  'stcu50_cu107': { MFL: 13.87640975, MTS: 4.0109198, E: 1.59e11, AL: 11.5e-6,  AK: 4.9450e-5 },
-  'stcu92_cu107': { MFL: 18.0834626,  MTS: 8.2179727, E: 1.24e11, AL: 16.2e-6,  AK: 9.241e-5  },
-  'stcu92_cu150': { MFL: 22.4572285,  MTS: 8.2179727, E: 1.24e11, AL: 16.2e-6,  AK: 9.240e-5  },
+  // qFdAbnutzung: für die Abnutzung massgebendes Fahrdrahtgewicht [N/m], aus
+  // Excel Blatt «Daten» (MFL − MFL abgenutzt) / Abnutzungsgrad
+  'stcu50_cu107': { MFL: 13.87640975, MTS: 4.0109198, E: 1.59e11, AL: 11.5e-6,  AK: 4.9450e-5, qFdAbnutzung: 9.1594111 },
+  'stcu92_cu107': { MFL: 18.0834626,  MTS: 8.2179727, E: 1.24e11, AL: 16.2e-6,  AK: 9.241e-5,  qFdAbnutzung: 9.1594111 },
+  'stcu92_cu150': { MFL: 22.4572285,  MTS: 8.2179727, E: 1.24e11, AL: 16.2e-6,  AK: 9.240e-5,  qFdAbnutzung: 13.533177 },
 };
 
 // ── Kettenwerk-Kombinationen (Quelle: SBB 0161.1013.0001 / Durchhang 2026.xlsm) ──
@@ -5576,7 +5579,9 @@ function compute3pt(L, h1, h2) {
     const qFdBase  = parseFloat(document.getElementById('weight-fd').value);
     const qFd      = qFdBase * (1 - wearPct / 100);
     const qTs      = parseFloat(document.getElementById('weight-ts').value);
-    M = combo ? (combo.MFL - qFdBase * (wearPct / 100)) : (qTs + qFd + 0.02 * 9.81);
+    M = combo ? (sysMode === 'nfl' ? mflAbgenutzt(combo, wearPct, qFdBase)
+                                   : combo.MFL - qFdBase * (wearPct / 100))
+              : (qTs + qFd + Q_HAENGER);
   }
 
   if (xC <= 0 || xC >= c) {
@@ -5631,10 +5636,13 @@ function compute3pt(L, h1, h2) {
     const Lm       = parseFloat(document.getElementById('span').value) || c;
     let H_ub;
     if (combo) {
+      // Gemessen wird bei T1 (belastet, mit Fahrdrahtzug). Rückrechnung über den
+      // Bezugszustand 10 °C wie in der Hinrechnung (rechenkern.js).
+      const T1  = parseFloat(document.getElementById('temp1').value);
       const qFdBase = parseFloat(document.getElementById('weight-fd').value);
-      const MFL_eff = combo.MFL - qFdBase * (wearPct / 100);
-      const EA_fl   = combo.E * combo.AK;
-      H_ub = solveLoadingInverse(FH, combo.MTS, MFL_eff, Lm, EA_fl);
+      const H_Fd = parseFloat(document.getElementById('tension-fd').value);
+      H_ub = nflUnbelastetAusGemessen(FH, T1, T1,
+        { Lm, H_Fd, q_ges: mflAbgenutzt(combo, wearPct, qFdBase), flCombo: combo, wearPct });
     } else {
       const qTs = parseFloat(document.getElementById('weight-ts').value);
       const qFd = parseFloat(document.getElementById('weight-fd').value) * (1 - wearPct / 100);
@@ -5781,17 +5789,11 @@ function updateSysModeUI(mode) {
   zeigeElement(document.getElementById('seg-ruling'), !(_rulingHidden));
   if (_rulingHidden && spanMode === 'ruling') setSpanMode('single');
 
-  // Berechnungsart: nur Einzelleiter
+  // Berechnungsart: Einzelleiter und N-FL (R-FL: konstante Zugkraft, keine Wahl)
   const baRow = document.getElementById('berechnungsart-row');
-  zeigeElement(baRow, isEl);
-  // Beim Wechsel weg von Einzelleiter → Berechnungsart zurücksetzen
-  if (!isEl && elBerechnungsart !== 'ausgleichend') {
-    elBerechnungsart = 'ausgleichend';
-    const ba = document.getElementById('seg-ba-ausg');
-    const bs = document.getElementById('seg-ba-starr');
-    if (ba) ba.classList.add('active');
-    if (bs) bs.classList.remove('active');
-  }
+  zeigeElement(baRow, isEl || isNfl);
+  if (isRfl && elBerechnungsart !== 'ausgleichend') elBerechnungsart = 'ausgleichend';
+  _berechnungsartUI();
 }
 
 function t2TempColor(temp) {
@@ -6428,10 +6430,7 @@ function _setProjectStateIntern(s) {
   sysMode = s.sysMode ?? 'nfl';
   // Berechnungsart vor updateSysModeUI setzen (damit Ruling-Span-Visibility korrekt)
   elBerechnungsart = s.elBerechnungsart ?? 'ausgleichend';
-  { const ba = document.getElementById('seg-ba-ausg');
-    const bs = document.getElementById('seg-ba-starr');
-    if (ba) ba.classList.toggle('active', elBerechnungsart === 'ausgleichend');
-    if (bs) bs.classList.toggle('active', elBerechnungsart === 'starr'); }
+  _berechnungsartUI();
   mode3pt = false;  // kurz false, damit updateSysModeUI nichts zuruecksetzt
   updateSysModeUI(sysMode);
 
@@ -7423,21 +7422,33 @@ function updateH_Ts_ubFromT1() {
 let elReglageHmaxOvr = null;   // H bei −20 °C, Benutzer-Override
 let elReglageLrefOvr = null;   // L Referenzspannweite, Benutzer-Override
 let elReglageOpen    = false;  // Edit-Panel geöffnet
-let elBerechnungsart = 'ausgleichend'; // 'ausgleichend' | 'starr' (Lref=25m)
+// Berechnungsart nach SBB-Dok. 0161.1013.0005.1 — gilt für Einzelleiter und N-FL
+// (Name historisch «el…»). R-FL hat konstante Zugkraft, dort entfällt die Wahl.
+//   Ausgleichend: Zugkraft mit Mittelspannweite c_m (Excel: Eingabe «c_m»)
+//   Starr:        Zugkraft mit Projektspannweite c_proj des Feldes (Excel: «c_proj»),
+//                 Mittelspannweite gesperrt; beim Einzelleiter zusätzlich L_ref = 25 m
+let elBerechnungsart = 'ausgleichend'; // 'ausgleichend' | 'starr'
+
+function _berechnungsartUI() {
+  const art = elBerechnungsart;
+  document.getElementById('seg-ba-ausg')?.classList.toggle('active', art === 'ausgleichend');
+  document.getElementById('seg-ba-starr')?.classList.toggle('active', art === 'starr');
+  const hint = document.getElementById('ba-hint');
+  if (hint) hint.textContent = t(art === 'starr' ? 'par.ba.hint.starr' : 'par.ba.hint.ausg');
+}
 
 function setBerechnungsart(art) {
   elBerechnungsart = art;
-  const btnAusg = document.getElementById('seg-ba-ausg');
-  const btnStarr = document.getElementById('seg-ba-starr');
-  if (btnAusg) btnAusg.classList.toggle('active', art === 'ausgleichend');
-  if (btnStarr) btnStarr.classList.toggle('active', art === 'starr');
+  _berechnungsartUI();
   // Starr = nur Einzelspannweite (keine Mittelspannweite)
   const segRuling = document.getElementById('seg-ruling');
   zeigeElement(segRuling, !(art === 'starr'));
   if (art === 'starr' && spanMode === 'ruling') setSpanMode('single');
-  // Manuelle L_ref-Overrides verwerfen
-  elReglageLrefOvr = null;
-  _applyReglageOvr();
+  if (sysMode === 'el') {
+    // Manuelle L_ref-Overrides verwerfen (Reglage Einzelleiter)
+    elReglageLrefOvr = null;
+    _applyReglageOvr();
+  }
   berechnen();
 }
 let _elMatEdits  = {};     // { 'cu95': { H_max: 6000, L_ref: 45 }, ... } — modal overrides
@@ -7918,12 +7929,11 @@ function readInputs() {
   // liest nur und darf das DOM nicht verändern (quickDraw() nutzt es beim Ziehen).
   let H_Ts, q_ges_eff, H_Ts_abgeleitet = false;
   if (sysMode === 'nfl' && flCombo) {
-    // Abnutzung: nur reines Fahrdraht-Drahtgewicht (q_Fd_base) wird reduziert
-    const MFL_eff = flCombo.MFL - q_Fd_base * (wearPct / 100);
-    q_ges_eff = MFL_eff;
-    const EA_fl = flCombo.E * flCombo.AK;
-    // Stufe 1: Einbauzustand mit neuem Draht (MFL_orig) → Ht0
-    H_Ts = solveLoadingEq(H_Ts_ub, flCombo.MTS, flCombo.MFL, Lm, EA_fl) ?? H_Ts_ub;
+    // Wie SBB-Excel: Abnutzungsgewicht aus der Kombination; H_Ts ist der
+    // Bezugszustand «Ts belastet bei 10 °C» (neuer Draht), aus der unbelasteten
+    // Montagezugkraft bei T1 — siehe nflBezugszustand() in rechenkern.js
+    q_ges_eff = mflAbgenutzt(flCombo, wearPct, q_Fd_base);
+    H_Ts = nflBezugszustand(H_Ts_ub, T1, flCombo, Lm);
     H_Ts_abgeleitet = true;
   } else if (sysMode === 'rfl' && flCombo) {
     // R-FL mit bekannter Kombination: MFL aus Tabelle (exakte Gewichte inkl. Klemmen/Hänger)
@@ -9463,7 +9473,8 @@ function buildPdfSectionHtml(projName, canvasImg) {
   const C  = EA !== null ? 1 / EA : null;
   const K  = C !== null ? G / (H_Ts ** 2) - C * H_Ts + alpha * deltaT : null;
   // Stufe 1: unbelastet → belastet (nur N-FL)
-  const isNFL_ub = isNFL && H_Ts_ub != null && EA_Ts != null;
+  const isNFL_ub = isNFL && !flCombo && H_Ts_ub != null && EA_Ts != null;
+  const isNFL_xl = isNFL && !!flCombo;   // Rechengang wie SBB-Excel (Bezug 10 °C)
   const G_ub = isNFL_ub ? (q_ges * Lm) ** 2 / 24 : null;
   const K_ub = isNFL_ub ? (q_Ts * Lm) ** 2 / (24 * H_Ts_ub ** 2) - H_Ts_ub / EA_Ts : null;
 
@@ -9562,12 +9573,29 @@ ${isNFL_ub ? `
   <p class="sub">H<sub>Ts,belastet</sub> = <strong class="r">${fN(H_Ts,0)} N</strong></p>
 </div>` : ''}
 
+${isNFL_xl ? `
+<!-- ── Schritt 1b: Bezugszustand 10 °C (wie SBB «Durchhang 2026.xlsm») ── -->
+<h2>${t('pdf.step1b')} &nbsp;—&nbsp; ${t('pdf.bezug.titel')}</h2>
+<div class="step">
+  <p class="sub2">${t('pdf.bezug.text')}</p>
+  <p class="sub"><em class="r">(gk<sub>x</sub> / x)² − (gk<sub>0</sub> / H<sub>ub</sub>)² − G · (α·(10 °C − T<sub>1</sub>) + (x − H<sub>ub</sub>) / (E·A)) = 0</em></p>
+  <p class="sub2">G = 24/Lm² + (gk<sub>0</sub>/H<sub>ub</sub>)² &nbsp;|&nbsp; gk<sub>x</sub> = MFL = ${flCombo.MFL.toFixed(4)} N/m &nbsp;|&nbsp; gk<sub>0</sub> = MTS = ${flCombo.MTS.toFixed(4)} N/m &nbsp;|&nbsp; Lm = ${f3(Lm)} m</p>
+  <p class="sub">H<sub>ub</sub> = ${fN(H_Ts_ub,0)} N bei T<sub>1</sub> = ${T1} °C &nbsp;→&nbsp; H<sub>Ts,10 °C</sub> = <strong class="r">${fN(H_Ts,0)} N</strong> &nbsp;<em style="color:var(--muted);font-size:.82em">(${t('pdf.gerundet.10')})</em></p>
+</div>
+<div class="step">
+  <p><strong>${t('pdf.nfl.zustgl')}</strong></p>
+  <p class="sub"><em class="w">((gk<sub>x</sub> + gk<sub>0</sub>·H<sub>Fd</sub>/H<sub>0</sub>) / (H<sub>Fd</sub> + x))² − (gk<sub>0</sub>/H<sub>0</sub>)² − G · (α·(T − 10 °C) + (x − H<sub>0</sub>)/(E·A)) = 0</em></p>
+  <p class="sub2">H<sub>0</sub> = H<sub>Ts,10 °C</sub> &nbsp;|&nbsp; gk<sub>x</sub> = q<sub>ges</sub>${ZL > 0 ? ' + Z<sub>L</sub>' : ''} &nbsp;|&nbsp; gk<sub>0</sub> = MFL (neuer Fahrdraht) &nbsp;|&nbsp; ${t('pdf.gerundet.5')}</p>
+  <p class="sub">T<sub>1</sub> = ${T1} °C &nbsp;→&nbsp; H<sub>Ts,1</sub> = <strong class="r">${fN(c1.H,0)} N</strong></p>
+  <p class="sub">T<sub>2</sub> = ${T2} °C &nbsp;→&nbsp; H<sub>Ts,2</sub> = <strong class="w">${fN(c2.H,0)} N</strong></p>
+</div>` : ''}
+
 <!-- ── Schritt 2: Kettenlinie ── -->
 <h2>${t('pdf.step2')} &nbsp;—&nbsp; ${isNFL || isEl ? `${t('pdf.ausgangszustand')} (T<sub>1</sub> = ${T1} °C)` : `(T = ${T1} °C)`}</h2>
 <div class="step">
   <p><strong>${t('pdf.katenlin.param')}</strong></p>
   <p class="sub"><em>a = H<sub>Ts</sub> / q<sub>ges</sub></em></p>
-  <p class="sub">a = ${fN(H_Ts,1)} / ${q_ges.toFixed(4)} = <strong class="r">${f3(c1.a)} m</strong></p>
+  <p class="sub">a = ${fN(c1.H,1)} / ${q_ges.toFixed(4)} = <strong class="r">${f3(c1.a)} m</strong></p>
 </div>
 <div class="step">
   <p><strong>${t('pdf.katenlin.geo')}</strong></p>
@@ -9586,7 +9614,7 @@ ${isNFL_ub ? `
     = <strong class="r">${fN(c1.T_max,1)} N</strong></p>
 </div>
 
-${(isNFL || isEl) && C !== null && K !== null ? `
+${(isEl || (isNFL && !flCombo)) && C !== null && K !== null ? `
 <!-- ── Schritt 3: Zustandsgleichung ── -->
 <h2 class="warm">${t('pdf.step3')} &nbsp;—&nbsp; (${isEl ? 'Einzelleiter' : 'N-FL'}, ΔT = ${sign(deltaT)}${deltaT} K)</h2>
 <div class="step">
@@ -9619,7 +9647,7 @@ ${isNFL && flCombo ? `
 <div class="step">
   <p><strong>${t('pdf.fd.kombi')}</strong></p>
   <p class="sub2">${t('pdf.fd.kombibody')}</p>
-  <p class="sub"><em class="w">q<sub>vem</sub> = MFL × (1 + H<sub>Fd</sub>/F<sub>0</sub>)${ZL > 0 ? ' + Z<sub>L</sub>' : ''}</em> &nbsp;&nbsp;F<sub>0</sub> = H<sub>Ts</sub> bei T<sub>1</sub> (belastet)</p>
+  <p class="sub"><em class="w">q<sub>vem</sub> = gk<sub>x</sub> + gk<sub>0</sub>·H<sub>Fd</sub>/F<sub>0</sub>${ZL > 0 ? ' + Z<sub>L</sub>' : ''}</em> &nbsp;&nbsp;F<sub>0</sub> = H<sub>Ts</sub> belastet bei 10 °C</p>
   <p class="sub"><em class="w">L<sub>T1</sub> = L + 2·|Δh|·(H<sub>Ts,2</sub>+H<sub>Fd</sub>) / (L·q<sub>vem</sub>)</em> &nbsp;&nbsp;[VEM 7.82] &nbsp;|Δh| = |h<sub>2</sub>−h<sub>1</sub>| &nbsp;→ L<sub>T1</sub> ≥ L immer</p>
   <p class="sub"><em class="w">f<sub>Fd</sub> = L<sub>T1</sub>² / 8 · q<sub>vem</sub> / (H<sub>Ts,2</sub> + H<sub>Fd</sub>)</em> &nbsp;&nbsp;[VEM 7.66]</p>
   <p class="sub2" style="color:#eb0000">Die im Diagramm angezeigte Ts-Kurve bei T<sub>2</sub> entspricht der kombinierten Kettenlinie des Ts+Fd-Systems mit den Parametern q<sub>vem</sub> und H<sub>Ts,2</sub>+H<sub>Fd</sub>. Dieser Ansatz stimmt mit der VEM-Parabel überein (Abweichung &lt; 5 mm für übliche Spannweiten).</p>
@@ -9627,13 +9655,13 @@ ${isNFL && flCombo ? `
 <div class="step">
   <p><strong>${t('pdf.berechn.werte')}</strong></p>
   <p class="sub">MFL = ${flCombo.MFL.toFixed(5)} N/m &nbsp;(Quelle: SBB Durchhang-Excel / VBA)</p>
-  <p class="sub">F<sub>0</sub> = H<sub>Ts,1</sub> = ${fN(H_Ts,0)} N &nbsp;(Ts-Zug bei T<sub>1</sub> = ${T1} °C, belastet)</p>
+  <p class="sub">F<sub>0</sub> = ${fN(H_Ts,0)} N &nbsp;(Ts belastet bei 10 °C, Bezugszustand)</p>
   <p class="sub">H<sub>Ts,2</sub> = ${fN(c2.H,0)} N &nbsp;(Ts-Zug bei T<sub>2</sub> = ${T2} °C)</p>
   <p class="sub">H<sub>Fd</sub> = ${fN(H_Fd,0)} N &nbsp;(konstant)</p>
-  <p class="sub">q<sub>vem</sub> = MFL × (1 + H<sub>Fd</sub>/F<sub>0</sub>)${ZL > 0 ? ' + Z<sub>L</sub>' : ''}
-    = ${flCombo.MFL.toFixed(4)} × (1 + ${fN(H_Fd,0)}/${fN(H_Ts,0)})${ZL > 0 ? ` + ${ZL.toFixed(4)}` : ''}
-    = <strong class="r">${(flCombo.MFL*(1+H_Fd/H_Ts)+ZL).toFixed(4)} N/m</strong></p>
-  ${(()=>{ const _qv=flCombo.MFL*(1+H_Fd/H_Ts)+ZL, _absDH=Math.abs(h2-h1),
+  <p class="sub">q<sub>vem</sub> = gk<sub>x</sub> + gk<sub>0</sub>·H<sub>Fd</sub>/F<sub>0</sub>${ZL > 0 ? ' + Z<sub>L</sub>' : ''}
+    = ${q_ges.toFixed(4)} + ${flCombo.MFL.toFixed(4)} × ${fN(H_Fd,0)}/${fN(H_Ts,0)}${ZL > 0 ? ` + ${ZL.toFixed(4)}` : ''}
+    = <strong class="r">${(calcState.q_vem_vem ?? (flCombo.MFL*(1+H_Fd/H_Ts)+ZL)).toFixed(4)} N/m</strong></p>
+  ${(()=>{ const _qv=calcState.q_vem_vem ?? (flCombo.MFL*(1+H_Fd/H_Ts)+ZL), _absDH=Math.abs(h2-h1),
             _LT1=_absDH>1e-9 ? L+2*_absDH*(c2.H+H_Fd)/(L*_qv) : L;
     return _absDH>1e-9
       ? `<p class="sub">|Δh| = |h<sub>2</sub> − h<sub>1</sub>| = |${fN(h2,2)} − ${fN(h1,2)}| = <strong class="r">${fN(_absDH,2)} m</strong></p>
@@ -11410,7 +11438,7 @@ const LANG = {
     'par.H.ts.ub':          'H Ts unbelastet',
     'par.H.ts.const':       'H Ts (konstant)',
     'par.H.ts.b':           'H Ts belastet',
-    'par.H.ts.b.sub':       '(berechnet)',
+    'par.H.ts.b.sub':       '(berechnet, bei 10 °C)',
     'par.H.el':             'H Leiter (direkt)',
     'par.3pt':              '3-Punkte-Messung',
     'par.3pt.hdr':          '3-Punkte-Messung',
@@ -11796,6 +11824,13 @@ const LANG = {
     'proj.import.btn':   'JSON importieren',
     'proj.local.note':   'Daten werden nur lokal im Browser gespeichert',
     // ── Oberfläche (v3.1) ──
+    'par.ba.hint.starr': 'Zugkraft mit Projektspannweite c_proj des Feldes (SBB 0161.1013.0005.1)',
+    'par.ba.hint.ausg': 'Zugkraft mit Mittelspannweite c_m, Durchhang je Feld (SBB 0161.1013.0005.1)',
+    'pdf.bezug.titel': 'Bezugszustand: Ts belastet bei 10 °C',
+    'pdf.bezug.text': 'Wie SBB «Durchhang 2026.xlsm»: Bei 10 °C hängt der Fahrdraht waagrecht; sein Zug wirkt erst bei Abweichung davon. Die unbelastete Montagezugkraft H<sub>ub</sub> bei T<sub>1</sub> wird zuerst in den belasteten Zustand bei 10 °C umgerechnet (volles Gewicht, neuer Fahrdraht, ohne Fahrdrahtzug).',
+    'pdf.nfl.zustgl': 'Zustandsgleichung N-FL mit Fahrdrahtzug (VEM, Excel «Upro1»)',
+    'pdf.gerundet.10': 'gerundet auf 10 N wie Excel',
+    'pdf.gerundet.5': 'Ergebnis gerundet auf 5 N (mit Eislast 10 N) wie Excel',
     'ui.t2.fix.eis': '(fixiert −5 °C für Eislast)',
     'ui.datei': 'Datei',
     'ui.reset.titel': 'Zurücksetzen auf Standardwerte',
@@ -11966,7 +12001,7 @@ const LANG = {
     'par.H.ts.ub':          'H CP non chargé',
     'par.H.ts.const':       'H CP (constant)',
     'par.H.ts.b':           'H CP chargé',
-    'par.H.ts.b.sub':       '(calculé)',
+    'par.H.ts.b.sub':       '(calculé, à 10 °C)',
     'par.H.el':             'H conducteur (direct)',
     'par.3pt':              'Mesure 3 points',
     'par.3pt.hdr':          'Mesure 3 points',
@@ -12352,6 +12387,13 @@ const LANG = {
     'proj.import.btn':   'Importer JSON',
     'proj.local.note':   'Données enregistrées uniquement en local',
     // ── Oberfläche (v3.1) ──
+    'par.ba.hint.starr': 'Force de traction avec la portée de projet c_proj du champ (SBB 0161.1013.0005.1)',
+    'par.ba.hint.ausg': 'Force de traction avec la portée moyenne c_m, flèche par champ (SBB 0161.1013.0005.1)',
+    'pdf.bezug.titel': 'État de référence : CP chargé à 10 °C',
+    'pdf.bezug.text': 'Comme SBB «Durchhang 2026.xlsm» : à 10 °C le fil de contact est horizontal ; sa traction n’agit qu’en cas d’écart. La traction de montage non chargée H<sub>ub</sub> à T<sub>1</sub> est d’abord convertie en état chargé à 10 °C (poids total, fil neuf, sans traction du fil de contact).',
+    'pdf.nfl.zustgl': 'Équation d’état N-FL avec traction du fil de contact (VEM, Excel «Upro1»)',
+    'pdf.gerundet.10': 'arrondi à 10 N comme Excel',
+    'pdf.gerundet.5': 'résultat arrondi à 5 N (avec glace 10 N) comme Excel',
     'ui.t2.fix.eis': '(fixé à −5 °C pour la charge de glace)',
     'ui.datei': 'Fichier',
     'ui.reset.titel': 'Réinitialiser aux valeurs par défaut',
@@ -12522,7 +12564,7 @@ const LANG = {
     'par.H.ts.ub':          'H FP non caricato',
     'par.H.ts.const':       'H FP (costante)',
     'par.H.ts.b':           'H FP caricato',
-    'par.H.ts.b.sub':       '(calcolato)',
+    'par.H.ts.b.sub':       '(calcolato, a 10 °C)',
     'par.H.el':             'H conduttore (diretto)',
     'par.3pt':              'Misura 3 punti',
     'par.3pt.hdr':          'Misura 3 punti',
@@ -12908,6 +12950,13 @@ const LANG = {
     'proj.import.btn':   'Importa JSON',
     'proj.local.note':   'Dati salvati solo localmente',
     // ── Oberfläche (v3.1) ──
+    'par.ba.hint.starr': 'Forza di tiro con la campata di progetto c_proj (SBB 0161.1013.0005.1)',
+    'par.ba.hint.ausg': 'Forza di tiro con la campata media c_m, freccia per campata (SBB 0161.1013.0005.1)',
+    'pdf.bezug.titel': 'Stato di riferimento: FP carico a 10 °C',
+    'pdf.bezug.text': 'Come SBB «Durchhang 2026.xlsm»: a 10 °C il filo di contatto è orizzontale; la sua trazione agisce solo in caso di scostamento. La trazione di montaggio scarica H<sub>ub</sub> a T<sub>1</sub> viene prima convertita nello stato carico a 10 °C (peso totale, filo nuovo, senza trazione del filo di contatto).',
+    'pdf.nfl.zustgl': 'Equazione di stato N-FL con trazione del filo di contatto (VEM, Excel «Upro1»)',
+    'pdf.gerundet.10': 'arrotondato a 10 N come Excel',
+    'pdf.gerundet.5': 'risultato arrotondato a 5 N (con ghiaccio 10 N) come Excel',
     'ui.t2.fix.eis': '(fissato a −5 °C per il carico di ghiaccio)',
     'ui.datei': 'File',
     'ui.reset.titel': 'Ripristina i valori predefiniti',
@@ -13060,6 +13109,7 @@ function setLang(lang) {
   const _rglBtn = document.getElementById('rgl-el-edit-btn');
   if (_rglBtn) _rglBtn.textContent = t(_rglElEditMode ? 'ui.schliessen' : 'ui.bearbeiten');
   if (typeof setYCMode === 'function') setYCMode(yCInputMode);
+  if (typeof _berechnungsartUI === 'function') _berechnungsartUI();
   if (typeof renderObstacleList === 'function') renderObstacleList();
 
   // Hinweis: Der Handbuch-Knopf im Header ist reines Symbol ohne Textlabel.
@@ -13219,6 +13269,9 @@ function setLang(lang) {
 // ═══════════════════════════════════════════════════════════════
 rebuildPresetDropdown('nfl');
 rebuildSpanList();
+// Berechnungsart (Starr/Ausgleichend) gilt auch für N-FL — beim Start einblenden
+zeigeElement(document.getElementById('berechnungsart-row'), sysMode === 'nfl' || sysMode === 'el');
+_berechnungsartUI();
 injectCustomElMaterials();
 berechnen();
 // T2-Slider initialisieren + Farbe setzen
@@ -15104,7 +15157,7 @@ renderObstacleList();
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
-  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span style="opacity:.6">v3.1</span>
+  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span style="opacity:.6">v3.2</span>
 </footer>
 
 </body>

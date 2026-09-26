@@ -27,6 +27,63 @@ const Q_HAENGER = 0.02 * 9.81;
 const EISLAST_TEMPERATUR = -5;
 function eislastWirksamBei(T) { return T === EISLAST_TEMPERATUR; }
 
+// ── N-FL mit hinterlegter Kombination: Rechengang wie SBB «Durchhang 2026.xlsm» ──
+// Bezugszustand ist immer 10 °C: dort hängt der Fahrdraht waagrecht, sein Zug
+// wirkt erst bei Abweichung davon. Rundung wie in der Excel (Modul
+// M04_1_NFL_Tab_new): Ts belastet bei 10 °C auf 10 N, Tabellenwerte auf 5 N,
+// Werte mit Eislast auf 10 N.
+const NFL_BEZUGSTEMPERATUR = 10;
+const runde5  = x => Math.round(x / 5) * 5;
+const runde10 = x => Math.round(x / 10) * 10;
+
+// Gesamtgewicht der Fahrleitung bei Fahrdraht-Abnutzung (N-FL). Die Excel führt
+// je Kombination eine eigene Zeile «abgenutzt» (Blatt Daten, Spalte gkx); daraus
+// ergibt sich das für die Abnutzung massgebende Fahrdrahtgewicht qFdAbnutzung.
+// Fehlt der Wert, wird das allgemeine Fahrdrahtgewicht qFdErsatz verwendet.
+function mflAbgenutzt(flCombo, wearPct, qFdErsatz) {
+  const qFd = flCombo.qFdAbnutzung ?? qFdErsatz;
+  return flCombo.MFL - qFd * (wearPct / 100);
+}
+
+// Schritt 2 der Excel: Ts unbelastet bei Montagetemperatur → Ts belastet bei
+// 10 °C (volles Gewicht, neuer Fahrdraht, noch ohne Fahrdrahtzug).
+// ungerundet: für Rückrechnungen (3-Punkte-Messung)
+function nflBezugUngerundet(H_ub, T_montage, flCombo, Lm) {
+  return solveNFLStateEq(flCombo.MFL, 0, H_ub, Lm, flCombo.AL, flCombo.E, flCombo.AK,
+                         NFL_BEZUGSTEMPERATUR - T_montage, 0, flCombo.MTS);
+}
+function nflBezugszustand(H_ub, T_montage, flCombo, Lm) {
+  return runde10(nflBezugUngerundet(H_ub, T_montage, flCombo, Lm));
+}
+
+// Zugkraft Ts belastet bei Temperatur T, ausgehend vom Bezugszustand (10 °C).
+// q_ges = Gewicht mit Abnutzung; die Abnutzung wirkt erst ab 10 °C (Excel-Notiz 6).
+function nflZugkraftBei(H_bezug, T, zl, e, gerundet = true) {
+  const { Lm, H_Fd, q_ges, flCombo, wearPct } = e;
+  const MFL_init = wearPct > 0 ? flCombo.MFL : null;
+  const H = solveNFLStateEq(q_ges, H_Fd, H_bezug, Lm, flCombo.AL, flCombo.E, flCombo.AK,
+                            T - NFL_BEZUGSTEMPERATUR, zl, MFL_init);
+  if (!gerundet) return H;
+  return zl > 0 ? runde10(H) : runde5(H);
+}
+
+// Umkehrung für die 3-Punkte-Messung: aus der gemessenen Zugkraft (belastet, bei
+// Temperatur T) die unbelastete Montagezugkraft bei T_montage bestimmen.
+// Die Hinrechnung steigt monoton mit H_ub → Bisektion.
+function nflUnbelastetAusGemessen(FH, T, T_montage, e) {
+  const hin = H_ub => nflZugkraftBei(nflBezugUngerundet(H_ub, T_montage, e.flCombo, e.Lm),
+                                     T, 0, e, false);
+  let lo = 1, hi = Math.max(FH, 1000);
+  while (hin(hi) < FH && hi < 1e7) hi *= 2;
+  if (hin(lo) > FH || hin(hi) < FH) return null;
+  for (let i = 0; i < 100; i++) {
+    const mid = (lo + hi) / 2;
+    if (hin(mid) < FH) lo = mid; else hi = mid;
+    if (hi - lo < 1e-6) break;
+  }
+  return (lo + hi) / 2;
+}
+
 // ═══════════════════════════════════════════════════════════════
 // ZUSTANDSGLEICHUNG (SBB, parabolische Näherung)
 // Löst den Übergang unbelastet→belastet für N-FL (Stufe 1)
@@ -245,17 +302,15 @@ function computeThermal(L, W, s2, h1, h2) {
 // ZUSTÄNDE BERECHNEN — einzige Stelle für den Rechenablauf
 // ═══════════════════════════════════════════════════════════════
 
-// Zielzustand bei Temperaturänderung dT und Zusatzlast zl (N-FL, Einzelleiter).
+// Zielzustand bei Temperatur T (= T1 + dT) und Zusatzlast zl (N-FL, Einzelleiter).
 // Rückgabe: { c, vem, LT1, q_vem } — vem/LT1/q_vem nur bei hinterlegter
 // FL-Kombination (N-FL), sonst null.
 function _zielzustand(e, c1, dT, zl) {
   const { L, Lm, H_Ts, H_Fd, h1, h2, q_ges, EA, alpha, flCombo, wearPct } = e;
   if (flCombo) {
-    // Bekannte FL-Kombination: VBA-konforme Zustandsgleichung (Upro1-Äquivalent)
-    // MFL_init = flCombo.MFL (neuer Draht) für gk0 und A-Verhältnis
-    const MFL_init = wearPct > 0 ? flCombo.MFL : null;
-    const H2 = solveNFLStateEq(q_ges, H_Fd, H_Ts, Lm,
-                               flCombo.AL, flCombo.E, flCombo.AK, dT, zl, MFL_init);
+    // Bekannte FL-Kombination: wie Excel vom Bezugszustand 10 °C aus (H_Ts = Ts
+    // belastet bei 10 °C), Ergebnis gerundet wie in der Excel-Tabelle.
+    const H2 = nflZugkraftBei(H_Ts, e.T1 + dT, zl, e);
     const c = computeBase(L, q_ges + zl, H2, h1, h2);
     // VEM Handbuch Formel 7.66 + 7.82: Fahrdraht-Durchhang mit effektiver Spannweite
     // LT1 = c_proj + 2·Δh·(H2+H_Fd) / (c_proj·q_vem)   [VEM 7.82, Δh-Korrektur]
@@ -284,6 +339,8 @@ function _zielzustand(e, c1, dT, zl) {
 // Berechnet alle Zustände aus den (bereits ausgelesenen) Eingaben.
 //   e: { sysMode 'nfl'|'rfl'|'el', L, Lm, H_Ts, H_Fd, h1, h2, T1, q_ges, EA,
 //        alpha, deltaT, flCombo, ZL, wearPct, T3 (null = keine Vergleichskurve) }
+//   H_Ts: bei N-FL mit Kombination = Ts belastet bei 10 °C (nflBezugszustand),
+//         sonst Ts-Zugkraft bei T1.
 // Rückgabe: { c1, c2, c2_vem, LT1_vem, q_vem_vem, c3, c3_zeichnung, t3Fehler }
 // Fehler im Ausgangs- bzw. Zielzustand werden geworfen, mit err.phase = 'c1' | 'c2'.
 // Ein Fehler der T3-Vergleichskurve bricht nicht ab (t3Fehler, c3 = null).
@@ -292,7 +349,12 @@ function berechneZustaende(e) {
   const r = { c1: null, c2: null, c2_vem: null, LT1_vem: null, q_vem_vem: null,
               c3: null, c3_zeichnung: null, t3Fehler: null };
 
-  try { r.c1 = computeBase(L, q_ges, H_Ts, h1, h2); }
+  try {
+    // N-FL mit Kombination: H_Ts ist der Bezugszustand bei 10 °C — der Zustand
+    // bei T1 folgt daraus (bei T1 = 10 °C ohne Abnutzung identisch).
+    const H1 = (sysMode === 'nfl' && e.flCombo) ? nflZugkraftBei(H_Ts, T1, 0, e) : H_Ts;
+    r.c1 = computeBase(L, q_ges, H1, h1, h2);
+  }
   catch (err) { err.phase = 'c1'; throw err; }
 
   try {
@@ -324,6 +386,8 @@ function berechneZustaende(e) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     Q_HAENGER, EISLAST_TEMPERATUR, eislastWirksamBei,
+    NFL_BEZUGSTEMPERATUR, runde5, runde10, mflAbgenutzt, nflBezugUngerundet,
+    nflBezugszustand, nflZugkraftBei, nflUnbelastetAusGemessen,
     solveLoadingEq, solveStateEq, solveNFLStateEq, catSagAt, solve3point,
     solveLoadingInverse, solveM_fromS, buildCatenary, maxSeilkraft,
     computeBase, computeThermal, berechneZustaende,
