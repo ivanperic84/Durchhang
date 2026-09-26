@@ -2654,6 +2654,15 @@ let t2BeforeRfl = 80; // T2-Wert vor R-FL-Modus sichern
 
 // Setzt die Sichtbarkeit. Ein leerer Wert stellt die Vorgabe aus dem
 // Stylesheet wieder her (flex, grid, block …) statt sie zu überschreiben.
+// Text sicher in HTML einbauen: Zeichen mit Sonderbedeutung werden maskiert.
+// Pflicht für alles, was von Nutzern oder aus importierten Dateien stammt
+// (Projekt-, Mast-, Material-, Messungsnamen) und per innerHTML landet —
+// sonst könnte eine präparierte Projektdatei Programmcode ausführen.
+function escHtml(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
+
 function zeigeElement(el, sichtbar) {
   // Bewusst direkter Zugriff auf style.display — dies ist die einzige Stelle
   // im Programm, an der er stehen darf.
@@ -4565,7 +4574,7 @@ function _extractExifGps(buf) {
                 <li style="display:flex;align-items:center;gap:.4rem;padding:.25rem 0;border-bottom:1px solid var(--border)">
                   <span style="flex:1;font-size:.75rem;cursor:pointer;color:var(--text)"
                         onclick="fotoLoadMessung(${rec.id})">
-                    ${rec.label}
+                    ${escHtml(rec.label)}
                     <span style="color:var(--muted);font-size:.68rem;margin-left:.3rem">${new Date(rec.ts).toLocaleDateString('de-CH')}</span>
                   </span>
                   <button onclick="fotoDeleteMessung(${rec.id})"
@@ -6606,17 +6615,15 @@ function saveCurrentCalc() {
     groupId = selVal;
   }
 
-  // Letzten Speicherort merken
-  _setLastGrpId(groupId);
-
   // Berechnung anlegen
   const calcInp  = document.getElementById('proj-calc-name');
   const calcName = calcInp?.value.trim() || nextCalcName(groupId);
   const id = genProjId();
   const now = new Date().toISOString();
+  if (!_schreibeBerechnung(id, getProjectState(), calcName)) return;
   meta.unshift({ id, name: calcName, isGroup: false, parentId: groupId, createdAt: now, updatedAt: now });
-  saveProjMeta(meta);
-  localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...getProjectState(), name: calcName }));
+  if (!_speichereMetaOderRollback(meta, [id])) return;
+  _setLastGrpId(groupId);   // Letzten Speicherort merken
   currentProjectId = id;
   if (calcInp) calcInp.value = '';
   collapsedGroups.delete(groupId);
@@ -6626,6 +6633,41 @@ function saveCurrentCalc() {
   populateSaveGroupSel();
 }
 function saveProjMeta(arr)    { localStorage.setItem(PROJ_META_KEY, JSON.stringify(arr)); }
+
+// ── Berechnung sicher ablegen ──
+// Schreibt ZUERST die Daten, erst danach darf der Aufrufer den Listeneintrag
+// (Meta) anlegen. So entsteht bei vollem Speicher kein Eintrag ohne Inhalt.
+// Ist der Speicher voll, wird ein zweiter Versuch ohne Foto-Bild gemacht.
+// Rückgabe: 'ok' | 'ohne-foto' | false (nichts gespeichert, Meldung gezeigt)
+function _schreibeBerechnung(id, state, name) {
+  const schreibe = s => localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...s, name }));
+  try { schreibe(state); return 'ok'; }
+  catch (e) {
+    if (state.fotoState?.imgDataURL) {
+      try {
+        schreibe({ ...state, fotoState: { ...state.fotoState, imgDataURL: null } });
+        meldung(t('msg.gespeichert.ohne.foto'), 'warnung');
+        return 'ohne-foto';
+      } catch (e2) {
+        meldung(t('msg.speicher.voll.loeschen'), 'fehler');
+        return false;
+      }
+    }
+    meldung(t('msg.speicher.voll.loeschen'), 'fehler');
+    return false;
+  }
+}
+
+// Listeneintrag speichern; bei vollem Speicher die zuvor geschriebenen
+// Berechnungsdaten wieder entfernen, damit nichts verwaist.
+function _speichereMetaOderRollback(meta, neueIds) {
+  try { saveProjMeta(meta); return true; }
+  catch (e) {
+    neueIds.forEach(id => localStorage.removeItem(PROJ_KEY_PREFIX + id));
+    meldung(t('msg.speicher.voll.loeschen'), 'fehler');
+    return false;
+  }
+}
 function genProjId()          { return 'p' + Date.now() + Math.random().toString(36).slice(2,5); }
 function setProjSort(mode)    { projSortMode = mode; renderProjectList(); }
 
@@ -6707,10 +6749,9 @@ function createProject() {
   const meta = getProjMeta();
   const parentSel = document.getElementById('proj-parent-select');
   const parentId = (parentSel && parentSel.value) ? parentSel.value : null;
+  if (!_schreibeBerechnung(id, getProjectState(), name)) return;
   meta.unshift({ id, name, isGroup: false, parentId, createdAt: now, updatedAt: now });
-  saveProjMeta(meta);
-  const state = getProjectState();
-  localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...state, name }));
+  if (!_speichereMetaOderRollback(meta, [id])) return;
   currentProjectId = id;
   inp.value = '';
   renderProjectList();
@@ -6721,34 +6762,14 @@ function saveToProject(id) {
   const meta = getProjMeta();
   const entry = meta.find(m => m.id === id);
   if (!entry) return;
+  const ergebnis = _schreibeBerechnung(id, getProjectState(), entry.name);
+  if (!ergebnis) return false;
   entry.updatedAt = new Date().toISOString();
-  saveProjMeta(meta);
-  const state = getProjectState();
-  const _doSave = (s) => {
-    localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...s, name: entry.name }));
-  };
-  try {
-    _doSave(state);
-  } catch(e) {
-    // Quota überschritten → nochmals ohne Foto-Bild versuchen
-    if (state.fotoState?.imgDataURL) {
-      try {
-        const lean = { ...state, fotoState: { ...state.fotoState, imgDataURL: null } };
-        _doSave(lean);
-        const btn = document.getElementById('quick-save-btn');
-        if (btn) { btn.title = t('msg.gespeichert.ohne.foto'); }
-      } catch(e2) {
-        meldung(t('msg.speicher.voll.loeschen'), 'fehler');
-        return;
-      }
-    } else {
-      meldung(t('msg.speicher.voll'), 'fehler');
-      return;
-    }
-  }
+  try { saveProjMeta(meta); } catch (e) { /* nur Zeitstempel — Daten sind gespeichert */ }
   currentProjectId = id;
   renderProjectList();
   updateProjectBadge();
+  return ergebnis;
 }
 
 async function totalReset() {
@@ -6759,9 +6780,8 @@ async function totalReset() {
 
 function quickSave() {
   if (currentProjectId) {
-    saveToProject(currentProjectId);
-    // Brief visual feedback on the button
-    const lbl = document.getElementById('quick-save-label');
+    // Grüne Rückmeldung nur, wenn wirklich gespeichert wurde
+    if (!saveToProject(currentProjectId)) return;
     const btn = document.getElementById('quick-save-btn');
     if (btn) {
       btn.style.color = '#16a34a';
@@ -6975,10 +6995,9 @@ function saveToGroup(groupId) {
   const name = (calcInp && calcInp.value.trim()) || nextCalcName(groupId);
   const id = genProjId();
   const now = new Date().toISOString();
+  if (!_schreibeBerechnung(id, getProjectState(), name)) return;
   meta.push({ id, name, isGroup: false, parentId: groupId, createdAt: now, updatedAt: now });
-  saveProjMeta(meta);
-  const state = getProjectState();
-  localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...state, name }));
+  if (!_speichereMetaOderRollback(meta, [id])) return;
   currentProjectId = id;
   if (calcInp) calcInp.value = '';
   collapsedGroups.delete(groupId);
@@ -7033,19 +7052,27 @@ function importProjectFile(input) {
       const meta = getProjMeta();
 
       // Whole-project format
-      if (parsed.type === 'durchhang_project' && parsed.group && parsed.calculations) {
+      if (parsed.type === 'durchhang_project' && parsed.group && Array.isArray(parsed.calculations)) {
         const groupId = genProjId();
-        meta.unshift({ ...parsed.group, id: groupId, createdAt: now, updatedAt: now, isGroup: true });
+        // Nur bekannte Felder übernehmen — keine fremden Schlüssel aus der Datei
+        meta.unshift({ id: groupId, name: String(parsed.group.name || nextProjectName()),
+                       isGroup: true, parentId: null, createdAt: now, updatedAt: now });
         const abgelehnt = [];
-        [...parsed.calculations].reverse().forEach(c => {
-          const p = _pruefeProjektState(c.state);
-          if (!p.ok) { abgelehnt.push((c.meta && c.meta.name) || '?'); return; }
+        const geschrieben = [];
+        for (const c of [...parsed.calculations].reverse()) {
+          const cname = String((c && c.meta && c.meta.name) || '?');
+          const p = _pruefeProjektState(c && c.state);
+          if (!p.ok) { abgelehnt.push(cname); continue; }
           const calcId = genProjId();
-          const state  = { ...p.state, name: c.meta.name };
-          meta.unshift({ ...c.meta, id: calcId, parentId: groupId, createdAt: now, updatedAt: now, isGroup: false });
-          localStorage.setItem(PROJ_KEY_PREFIX + calcId, JSON.stringify(state));
-        });
-        saveProjMeta(meta);
+          if (!_schreibeBerechnung(calcId, p.state, cname)) {
+            // Speicher voll — bereits Geschriebenes zurücknehmen, nichts halb importieren
+            geschrieben.forEach(id => localStorage.removeItem(PROJ_KEY_PREFIX + id));
+            return;
+          }
+          geschrieben.push(calcId);
+          meta.unshift({ id: calcId, name: cname, parentId: groupId, createdAt: now, updatedAt: now, isGroup: false });
+        }
+        if (!_speichereMetaOderRollback(meta, geschrieben)) return;
         renderProjectList();
         if (abgelehnt.length)
           meldung(t('msg.projekt.ungueltig') + ':\n\u2022 ' + abgelehnt.join('\n\u2022 '), 'warnung');
@@ -7055,11 +7082,11 @@ function importProjectFile(input) {
       // Single calculation format (legacy)
       const einzel = _pruefeProjektState(parsed);
       if (!einzel.ok) { meldung(t('msg.projekt.ungueltig') + ':\n' + einzel.fehler, 'fehler'); return; }
-      const name = parsed.name || file.name.replace(/\.json$/i, '');
+      const name = String(parsed.name || file.name.replace(/\.json$/i, ''));
       const id   = genProjId();
+      if (!_schreibeBerechnung(id, einzel.state, name)) return;
       meta.unshift({ id, name, createdAt: now, updatedAt: now });
-      saveProjMeta(meta);
-      localStorage.setItem(PROJ_KEY_PREFIX + id, JSON.stringify({ ...parsed, name }));
+      if (!_speichereMetaOderRollback(meta, [id])) return;
       renderProjectList();
     } catch(err) { meldung(t('msg.json.ungueltig') + ': ' + err.message, 'fehler'); }
   };
@@ -7109,14 +7136,14 @@ function renderProjectList() {
            onchange="moveToGroup('${m.id}',this.value);this.value=''"
            onclick="event.stopPropagation()">
            <option value="">→ Projekt</option>
-           ${groups.filter(g => g.id !== m.parentId).map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
+           ${groups.filter(g => g.id !== m.parentId).map(g => `<option value="${escHtml(g.id)}">${escHtml(g.name)}</option>`).join('')}
          </select>` : '';
     return `<div class="proj-item ${childCls}${isActive ? ' active-proj' : ''}">
       <div class="proj-item-top">
         <input type="checkbox" class="proj-check" ${checked ? 'checked' : ''}
           onclick="event.stopPropagation();toggleSelectCalc('${m.id}')">
         <div class="proj-item-info">
-          <div class="proj-item-name" title="${m.name}">${m.name}${isActive ? ' ✓' : ''}</div>
+          <div class="proj-item-name" title="${escHtml(m.name)}">${escHtml(m.name)}${isActive ? ' ✓' : ''}</div>
           <button class="proj-rename-btn" onclick="renameEntry('${m.id}')" title="Umbenennen">${_penSvg}</button>
         </div>
       </div>
@@ -7150,7 +7177,7 @@ function renderProjectList() {
       <div class="proj-group-header" onclick="${toggleFn}">
         <span class="proj-collapse-icon" style="transform:rotate(${collapsed ? '0' : '90'}deg)">▶</span>
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;color:#6b7280"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-        <span class="proj-group-name">${g.name}</span>
+        <span class="proj-group-name">${escHtml(g.name)}</span>
         <span class="proj-group-date">${fmtDate(g.updatedAt)}</span>
         <span class="proj-group-count">${children.length} Berechnung${children.length !== 1 ? 'en' : ''}</span>
         <div class="proj-item-actions" style="flex-wrap:nowrap" onclick="event.stopPropagation()">
@@ -7518,8 +7545,8 @@ function renderReglageElTable() {
     const h10Val= r.H10  != null ? Math.round(r.H10).toLocaleString('de-CH') + ' N' : '—';
     const lVal  = r.Lref;
     const nameCell = r.label
-      ? `${r.name} <span style="color:var(--tertiary);font-size:.7rem">· ${r.label}</span>`
-      : r.name;
+      ? `${escHtml(r.name)} <span style="color:var(--tertiary);font-size:.7rem">· ${escHtml(r.label)}</span>`
+      : escHtml(r.name);
     const preset = r.hasPreset ? '' : ' <span style="color:var(--tertiary);font-size:.65rem">(Voreinst.)</span>';
 
     if (em) {
@@ -7947,6 +7974,13 @@ function buildCatenary(a, u, n, h1, L, dh) {
   return { a, p, x_low, C, s, sag, y_low, y_chord };
 }
 
+// Grösste Seilkraft: an der Aufhängung, die weiter vom Tiefpunkt entfernt ist
+// (= höherer Mast). T(x) = H·cosh((x − x₀)/a). Bei gleich hohen Masten
+// identisch mit √(H² + (W/2)²), bei ungleich hohen Masten grösser.
+function maxSeilkraft(H, a, x_low, L) {
+  return H * Math.cosh(Math.max(Math.abs(x_low), Math.abs(L - x_low)) / a);
+}
+
 // Ausgangszustand: a = H/q direkt (keine Iteration nötig)
 function computeBase(L, q, H, h1, h2) {
   const dh     = h2 - h1;
@@ -7956,7 +7990,7 @@ function computeBase(L, q, H, h1, h2) {
   const n      = Math.asinh(dh / (2 * a * sinh_u));
   const cat    = buildCatenary(a, u, n, h1, L, dh);
   const W      = q * cat.s;                       // Gesamtgewichtskraft
-  const T_max  = Math.sqrt(H ** 2 + (W / 2) ** 2);
+  const T_max  = maxSeilkraft(H, a, cat.x_low, L);
   return { ...cat, q, W, H, T_max, u, n, sinh_u, dh };
 }
 
@@ -7968,7 +8002,7 @@ function computeThermal(L, W, s2, h1, h2) {
   const cat         = buildCatenary(a, m, n, h1, L, dh);
   const H2          = W * a / s2;
   const q2          = W / s2;
-  return { ...cat, q: q2, W, H: H2, T_max: Math.sqrt(H2 ** 2 + (W / 2) ** 2), m, n, k };
+  return { ...cat, q: q2, W, H: H2, T_max: maxSeilkraft(H2, a, cat.x_low, L), m, n, k };
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -8200,35 +8234,41 @@ function berechnen() {
   if (warns.length) { warnBox.innerHTML = warns.join('<br>'); warnBox.classList.remove('hidden'); }
 
   // T3 — Vergleichskurve (optional)
+  // T3 einmal lesen und für Rechnung UND Anzeige verwenden. Nicht «|| 80»:
+  // das würde 0 °C als «leer» werten und als 80 °C anzeigen.
   let _c3 = null, _c3_canvas = null;
+  const _t3Raw = parseFloat(document.getElementById('temp3')?.value);
+  const _T3 = showT3 ? (isNaN(_t3Raw) ? 80 : _t3Raw) : null;
+  // Eislast gilt nur bei T2 = −5 °C — für die T3-Vergleichskurve nur,
+  // wenn T3 selbst die Eislast-Temperatur ist.
+  const ZL3 = (showT3 && isEislastAktiv(_T3)) ? ZL : 0;
   if (showT3) {
-    const _t3Raw = parseFloat(document.getElementById('temp3')?.value);
-    const T3 = isNaN(_t3Raw) ? 80 : _t3Raw;
+    const T3 = _T3;
     const deltaT3 = T3 - T1;
     try {
       if (sysMode === 'nfl') {
         if (flCombo) {
           const MFL_init3 = wearPct > 0 ? flCombo.MFL : null;
-          const H3 = solveNFLStateEq(q_ges, H_Fd, H_Ts, Lm, flCombo.AL, flCombo.E, flCombo.AK, deltaT3, ZL, MFL_init3);
+          const H3 = solveNFLStateEq(q_ges, H_Fd, H_Ts, Lm, flCombo.AL, flCombo.E, flCombo.AK, deltaT3, ZL3, MFL_init3);
           // Ts-only (konsistent mit c2, für Ergebnistabelle)
-          _c3 = computeBase(L, q_ges + ZL, H3, h1, h2);
+          _c3 = computeBase(L, q_ges + ZL3, H3, h1, h2);
           // VEM-Sag-Korrektur (wie bei c2)
           const gk0_v3 = wearPct > 0 ? flCombo.MFL : q_ges;
-          const q_vem3 = q_ges + gk0_v3 * H_Fd / H_Ts + ZL;
+          const q_vem3 = q_ges + gk0_v3 * H_Fd / H_Ts + ZL3;
           const absDH3 = Math.abs(h2 - h1);
           const LT1_3  = absDH3 > 1e-9 ? L + 2 * absDH3 * (H3 + H_Fd) / (L * q_vem3) : L;
           _c3.sag = LT1_3 * LT1_3 / 8 * q_vem3 / (H3 + H_Fd);
           // VEM-kombiniert für Canvas (gleiche Methode wie _c2_vem)
           _c3_canvas = computeBase(L, q_vem3, H3 + H_Fd, h1, h2);
         } else if (EA !== null) {
-          _c3 = computeBase(L, q_ges + ZL, solveStateEq(q_ges + ZL, Lm, H_Ts, EA, alpha, deltaT3), h1, h2);
+          _c3 = computeBase(L, q_ges + ZL3, solveStateEq(q_ges + ZL3, Lm, H_Ts, EA, alpha, deltaT3), h1, h2);
         } else {
           const s3 = c1.s * (1 + alpha * deltaT3);
           _c3 = computeThermal(L, c1.W, s3, h1, h2);
         }
       } else if (isEl) {
         if (EA !== null) {
-          _c3 = computeBase(L, q_ges, solveStateEq(q_ges, Lm, H_Ts, EA, alpha, deltaT3), h1, h2);
+          _c3 = computeBase(L, q_ges + ZL3, solveStateEq(q_ges + ZL3, Lm, H_Ts, EA, alpha, deltaT3), h1, h2);
         } else {
           const s3 = c1.s * (1 + alpha * deltaT3);
           _c3 = computeThermal(L, c1.W, s3, h1, h2);
@@ -8237,7 +8277,6 @@ function berechnen() {
     } catch (e) { _spur('T3-Vergleichskurve', e, 'debug'); }
   }
 
-  const _T3 = showT3 ? (parseFloat(document.getElementById('temp3')?.value) || 80) : null;
   renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, _c2_vem, ZL, _c3, _T3);
   drawCanvas(c1, c2, L, h1, h2, sh, false, _c2_vem, _c3_canvas ?? _c3);
 
@@ -9452,7 +9491,7 @@ function renderObstacleList() {
   obstaclePoints.forEach((o, i) => {
     html += `<div class="obs-row">
       <span class="obs-badge">H${i+1}</span>
-      <input class="obs-name-input" placeholder="Name (z.B. UK Brücke)" value="${o.name || ''}"
+      <input class="obs-name-input" placeholder="Name (z.B. UK Brücke)" value="${escHtml(o.name)}"
         oninput="updateObstacle(${o.id},'name',this.value)">
       <input class="obs-num-input" type="number" placeholder="x [m]" step="0.5" min="0"
         value="${o.x ?? ''}" oninput="updateObstacle(${o.id},'x',this.value)" title="Position x [m]">
@@ -9796,9 +9835,9 @@ ${isNFL_ub ? `
 </div>
 <div class="step">
   <p><strong>${t('pdf.seillange.kraft')}</strong></p>
-  <p class="sub"><em>s = 2a · sinh(u) · cosh(n) &nbsp;|&nbsp; T<sub>max</sub> = √(H² + (q<sub>ges</sub>·s/2)²)</em></p>
+  <p class="sub"><em>s = 2a · sinh(u) · cosh(n) &nbsp;|&nbsp; T<sub>max</sub> = H · cosh(x<sub>max</sub> / a), x<sub>max</sub> = grösster Abstand Tiefpunkt–Mast</em></p>
   <p class="sub">s = 2 × ${f3(c1.a)} × sinh(${f4(c1.u)}) × cosh(${f4(c1.n)}) = <strong class="r">${f3(c1.s)} m</strong></p>
-  <p class="sub">T<sub>max,1</sub> = √(${fN(c1.H,1)}² + (${q_ges.toFixed(4)} × ${f3(c1.s)} / 2)²)
+  <p class="sub">T<sub>max,1</sub> = ${fN(c1.H,1)} × cosh(${f3(Math.max(Math.abs(c1.x_low), Math.abs(L - c1.x_low)))} / ${f3(c1.a)})
     = <strong class="r">${fN(c1.T_max,1)} N</strong></p>
 </div>
 
@@ -9966,7 +10005,7 @@ ${(() => {
   const fImg    = fc.toDataURL('image/jpeg', 0.88);
   const H_mont = (typeof fotoSolveAtTemp === 'function') ? fotoSolveAtTemp(10) : null;
   const rows = [
-    fr.nameL || fr.nameR ? `<tr><td>Mast links</td><td><strong>${fr.nameL || '—'}</strong></td><td>Mast rechts</td><td><strong>${fr.nameR || '—'}</strong></td></tr>` : '',
+    fr.nameL || fr.nameR ? `<tr><td>Mast links</td><td><strong>${escHtml(fr.nameL || '—')}</strong></td><td>Mast rechts</td><td><strong>${escHtml(fr.nameR || '—')}</strong></td></tr>` : '',
     `<tr><td>Spannweite L</td><td><strong>${fL ? fL + ' m' : '—'}</strong></td><td>Leitermaterial</td><td>${fMatNm}</td></tr>`,
     `<tr><td>Masthöhe L</td><td>${fHmL ? fHmL + ' m' : '—'}</td><td>Masthöhe R</td><td>${fHmR ? fHmR + ' m' : ('= L')}</td></tr>`,
     (fElL || fElR) ? `<tr><td>Mastfuss L</td><td>${fElL ? fElL + ' m ü.M.' : '—'}</td><td>Mastfuss R</td><td>${fElR ? fElR + ' m ü.M.' : '—'}</td></tr>` : '',
@@ -10675,7 +10714,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
   const t3v_pdf = c3data ? (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value)) : null;
   // Projekt- / Dateiname-Zeile (Zeile 2)
   const _nameParts = [_grpName, _docName].filter(Boolean);
-  const _nameLine  = _nameParts.join('  /  ');
+  const _nameLine  = escHtml(_nameParts.join('  /  '));
   // Parameter-Zeile (Zeile 3)
   const _vScalePdf = Math.round(scale / (vEx || 1));
   const _sagPdf    = cDisp.sag;
@@ -10900,7 +10939,7 @@ function updateStripVisibility() {
     // Obstacle columns: show name in row 0, x in row 1, '—' for T2/T3 rows
     visibleObs.forEach(({ obs, frac }) => {
       let val = '';
-      if (r === 0) val = `<span style="background:#ebebeb;color:${obsClrStrip};padding:0 3px;border-radius:3px;font-size:12px;font-weight:700">${obs.badge} (${obs.name})</span>`;
+      if (r === 0) val = `<span style="background:#ebebeb;color:${obsClrStrip};padding:0 3px;border-radius:3px;font-size:12px;font-weight:700">${obs.badge} (${escHtml(obs.name)})</span>`;
       else if (r === 1) val = obs.xVal?.toFixed(2) ?? '';
       html += `<div class="strip-val${r===0?' bold':''}" style="left:${(frac*100).toFixed(2)}%;color:${obsClrStrip}">${val}</div>`;
     });
