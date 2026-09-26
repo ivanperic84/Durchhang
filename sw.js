@@ -12,7 +12,7 @@
  * CACHE_VERSION bei jeder Veröffentlichung erhöhen — alte Zwischenspeicher
  * werden beim Aktivieren automatisch entfernt.
  */
-const CACHE_VERSION = 'durchhang-v3.4.0';
+const CACHE_VERSION = 'durchhang-v3.4.1';
 
 /* Bestandteile der Anwendung. Relative Pfade, damit es sowohl unter
    /Durchhang/ auf GitHub Pages als auch in einem Unterordner funktioniert. */
@@ -25,6 +25,8 @@ const APP_DATEIEN = [
   './icon-512.png',
   './icon-maskable-512.png',
   './favicon-32.png',
+  './icon.svg',
+  './apple-touch-icon.png',
   './fonts/inter-latin-wght-normal.woff2',
   './fonts/inter-latin-ext-wght-normal.woff2',
 ];
