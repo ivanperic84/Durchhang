@@ -172,3 +172,19 @@ test('Tablet hochkant: Ergebnisleiste erscheint beim Scrollen', async () => {
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Dunkelmodus: keine hellen Eingabefelder (H-Punkte, Mindestabstand, Mastangaben)', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { colorScheme: 'dark' });
+  const hell = await seite.evaluate(() => {
+    document.getElementById('mastangaben').open = true;
+    document.getElementById('sok-mum-left').value = 500; onSokMumLeftInput(); berechnen();
+    const lum = s => { const m = s.match(/[\d.]+/g); if (!m) return null; const [r, g, b, a = 1] = m.map(Number);
+      return a < .05 ? null : (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255; };
+    const flaeche = el => { for (let e = el; e; e = e.parentElement) { const l = lum(getComputedStyle(e).backgroundColor); if (l !== null) return l; } return 0; };
+    return [...document.querySelectorAll('input:not([type=checkbox]):not([type=range]):not([type=file]), select')]
+      .filter(el => el.offsetParent !== null && flaeche(el) > 0.45).map(el => el.id || el.className);
+  });
+  assert.deepEqual(hell, []);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});

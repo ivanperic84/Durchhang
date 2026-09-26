@@ -947,7 +947,8 @@ body {
 .probe-mp-unit { font-size: .7rem; color: var(--tertiary); flex-shrink: 0; }
 .probe-mp-sep { width: 1px; height: 1.1rem; background: rgba(0,0,0,.1); margin: 0 .1rem; }
 /* H-Punkte (Hindernishöhe pro Messpunkt) — Monochrom, eindeutig verschieden von T2-Rot und T3-Blau */
-:root { --h-clr: #3a3a3a; --h-bg: #f4f4f4; --h-border: #c8c8c8; }
+/* H-Punkte: Farben aus den Thema-Farben, damit hell und dunkel stimmen */
+:root { --h-clr: var(--text2); --h-bg: var(--s4); --h-border: transparent; }
 .probe-m-group {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -976,7 +977,11 @@ body {
   background: var(--h-bg); color: var(--text);
 }
 .probe-h-input:focus { outline: none; border-color: var(--h-clr); }
-.probe-h-unit { font-size: .65rem; color: var(--h-clr); white-space: nowrap; flex-shrink: 0; }
+.probe-h-unit { font-size: .65rem; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+.probe-h-input:focus { box-shadow: 0 0 0 2px var(--acc-s); }
+/* Mastangaben Name/Nr. und KM wie die übrigen Eingabefelder */
+#mast-num-left, #mast-num-right, #mast-km-left, #mast-km-right { background: var(--s4); border-color: transparent !important; border-radius: 8px !important; }
+#mast-num-left:focus, #mast-num-right:focus, #mast-km-left:focus, #mast-km-right:focus { outline: none; box-shadow: 0 0 0 2px var(--acc-s); }
 /* Hindernisse oberhalb — Liste unter dem Diagramm (renderObstacleList) */
 .obs-row { display: flex; align-items: center; gap: .4rem; margin-bottom: .3rem; }
 .obs-badge {
@@ -2988,7 +2993,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 <script src="abschnitt.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.9.1';
+const APP_VERSION = 'v3.9.2';
 
 // Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
 function sysName(mode) {
@@ -15484,6 +15489,16 @@ renderObstacleList();
           <li><strong>Einzelleiter</strong> — einfache Kettenlinienberechnung eines einzelnen Leiters (Speiseleiter, Rückleiter o. ä.) ohne Fahrdraht und Hänger</li>
         </ul>
         <p>Das Berechnungsmodell entspricht dem SBB-Referenzmodell <em>Durchhang 2026.xlsm</em> (VBA Upro1 / DurchhangNFL) und verwendet für bekannte FL-Kombinationen die <strong>VEM Handbuch Formeln 7.82 + 7.66</strong> für den Fahrdraht-Durchhang (effektive Spannweite L<sub>T1</sub> bei Höhendifferenz).</p>
+        <p style="font-weight:600;margin:.7rem 0 .2rem">Funktionen im Überblick</p>
+        <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
+          <li>Rechnung wie SBB <em>Durchhang 2026.xlsm</em>, geprüft an 27 verifizierten SBB-Beispielen (Kap. 3)</li>
+          <li>Berechnungsart <em>ausgleichend</em> / <em>starr</em> für N-FL und Einzelleiter (6.8); Fahrdraht neu / abgenutzt; Eislast</li>
+          <li>Messpunkte, 3-Punkte-Messung, SOK-Bezug (6.1–6.3); Abstandsprüfung zu Hindernissen oberhalb über alle Lastfälle (6.12)</li>
+          <li>Abspannabschnitt mit Masttabelle, CSV-Import und Längsprofil (6.11)</li>
+          <li>Koordinaten LV95, Export IFC4 und 3D-DXF (6.10); PDF-Berechnungsprotokoll und massstäbliche Zeichnung</li>
+          <li>Hell-/Dunkelmodus, Ergebnisleiste auf dem Tablet, DE / FR / IT, offline nutzbar (6.13)</li>
+          <li>Foto-Auswertung — nur zur Abschätzung, keine präzise Berechnung (6.13)</li>
+        </ul>
       </div>
       <div class="hb-lang hb-fr" style="display:none">
         <p>Cette application calcule la géométrie caténaire des lignes de contact SBB pour trois types de systèmes&nbsp;:</p>
@@ -15493,6 +15508,16 @@ renderObstacleList();
           <li><strong>Conducteur simple</strong> — calcul caténaire simple d'un conducteur unique (câble d'alimentation, câble de retour, etc.) sans fil de contact ni suspensions</li>
         </ul>
         <p>Le modèle de calcul correspond au modèle de référence SBB <em>Durchhang 2026.xlsm</em> (VBA Upro1 / DurchhangNFL) et utilise pour les combinaisons FL connues la <strong>formule VEM Manuel 7.66</strong> pour la flèche du fil de contact.</p>
+        <p style="font-weight:600;margin:.7rem 0 .2rem">Fonctions en bref</p>
+        <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
+          <li>Calcul comme SBB <em>Durchhang 2026.xlsm</em>, vérifié sur 27 exemples CFF validés (chap. 3)</li>
+          <li>Mode de calcul <em>compensé</em> / <em>rigide</em> pour LC N et conducteur simple (6.8) ; fil de contact neuf / usé ; charge de glace</li>
+          <li>Points de mesure, mesure 3 points, référence DRS (6.1–6.3) ; vérification des distances aux obstacles au-dessus pour tous les cas de charge (6.12)</li>
+          <li>Canton de pose avec tableau des mâts, import CSV et profil en long (6.11)</li>
+          <li>Coordonnées MN95, export IFC4 et DXF 3D (6.10) ; protocole de calcul PDF et dessin à l’échelle</li>
+          <li>Mode clair / sombre, barre de résultats sur tablette, DE / FR / IT, utilisable hors ligne (6.13)</li>
+          <li>Analyse photo — estimation seulement, pas de calcul précis (6.13)</li>
+        </ul>
       </div>
       <div class="hb-lang hb-it" style="display:none">
         <p>Questa applicazione calcola la geometria della catenaria delle linee di contatto FFS per tre tipi di sistema:</p>
@@ -15502,6 +15527,16 @@ renderObstacleList();
           <li><strong>Conduttore singolo</strong> — calcolo semplice della catenaria di un singolo conduttore (cavo di alimentazione, cavo di ritorno, ecc.) senza filo di contatto né ballerine</li>
         </ul>
         <p>Il modello di calcolo corrisponde al modello di riferimento FFS <em>Durchhang 2026.xlsm</em> (VBA Upro1 / DurchhangNFL) e utilizza per le combinazioni FL note la <strong>formula VEM Manuale 7.66</strong> per la freccia del filo di contatto.</p>
+        <p style="font-weight:600;margin:.7rem 0 .2rem">Funzioni in breve</p>
+        <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
+          <li>Calcolo come FFS <em>Durchhang 2026.xlsm</em>, verificato su 27 esempi FFS convalidati (cap. 3)</li>
+          <li>Modalità di calcolo <em>compensato</em> / <em>rigido</em> per LC N e conduttore singolo (6.8); filo di contatto nuovo / usurato; carico di ghiaccio</li>
+          <li>Punti di misura, misura 3 punti, riferimento PRF (6.1–6.3); verifica delle distanze da ostacoli sopra per tutti i casi di carico (6.12)</li>
+          <li>Tratta di regolazione con tabella dei pali, importazione CSV e profilo longitudinale (6.11)</li>
+          <li>Coordinate MN95, esportazione IFC4 e DXF 3D (6.10); protocollo di calcolo PDF e disegno in scala</li>
+          <li>Modalità chiara / scura, barra dei risultati su tablet, DE / FR / IT, utilizzabile offline (6.13)</li>
+          <li>Analisi foto — solo stima, nessun calcolo preciso (6.13)</li>
+        </ul>
       </div>
 
       <!-- ══ 2 Eingabeparameter ══ -->
@@ -15603,10 +15638,10 @@ renderObstacleList();
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>ges</sub> = q<sub>Ts</sub> + q<sub>Fd</sub> + q<sub>Hänger</sub> &nbsp;[N/m]</p>
         <p style="color:var(--muted);font-size:.8rem">Hänger: 0.020 kg/m × 9.81 m/s² = 0.196 N/m. Bei bekannter FL-Kombination: q<sub>ges</sub> = MFL (exakterer VBA-Wert inkl. Klemmen).</p>
 
-        <p style="font-weight:600;margin-top:.7rem">Schritt 2 &nbsp;—&nbsp; Stufe 1 Zustandsgleichung: unbelastet → belastet (N-FL)</p>
-        <p>Beim Anhängen von Fahrdraht und Hängern dehnt sich das Ts elastisch. Gleichgewicht via kubischem Polynom:</p>
+        <p style="font-weight:600;margin-top:.7rem">Schritt 2 &nbsp;—&nbsp; Bezugszustand: Ts belastet bei 10 °C (N-FL)</p>
+        <p>Die Montagezugkraft H<sub>ub</sub> (Ts unbelastet, bei der Montagetemperatur T<sub>1</sub>) wird wie im SBB-Excel mit der Zustandsgleichung in den <strong>Bezugszustand</strong> umgerechnet: Ts belastet mit Fahrdraht und Hängern (MFL statt MTS) bei <strong>10 °C</strong>, noch ohne Fahrdrahtzug. Bei 10 °C hängt der Fahrdraht waagrecht; sein Zug wirkt erst bei einer Temperaturabweichung. Grundform (ohne Temperaturglied):</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q²<sub>ges</sub>·Lm² / (24·H²<sub>b</sub>) − H<sub>b</sub>/(E·A)<sub>Ts</sub> = q²<sub>Ts</sub>·Lm² / (24·H²<sub>ub</sub>) − H<sub>ub</sub>/(E·A)<sub>Ts</sub></p>
-        <p style="color:var(--muted);font-size:.8rem">Lösung mit Newton-Raphson (nur E·A des Tragseils; VBA-konform). Ergebnis: H<sub>Ts,belastet</sub> = F₀ (Referenzzustand).</p>
+        <p style="color:var(--muted);font-size:.8rem">Lösung mit Newton-Raphson (E·A des Tragseils bzw. der Kombination; VBA-konform), bei T<sub>1</sub> ≠ 10 °C mit Temperaturglied α·(10 °C − T<sub>1</sub>). Ergebnis: F₀ = H<sub>Ts,belastet</sub> bei 10 °C, <strong>gerundet auf 10 N</strong> wie im Excel.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Schritt 3 &nbsp;—&nbsp; Kettenlinie Ausgangszustand (T<sub>1</sub>)</p>
         <p>Das Ts wird als exakte Kettenlinie modelliert mit Kettenlinienparameter <em>a = H/q</em>:</p>
@@ -15616,15 +15651,23 @@ renderObstacleList();
         <p style="font-weight:600;margin-top:.7rem">Schritt 4 &nbsp;—&nbsp; Stufe 2 Zustandsgleichung: Temperaturänderung (N-FL, VBA-konform)</p>
         <p>Für bekannte FL-Kombinationen nach VEM Handbuch / VBA Upro1:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">((MFL + Z<sub>L</sub> + MFL·H<sub>Fd</sub>/F₀) / (H<sub>Fd</sub> + x))² − (MFL/F₀)² − G·(α·ΔT + (x−F₀)/(E·A)) = 0</p>
-        <p style="color:var(--muted);font-size:.8rem">F₀ = H<sub>Ts</sub> bei T<sub>1</sub> (belastet). G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = Eislast [N/m] (0 wenn nicht anwendbar). Newton-Raphson → H<sub>Ts,2</sub>.</p>
+        <p style="color:var(--muted);font-size:.8rem">F₀ = H<sub>Ts</sub> belastet bei 10 °C (Schritt 2), ΔT = T − 10 °C. G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = Eislast [N/m] (nur bei −5 °C). Newton-Raphson → H<sub>Ts,2</sub>, <strong>gerundet auf 5 N</strong> (mit Eislast auf 10 N) wie die Reglagetabelle. Der Ausgangszustand bei T<sub>1</sub> wird auf dieselbe Weise aus F₀ bestimmt. Abnutzung: MFL wird um den Gewichtsverlust des Fahrdrahts vermindert (Excel, Blatt Daten); sie wirkt ab 10 °C.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Schritt 5 &nbsp;—&nbsp; Kombinierte Kettenlinie &amp; Durchhang (VEM Handbuch Formeln 7.82 + 7.66)</p>
         <p>Massgebender Durchhang für Kontrollmessungen — kombiniertes Ts+Fd-System:</p>
-        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>Fd</sub>/F₀) + Z<sub>L</sub> &nbsp;&nbsp;[F₀ = H<sub>Ts</sub> bei T<sub>1</sub>, belastet]</p>
+        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>Fd</sub>/F₀) + Z<sub>L</sub> &nbsp;&nbsp;[F₀ = H<sub>Ts</sub> belastet bei 10 °C]</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">L<sub>T1</sub> = L + 2·<strong>|Δh|</strong>·(H<sub>Ts,2</sub>+H<sub>Fd</sub>) / (L·q<sub>vem</sub>) &nbsp;&nbsp;[Formel 7.82, |Δh| = |h<sub>2</sub>−h<sub>1</sub>| ≥ 0]</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">f<sub>Fd</sub> = L<sub>T1</sub>² / 8 · q<sub>vem</sub> / (H<sub>Ts,2</sub> + H<sub>Fd</sub>) &nbsp;&nbsp;[Formel 7.66 mit L<sub>T1</sub>]</p>
         <p style="color:var(--muted);font-size:.8rem">Entspricht Zellenformeln P12/P14 in SBB Durchhang 2026.xlsm (NFL-Re Sheet). L<sub>T1</sub> ≥ L immer (Absolutwert |Δh| — symmetrisch für h<sub>1</sub>&gt;h<sub>2</sub> und h<sub>2</sub>&gt;h<sub>1</sub>). Gilt für T<sub>1</sub> und T<sub>2</sub>.</p>
         <p style="margin-top:.5rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Darstellung im Diagramm:</strong> Die angezeigte Ts-Kurve bei T<sub>2</sub> entspricht der kombinierten Kettenlinie des Ts+Fd-Systems mit den Parametern q<sub>vem</sub> und H<sub>Ts,2</sub>+H<sub>Fd</sub>. Diese stimmt mit der VEM-Parabel überein (Abweichung &lt; 5 mm für übliche Spannweiten). Messpunkte (M1–M4) zeigen die Höhe auf dieser kombinierten Kurve.</p>
+
+        <p style="font-weight:600;margin-top:.7rem">Berechnungsart, R-FL und Einzelleiter</p>
+        <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
+          <li><strong>Ausgleichend</strong>: Zugkraft mit der Mittelspannweite c<sub>m</sub> (Lm) aller Felder; Durchhang je Feld mit seiner Länge (SBB 0161.1013.0005.1). <strong>Starr</strong>: jedes Feld mit seiner Projektspannweite c<sub>proj</sub>; N-FL mit den Reglagewerten «starr» (SBB 0161.1013.0003), Einzelleiter mit L<sub>ref</sub> = 25 m (siehe 6.8).</li>
+          <li><strong>R-FL</strong>: Tragseil und Fahrdraht nachgespannt — konstante Zugkraft, die Temperatur wirkt nicht. Eislast und Abnutzung teilen sich auf Ts und Fd auf: q = MFL + (Z<sub>L</sub> − q<sub>Abn</sub>)·H<sub>Ts</sub>/(H<sub>Ts</sub>+H<sub>Fd</sub>). Der Fahrdraht liegt in der Solllage und folgt dem Tragseil nur bei Eislast bzw. Abnutzung (VEM 7.53a): Absenkung ≈ L²/8 · Z<sub>L</sub>/(H<sub>Ts</sub>+H<sub>Fd</sub>).</li>
+          <li><strong>Einzelleiter</strong>: Zustandsgleichung mit α und E·A des Leiters, Reglagezugkraft aus der Tabelle (6.5); Eislast bei −5 °C mit eisfreiem Ausgangszustand wie im Excel.</li>
+        </ul>
+        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Verifikation:</strong> 27 mit der SBB-Excel verifizierte Beispielrechnungen (N-FL normal und starr, R-FL, Einzelleiter, mit Eis und Abnutzung) sind als automatische Tests hinterlegt und werden bei jeder Änderung nachgerechnet (Toleranz 7.5 mm), zusammen mit 288 weiteren eingefrorenen Rechenfällen.</p>
       </div><!-- /hb-de -->
 
       <!-- FR -->
@@ -15633,10 +15676,10 @@ renderObstacleList();
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>tot</sub> = q<sub>CP</sub> + q<sub>FC</sub> + q<sub>suspension</sub> &nbsp;[N/m]</p>
         <p style="color:var(--muted);font-size:.8rem">Suspension: 0.020 kg/m × 9.81 m/s² = 0.196 N/m. Pour combinaison FL connue: q<sub>tot</sub> = MFL (valeur VBA exacte incl. pinces).</p>
 
-        <p style="font-weight:600;margin-top:.7rem">Étape 2 &nbsp;—&nbsp; Équation d'état niveau 1: non chargé → chargé (LC N)</p>
-        <p>Lors du montage du fil de contact et des suspensions, le CP se déforme élastiquement. Équilibre via polynôme cubique:</p>
+        <p style="font-weight:600;margin-top:.7rem">Étape 2 &nbsp;—&nbsp; État de référence : CP chargé à 10 °C (LC N)</p>
+        <p>La force de montage H<sub>nch</sub> (CP non chargé, à la température de pose T<sub>1</sub>) est convertie comme dans l’Excel CFF, par l’équation d’état, en <strong>état de référence</strong> : CP chargé avec fil de contact et suspensions (MFL au lieu de MTS) à <strong>10 °C</strong>, encore sans traction du fil de contact. À 10 °C, le fil de contact est horizontal ; sa traction n’agit qu’en cas d’écart de température. Forme de base (sans terme de température) :</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q²<sub>tot</sub>·Lm² / (24·H²<sub>ch</sub>) − H<sub>ch</sub>/(E·A)<sub>CP</sub> = q²<sub>CP</sub>·Lm² / (24·H²<sub>nch</sub>) − H<sub>nch</sub>/(E·A)<sub>CP</sub></p>
-        <p style="color:var(--muted);font-size:.8rem">Résolution Newton-Raphson (E·A du câble porteur uniquement; conforme VBA). Résultat: H<sub>CP,chargé</sub> = F₀ (état de référence).</p>
+        <p style="color:var(--muted);font-size:.8rem">Résolution Newton-Raphson (E·A du câble porteur resp. de la combinaison ; conforme VBA), si T<sub>1</sub> ≠ 10 °C avec le terme α·(10 °C − T<sub>1</sub>). Résultat : F₀ = H<sub>CP,chargé</sub> à 10 °C, <strong>arrondi à 10 N</strong> comme dans l’Excel.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Étape 3 &nbsp;—&nbsp; Caténaire état initial (T<sub>1</sub>)</p>
         <p>Le CP est modélisé comme caténaire exacte avec paramètre caténaire <em>a = H/q</em>:</p>
@@ -15646,15 +15689,23 @@ renderObstacleList();
         <p style="font-weight:600;margin-top:.7rem">Étape 4 &nbsp;—&nbsp; Équation d'état niveau 2: variation de température (LC N, conforme VBA)</p>
         <p>Pour combinaisons FL connues selon VEM Manuel / VBA Upro1:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">((MFL + Z<sub>L</sub> + MFL·H<sub>FC</sub>/F₀) / (H<sub>FC</sub> + x))² − (MFL/F₀)² − G·(α·ΔT + (x−F₀)/(E·A)) = 0</p>
-        <p style="color:var(--muted);font-size:.8rem">F₀ = H<sub>CP</sub> à T<sub>1</sub> (chargé). G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = charge de glace [N/m] (0 si non applicable). Newton-Raphson → H<sub>CP,2</sub>.</p>
+        <p style="color:var(--muted);font-size:.8rem">F₀ = H<sub>CP</sub> chargé à 10 °C (étape 2), ΔT = T − 10 °C. G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = charge de glace [N/m] (seulement à −5 °C). Newton-Raphson → H<sub>CP,2</sub>, <strong>arrondi à 5 N</strong> (avec glace à 10 N) comme le tableau de réglage. L’état initial à T<sub>1</sub> est déterminé de la même manière à partir de F₀. Usure : MFL est diminué de la perte de poids du fil de contact (Excel, feuille Daten) ; elle agit dès 10 °C.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Étape 5 &nbsp;—&nbsp; Caténaire combinée &amp; flèche (VEM Manuel formules 7.82 + 7.66)</p>
         <p>Flèche déterminante pour les mesures de contrôle — système combiné CP+FC:</p>
-        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>FC</sub>/F₀) + Z<sub>L</sub> &nbsp;&nbsp;[F₀ = H<sub>CP</sub> à T<sub>1</sub>, chargé]</p>
+        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>FC</sub>/F₀) + Z<sub>L</sub> &nbsp;&nbsp;[F₀ = H<sub>CP</sub> chargé à 10 °C]</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">L<sub>T1</sub> = L + 2·<strong>|Δh|</strong>·(H<sub>CP,2</sub>+H<sub>FC</sub>) / (L·q<sub>vem</sub>) &nbsp;&nbsp;[Formule 7.82, |Δh|=|h<sub>2</sub>−h<sub>1</sub>| ≥ 0]</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">f<sub>FC</sub> = L<sub>T1</sub>² / 8 · q<sub>vem</sub> / (H<sub>CP,2</sub> + H<sub>FC</sub>) &nbsp;&nbsp;[Formule 7.66]</p>
         <p style="color:var(--muted);font-size:.8rem">Correspond aux formules P12/P14 dans SBB Durchhang 2026.xlsm (feuille NFL-Re). L<sub>T1</sub> ≥ L toujours (valeur absolue |Δh| — symétrique). Valable pour T<sub>1</sub> et T<sub>2</sub>.</p>
         <p style="margin-top:.5rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Affichage dans le diagramme:</strong> La courbe CP affichée à T<sub>2</sub> correspond à la caténaire combinée du système CP+FC avec les paramètres q<sub>vem</sub> et H<sub>CP,2</sub>+H<sub>FC</sub>. Les points de mesure (M1–M4) indiquent la hauteur sur cette courbe combinée.</p>
+
+        <p style="font-weight:600;margin-top:.7rem">Mode de calcul, LC R et conducteur simple</p>
+        <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
+          <li><strong>Compensé</strong> : force de traction avec la portée moyenne c<sub>m</sub> (Lm) de toutes les portées ; flèche par portée avec sa longueur (CFF 0161.1013.0005.1). <strong>Rigide</strong> : chaque portée avec sa portée du projet c<sub>proj</sub> ; LC N avec les valeurs de réglage «rigide» (CFF 0161.1013.0003), conducteur simple avec L<sub>réf</sub> = 25 m (voir 6.8).</li>
+          <li><strong>LC R</strong> : câble porteur et fil de contact tendus automatiquement — force de traction constante, la température n’a pas d’effet. Charge de glace et usure se répartissent sur CP et FC : q = MFL + (Z<sub>L</sub> − q<sub>usure</sub>)·H<sub>CP</sub>/(H<sub>CP</sub>+H<sub>FC</sub>). Le fil de contact est en position nominale et ne suit le câble porteur qu’en cas de glace resp. d’usure (VEM 7.53a) : abaissement ≈ L²/8 · Z<sub>L</sub>/(H<sub>CP</sub>+H<sub>FC</sub>).</li>
+          <li><strong>Conducteur simple</strong> : équation d’état avec α et E·A du conducteur, force de réglage selon le tableau (6.5) ; charge de glace à −5 °C avec état initial sans glace comme dans l’Excel.</li>
+        </ul>
+        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Vérification :</strong> 27 exemples de calcul validés avec l’Excel CFF (LC N normale et rigide, LC R, conducteur simple, avec glace et usure) sont enregistrés comme tests automatiques et recalculés à chaque modification (tolérance 7.5 mm), avec 288 autres cas de calcul figés.</p>
       </div><!-- /hb-fr -->
 
       <!-- IT -->
@@ -15663,10 +15714,10 @@ renderObstacleList();
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>tot</sub> = q<sub>FP</sub> + q<sub>FC</sub> + q<sub>ballerina</sub> &nbsp;[N/m]</p>
         <p style="color:var(--muted);font-size:.8rem">Ballerina: 0.020 kg/m × 9.81 m/s² = 0.196 N/m. Per combinazione FL nota: q<sub>tot</sub> = MFL (valore VBA esatto incl. morsetti).</p>
 
-        <p style="font-weight:600;margin-top:.7rem">Passo 2 &nbsp;—&nbsp; Equazione di stato livello 1: non caricato → caricato (LC N)</p>
-        <p>Durante il montaggio del filo di contatto e delle ballerine, il FP si deforma elasticamente. Equilibrio tramite polinomio cubico:</p>
+        <p style="font-weight:600;margin-top:.7rem">Passo 2 &nbsp;—&nbsp; Stato di riferimento: FP caricato a 10 °C (LC N)</p>
+        <p>La forza di montaggio H<sub>nc</sub> (FP non caricato, alla temperatura di posa T<sub>1</sub>) viene convertita come nell’Excel FFS, con l’equazione di stato, nello <strong>stato di riferimento</strong>: FP caricato con filo di contatto e ballerine (MFL invece di MTS) a <strong>10 °C</strong>, ancora senza trazione del filo di contatto. A 10 °C il filo di contatto è orizzontale; la sua trazione agisce solo in caso di scostamento di temperatura. Forma di base (senza termine di temperatura):</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q²<sub>tot</sub>·Lm² / (24·H²<sub>c</sub>) − H<sub>c</sub>/(E·A)<sub>FP</sub> = q²<sub>FP</sub>·Lm² / (24·H²<sub>nc</sub>) − H<sub>nc</sub>/(E·A)<sub>FP</sub></p>
-        <p style="color:var(--muted);font-size:.8rem">Soluzione Newton-Raphson (solo E·A del filo portante; conforme VBA). Risultato: H<sub>FP,caricato</sub> = F₀ (stato di riferimento).</p>
+        <p style="color:var(--muted);font-size:.8rem">Soluzione Newton-Raphson (E·A del filo portante risp. della combinazione; conforme VBA), se T<sub>1</sub> ≠ 10 °C con il termine α·(10 °C − T<sub>1</sub>). Risultato: F₀ = H<sub>FP,caricato</sub> a 10 °C, <strong>arrotondato a 10 N</strong> come nell’Excel.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Passo 3 &nbsp;—&nbsp; Catenaria stato iniziale (T<sub>1</sub>)</p>
         <p>Il FP è modellato come catenaria esatta con parametro catenaria <em>a = H/q</em>:</p>
@@ -15676,15 +15727,23 @@ renderObstacleList();
         <p style="font-weight:600;margin-top:.7rem">Passo 4 &nbsp;—&nbsp; Equazione di stato livello 2: variazione di temperatura (LC N, conforme VBA)</p>
         <p>Per combinazioni FL note secondo VEM Manuale / VBA Upro1:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">((MFL + Z<sub>L</sub> + MFL·H<sub>FC</sub>/F₀) / (H<sub>FC</sub> + x))² − (MFL/F₀)² − G·(α·ΔT + (x−F₀)/(E·A)) = 0</p>
-        <p style="color:var(--muted);font-size:.8rem">F₀ = H<sub>FP</sub> a T<sub>1</sub> (caricato). G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = carico di ghiaccio [N/m] (0 se non applicabile). Newton-Raphson → H<sub>FP,2</sub>.</p>
+        <p style="color:var(--muted);font-size:.8rem">F₀ = H<sub>FP</sub> caricato a 10 °C (passo 2), ΔT = T − 10 °C. G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = carico di ghiaccio [N/m] (solo a −5 °C). Newton-Raphson → H<sub>FP,2</sub>, <strong>arrotondato a 5 N</strong> (con ghiaccio a 10 N) come la tabella di regolazione. Lo stato iniziale a T<sub>1</sub> viene determinato allo stesso modo da F₀. Usura: MFL viene ridotto della perdita di peso del filo di contatto (Excel, foglio Daten); agisce da 10 °C.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Passo 5 &nbsp;—&nbsp; Catenaria combinata &amp; freccia (VEM Manuale formule 7.82 + 7.66)</p>
         <p>Freccia determinante per le misure di controllo — sistema combinato FP+FC:</p>
-        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>FC</sub>/F₀) + Z<sub>L</sub> &nbsp;&nbsp;[F₀ = H<sub>FP</sub> a T<sub>1</sub>, caricato]</p>
+        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>FC</sub>/F₀) + Z<sub>L</sub> &nbsp;&nbsp;[F₀ = H<sub>FP</sub> caricato a 10 °C]</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">L<sub>T1</sub> = L + 2·<strong>|Δh|</strong>·(H<sub>FP,2</sub>+H<sub>FC</sub>) / (L·q<sub>vem</sub>) &nbsp;&nbsp;[Formula 7.82, |Δh|=|h<sub>2</sub>−h<sub>1</sub>| ≥ 0]</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">f<sub>FC</sub> = L<sub>T1</sub>² / 8 · q<sub>vem</sub> / (H<sub>FP,2</sub> + H<sub>FC</sub>) &nbsp;&nbsp;[Formula 7.66]</p>
         <p style="color:var(--muted);font-size:.8rem">Corrisponde alle formule P12/P14 in SBB Durchhang 2026.xlsm (foglio NFL-Re). L<sub>T1</sub> ≥ L sempre (valore assoluto |Δh| — simmetrico). Valido per T<sub>1</sub> e T<sub>2</sub>.</p>
         <p style="margin-top:.5rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Visualizzazione nel diagramma:</strong> La curva FP visualizzata a T<sub>2</sub> corrisponde alla catenaria combinata del sistema FP+FC con i parametri q<sub>vem</sub> e H<sub>FP,2</sub>+H<sub>FC</sub>. I punti di misura (M1–M4) indicano l'altezza su questa curva combinata.</p>
+
+        <p style="font-weight:600;margin-top:.7rem">Modalità di calcolo, LC R e conduttore singolo</p>
+        <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
+          <li><strong>Compensato</strong>: forza di trazione con la lunghezza media c<sub>m</sub> (Lm) di tutte le campate; freccia per campata con la sua lunghezza (FFS 0161.1013.0005.1). <strong>Rigido</strong>: ogni campata con la sua campata del progetto c<sub>proj</sub>; LC N con i valori di regolazione «rigido» (FFS 0161.1013.0003), conduttore singolo con L<sub>rif</sub> = 25 m (vedi 6.8).</li>
+          <li><strong>LC R</strong>: filo portante e filo di contatto tensionati automaticamente — forza di trazione costante, la temperatura non ha effetto. Carico di ghiaccio e usura si ripartiscono su FP e FC: q = MFL + (Z<sub>L</sub> − q<sub>usura</sub>)·H<sub>FP</sub>/(H<sub>FP</sub>+H<sub>FC</sub>). Il filo di contatto è in posizione nominale e segue il filo portante solo con ghiaccio risp. usura (VEM 7.53a): abbassamento ≈ L²/8 · Z<sub>L</sub>/(H<sub>FP</sub>+H<sub>FC</sub>).</li>
+          <li><strong>Conduttore singolo</strong>: equazione di stato con α ed E·A del conduttore, forza di regolazione dalla tabella (6.5); carico di ghiaccio a −5 °C con stato iniziale senza ghiaccio come nell’Excel.</li>
+        </ul>
+        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Verifica:</strong> 27 esempi di calcolo convalidati con l’Excel FFS (LC N normale e rigida, LC R, conduttore singolo, con ghiaccio e usura) sono registrati come test automatici e ricalcolati a ogni modifica (tolleranza 7.5 mm), insieme ad altri 288 casi di calcolo congelati.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 4 Leiterkennwerte ══ -->
@@ -16091,45 +16150,45 @@ renderObstacleList();
 
       <!-- DE -->
       <div class="hb-lang hb-de">
-        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.8 &nbsp;Einzelleiter — Berechnungsart</p>
-        <p>Im Modus <em>Einzelleiter</em> erscheint unterhalb der Basiskraft-Auswahl der Schalter <strong>Berechnungsart</strong>:</p>
+        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.8 &nbsp;Berechnungsart — ausgleichend / starr (N-FL und Einzelleiter)</p>
+        <p>Bei <em>N-FL</em> und <em>Einzelleiter</em> erscheint der Schalter <strong>Berechnungsart</strong>:</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
           <tr style="background:var(--s3)">
             <td class="hb-tab-param" style="padding:4px 8px;font-weight:600;width:32%">Einstellung</td>
             <td class="hb-tab-desc" style="padding:4px 8px;font-weight:600">Wirkung</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">Ausgleichend</td><td style="padding:3px 8px">L<sub>ref</sub> = Materialwert (45 m Cu, 30 m Aldrey). Mittelspannweite-Modus verfügbar.</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Starr</td><td style="padding:3px 8px">L<sub>ref</sub> = 25 m (fixiert). Für starr abgespannte Leitungen. Mittelspannweite-Modus deaktiviert.</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">Ausgleichend</td><td style="padding:3px 8px">Zugkraft mit der Mittelspannweite c<sub>m</sub>, Durchhang je Feld. N-FL: Reglagewerte «normal» (SBB 0161.1013.0001). Einzelleiter: L<sub>ref</sub> = Materialwert (45 m Cu, 30 m Aldrey). Mittelspannweite-Modus verfügbar.</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Starr</td><td style="padding:3px 8px">Jedes Feld mit seiner Projektspannweite c<sub>proj</sub>. N-FL: Reglagewerte «starr» (SBB 0161.1013.0003). Einzelleiter: L<sub>ref</sub> = 25 m (fixiert). Mittelspannweite-Modus deaktiviert.</td></tr>
         </table>
         <p style="font-size:.82rem;color:var(--muted)">Die Berechnungsart beeinflusst die Reglagezugkraft-Tabelle und den aus T<sub>1</sub> abgeleiteten H-Wert. Bei «Starr» wird die Zustandsgleichung mit L<sub>ref</sub> = 25 m gerechnet, unabhängig vom Materialwert.</p>
       </div><!-- /hb-de -->
 
       <!-- FR -->
       <div class="hb-lang hb-fr" style="display:none">
-        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.8 &nbsp;Conducteur simple — Mode de calcul</p>
-        <p>En mode <em>Conducteur simple</em>, le commutateur <strong>Mode de calcul</strong> apparaît sous la sélection de la force de base:</p>
+        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.8 &nbsp;Mode de calcul — compensé / rigide (LC N et conducteur simple)</p>
+        <p>Pour la <em>LC N</em> et le <em>conducteur simple</em>, le commutateur <strong>Mode de calcul</strong> apparaît :</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
           <tr style="background:var(--s3)">
             <td style="padding:4px 8px;font-weight:600;width:32%">Paramètre</td>
             <td style="padding:4px 8px;font-weight:600">Effet</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">Compensé</td><td style="padding:3px 8px">L<sub>réf</sub> = valeur matériau (45 m Cu, 30 m Aldrey). Mode portée moyenne disponible.</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Rigide</td><td style="padding:3px 8px">L<sub>réf</sub> = 25 m (fixe). Pour conducteurs à ancrage rigide. Mode portée moyenne désactivé.</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">Compensé</td><td style="padding:3px 8px">Force de traction avec la portée moyenne c<sub>m</sub>, flèche par portée. LC N : valeurs de réglage «normal» (CFF 0161.1013.0001). Conducteur simple : L<sub>réf</sub> = valeur matériau (45 m Cu, 30 m Aldrey). Mode portée moyenne disponible.</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Rigide</td><td style="padding:3px 8px">Chaque portée avec sa portée du projet c<sub>proj</sub>. LC N : valeurs de réglage «rigide» (CFF 0161.1013.0003). Conducteur simple : L<sub>réf</sub> = 25 m (fixe). Mode portée moyenne désactivé.</td></tr>
         </table>
         <p style="font-size:.82rem;color:var(--muted)">Le mode de calcul influence le tableau des forces de traction de réglage et la valeur H dérivée de T<sub>1</sub>. En mode «Rigide», l'équation d'état est calculée avec L<sub>réf</sub> = 25 m.</p>
       </div><!-- /hb-fr -->
 
       <!-- IT -->
       <div class="hb-lang hb-it" style="display:none">
-        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.8 &nbsp;Conduttore singolo — Modalità di calcolo</p>
-        <p>In modalità <em>Conduttore singolo</em>, il commutatore <strong>Modalità di calcolo</strong> appare sotto la selezione della forza di base:</p>
+        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.8 &nbsp;Modalità di calcolo — compensato / rigido (LC N e conduttore singolo)</p>
+        <p>Per la <em>LC N</em> e il <em>conduttore singolo</em> appare il commutatore <strong>Modalità di calcolo</strong>:</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
           <tr style="background:var(--s3)">
             <td style="padding:4px 8px;font-weight:600;width:32%">Impostazione</td>
             <td style="padding:4px 8px;font-weight:600">Effetto</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">Compensato</td><td style="padding:3px 8px">L<sub>rif</sub> = valore materiale (45 m Cu, 30 m Aldrey). Modalità lunghezza media disponibile.</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Rigido</td><td style="padding:3px 8px">L<sub>rif</sub> = 25 m (fisso). Per conduttori ad ancoraggio rigido. Modalità lunghezza media disattivata.</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">Compensato</td><td style="padding:3px 8px">Forza di trazione con la lunghezza media c<sub>m</sub>, freccia per campata. LC N: valori di regolazione «normale» (FFS 0161.1013.0001). Conduttore singolo: L<sub>rif</sub> = valore materiale (45 m Cu, 30 m Aldrey). Modalità lunghezza media disponibile.</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Rigido</td><td style="padding:3px 8px">Ogni campata con la sua campata del progetto c<sub>proj</sub>. LC N: valori di regolazione «rigido» (FFS 0161.1013.0003). Conduttore singolo: L<sub>rif</sub> = 25 m (fisso). Modalità lunghezza media disattivata.</td></tr>
         </table>
         <p style="font-size:.82rem;color:var(--muted)">La modalità di calcolo influenza la tabella delle forze di trazione di regolazione e il valore H derivato da T<sub>1</sub>. Con «Rigido» l'equazione di stato viene calcolata con L<sub>rif</sub> = 25 m.</p>
       </div><!-- /hb-it -->
@@ -16300,202 +16359,111 @@ renderObstacleList();
         <p style="font-size:.8rem;color:var(--muted)">Casi di carico per sistema in «Casi di carico …»: temperature (predefinite −20 °C e +80 °C), carico di ghiaccio a −5 °C secondo l’altitudine della linea (sotto 1000 m s.l.m. 7 N/m, da 1000 m s.l.m. 15 N/m; predefinito 15 N/m, valore modificabile) e filo di contatto nuovo/usurato. Per LC R la temperatura non ha effetto (tensionamento automatico).</p>
       </div><!-- /hb-it -->
 
+      <!-- ══ 6.13 Bedienung ══ -->
+      <div class="hb-lang hb-de">
+        <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.13 &nbsp;Bedienung: Ansichten, Darstellung, Tablet</p>
+        <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
+          <li><strong>Reiter</strong> über dem Diagramm: <em>Diagramm</em> (Berechnung), <em>Zeichnung</em> (massstäblich, PDF), <em>Abschnitt</em> (6.11) und <em>Foto</em>.</li>
+          <li><strong>Foto</strong> ist bewusst zurückhaltend dargestellt: Die Foto-Auswertung ist <em>keine präzise Berechnung</em> und eignet sich nur zur Abschätzung des Durchhangs. Beim ersten Öffnen je App-Start erscheint ein Hinweis; im Foto-Ergebnis steht eine Warnzeile.</li>
+          <li><strong>Hell / Dunkel</strong>: Symbol im Kopf wechselt zwischen automatisch (wie das Gerät), hell und dunkel. PDF und Zeichnung werden immer hell ausgegeben.</li>
+          <li><strong>Ergebnisleiste</strong> (Tablet hochkant): Sobald Diagramm und Ergebniskarte aus dem Bild scrollen, zeigt eine Leiste unten Durchhang, Zugkraft und Höhe bei T<sub>2</sub> (und den T<sub>3</sub>-Vergleich). Antippen springt zum Diagramm; bei ungültiger Eingabe steht «Eingabe prüfen».</li>
+          <li><strong>Sprache</strong> DE / FR / IT oben rechts; Fachbegriffe wie im SBB-Excel (Glossar, Kap. 9).</li>
+          <li><strong>Offline</strong>: Die App funktioniert nach dem ersten Laden ohne Internet und lässt sich installieren. Nach einer Aktualisierung erscheint «Eine neue Version ist verfügbar» — «Jetzt laden» wählen oder die Seite neu laden.</li>
+          <li><strong>Escape</strong> schliesst offene Fenster; Pflichtfelder mit ungültigem Wert werden markiert, die Ergebnisse dann als veraltet angezeigt.</li>
+        </ul>
+      </div><!-- /hb-de -->
+      <div class="hb-lang hb-fr" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.13 &nbsp;Utilisation : vues, affichage, tablette</p>
+        <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
+          <li><strong>Onglets</strong> au-dessus du diagramme : <em>Diagramme</em> (calcul), <em>Dessin</em> (à l’échelle, PDF), <em>Canton</em> (6.11) et <em>Photo</em>.</li>
+          <li><strong>Photo</strong> est volontairement discret : l’analyse photo n’est <em>pas un calcul précis</em> et ne convient qu’à estimer la flèche. Une remarque apparaît à la première ouverture après chaque démarrage ; le résultat photo porte une ligne d’avertissement.</li>
+          <li><strong>Clair / sombre</strong> : le symbole dans l’en-tête alterne entre automatique (comme l’appareil), clair et sombre. PDF et dessin sont toujours clairs.</li>
+          <li><strong>Barre de résultats</strong> (tablette en portrait) : dès que diagramme et carte de résultats sortent de l’écran, une barre en bas affiche flèche, force de traction et hauteur à T<sub>2</sub> (et la comparaison T<sub>3</sub>). Un appui ramène au diagramme ; en cas de saisie invalide : «Vérifier la saisie».</li>
+          <li><strong>Langue</strong> DE / FR / IT en haut à droite ; termes techniques comme dans l’Excel CFF (glossaire, chap. 9).</li>
+          <li><strong>Hors ligne</strong> : après le premier chargement, l’application fonctionne sans Internet et peut être installée. Après une mise à jour apparaît «Une nouvelle version est disponible» — choisir «Charger maintenant» ou recharger la page.</li>
+          <li><strong>Échap</strong> ferme les fenêtres ouvertes ; les champs invalides sont marqués et les résultats affichés comme obsolètes.</li>
+        </ul>
+      </div><!-- /hb-fr -->
+      <div class="hb-lang hb-it" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.13 &nbsp;Utilizzo: viste, visualizzazione, tablet</p>
+        <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
+          <li><strong>Schede</strong> sopra il diagramma: <em>Diagramma</em> (calcolo), <em>Disegno</em> (in scala, PDF), <em>Tratta</em> (6.11) e <em>Foto</em>.</li>
+          <li><strong>Foto</strong> è volutamente discreta: l’analisi foto <em>non è un calcolo preciso</em> ed è adatta solo per stimare la freccia. Alla prima apertura dopo ogni avvio appare un avviso; il risultato foto riporta una riga di avvertimento.</li>
+          <li><strong>Chiaro / scuro</strong>: il simbolo nell’intestazione alterna tra automatico (come il dispositivo), chiaro e scuro. PDF e disegno sono sempre chiari.</li>
+          <li><strong>Barra dei risultati</strong> (tablet verticale): quando diagramma e scheda dei risultati escono dallo schermo, una barra in basso mostra freccia, forza di trazione e altezza a T<sub>2</sub> (e il confronto T<sub>3</sub>). Un tocco riporta al diagramma; con dati non validi: «Controllare i dati inseriti».</li>
+          <li><strong>Lingua</strong> DE / FR / IT in alto a destra; termini tecnici come nell’Excel FFS (glossario, cap. 9).</li>
+          <li><strong>Offline</strong>: dopo il primo caricamento l’applicazione funziona senza Internet e può essere installata. Dopo un aggiornamento appare «È disponibile una nuova versione» — scegliere «Carica ora» o ricaricare la pagina.</li>
+          <li><strong>Esc</strong> chiude le finestre aperte; i campi non validi vengono evidenziati e i risultati mostrati come non aggiornati.</li>
+        </ul>
+      </div><!-- /hb-it -->
+
       <!-- ══ 7 Beispielberechnung ══ -->
       <h3 id="hb-beispiel" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.2rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem">7 &nbsp;<span id="hb-s7">Schritt-für-Schritt Beispielberechnung (N-FL)</span></h3>
 
-      <!-- DE -->
       <div class="hb-lang hb-de">
-        <div style="background:var(--warn-s);border:1px solid var(--warn);border-radius:6px;padding:.6rem 1rem;margin-bottom:.7rem;font-size:.82rem">
-          <strong>Aufgabe:</strong> Berechne den Fahrdraht-Durchhang und die Ts-Höhe am Feldmittelpunkt für ein ebenes N-FL-Feld.<br>
-          <strong>Kettenwerk:</strong> StCu 50 mm² + Cu 107 mm², gestützt, 6 kN &nbsp;|&nbsp;
-          <strong>Spannweite:</strong> L = Lm = 50 m &nbsp;|&nbsp;
-          <strong>Höhen:</strong> h<sub>1</sub> = h<sub>2</sub> = 5.50 m &nbsp;|&nbsp; sh = 2.40 m<br>
-          <strong>Zugkräfte:</strong> H<sub>Ts,ub</sub> = 1 700 N &nbsp;|&nbsp; H<sub>Fd</sub> = 8 500 N &nbsp;|&nbsp;
-          <strong>Temperaturen:</strong> T<sub>1</sub> = +10 °C → T<sub>2</sub> = +40 °C
-        </div>
-        <div style="border-left:3px solid var(--primary);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Schritt 1 &nbsp;—&nbsp; Gesamtlast (bekannte FL-Kombination)</p>
-          <p style="margin:.1rem 0">Aus VBA-Tabelle: <strong>MFL = 13.876 N/m</strong> (inkl. Ts + Fd + Klemmen)</p>
-          <p style="margin:.1rem 0;color:var(--muted);font-size:.8rem">Einzelwerte: q<sub>Ts</sub> = 4.011 N/m &nbsp;|&nbsp; q<sub>Fd</sub> = 9.517 N/m &nbsp;|&nbsp; q<sub>H</sub> = 0.196 N/m &nbsp;→ Summe = 13.724 N/m (ohne Klemmen). VBA-Wert MFL = 13.876 N/m (mit Klemmen) ist massgebend.</p>
-          <p style="margin:.1rem 0">E·A = 159 GPa × 4.945 cm² = <strong>7.862 MN</strong> &nbsp;|&nbsp; α = 11.5×10⁻⁶/K</p>
-        </div>
-        <div style="border-left:3px solid var(--primary);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Schritt 2 &nbsp;—&nbsp; Zustandsgleichung unbelastet → belastet</p>
-          <p style="margin:.1rem 0">Koeffizienten des kubischen Polynoms (C·H³ + K·H² − G = 0):</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s3);padding:3px 6px;border-radius:3px">
-            G = (MFL × Lm)² / 24 = (13.876 × 50)² / 24 = <strong>20 054 N²·m</strong><br>
-            C = 1 / E·A = 1 / 7.862 MN = <strong>1.272×10⁻⁷ m/N</strong><br>
-            K = (q<sub>Ts</sub>×Lm)² / (24×H²<sub>ub</sub>) − H<sub>ub</sub>/E·A<br>
-            &nbsp;&nbsp;= (4.011×50)² / (24×1700²) − 1700/7.862×10⁶ = <strong>3.638×10⁻⁴ m/N</strong>
-          </p>
-          <p style="margin:.1rem 0">Newton-Raphson (Startwert H<sub>ub</sub> = 1 700 N) → <strong>H<sub>Ts,belastet</sub> = F₀ ≈ 3 860 N</strong></p>
-        </div>
-        <div style="border-left:3px solid var(--primary);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Schritt 3 &nbsp;—&nbsp; Kettenlinie bei T<sub>1</sub> = +10 °C</p>
-          <p style="margin:.1rem 0">Kettenlinienparameter:</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s3);padding:3px 6px;border-radius:3px">a = H<sub>Ts</sub> / MFL = 3 860 / 13.876 = <strong>278.1 m</strong></p>
-          <p style="margin:.1rem 0">Ebenes Feld (h<sub>1</sub> = h<sub>2</sub>) → Tiefpunkt in Feldmitte: x₀ = 25.000 m</p>
-          <p style="margin:.1rem 0">Ts-Höhe am Tiefpunkt: y<sub>Ts</sub>(25 m) = h<sub>1</sub> − f<sub>Ts</sub></p>
-          <p style="margin:.1rem 0">Fahrdraht-Durchhang nach VEM 7.66:</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s3);padding:3px 6px;border-radius:3px">
-            q<sub>vem</sub> = 13.876 × (1 + 8500/3860) = 13.876 × 3.202 = 44.43 N/m<br>
-            f<sub>Fd,1</sub> = 50² / 8 × 44.43 / (3860 + 8500) = 312.5 × 44.43 / 12 360 = <strong>1.123 m</strong>
-          </p>
-          <p style="margin:.1rem 0">Ts-Höhe SOK bei T<sub>1</sub>: h<sub>1</sub> − f<sub>Fd,1</sub> + sh = 5.50 − 1.123 + 2.40 (Näherung am Tiefpunkt)</p>
-        </div>
-        <div style="border-left:3px solid var(--xdim);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Schritt 4 &nbsp;—&nbsp; Zustandsgleichung T<sub>1</sub> → T<sub>2</sub> (ΔT = +30 K)</p>
-          <p style="margin:.1rem 0">VEM Handbuch / VBA Upro1 Gleichung (Newton-Raphson):</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s4);padding:3px 6px;border-radius:3px">
-            gk₀ = MFL / F₀ = 13.876 / 3860 = 3.594×10⁻³ 1/m<br>
-            G &nbsp;= 24/50² + gk₀² = 9.600×10⁻³ + 1.292×10⁻⁵ = 9.613×10⁻³<br>
-            A &nbsp;= MFL × (1 + H<sub>Fd</sub>/F₀) = 13.876 × 3.202 = 44.43 N/m<br>
-            α·ΔT = 11.5×10⁻⁶ × 30 = 3.450×10⁻⁴<br>
-            Iteration → <strong>H<sub>Ts,2</sub> ≈ 2 880 N</strong>
-          </p>
-          <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">Die Zugkraft nimmt bei Erwärmung ab (Ts dehnt sich aus → tiefere Spannung).</p>
-        </div>
-        <div style="border-left:3px solid var(--xdim);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Schritt 5 &nbsp;—&nbsp; Fahrdraht-Durchhang bei T<sub>2</sub> = +40 °C</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s4);padding:3px 6px;border-radius:3px">
-            f<sub>Fd,2</sub> = 50² / 8 × 44.43 / (2880 + 8500) = 312.5 × 44.43 / 11 380 = <strong>≈ 1.220 m</strong>
-          </p>
-          <p style="margin:.1rem 0">Ts-Höhe SOK in Feldmitte bei T<sub>2</sub> ≈ 5.50 − 1.220 = <strong>ca. 4.28 m ü. SOK</strong></p>
-          <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">Kontrolle: Minimale Fahrdrahthöhe ≥ 5.00 m ü. SOK (Fd-Höhe = Ts-Höhe − sh = 4.28 − 2.40 ≈ 5.38 m → Grenzwert eingehalten ✓)</p>
-        </div>
-        <div style="background:var(--s2);border:1px solid var(--border2);border-radius:6px;padding:.5rem .9rem;margin:.6rem 0;font-size:.81rem">
-          <strong style="color:var(--text2)">Tipp:</strong> Das vollständige Berechnungsprotokoll mit allen Zwischenwerten und der Canvas-Darstellung kann über <em>«PDF Berechnungsprotokoll»</em> exportiert werden. Die Werte entsprechen dem SBB-Referenzmodell Durchhang 2026.xlsm.
-        </div>
+        <p style="font-size:.84rem;background:var(--s2);padding:.5rem .7rem;border-radius:6px;line-height:1.6">
+          <strong>Aufgabe:</strong> Durchhang, Zugkraft und Höhen in Feldmitte eines ebenen N-FL-Felds bei +40 °C.<br>
+          <strong>Kettenwerk:</strong> StCu 50 mm² + Cu 107 mm² · 6 kN, Berechnungsart ausgleichend, Fahrdraht neu<br>
+          <strong>Feld:</strong> L = Lm = 50 m (Einzelspannweite) &nbsp;|&nbsp; h<sub>1</sub> = h<sub>2</sub> = 7.80 m ü. SOK &nbsp;|&nbsp; sh = 2.40 m<br>
+          <strong>Zugkräfte:</strong> H<sub>Ts,ub</sub> = 1 700 N (Montage) &nbsp;|&nbsp; H<sub>Fd</sub> = 8 500 N &nbsp;|&nbsp; <strong>Temperaturen:</strong> T<sub>1</sub> = +10 °C → T<sub>2</sub> = +40 °C
+        </p>
+        <p style="font-weight:600;margin-top:.7rem">Schritt 1 — Kennwerte der Kombination (Excel, Blatt Daten)</p>
+        <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">MFL = 13.876 N/m (Ts + Fd + Hänger/Klemmen) &nbsp;|&nbsp; MTS = 4.011 N/m (Ts allein) &nbsp;|&nbsp; E·A = 159 GPa × 49.45 mm² = 7.863 MN &nbsp;|&nbsp; α = 11.5·10⁻⁶ /K</p>
+        <p style="font-weight:600;margin-top:.7rem">Schritt 2 — Bezugszustand: Ts belastet bei 10 °C</p>
+        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">C·F₀³ + K·F₀² − G = 0 &nbsp;mit&nbsp; G = (MFL·Lm)²/24 = 20 058 N², C = 1/E·A = 1.272·10⁻⁷ 1/N,<br>K = (MTS·Lm)²/(24·H<sub>ub</sub>²) − H<sub>ub</sub>/E·A = 5.799·10⁻⁴ − 2.162·10⁻⁴ = 3.636·10⁻⁴ 1/N</p>
+        <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">Newton-Raphson → F₀ = 4 598 N → <strong>gerundet 4 600 N</strong>. Da T<sub>1</sub> = 10 °C, entfällt die Temperaturumrechnung; H<sub>Ts</sub>(T<sub>1</sub>) = 4 600 N.</p>
+        <p style="font-weight:600;margin-top:.7rem">Schritt 3 — Durchhang bei T<sub>1</sub> = +10 °C (VEM 7.66)</p>
+        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>Fd</sub>/F₀) = 13.876 × (1 + 8 500/4 600) = 39.52 N/m<br>f<sub>1</sub> = L²/8 · q<sub>vem</sub>/(H<sub>Ts,1</sub> + H<sub>Fd</sub>) = 312.5 × 39.52 / 13 100 = <strong>0.943 m</strong></p>
+        <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">Bei 10 °C hängt der Fahrdraht waagrecht in der Solllage h − sh = 5.40 m; Hänger in Feldmitte = sh − f<sub>1</sub> = 1.457 m.</p>
+        <p style="font-weight:600;margin-top:.7rem">Schritt 4 — Zugkraft bei T<sub>2</sub> = +40 °C (Zustandsgleichung VEM / Excel Upro1, ΔT = +30 K)</p>
+        <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">gk₀ = MFL/F₀ = 3.017·10⁻³ 1/m &nbsp;|&nbsp; G = 24/Lm² + gk₀² = 9.609·10⁻³ &nbsp;|&nbsp; α·ΔT = 3.45·10⁻⁴ &nbsp;→ Newton-Raphson → <strong>H<sub>Ts,2</sub> = 3 425 N</strong> (auf 5 N gerundet)</p>
+        <p style="font-weight:600;margin-top:.7rem">Schritt 5 — Durchhang und Höhen bei T<sub>2</sub></p>
+        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">f<sub>2</sub> = 312.5 × 39.52 / (3 425 + 8 500) = <strong>1.036 m</strong><br>Ts in Feldmitte = 7.80 − 1.036 = <strong>6.76 m ü. SOK</strong><br>Fd in Feldmitte = 5.40 − (1.036 − 0.943) = <strong>5.31 m ü. SOK</strong> (Fahrdraht folgt dem Tragseil, Hänger fest)</p>
+        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Nachrechnen:</strong> Mit diesen Eingaben zeigt die App dieselben Werte (Ergebniskarte, Messpunkt M1 bei x = 25 m). Das PDF-Berechnungsprotokoll enthält alle Zwischenschritte. Die Rechnung entspricht SBB <em>Durchhang 2026.xlsm</em>.</p>
       </div><!-- /hb-de -->
 
-      <!-- FR -->
       <div class="hb-lang hb-fr" style="display:none">
-        <div style="background:var(--warn-s);border:1px solid var(--warn);border-radius:6px;padding:.6rem 1rem;margin-bottom:.7rem;font-size:.82rem">
-          <strong>Tâche:</strong> Calculer la flèche du fil de contact et la hauteur CP au milieu de la portée pour une portée LC N plane.<br>
-          <strong>Caténaire:</strong> StCu 50 mm² + Cu 107 mm², suspendu, 6 kN &nbsp;|&nbsp;
-          <strong>Portée:</strong> L = Lm = 50 m &nbsp;|&nbsp;
-          <strong>Hauteurs:</strong> h<sub>1</sub> = h<sub>2</sub> = 5.50 m &nbsp;|&nbsp; sh = 2.40 m<br>
-          <strong>Forces de traction:</strong> H<sub>CP,nc</sub> = 1 700 N &nbsp;|&nbsp; H<sub>FC</sub> = 8 500 N &nbsp;|&nbsp;
-          <strong>Températures:</strong> T<sub>1</sub> = +10 °C → T<sub>2</sub> = +40 °C
-        </div>
-        <div style="border-left:3px solid var(--primary);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Étape 1 &nbsp;—&nbsp; Charge totale (combinaison FL connue)</p>
-          <p style="margin:.1rem 0">Depuis la table VBA: <strong>MFL = 13.876 N/m</strong> (incl. CP + FC + pinces)</p>
-          <p style="margin:.1rem 0;color:var(--muted);font-size:.8rem">Valeurs individuelles: q<sub>CP</sub> = 4.011 N/m &nbsp;|&nbsp; q<sub>FC</sub> = 9.517 N/m &nbsp;|&nbsp; q<sub>p</sub> = 0.196 N/m &nbsp;→ Somme = 13.724 N/m (sans pinces). Valeur VBA MFL = 13.876 N/m (avec pinces) est déterminante.</p>
-          <p style="margin:.1rem 0">E·A = 159 GPa × 4.945 cm² = <strong>7.862 MN</strong> &nbsp;|&nbsp; α = 11.5×10⁻⁶/K</p>
-        </div>
-        <div style="border-left:3px solid var(--primary);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Étape 2 &nbsp;—&nbsp; Équation d'état non chargé → chargé</p>
-          <p style="margin:.1rem 0">Coefficients du polynôme cubique (C·H³ + K·H² − G = 0):</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s3);padding:3px 6px;border-radius:3px">
-            G = (MFL × Lm)² / 24 = (13.876 × 50)² / 24 = <strong>20 054 N²·m</strong><br>
-            C = 1 / E·A = 1 / 7.862 MN = <strong>1.272×10⁻⁷ m/N</strong><br>
-            K = (q<sub>CP</sub>×Lm)² / (24×H²<sub>nc</sub>) − H<sub>nc</sub>/E·A<br>
-            &nbsp;&nbsp;= (4.011×50)² / (24×1700²) − 1700/7.862×10⁶ = <strong>3.638×10⁻⁴ m/N</strong>
-          </p>
-          <p style="margin:.1rem 0">Newton-Raphson (valeur de départ H<sub>nc</sub> = 1 700 N) → <strong>H<sub>CP,chargé</sub> = F₀ ≈ 3 860 N</strong></p>
-        </div>
-        <div style="border-left:3px solid var(--primary);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Étape 3 &nbsp;—&nbsp; Caténaire à T<sub>1</sub> = +10 °C</p>
-          <p style="margin:.1rem 0">Paramètre caténaire:</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s3);padding:3px 6px;border-radius:3px">a = H<sub>CP</sub> / MFL = 3 860 / 13.876 = <strong>278.1 m</strong></p>
-          <p style="margin:.1rem 0">Portée plane (h<sub>1</sub> = h<sub>2</sub>) → point le plus bas au milieu de portée: x₀ = 25.000 m</p>
-          <p style="margin:.1rem 0">Hauteur CP au point le plus bas: y<sub>CP</sub>(25 m) = h<sub>1</sub> − f<sub>CP</sub></p>
-          <p style="margin:.1rem 0">Flèche FC selon VEM 7.66:</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s3);padding:3px 6px;border-radius:3px">
-            q<sub>vem</sub> = 13.876 × (1 + 8500/3860) = 13.876 × 3.202 = 44.43 N/m<br>
-            f<sub>FC,1</sub> = 50² / 8 × 44.43 / (3860 + 8500) = 312.5 × 44.43 / 12 360 = <strong>1.123 m</strong>
-          </p>
-          <p style="margin:.1rem 0">Hauteur CP DRS à T<sub>1</sub>: h<sub>1</sub> − f<sub>FC,1</sub> + sh = 5.50 − 1.123 + 2.40 (approximation au point le plus bas)</p>
-        </div>
-        <div style="border-left:3px solid var(--xdim);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Étape 4 &nbsp;—&nbsp; Équation d'état T<sub>1</sub> → T<sub>2</sub> (ΔT = +30 K)</p>
-          <p style="margin:.1rem 0">Équation VEM Manuel / VBA Upro1 (Newton-Raphson):</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s4);padding:3px 6px;border-radius:3px">
-            gk₀ = MFL / F₀ = 13.876 / 3860 = 3.594×10⁻³ 1/m<br>
-            G &nbsp;= 24/50² + gk₀² = 9.600×10⁻³ + 1.292×10⁻⁵ = 9.613×10⁻³<br>
-            A &nbsp;= MFL × (1 + H<sub>FC</sub>/F₀) = 13.876 × 3.202 = 44.43 N/m<br>
-            α·ΔT = 11.5×10⁻⁶ × 30 = 3.450×10⁻⁴<br>
-            Itération → <strong>H<sub>CP,2</sub> ≈ 2 880 N</strong>
-          </p>
-          <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">La force de traction diminue lors du réchauffement (le CP se dilate → tension plus faible).</p>
-        </div>
-        <div style="border-left:3px solid var(--xdim);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Étape 5 &nbsp;—&nbsp; Flèche FC à T<sub>2</sub> = +40 °C</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s4);padding:3px 6px;border-radius:3px">
-            f<sub>FC,2</sub> = 50² / 8 × 44.43 / (2880 + 8500) = 312.5 × 44.43 / 11 380 = <strong>≈ 1.220 m</strong>
-          </p>
-          <p style="margin:.1rem 0">Hauteur CP DRS au milieu de portée à T<sub>2</sub> ≈ 5.50 − 1.220 = <strong>env. 4.28 m s. DRS</strong></p>
-          <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">Contrôle: Hauteur minimale FC ≥ 5.00 m s. DRS (hauteur FC = hauteur CP − sh = 4.28 − 2.40 ≈ 5.38 m → valeur limite respectée ✓)</p>
-        </div>
-        <div style="background:var(--s2);border:1px solid var(--border2);border-radius:6px;padding:.5rem .9rem;margin:.6rem 0;font-size:.81rem">
-          <strong style="color:var(--ok)">Conseil:</strong> Le protocole de calcul complet avec toutes les valeurs intermédiaires et la représentation Canvas peut être exporté via <em>«Protocole de calcul PDF»</em>. Les valeurs correspondent au modèle de référence SBB Durchhang 2026.xlsm.
-        </div>
+        <p style="font-size:.84rem;background:var(--s2);padding:.5rem .7rem;border-radius:6px;line-height:1.6">
+          <strong>Tâche :</strong> flèche, force de traction et hauteurs au milieu d’une portée LC N plane à +40 °C.<br>
+          <strong>Caténaire :</strong> StCu 50 mm² + Cu 107 mm² · 6 kN, mode de calcul compensé, fil de contact neuf<br>
+          <strong>Portée :</strong> L = Lm = 50 m (portée simple) &nbsp;|&nbsp; h<sub>1</sub> = h<sub>2</sub> = 7.80 m s. DRS &nbsp;|&nbsp; sh = 2.40 m<br>
+          <strong>Forces :</strong> H<sub>CP,nch</sub> = 1 700 N (pose) &nbsp;|&nbsp; H<sub>FC</sub> = 8 500 N &nbsp;|&nbsp; <strong>Températures :</strong> T<sub>1</sub> = +10 °C → T<sub>2</sub> = +40 °C
+        </p>
+        <p style="font-weight:600;margin-top:.7rem">Étape 1 — Valeurs de la combinaison (Excel, feuille Daten)</p>
+        <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">MFL = 13.876 N/m (CP + FC + suspensions/pinces) &nbsp;|&nbsp; MTS = 4.011 N/m (CP seul) &nbsp;|&nbsp; E·A = 159 GPa × 49.45 mm² = 7.863 MN &nbsp;|&nbsp; α = 11.5·10⁻⁶ /K</p>
+        <p style="font-weight:600;margin-top:.7rem">Étape 2 — État de référence : CP chargé à 10 °C</p>
+        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">C·F₀³ + K·F₀² − G = 0 &nbsp;avec&nbsp; G = (MFL·Lm)²/24 = 20 058 N², C = 1/E·A = 1.272·10⁻⁷ 1/N,<br>K = (MTS·Lm)²/(24·H<sub>nch</sub>²) − H<sub>nch</sub>/E·A = 5.799·10⁻⁴ − 2.162·10⁻⁴ = 3.636·10⁻⁴ 1/N</p>
+        <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">Newton-Raphson → F₀ = 4 598 N → <strong>arrondi 4 600 N</strong>. Comme T<sub>1</sub> = 10 °C, pas de conversion de température ; H<sub>CP</sub>(T<sub>1</sub>) = 4 600 N.</p>
+        <p style="font-weight:600;margin-top:.7rem">Étape 3 — Flèche à T<sub>1</sub> = +10 °C (VEM 7.66)</p>
+        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>FC</sub>/F₀) = 13.876 × (1 + 8 500/4 600) = 39.52 N/m<br>f<sub>1</sub> = L²/8 · q<sub>vem</sub>/(H<sub>CP,1</sub> + H<sub>FC</sub>) = 312.5 × 39.52 / 13 100 = <strong>0.943 m</strong></p>
+        <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">À 10 °C, le fil de contact est horizontal en position nominale h − sh = 5.40 m ; suspension au milieu = sh − f<sub>1</sub> = 1.457 m.</p>
+        <p style="font-weight:600;margin-top:.7rem">Étape 4 — Force de traction à T<sub>2</sub> = +40 °C (équation d’état VEM / Excel Upro1, ΔT = +30 K)</p>
+        <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">gk₀ = MFL/F₀ = 3.017·10⁻³ 1/m &nbsp;|&nbsp; G = 24/Lm² + gk₀² = 9.609·10⁻³ &nbsp;|&nbsp; α·ΔT = 3.45·10⁻⁴ &nbsp;→ Newton-Raphson → <strong>H<sub>CP,2</sub> = 3 425 N</strong> (arrondi à 5 N)</p>
+        <p style="font-weight:600;margin-top:.7rem">Étape 5 — Flèche et hauteurs à T<sub>2</sub></p>
+        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">f<sub>2</sub> = 312.5 × 39.52 / (3 425 + 8 500) = <strong>1.036 m</strong><br>CP au milieu = 7.80 − 1.036 = <strong>6.76 m s. DRS</strong><br>FC au milieu = 5.40 − (1.036 − 0.943) = <strong>5.31 m s. DRS</strong> (le fil de contact suit le câble porteur, suspensions fixes)</p>
+        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Vérifier :</strong> avec ces saisies, l’application affiche les mêmes valeurs (carte de résultats, point de mesure M1 à x = 25 m). Le protocole de calcul PDF contient toutes les étapes. Le calcul correspond à l’Excel CFF <em>Durchhang 2026.xlsm</em>.</p>
       </div><!-- /hb-fr -->
 
-      <!-- IT -->
       <div class="hb-lang hb-it" style="display:none">
-        <div style="background:var(--warn-s);border:1px solid var(--warn);border-radius:6px;padding:.6rem 1rem;margin-bottom:.7rem;font-size:.82rem">
-          <strong>Compito:</strong> Calcolare la freccia del filo di contatto e l'altezza FP al punto medio della campata per una campata LC N piana.<br>
-          <strong>Catenaria:</strong> StCu 50 mm² + Cu 107 mm², sostenuta, 6 kN &nbsp;|&nbsp;
-          <strong>Campata:</strong> L = Lm = 50 m &nbsp;|&nbsp;
-          <strong>Altezze:</strong> h<sub>1</sub> = h<sub>2</sub> = 5.50 m &nbsp;|&nbsp; sh = 2.40 m<br>
-          <strong>Forze di trazione:</strong> H<sub>FP,nc</sub> = 1 700 N &nbsp;|&nbsp; H<sub>FC</sub> = 8 500 N &nbsp;|&nbsp;
-          <strong>Temperature:</strong> T<sub>1</sub> = +10 °C → T<sub>2</sub> = +40 °C
-        </div>
-        <div style="border-left:3px solid var(--primary);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Passo 1 &nbsp;—&nbsp; Carico totale (combinazione FL nota)</p>
-          <p style="margin:.1rem 0">Dalla tabella VBA: <strong>MFL = 13.876 N/m</strong> (incl. FP + FC + morsetti)</p>
-          <p style="margin:.1rem 0;color:var(--muted);font-size:.8rem">Valori individuali: q<sub>FP</sub> = 4.011 N/m &nbsp;|&nbsp; q<sub>FC</sub> = 9.517 N/m &nbsp;|&nbsp; q<sub>p</sub> = 0.196 N/m &nbsp;→ Somma = 13.724 N/m (senza morsetti). Valore VBA MFL = 13.876 N/m (con morsetti) è determinante.</p>
-          <p style="margin:.1rem 0">E·A = 159 GPa × 4.945 cm² = <strong>7.862 MN</strong> &nbsp;|&nbsp; α = 11.5×10⁻⁶/K</p>
-        </div>
-        <div style="border-left:3px solid var(--primary);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Passo 2 &nbsp;—&nbsp; Equazione di stato non caricato → caricato</p>
-          <p style="margin:.1rem 0">Coefficienti del polinomio cubico (C·H³ + K·H² − G = 0):</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s3);padding:3px 6px;border-radius:3px">
-            G = (MFL × Lm)² / 24 = (13.876 × 50)² / 24 = <strong>20 054 N²·m</strong><br>
-            C = 1 / E·A = 1 / 7.862 MN = <strong>1.272×10⁻⁷ m/N</strong><br>
-            K = (q<sub>FP</sub>×Lm)² / (24×H²<sub>nc</sub>) − H<sub>nc</sub>/E·A<br>
-            &nbsp;&nbsp;= (4.011×50)² / (24×1700²) − 1700/7.862×10⁶ = <strong>3.638×10⁻⁴ m/N</strong>
-          </p>
-          <p style="margin:.1rem 0">Newton-Raphson (valore iniziale H<sub>nc</sub> = 1 700 N) → <strong>H<sub>FP,caricato</sub> = F₀ ≈ 3 860 N</strong></p>
-        </div>
-        <div style="border-left:3px solid var(--primary);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Passo 3 &nbsp;—&nbsp; Catenaria a T<sub>1</sub> = +10 °C</p>
-          <p style="margin:.1rem 0">Parametro catenaria:</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s3);padding:3px 6px;border-radius:3px">a = H<sub>FP</sub> / MFL = 3 860 / 13.876 = <strong>278.1 m</strong></p>
-          <p style="margin:.1rem 0">Campata piana (h<sub>1</sub> = h<sub>2</sub>) → punto più basso al centro campata: x₀ = 25.000 m</p>
-          <p style="margin:.1rem 0">Altezza FP al punto più basso: y<sub>FP</sub>(25 m) = h<sub>1</sub> − f<sub>FP</sub></p>
-          <p style="margin:.1rem 0">Freccia FC secondo VEM 7.66:</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s3);padding:3px 6px;border-radius:3px">
-            q<sub>vem</sub> = 13.876 × (1 + 8500/3860) = 13.876 × 3.202 = 44.43 N/m<br>
-            f<sub>FC,1</sub> = 50² / 8 × 44.43 / (3860 + 8500) = 312.5 × 44.43 / 12 360 = <strong>1.123 m</strong>
-          </p>
-          <p style="margin:.1rem 0">Altezza FP PRF a T<sub>1</sub>: h<sub>1</sub> − f<sub>FC,1</sub> + sh = 5.50 − 1.123 + 2.40 (approssimazione al punto più basso)</p>
-        </div>
-        <div style="border-left:3px solid var(--xdim);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Passo 4 &nbsp;—&nbsp; Equazione di stato T<sub>1</sub> → T<sub>2</sub> (ΔT = +30 K)</p>
-          <p style="margin:.1rem 0">Equazione VEM Manuale / VBA Upro1 (Newton-Raphson):</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s4);padding:3px 6px;border-radius:3px">
-            gk₀ = MFL / F₀ = 13.876 / 3860 = 3.594×10⁻³ 1/m<br>
-            G &nbsp;= 24/50² + gk₀² = 9.600×10⁻³ + 1.292×10⁻⁵ = 9.613×10⁻³<br>
-            A &nbsp;= MFL × (1 + H<sub>FC</sub>/F₀) = 13.876 × 3.202 = 44.43 N/m<br>
-            α·ΔT = 11.5×10⁻⁶ × 30 = 3.450×10⁻⁴<br>
-            Iterazione → <strong>H<sub>FP,2</sub> ≈ 2 880 N</strong>
-          </p>
-          <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">La forza di trazione diminuisce con il riscaldamento (il FP si dilata → tensione minore).</p>
-        </div>
-        <div style="border-left:3px solid var(--xdim);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
-          <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Passo 5 &nbsp;—&nbsp; Freccia FC a T<sub>2</sub> = +40 °C</p>
-          <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s4);padding:3px 6px;border-radius:3px">
-            f<sub>FC,2</sub> = 50² / 8 × 44.43 / (2880 + 8500) = 312.5 × 44.43 / 11 380 = <strong>≈ 1.220 m</strong>
-          </p>
-          <p style="margin:.1rem 0">Altezza FP PRF al centro campata a T<sub>2</sub> ≈ 5.50 − 1.220 = <strong>ca. 4.28 m s. PRF</strong></p>
-          <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">Controllo: Altezza minima FC ≥ 5.00 m s. PRF (altezza FC = altezza FP − sh = 4.28 − 2.40 ≈ 5.38 m → valore limite rispettato ✓)</p>
-        </div>
-        <div style="background:var(--s2);border:1px solid var(--border2);border-radius:6px;padding:.5rem .9rem;margin:.6rem 0;font-size:.81rem">
-          <strong style="color:var(--ok)">Suggerimento:</strong> Il protocollo di calcolo completo con tutti i valori intermedi e la rappresentazione Canvas può essere esportato tramite <em>«Protocollo di calcolo PDF»</em>. I valori corrispondono al modello di riferimento SBB Durchhang 2026.xlsm.
-        </div>
+        <p style="font-size:.84rem;background:var(--s2);padding:.5rem .7rem;border-radius:6px;line-height:1.6">
+          <strong>Compito:</strong> freccia, forza di trazione e altezze a metà di una campata LC N piana a +40 °C.<br>
+          <strong>Catenaria:</strong> StCu 50 mm² + Cu 107 mm² · 6 kN, modalità di calcolo compensato, filo di contatto nuovo<br>
+          <strong>Campata:</strong> L = Lm = 50 m (campata singola) &nbsp;|&nbsp; h<sub>1</sub> = h<sub>2</sub> = 7.80 m s. PRF &nbsp;|&nbsp; sh = 2.40 m<br>
+          <strong>Forze:</strong> H<sub>FP,nc</sub> = 1 700 N (montaggio) &nbsp;|&nbsp; H<sub>FC</sub> = 8 500 N &nbsp;|&nbsp; <strong>Temperature:</strong> T<sub>1</sub> = +10 °C → T<sub>2</sub> = +40 °C
+        </p>
+        <p style="font-weight:600;margin-top:.7rem">Passo 1 — Valori della combinazione (Excel, foglio Daten)</p>
+        <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">MFL = 13.876 N/m (FP + FC + ballerine/morsetti) &nbsp;|&nbsp; MTS = 4.011 N/m (solo FP) &nbsp;|&nbsp; E·A = 159 GPa × 49.45 mm² = 7.863 MN &nbsp;|&nbsp; α = 11.5·10⁻⁶ /K</p>
+        <p style="font-weight:600;margin-top:.7rem">Passo 2 — Stato di riferimento: FP caricato a 10 °C</p>
+        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">C·F₀³ + K·F₀² − G = 0 &nbsp;con&nbsp; G = (MFL·Lm)²/24 = 20 058 N², C = 1/E·A = 1.272·10⁻⁷ 1/N,<br>K = (MTS·Lm)²/(24·H<sub>nc</sub>²) − H<sub>nc</sub>/E·A = 5.799·10⁻⁴ − 2.162·10⁻⁴ = 3.636·10⁻⁴ 1/N</p>
+        <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">Newton-Raphson → F₀ = 4 598 N → <strong>arrotondato 4 600 N</strong>. Poiché T<sub>1</sub> = 10 °C, nessuna conversione di temperatura; H<sub>FP</sub>(T<sub>1</sub>) = 4 600 N.</p>
+        <p style="font-weight:600;margin-top:.7rem">Passo 3 — Freccia a T<sub>1</sub> = +10 °C (VEM 7.66)</p>
+        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>FC</sub>/F₀) = 13.876 × (1 + 8 500/4 600) = 39.52 N/m<br>f<sub>1</sub> = L²/8 · q<sub>vem</sub>/(H<sub>FP,1</sub> + H<sub>FC</sub>) = 312.5 × 39.52 / 13 100 = <strong>0.943 m</strong></p>
+        <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">A 10 °C il filo di contatto è orizzontale nella posizione nominale h − sh = 5.40 m; ballerina a metà campata = sh − f<sub>1</sub> = 1.457 m.</p>
+        <p style="font-weight:600;margin-top:.7rem">Passo 4 — Forza di trazione a T<sub>2</sub> = +40 °C (equazione di stato VEM / Excel Upro1, ΔT = +30 K)</p>
+        <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">gk₀ = MFL/F₀ = 3.017·10⁻³ 1/m &nbsp;|&nbsp; G = 24/Lm² + gk₀² = 9.609·10⁻³ &nbsp;|&nbsp; α·ΔT = 3.45·10⁻⁴ &nbsp;→ Newton-Raphson → <strong>H<sub>FP,2</sub> = 3 425 N</strong> (arrotondato a 5 N)</p>
+        <p style="font-weight:600;margin-top:.7rem">Passo 5 — Freccia e altezze a T<sub>2</sub></p>
+        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">f<sub>2</sub> = 312.5 × 39.52 / (3 425 + 8 500) = <strong>1.036 m</strong><br>FP a metà campata = 7.80 − 1.036 = <strong>6.76 m s. PRF</strong><br>FC a metà campata = 5.40 − (1.036 − 0.943) = <strong>5.31 m s. PRF</strong> (il filo di contatto segue il filo portante, ballerine fisse)</p>
+        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Verifica:</strong> con questi dati l’applicazione mostra gli stessi valori (scheda risultati, punto di misura M1 a x = 25 m). Il protocollo di calcolo PDF contiene tutti i passaggi. Il calcolo corrisponde all’Excel FFS <em>Durchhang 2026.xlsm</em>.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 8 Quellen ══ -->
@@ -16505,6 +16473,11 @@ renderObstacleList();
           <li>SBB Durchhang 2026.xlsm — VBA-Berechnungsmodell (Upro1, DurchhangNFL); NFL-Re!P14 = VEM 7.66</li>
           <li>SBB 0161.1013.0001 — Technische Spezifikation N-FL (Reglagewerte, Materialien)</li>
           <li>SBB 0161.1013.0005.1 — Vorgabe zur Eingabe von c<sub>proj</sub> / c<sub>m</sub> (Mittelspannweite / Einzelspannweite)</li>
+          <li>SBB 0161.1013.0003 — Reglagetabelle N-FL «starr»</li>
+          <li>SBB 0161.1013.0004 — Zusatzlast Schnee/Eis 7 N/m (gemäss Notiz im SBB-Excel); Strecken ab 1000 m ü. M.: 15 N/m (SBB-Vorgabe Fachentwicklung)</li>
+          <li>VEM Handbuch — Formel 7.53a (R-FL: Durchhang Tragseil mit Fahrdraht und Zusatzlast)</li>
+          <li>Validierung: 27 mit der SBB-Excel verifizierte Beispielrechnungen (tests/beispiele_sbb.test.js)</li>
+          <li>ISO 16739-1:2018 (IFC4), EPSG:2056 CH1903+ / LV95, Höhen LN02 — für Export und Georeferenz</li>
           <li>VEM Handbuch Freileitungen — Formel 7.66 / 7.82; kombiniertes TS+Fd-System</li>
           <li>Bronštejn/Semendjajev — Mathematisches Handbuch (exakte Kettenlinienformeln)</li>
         </ul>
@@ -16514,6 +16487,11 @@ renderObstacleList();
           <li>SBB Durchhang 2026.xlsm — Modèle de calcul VBA (Upro1, DurchhangNFL); NFL-Re!P14 = VEM 7.66</li>
           <li>SBB 0161.1013.0001 — Spécification technique LC N (valeurs de réglage, matériaux)</li>
           <li>SBB 0161.1013.0005.1 — Prescriptions pour la saisie de c<sub>proj</sub> / c<sub>m</sub> (portée moyenne / portée individuelle)</li>
+          <li>CFF 0161.1013.0003 — Tableau de réglage LC N «rigide»</li>
+          <li>CFF 0161.1013.0004 — Charge additionnelle neige/glace 7 N/m (selon note de l’Excel CFF) ; lignes dès 1000 m s.n.m. : 15 N/m (prescription CFF)</li>
+          <li>Manuel VEM — formule 7.53a (LC R : flèche du câble porteur avec fil de contact et charge additionnelle)</li>
+          <li>Validation : 27 exemples de calcul vérifiés avec l’Excel CFF (tests/beispiele_sbb.test.js)</li>
+          <li>ISO 16739-1:2018 (IFC4), EPSG:2056 CH1903+ / MN95, altitudes NF02 — pour l’export et le géoréférencement</li>
           <li>VEM Manuel des lignes aériennes — formule 7.66 / 7.82; système combiné CP+FC</li>
           <li>Bronštejn/Semendjajev — Manuel de mathématiques (formules caténaires exactes)</li>
         </ul>
@@ -16523,6 +16501,11 @@ renderObstacleList();
           <li>SBB Durchhang 2026.xlsm — Modello di calcolo VBA (Upro1, DurchhangNFL); NFL-Re!P14 = VEM 7.66</li>
           <li>SBB 0161.1013.0001 — Specifiche tecniche LC N (valori di regolazione, materiali)</li>
           <li>SBB 0161.1013.0005.1 — Prescrizioni per l'inserimento di c<sub>proj</sub> / c<sub>m</sub> (lunghezza media / campata singola)</li>
+          <li>FFS 0161.1013.0003 — Tabella di regolazione LC N «rigido»</li>
+          <li>FFS 0161.1013.0004 — Carico aggiuntivo neve/ghiaccio 7 N/m (secondo nota dell’Excel FFS); linee da 1000 m s.l.m.: 15 N/m (prescrizione FFS)</li>
+          <li>Manuale VEM — formula 7.53a (LC R: freccia del filo portante con filo di contatto e carico aggiuntivo)</li>
+          <li>Validazione: 27 esempi di calcolo verificati con l’Excel FFS (tests/beispiele_sbb.test.js)</li>
+          <li>ISO 16739-1:2018 (IFC4), EPSG:2056 CH1903+ / MN95, altezze RN02 — per esportazione e georeferenziazione</li>
           <li>VEM Manuale delle linee aeree — formula 7.66 / 7.82; sistema combinato FP+FC</li>
           <li>Bronštejn/Semendjajev — Manuale di matematica (formule caténarie esatte)</li>
         </ul>
@@ -16620,7 +16603,7 @@ renderObstacleList();
       </table>
 
       <p style="font-size:.75rem;color:var(--tertiary);margin-top:1rem;border-top:1px solid var(--border);padding-top:.75rem">
-        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; v3.9.1 &nbsp;·&nbsp; Statikteam, Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
+        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; v3.9.2 &nbsp;·&nbsp; Statikteam, Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
         Quelle Reglage: SBB 0161.1013.0001
       </p>
     </div>
@@ -16981,7 +16964,7 @@ renderObstacleList();
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
-  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span>v3.9.1</span>
+  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span>v3.9.2</span>
 </footer>
 
 </body>
