@@ -1305,6 +1305,10 @@ button.header-manual-link:hover {
 
 /* ── Rückfrage-Dialog (ersetzt confirm/prompt) ── */
 #rueckfrage .modal-card { max-width: 26rem; }
+.foto-genau-hinweis {
+  margin: 0 0 .7rem; padding: .4rem .6rem; border-radius: 6px;
+  background: var(--warn-s); color: var(--warn); font-size: .74rem; font-weight: 600; line-height: 1.4;
+}
 #rueckfrage .rf-text { font-size: .85rem; line-height: 1.6; color: var(--ink, var(--text)); white-space: pre-line; }
 #rueckfrage .rf-eingabe {
   width: 100%; box-sizing: border-box; margin-top: .8rem;
@@ -1757,8 +1761,8 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
       <div class="card-title" id="card-title-sys" data-i18n="card.system">System</div>
       <div class="seg-ctrl">
         <button class="seg-btn"        id="seg-el" data-i18n="sys.el"  onclick="setSysMode('el')">Einzelleiter</button>
-        <button class="seg-btn"        id="seg-rfl" onclick="setSysMode('rfl')">R-FL</button>
-        <button class="seg-btn active" id="seg-nfl" onclick="setSysMode('nfl')">N-FL</button>
+        <button class="seg-btn"        id="seg-rfl" onclick="setSysMode('rfl')" data-i18n="sys.rfl.kurz">R-FL</button>
+        <button class="seg-btn active" id="seg-nfl" onclick="setSysMode('nfl')" data-i18n="sys.nfl.kurz">N-FL</button>
       </div>
       <p id="sys-info" style="font-size:.72rem;color:var(--muted);margin-top:.35rem;margin-bottom:.75rem">
         Fixabgefangen — Zugkraft temperaturabhängig (Zustandsgleichung)
@@ -2569,6 +2573,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
       <!-- Ergebnis-Karte (gleiche Optik wie Diagramm-Ergebnisse) -->
       <div id="foto-result" style="display:none">
         <div class="results-card" style="margin:.5rem .5rem .4rem;padding:1rem 1.1rem .9rem">
+          <p class="foto-genau-hinweis" role="note">⚠ <span data-i18n="ui.foto.genau.kurz">Nur Abschätzung — keine präzise Berechnung</span></p>
 
           <!-- Hauptwerte + Montage: 2-Spalten-Grid wie Diagramm -->
           <div class="results-grid">
@@ -2989,7 +2994,12 @@ function frageText(text, vorgabe = '', { titel = null, ok = null, abbrechen = nu
   return _rueckfrage({ text, titel, ok, abbrechen, eingabe: vorgabe ?? '' });
 }
 
-function _rueckfrage({ text, titel, ok, abbrechen, eingabe }) {
+// Reiner Hinweis mit einer Schaltfläche. Liefert Promise, sobald geschlossen.
+function zeigeHinweis(text, { titel = null, ok = null } = {}) {
+  return _rueckfrage({ text, titel, ok, eingabe: null, nurOk: true });
+}
+
+function _rueckfrage({ text, titel, ok, abbrechen, eingabe, nurOk = false }) {
   return new Promise(aufloesen => {
     const overlay = document.getElementById('rueckfrage');
     if (!overlay) { aufloesen(eingabe === null ? false : null); return; }
@@ -3004,6 +3014,7 @@ function _rueckfrage({ text, titel, ok, abbrechen, eingabe }) {
     elText.textContent  = String(text);
     btnOk.textContent   = ok ?? t('rf.ok');
     btnAbbr.textContent = abbrechen ?? t('rf.abbrechen');
+    zeigeElement(btnAbbr, !nurOk);
 
     const mitEingabe = eingabe !== null;
     zeigeElement(elInp, mitEingabe);
@@ -5588,9 +5599,9 @@ function updateSokMumUI() {
     zeigeElement(info, true);
     let parts = [];
     if (sokL !== null && !isNaN(h1_raw))
-      parts.push(`<span style="white-space:nowrap">${t('bp.befestigung.li')} = <span style="color:var(--text)">${(sokL + h1_raw).toFixed(2)} ${t('bp.mum.abbrev')}</span></span><span style="white-space:nowrap;opacity:.65">(SOK ${sokL.toFixed(2)} + ${h1_raw.toFixed(2)} m)</span>`);
+      parts.push(`<span style="white-space:nowrap">${t('bp.befestigung.li')} = <span style="color:var(--text)">${(sokL + h1_raw).toFixed(2)} ${t('bp.mum.abbrev')}</span></span><span style="white-space:nowrap;opacity:.65">(${t('ui.sok.kurz')} ${sokL.toFixed(2)} + ${h1_raw.toFixed(2)} m)</span>`);
     if (sokR !== null && !isNaN(h2_raw))
-      parts.push(`<span style="white-space:nowrap">${t('bp.befestigung.re')} = <span style="color:var(--text)">${(sokR + h2_raw).toFixed(2)} ${t('bp.mum.abbrev')}</span></span><span style="white-space:nowrap;opacity:.65">(SOK ${sokR.toFixed(2)} + ${h2_raw.toFixed(2)} m)</span>`);
+      parts.push(`<span style="white-space:nowrap">${t('bp.befestigung.re')} = <span style="color:var(--text)">${(sokR + h2_raw).toFixed(2)} ${t('bp.mum.abbrev')}</span></span><span style="white-space:nowrap;opacity:.65">(${t('ui.sok.kurz')} ${sokR.toFixed(2)} + ${h2_raw.toFixed(2)} m)</span>`);
     info.innerHTML = parts.map(p => `<div style="display:flex;align-items:baseline;gap:.4rem;flex-wrap:wrap;color:var(--muted);font-size:.75rem;line-height:1.6;margin-bottom:.1rem">${p}</div>`).join('');
     zeigeElement(mumBtn, true);
   } else {
@@ -5820,7 +5831,7 @@ function compute3pt(L, h1, h2) {
       const sokL = getSokMumLeft();
       const sokR = getSokMumRight();
       if (sokL === null && sokR === null) {
-        res.innerHTML = '<span style="color:var(--fail)">⚠ SOK m ü. M. nicht definiert</span>';
+        res.innerHTML = `<span style="color:var(--fail)">⚠ ${t('err.3pt.sok.fehlt')}</span>`;
         threePtMark = null; return null;
       }
       // SOK an Position xC linear interpolieren (falls nur eine Seite definiert → konstant)
@@ -5833,8 +5844,8 @@ function compute3pt(L, h1, h2) {
     const chordAbSOK = h1 + (h2 - h1) * xC / c;
     yC_sag = chordAbSOK - yC_abSOK;   // Durchhang unter Sehne
     if (yC_sag <= 0) {
-      const what = yCInputMode === 'mum' ? 'm ü. M.' : 'ab SOK';
-      res.innerHTML = `<span style="color:var(--fail)">⚠ Punkt C liegt über der Sehne (Sehne bei ${(chordAbSOK).toFixed(2)} m ${what})</span>`;
+      const what = yCInputMode === 'mum' ? t('bp.mum.abbrev') : t('bp.ueber.sok');
+      res.innerHTML = `<span style="color:var(--fail)">⚠ ${t('err.3pt.ueber.sehne').replace('{h}', chordAbSOK.toFixed(2)).replace('{was}', what)}</span>`;
       threePtMark = null; return null;
     }
   } else if (yC_sag <= 0) {
@@ -6852,10 +6863,13 @@ function nextProjectName() {
   for (const a of letters) for (const b of letters) { const n = `Projekt ${a}${b}`; if (!names.has(n)) return n; }
   return `Projekt ${Date.now()}`;
 }
+// Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
+function sysName(mode) {
+  return mode === 'nfl' ? t('sys.nfl.kurz') : mode === 'rfl' ? t('sys.rfl.kurz') : t('sys.el');
+}
 function nextCalcName(parentId) {
   const count = getProjMeta().filter(m => !m.isGroup && m.parentId === parentId).length;
-  const lbl = sysMode === 'nfl' ? 'N-FL' : sysMode === 'rfl' ? 'R-FL' : 'Einzelleiter';
-  return `${lbl} ${count + 1}`;
+  return `${sysName(sysMode)} ${count + 1}`;
 }
 
 // ── Letzter Speicher-/Ladeort ──
@@ -9443,7 +9457,7 @@ function updateHighlightCard() {
           <div class="istzustand-label" style="color:${curveClr}">${t('res.tiefpunkt.label')} — x₀ = ${f3(x_ist)} m</div>
           <div class="istzustand-value" style="color:${curveClr}">${f3(sag)}<span class="istzustand-unit">m</span></div>
           <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${dhLabel}${tempLabel}</div>
-          <div style="font-size:.7rem;color:var(--muted);margin-top:.6rem">${seilLabel}${tempLabel}${hasSokH ? ` &nbsp;<span style="opacity:.6">(${f3(y2_raw)} m ${t('dyn.ueber.sok')})</span>` : ` ${t('dyn.ueber.sok')}`}</div>
+          <div style="font-size:.7rem;color:var(--muted);margin-top:.6rem">${seilLabel}${tempLabel}${hasSokH ? ` &nbsp;<span style="opacity:.6">(${f3(y2_raw)} m ${t('dyn.ueber.sok')})</span>` : ''}</div>
           <div class="istzustand-value" style="font-size:1.35rem;color:${curveClr}">${f3(y2_disp)}<span class="istzustand-unit">${hasSokH ? t('dyn.ueber.mum') : 'm'}</span></div>
         </div>
         <div style="display:flex;align-items:center;gap:.5rem;margin:.35rem 0;width:100%">
@@ -9566,17 +9580,17 @@ function renderObstacleList() {
   obstaclePoints.forEach((o, i) => {
     html += `<div class="obs-row">
       <span class="obs-badge">H${i+1}</span>
-      <input class="obs-name-input" placeholder="Name (z.B. UK Brücke)" value="${escHtml(o.name)}"
+      <input class="obs-name-input" placeholder="${escHtml(t('ui.obs.name.ph'))}" value="${escHtml(o.name)}"
         oninput="updateObstacle(${o.id},'name',this.value)">
       <input class="obs-num-input" type="number" placeholder="x [m]" step="0.5" min="0"
         value="${o.x ?? ''}" oninput="updateObstacle(${o.id},'x',this.value)" title="Position x [m]">
       <input class="obs-num-input" type="number" placeholder="h [m]" step="0.01"
-        value="${o.h ?? ''}" oninput="updateObstacle(${o.id},'h',this.value)" title="Höhe über SOK [m]">
+        value="${o.h ?? ''}" oninput="updateObstacle(${o.id},'h',this.value)" title="${escHtml(t('ui.obs.h.titel'))}">
       <button class="obs-rm-btn" onclick="removeObstacle(${o.id})">✕</button>
     </div>`;
   });
   if (hasAny) {
-    html += `<div style="font-size:.64rem;color:var(--muted);margin-top:-.1rem">x = Position im Feld [m] &nbsp;·&nbsp; h = Höhe über SOK [m]</div>`;
+    html += `<div style="font-size:.64rem;color:var(--muted);margin-top:-.1rem">${t('ui.obs.legende')}</div>`;
   }
   sec.innerHTML = html;
 }
@@ -9686,8 +9700,8 @@ function moveDrag(e) {
     const _sokSide = _isH1 ? getSokMumLeft() : getSokMumRight();
     // h<sub>1</sub>/h<sub>2</sub> immer in Meter über SOK; SOK-Referenz als Zusatzinfo
     tooltip.textContent = _sokSide !== null
-      ? `${_lbl} = ${newVal.toFixed(2)} m ü.SOK  (= ${(_sokSide + newVal).toFixed(2)} ${t('bp.mum.abbrev')})`
-      : `${_lbl} = ${newVal.toFixed(2)} m ü.SOK`;
+      ? `${_lbl} = ${newVal.toFixed(2)} m ${t('dyn.ueber.sok')}  (= ${(_sokSide + newVal).toFixed(2)} ${t('bp.mum.abbrev')})`
+      : `${_lbl} = ${newVal.toFixed(2)} m ${t('dyn.ueber.sok')}`;
     quickDraw();
   }
 }
@@ -9817,7 +9831,7 @@ function buildPdfSectionHtml(projName, canvasImg) {
     : yFdSollPdf(x_ist_pdf);
 
   const bodyHtml = `<div class="hdr">
-  <h1>${t('pdf.title')} &nbsp;(${isEl ? 'Einzelleiter' : isNFL ? 'N-FL' : 'R-FL'})</h1>
+  <h1>${t('pdf.title')} &nbsp;(${sysName(isEl ? 'el' : isNFL ? 'nfl' : 'rfl')})</h1>
   <p>${t('pdf.erstellt')}: ${new Date().toLocaleString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE')} &nbsp;|&nbsp;
      ${isEl ? matTs : matTs + ' + ' + matFd} &nbsp;|&nbsp;
      ${spanMode === 'ruling' ? `Lm = ${Lm.toFixed(2)} m` : `L = ${f3(L)} m`}
@@ -9936,7 +9950,7 @@ ${isNFL_xl ? `
 
 ${(isEl || (isNFL && !flCombo)) && C !== null && K !== null ? `
 <!-- ── Schritt 3: Zustandsgleichung ── -->
-<h2 class="warm">${t('pdf.step3')} &nbsp;—&nbsp; (${isEl ? 'Einzelleiter' : 'N-FL'}, ΔT = ${sign(deltaT)}${deltaT} K)</h2>
+<h2 class="warm">${t('pdf.step3')} &nbsp;—&nbsp; (${sysName(isEl ? 'el' : 'nfl')}, ΔT = ${sign(deltaT)}${deltaT} K)</h2>
 <div class="step">
   <p><strong>${t('pdf.allg.zustgl')}</strong></p>
   <p class="sub"><em class="w">(q·Lm)² / (24·H<sub>2</sub>²) − H<sub>2</sub>/(E·A) = (q·Lm)² / (24·H<sub>1</sub>²) − H<sub>1</sub>/(E·A) + α·ΔT</em></p>
@@ -10004,7 +10018,7 @@ ${isNFL && flCombo ? `
   <p class="sub">T<sub>max,2</sub> = <strong class="w">${fN(c2.T_max,1)} N</strong></p>
 </div>
 ` : (isNFL || isEl) ? `
-<h2 class="warm">${t('pdf.step3')} &nbsp;—&nbsp; (${isEl ? 'Einzelleiter' : 'N-FL'})</h2>
+<h2 class="warm">${t('pdf.step3')} &nbsp;—&nbsp; (${sysName(isEl ? 'el' : 'nfl')})</h2>
 <div class="step">
   <p>Keine E·A-Angabe — Berechnung über Seillängenzunahme.</p>
   <p class="sub"><em class="w">s<sub>2</sub> = s<sub>1</sub> · (1 + α·ΔT)</em></p>
@@ -10019,12 +10033,12 @@ ${isNFL && flCombo ? `
 ${!isEl ? `
 <h2 style="color:#525252;border-left-color:#86868b">${isNFL ? t('pdf.step5') : t('pdf.step3')} &nbsp;—&nbsp; ${t('res.fd.title')}</h2>
 <div class="step">
-  <p class="sub"><em style="color:#525252">Fd-Höhe über SOK am Tiefpunkt${isNFL ? ' (Istzustand bei T<sub>2</sub>)' : ''}</em></p>
-  <p class="sub">Fd-Höhe über SOK = <strong style="color:#525252">${f3(fd_abs_pdf)} m</strong>
-    &nbsp;<span style="color:#6b7280">(Tiefpunkt bei x = ${f3(x_ist_pdf)} m)</span></p>
-  <p class="sub">H<sub>Fd</sub> = <strong style="color:#525252">${fN(H_Fd,0)} N</strong> (konstant${sysMode === 'rfl' ? ', Nachspannvorrichtung' : ''})</p>
-  <p class="sub">Hänger am Mast = sh = <strong style="color:#525252">${sh} m</strong> (maximum)</p>
-  <p class="sub">Hänger im Tiefpunkt = sh − f<sub>${flCombo ? 'Fd,1' : 'Ts,1'}</sub> = ${sh} − ${f3(c1.sag)} = <strong style="color:#525252">${f3(sh - c1.sag)} m</strong> (minimum)</p>
+  <p class="sub"><em style="color:#525252">${t('pdf.fd.hoehe.tp')}${isNFL ? ` (${t('pdf.fd.ist.t2')})` : ''}</em></p>
+  <p class="sub">${t('pdf.fd.hoehe.sok')} = <strong style="color:#525252">${f3(fd_abs_pdf)} m</strong>
+    &nbsp;<span style="color:#6b7280">(${t('res.tiefpunkt')} x = ${f3(x_ist_pdf)} m)</span></p>
+  <p class="sub">H<sub>Fd</sub> = <strong style="color:#525252">${fN(H_Fd,0)} N</strong> (${t('pdf.konstant')}${sysMode === 'rfl' ? `, ${t('pdf.nachspann')}` : ''})</p>
+  <p class="sub">${t('pdf.haenger.mast')} = sh = <strong style="color:#525252">${sh} m</strong> (${t('pdf.maximum')})</p>
+  <p class="sub">${t('pdf.haenger.tp')} = sh − f<sub>${flCombo ? 'Fd,1' : 'Ts,1'}</sub> = ${sh} − ${f3(c1.sag)} = <strong style="color:#525252">${f3(sh - c1.sag)} m</strong> (${t('pdf.minimum')})</p>
 </div>` : ''}
 
 <!-- ── Vergleich T<sub>1</sub> → T<sub>2</sub> ── -->
@@ -10121,7 +10135,7 @@ ${(() => {
 </div>`;
 })()}
 
-<footer>${t('pdf.footer')} &nbsp;·&nbsp; v2.1 &nbsp;|&nbsp; ${new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE')} &nbsp;|&nbsp; Statikteam, Fachentwicklung FS &nbsp;|&nbsp; ${t('pdf.quelle')}</footer>`;
+<footer>${t('pdf.footer')} &nbsp;·&nbsp; v3.6 &nbsp;|&nbsp; ${new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE')} &nbsp;|&nbsp; Statikteam, Fachentwicklung FS &nbsp;|&nbsp; ${t('pdf.quelle')}</footer>`;
   return bodyHtml;
 }
 
@@ -10802,7 +10816,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
   const _grpEntry = _docEntry?.parentId ? _allMeta.find(m => m.id === _docEntry.parentId) : null;
   const _grpName  = _grpEntry?.name  || '';
   const dateS  = new Date().toLocaleDateString('de-DE');
-  const sysLbl = isNFL ? 'N-FL' : isRFL ? 'R-FL' : 'Einzelleiter';
+  const sysLbl = sysName(isNFL ? 'nfl' : isRFL ? 'rfl' : 'el');
   const mainTitle = `${sysLbl}  ·  L = ${L} m`;
   const t3v_pdf = c3data ? (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value)) : null;
   // Projekt- / Dateiname-Zeile (Zeile 2)
@@ -11262,6 +11276,10 @@ function setCanvasView(view) {
   // Foto-Tab aktivieren
   if (isFoto) {
     window._fotoTabActive = true;
+    if (!window._fotoHinweisGezeigt) {
+      window._fotoHinweisGezeigt = true;
+      zeigeHinweis(t('ui.foto.genau.text'), { titel: t('ui.foto.genau.titel'), ok: t('ui.foto.genau.ok') });
+    }
     scaleViewActive = false;
     if (svgCont) { svgCont.innerHTML = ''; svgCont.removeEventListener('wheel', _onDrawingWheel); if (_dragListeners) { svgCont.removeEventListener('mousedown', _dragListeners.onMouseDown); document.removeEventListener('mousemove', _dragListeners.onMouseMove); document.removeEventListener('mouseup', _dragListeners.onMouseUp); _dragListeners = null; } }
     zeigeElement(scaleDiv, false);
@@ -12252,6 +12270,27 @@ const LANG = {
     'ui.hinzufuegen': '+ Hinzufügen',
     'ui.alle': '✕ Alle',
     'ui.foto.ablauf.titel': 'Foto-Auswertung — Ablauf',
+    'ui.foto.genau.titel': 'Foto-Auswertung — nur Abschätzung',
+    'ui.foto.genau.text': 'Die Foto-Auswertung ist keine präzise Berechnung. Sie eignet sich nur für eine Abschätzung des Durchhangs.\n\nFür verbindliche Werte die Berechnung im Diagramm mit gemessenen Höhen und Spannweite verwenden.',
+    'ui.foto.genau.ok': 'Verstanden',
+    'ui.foto.genau.kurz': 'Nur Abschätzung — keine präzise Berechnung',
+    'sys.nfl.kurz': 'N-FL',
+    'sys.rfl.kurz': 'R-FL',
+    'ui.sok.kurz': 'SOK',
+    'err.3pt.sok.fehlt': 'SOK m ü. M. nicht definiert',
+    'err.3pt.ueber.sehne': 'Punkt C liegt über der Sehne (Sehne bei {h} m {was})',
+    'ui.obs.name.ph': 'Name (z.B. UK Brücke)',
+    'ui.obs.h.titel': 'Höhe über SOK [m]',
+    'ui.obs.legende': 'x = Position im Feld [m] &nbsp;·&nbsp; h = Höhe über SOK [m]',
+    'pdf.fd.hoehe.tp': 'Fd-Höhe über SOK am Tiefpunkt',
+    'pdf.fd.ist.t2': 'Istzustand bei T<sub>2</sub>',
+    'pdf.fd.hoehe.sok': 'Fd-Höhe über SOK',
+    'pdf.konstant': 'konstant',
+    'pdf.nachspann': 'Nachspannvorrichtung',
+    'pdf.haenger.mast': 'Hänger am Mast',
+    'pdf.haenger.tp': 'Hänger im Tiefpunkt',
+    'pdf.maximum': 'Maximum',
+    'pdf.minimum': 'Minimum',
     'ui.foto.ablauf.modus': 'Ablauf (7-Klick Modus):',
     'ui.foto.ablauf.1': 'Mastspitze links → Mastfuss links',
     'ui.foto.ablauf.2': 'Mastspitze rechts → Mastfuss rechts',
@@ -12268,13 +12307,13 @@ const LANG = {
   },
   fr: {
     'app.subtitle':         'Caténaire — courbe du câble avec influence de la température',
-    'app.subtitle.el':      'Conducteur seul — courbe du câble avec influence de la température',
-    'app.title.nfl':        'Flèche N-FL',
-    'app.title.rfl':        'Flèche R-FL',
-    'app.title.el':         'Flèche conducteur seul',
+    'app.subtitle.el':      'Conducteur simple — courbe du câble avec influence de la température',
+    'app.title.nfl':        'Flèche LC N',
+    'app.title.rfl':        'Flèche LC R',
+    'app.title.el':         'Flèche conducteur simple',
     'app.handbuch':         'Manuel',
     // Card titles
-    'card.befestigung':     'Points de fixation CP',
+    'card.befestigung':     'Points d’appui CP',
     'card.befestigung.sub': '(sur DRS)',
     'card.spannweite':      'Portée',
     'card.system':          'Système',
@@ -12285,10 +12324,10 @@ const LANG = {
     'bp.ueber.sok':         'sur DRS',
     'bp.sok.label':         'DRS m s.n.m. (optionnel)',
     'bp.sok.clear':         '✕ effacer',
-    'bp.drag.hint':         'Points d\'ancrage déplaçables dans le diagramme',
-    // Δ Pied de poteau / Désignation / KM
-    'bp.delta.sok.li':     'Δ Pied poteau-DRS gauche',
-    'bp.delta.sok.re':     'Δ Pied poteau-DRS droit',
+    'bp.drag.hint':         'Points d’appui déplaçables dans le diagramme',
+    // Δ Pied de mât / Désignation / KM
+    'bp.delta.sok.li':     'Δ Pied mât-DRS gauche',
+    'bp.delta.sok.re':     'Δ Pied mât-DRS droit',
     'bp.bez.label':        'Désignation',
     'bp.bez.optional':     '(optionnel)',
     'bp.name.li':          'Nom / No. gauche',
@@ -12299,23 +12338,23 @@ const LANG = {
     'probe.h.hdr':         'Point H: p.ex. sous-face pont / ouvrage',
     'probe.h.placeholder': 'Hauteur',
     'probe.mindest.hdr':   'Distance minimale',
-    'bp.befestigung.li':   'Fixation gauche',
-    'bp.befestigung.re':    'Fixation droite',
+    'bp.befestigung.li':   'Point d’appui gauche',
+    'bp.befestigung.re':    'Point d’appui droit',
     'bp.mum.abbrev':        'm s.n.m.',
     // Spannweite
     'span.einzel':          'Portée simple',
-    'span.mittel':          'Portée équivalente',
+    'span.mittel':          'Portée moyenne',
     'span.L.label':         'Portée L',
-    'span.count':           'Nombre de travées',
-    'span.display':         'Travée affichée',
-    'span.feld':            'Travée',
+    'span.count':           'Nombre de portées',
+    'span.display':         'Portée affichée',
+    'span.feld':            'Portée',
     'span.info.title':      'À noter',
     'span.info.text':       'Lors de la saisie de c<sub>proj</sub> ou c<sub>m</sub>, il faut procéder selon le document <strong>0161.1013.0005.1</strong>.',
     // System
-    'sys.el':               'Conducteur seul',
+    'sys.el':               'Conducteur simple',
     'sys.info.nfl':         'Ancrage fixe — force de traction dépendante de la température',
     'sys.info.rfl':         'Tendeur automatique — force de traction constante',
-    'sys.info.el':          'Conducteur seul — tension selon équation d\'état',
+    'sys.info.el':          'Conducteur simple — tension selon équation d\'état',
     'sys.kombination':      'Combinaison',
     'sys.material':         'Matériau conducteur',
     'sys.abnutzung':        'Usure fil de contact (FC)',
@@ -12330,8 +12369,8 @@ const LANG = {
     'par.H.el':             'H conducteur (direct)',
     'par.3pt':              'Mesure 3 points',
     'par.3pt.hdr':          'Mesure 3 points',
-    'par.3pt.sub':          'Point C entre les poteaux',
-    'par.3pt.xC':           'depuis poteau A',
+    'par.3pt.sub':          'Point C entre les mâts',
+    'par.3pt.xC':           'depuis mât A',
     'par.3pt.btn.sag':      'Flèche',
     'par.3pt.btn.sok':      'Hauteur s. DRS',
     'par.3pt.btn.mum':      'm s.n.m.',
@@ -12376,13 +12415,13 @@ const LANG = {
     'par.T2':               'Température T<sub>2</sub>',
     'par.eislast':          'Charge de glace Z<sub>L</sub>',
     'par.eislast.sub':      '(à T<sub>2</sub> = −5 °C)',
-    'par.eislast.hint':     'Charge supplémentaire due au givre [N/m] — active pour N-FL et −20 °C ≤ T<sub>2</sub> ≤ −5 °C.',
+    'par.eislast.hint':     'Charge additionnelle due au givre [N/m] — active pour LC N et −20 °C ≤ T<sub>2</sub> ≤ −5 °C.',
     // Buttons
     'btn.pdf':              'Protocole de calcul PDF',
     'btn.drawing':          'Dessin',
     // Canvas / Legend
     'canvas.title':         'Diagramme',
-    'canvas.drag':          'Points d\'ancrage déplaçables',
+    'canvas.drag':          'Points d’appui déplaçables',
     'canvas.y.sok':         'Hauteur [m s.DRS]',
     'canvas.y.mum':         'Hauteur [m alt.]',
     'canvas.x.label':       'Distance horizontale [m]',
@@ -12423,22 +12462,22 @@ const LANG = {
     'res.seillange.el':     'Longueur s',
     'res.zugkraft.ts':      'Force de traction H CP',
     'res.zugkraft.el':      'Force de traction H',
-    'res.max.seilkraft':    'Force max. câble',
+    'res.max.seilkraft':    'Force de traction max. du câble',
     'res.fd.title':         'Fil de contact (FC)',
-    'res.haenger.mast':     'Pendelote au mât (= sh)',
-    'res.haenger.tiefpunkt':'Pendelote au point le plus bas',
-    'res.q.sum':            'q CP + q FC + q pendelotes',
+    'res.haenger.mast':     'Suspension au mât (= sh)',
+    'res.haenger.tiefpunkt':'Suspension au point le plus bas',
+    'res.q.sum':            'q CP + q FC + q suspensions',
     'res.gesamtlast':       'Charge totale q',
     'res.delta.durchhang':  'Δ Flèche',
     'res.delta.zugkraft':   'Δ Force de traction H',
-    'res.rfl.title':        'CP — H constant (R-FL tendeur)',
+    'res.rfl.title':        'CP — H constant (LC R tendeur)',
     'res.leiter.label':     'Conducteur',
     'res.eigengewicht':     'Poids propre q',
     'res.material':         'Matériau',
     'res.abnutzung.fd':     'Usure FC',
     'res.h.ts':             'H CP',
     // Handbuch
-    'hb.modal.title':       'Manuel — Calculateur caténaire N-FL / R-FL',
+    'hb.modal.title':       'Manuel — Calculateur caténaire LC N / LC R',
     'hb.toc.1':  '1 Aperçu',          'hb.toc.2':  '2 Saisie',
     'hb.toc.3':  '3 Procédé',         'hb.toc.4':  '4 Données conducteurs',
     'hb.toc.5':  '5 Caténaires',      'hb.toc.6':  '6 Outils',
@@ -12446,13 +12485,13 @@ const LANG = {
     'hb.toc.9':  '9 Glossaire',
     'hb.s1':     'Aperçu',
     'hb.s2':     'Paramètres de saisie',
-    'hb.s2.1':   '2.1  Géométrie & fixations',
-    'hb.s2.2':   '2.2  Forces de traction & températures (N-FL)',
+    'hb.s2.1':   '2.1  Géométrie & points d’appui',
+    'hb.s2.2':   '2.2  Forces de traction & températures (LC N)',
     'hb.s3':     'Méthode de calcul',
     'hb.s4':     'Données des conducteurs',
     'hb.s5':     'Caténaires prédéfinies & personnalisées',
     'hb.s6':     'Outils de diagnostic & fonctions spéciales',
-    'hb.s7':     'Exemple de calcul étape par étape (N-FL)',
+    'hb.s7':     'Exemple de calcul étape par étape (LC N)',
     'hb.s8':     'Sources',
     'hb.s9':     'Glossaire DE / FR / IT',
     'hb.tab.param':   'Paramètre',
@@ -12464,14 +12503,14 @@ const LANG = {
     'pdf.systemtyp':        'Type de système',
     'pdf.berechnungsmodell':'Modèle de calcul',
     'pdf.hoehendiff':       'Différence de hauteur',
-    'pdf.befhoehen':        'Hauteurs de fixation (sur DRS)',
+    'pdf.befhoehen':        'Hauteurs des points d’appui (sur DRS)',
     'pdf.systemhoehe':      'Hauteur de système',
-    'pdf.haenger':          'Pendelotes',
+    'pdf.haenger':          'Suspensions',
     'pdf.temperaturen':     'Températures',
     'pdf.abnutzung':        'Usure',
-    'pdf.eislast':          'Charge de neige Z<sub>L</sub>',
-    'pdf.sok.links':        'DRS pied de poteau gauche',
-    'pdf.sok.rechts':       'DRS pied de poteau droit',
+    'pdf.eislast':          'Charge de glace Z<sub>L</sub>',
+    'pdf.sok.links':        'DRS pied de mât gauche',
+    'pdf.sok.rechts':       'DRS pied de mât droit',
     'pdf.zugkraft.direkt':  'Force de traction H (direct)',
     'pdf.zugkraft.const':   'Force de traction CP (constant)',
     'pdf.betrieb.temp':     'Température (service)',
@@ -12497,9 +12536,9 @@ const LANG = {
     'pdf.kub.poly':         'Polynôme cubique avec valeurs numériques',
     'pdf.allg.zustgl':      'Équation générale d\'état du câble',
     'pdf.fd.kombi':         'Flèche FC combinée selon VEM formule 7.66',
-    'pdf.fd.kombibody':     'Dans le N-FL, CP (H<sub>Ts</sub>) et FC (H<sub>Fd</sub>) agissent ensemble. La flèche déterminante est celle du FC:',
+    'pdf.fd.kombibody':     'Dans la LC N, CP (H<sub>Ts</sub>) et FC (H<sub>Fd</sub>) agissent ensemble. La flèche déterminante est celle du FC:',
     'pdf.berechn.werte':    'Calcul avec valeurs numériques',
-    'pdf.phys.body':        'Le CP est d\'abord posé seul (non chargé) et tendu à H<sub>ub</sub>. En accrochant FC et pendelotes, la charge augmente — le CP s\'allonge élastiquement jusqu\'à un nouvel équilibre.',
+    'pdf.phys.body':        'Le CP est d\'abord posé seul (non chargé) et tendu à H<sub>ub</sub>. En accrochant FC et suspensions, la charge augmente — le CP s\'allonge élastiquement jusqu\'à un nouvel équilibre.',
     'pdf.zielzustand':      'État cible',
     'pdf.ausgangszustand':  'État initial',
     'pdf.messpunkte':       'Points de mesure',
@@ -12510,13 +12549,13 @@ const LANG = {
     'pdf.3pt.pos':          'Position de mesure',
     'pdf.3pt.wert':         'Valeur mesurée',
     'pdf.3pt.result':       'Résultat',
-    'pdf.footer':           'Calculateur caténaire N-FL / R-FL / conducteur seul',
+    'pdf.footer':           'Calculateur caténaire LC N / LC R / conducteur simple',
     'pdf.quelle':           'Source réglage: SBB 0161.1013.0001',
-    'pdf.sys.nfl':          'N-FL — ancrage fixe',
-    'pdf.sys.rfl':          'R-FL — tendeur automatique (dispositif de tension)',
-    'pdf.sys.el':           'Conducteur seul — équation d\'état (influence température)',
+    'pdf.sys.nfl':          'LC N — ancrage fixe',
+    'pdf.sys.rfl':          'LC R — tendeur automatique (dispositif de tension)',
+    'pdf.sys.el':           'Conducteur simple — équation d\'état (influence température)',
     'pdf.span.single':      'Portée simple',
-    'pdf.span.ruling':      'Portée équivalente',
+    'pdf.span.ruling':      'Portée moyenne',
     'pdf.diagramm.legende': 'Diagramme',
     'pdf.vergleich':        'Comparaison',
     'pdf.cmp.groesse':      'Grandeur',
@@ -12529,18 +12568,18 @@ const LANG = {
     'btn.foto':             'Photo',
     'foto.load.hint':       'Charger la photo, puis cliquer les points',
     'foto.done.hint':       'Tous les points définis — résultat ci-dessous.',
-    'foto.lbl.top_L':      'Sommet poteau gauche',
-    'foto.lbl.base_L':     'Pied de poteau / DRS gauche',
-    'foto.lbl.top_R':      'Sommet poteau droit',
-    'foto.lbl.base_R':     'Pied de poteau / DRS droit',
-    'foto.lbl.p1':         "Point d'ancrage gauche (fixation conducteur)",
-    'foto.lbl.p2':         "Point d'ancrage droit (fixation conducteur)",
-    'foto.lbl.cmid':       'Cliquer conducteur au milieu de travée (L/2)',
+    'foto.lbl.top_L':      'Sommet mât gauche',
+    'foto.lbl.base_L':     'Pied de mât / DRS gauche',
+    'foto.lbl.top_R':      'Sommet mât droit',
+    'foto.lbl.base_R':     'Pied de mât / DRS droit',
+    'foto.lbl.p1':         "Point d’appui gauche (fixation conducteur)",
+    'foto.lbl.p2':         "Point d’appui droit (fixation conducteur)",
+    'foto.lbl.cmid':       'Cliquer conducteur au milieu de portée (L/2)',
     'foto.lbl.curve':      'Point sur le conducteur',
     // T3 Courbe comparative
     't3.show':              'T<sub>3</sub> Afficher courbe comparative',
     't3.hide':              'T<sub>3</sub> Masquer courbe comparative',
-    // Mode de calcul (conducteur seul)
+    // Mode de calcul (conducteur simple)
     'par.berechnungsart':   'Mode de calcul',
     'par.ba.ausg':          'Compensé',
     'par.ba.starr':         'Rigide',
@@ -12617,22 +12656,22 @@ const LANG = {
     'rf.umbenennen': 'Renommer',
     'rf.zuruecksetzen': 'Réinitialiser',
     'rf.name.frage': 'Nouveau nom:',
-    'foto.uebernahme.ruling': "Le calcul principal est en mode portée équivalente.\nLa reprise passera en portée simple — continuer?",
+    'foto.uebernahme.ruling': "Le calcul principal est en mode portée moyenne.\nLa reprise passera en portée simple — continuer?",
     // Photo — indications et messages
     'foto.skaliert':        'Image redimensionnée à {nw}×{nh} px (original: {ow}×{oh}).',
     'foto.ziel.waehlen':    'Choisir la cible de clic ci-dessus',
     'foto.klick':           'Clic',
     'foto.kurve.btn':       '+ Courbe',
     'foto.span.fehlt':      'Saisir la portée L!',
-    'foto.masthoehe.fehlt': 'Saisir la hauteur de poteau L!',
+    'foto.masthoehe.fehlt': 'Saisir la hauteur de mât L!',
     'foto.temp.fehlt':      'Saisir la température de mesure T!',
     'foto.punkte.fehlen':   'Points manquants!',
-    'foto.mastfuss.li':     'Le pied de poteau gauche doit être sous le sommet.',
-    'foto.mastfuss.re':     'Le pied de poteau droit doit être sous le sommet.',
+    'foto.mastfuss.li':     'Le pied de mât gauche doit être sous le sommet.',
+    'foto.mastfuss.re':     'Le pied de mât droit doit être sous le sommet.',
     'foto.material.fehlt':  'Matériau ou poids du conducteur (q) non disponible!',
     'foto.kurve.unter':     'Les points de courbe doivent être sous la corde.',
     'foto.berechnung.fehl': 'Échec du calcul — vérifier les paramètres.',
-    'foto.xc.hinweis':      'f mesurée à x<sub>C</sub> = {xc} m, pas au milieu de travée (L/2 = {lh} m) — le f du curseur vaut pour x = L/2.',
+    'foto.xc.hinweis':      'f mesurée à x<sub>C</sub> = {xc} m, pas au milieu de portée (L/2 = {lh} m) — le f du curseur vaut pour x = L/2.',
     'foto.messung.fertig':  'Mesure terminée.',
     'foto.db.fehler':       "Impossible d'ouvrir IndexedDB.",
     'foto.keine.messungen': 'Aucune mesure enregistrée',
@@ -12662,8 +12701,8 @@ const LANG = {
     'share.draw.pdf':    'Dessin PDF',
     'share.foto.png':    'Photo PNG',
     // Sidebar Mastlänge
-    'foto.mast.li':      'Hauteur poteau gauche',
-    'foto.mast.re':      'Hauteur poteau droit',
+    'foto.mast.li':      'Hauteur mât gauche',
+    'foto.mast.re':      'Hauteur mât droit',
     'foto.mast.re.sub':  'vide = gauche',
     'foto.mast.re.placeholder': '= gauche',
     // Foto-Toolbar
@@ -12679,15 +12718,15 @@ const LANG = {
     'foto.refresh.btn':  'Actualiser',
     // Foto-Canvas
     'foto.no.image':     'Aucune photo chargée',
-    'foto.mast.popup':   'Hauteur poteau',
+    'foto.mast.popup':   'Hauteur mât',
     'foto.side.li':      'gauche',
     'foto.side.re':      'droit',
     'foto.calc.btn':     'Calculer (dès 3 pts courbe)',
     // Foto-Ergebnis
     'foto.col.messung':  'Mesure',
-    'foto.label.masten': 'Poteaux',
+    'foto.label.masten': 'Mâts',
     'foto.label.f':      'Flèche f',
-    'foto.label.H':      'Force traction H',
+    'foto.label.H':      'Force de traction H',
     'foto.label.xC':     'Position x\u1D436',
     'foto.label.dh':     'Diff. hauteur dh',
     'foto.label.k':      'Échelle k',
@@ -12717,11 +12756,11 @@ const LANG = {
     'ui.thema.auto': 'Affichage : automatique selon l’appareil (cliquer pour clair)',
     'ui.thema.hell': 'Affichage : clair (cliquer pour sombre)',
     'ui.thema.dunkel': 'Affichage : sombre (cliquer pour automatique)',
-    'par.ba.hint.starr': 'Force de traction avec la portée de projet c_proj du champ (SBB 0161.1013.0005.1)',
+    'par.ba.hint.starr': 'Force de traction avec la portée du projet c_proj du champ (SBB 0161.1013.0005.1)',
     'par.ba.hint.ausg': 'Force de traction avec la portée moyenne c_m, flèche par champ (SBB 0161.1013.0005.1)',
     'pdf.bezug.titel': 'État de référence : CP chargé à 10 °C',
     'pdf.bezug.text': 'Comme SBB «Durchhang 2026.xlsm» : à 10 °C le fil de contact est horizontal ; sa traction n’agit qu’en cas d’écart. La traction de montage non chargée H<sub>ub</sub> à T<sub>1</sub> est d’abord convertie en état chargé à 10 °C (poids total, fil neuf, sans traction du fil de contact).',
-    'pdf.nfl.zustgl': 'Équation d’état N-FL avec traction du fil de contact (VEM, Excel «Upro1»)',
+    'pdf.nfl.zustgl': 'Équation d’état LC N avec traction du fil de contact (VEM, Excel «Upro1»)',
     'pdf.gerundet.10': 'arrondi à 10 N comme Excel',
     'pdf.gerundet.5': 'résultat arrondi à 5 N (avec glace 10 N) comme Excel',
     'ui.t2.fix.eis': '(fixé à −5 °C pour la charge de glace)',
@@ -12750,7 +12789,7 @@ const LANG = {
     'ui.vergroessern': 'Agrandir',
     'ui.zoom.reset': 'Réinitialiser le zoom',
     'ui.bis.sok.titel': 'Représentation complète jusqu\'au DRS',
-    'ui.nur.kw.titel': 'Caténaire / conducteur seul uniquement',
+    'ui.nur.kw.titel': 'Caténaire / conducteur simple uniquement',
     'ui.foto.reset.titel': 'Réinitialiser tous les points cliqués',
     'ui.foto.refresh.titel': 'Actualiser l\'affichage',
     'ui.foto.pan.titel': 'Figer le cadrage',
@@ -12789,9 +12828,9 @@ const LANG = {
     'ui.kombination': 'Combinaison',
     'ui.abnutzung': 'Usure',
     'ui.rgl.quelle': 'Source : SBB 0161.1013.0001 &nbsp;·&nbsp; Mode de calcul : compensé &nbsp;·&nbsp; Lm = 45 m &nbsp;·&nbsp; T = +10 °C',
-    'ui.rgl.nfl.titel': 'N-FL — Ligne de contact normale',
-    'ui.rgl.rfl.titel': 'R-FL — Ligne de contact régulée',
-    'ui.rgl.el.titel': 'Conducteur seul — Force de réglage',
+    'ui.rgl.nfl.titel': 'LC N — Ligne de contact N',
+    'ui.rgl.rfl.titel': 'LC R — Ligne de contact R',
+    'ui.rgl.el.titel': 'Conducteur simple — Force de réglage',
     'ui.rgl.hts.bel': 'H<sub>CP</sub> chargé',
     'ui.rgl.hts.ub': 'H<sub>CP</sub> non chargé',
     'ui.rgl.hts.konst': 'H<sub>CP</sub> constant',
@@ -12820,29 +12859,50 @@ const LANG = {
     'ui.hinzufuegen': '+ Ajouter',
     'ui.alle': '✕ Tous',
     'ui.foto.ablauf.titel': 'Analyse photo — Procédure',
+    'ui.foto.genau.titel': 'Analyse photo — estimation seulement',
+    'ui.foto.genau.text': 'L\'analyse photo n\'est pas un calcul précis. Elle convient uniquement pour estimer la flèche.\n\nPour des valeurs fiables, utiliser le calcul dans le diagramme avec les hauteurs et la portée mesurées.',
+    'ui.foto.genau.ok': 'Compris',
+    'ui.foto.genau.kurz': 'Estimation seulement — pas de calcul précis',
+    'sys.nfl.kurz': 'LC N',
+    'sys.rfl.kurz': 'LC R',
+    'ui.sok.kurz': 'DRS',
+    'err.3pt.sok.fehlt': 'DRS m s.n.m. non défini',
+    'err.3pt.ueber.sehne': 'Le point C se trouve au-dessus de la ligne de corde (corde à {h} m {was})',
+    'ui.obs.name.ph': 'Nom (p. ex. sous-face pont)',
+    'ui.obs.h.titel': 'Hauteur sur DRS [m]',
+    'ui.obs.legende': 'x = position dans la portée [m] &nbsp;·&nbsp; h = hauteur sur DRS [m]',
+    'pdf.fd.hoehe.tp': 'Hauteur FC sur DRS au point le plus bas',
+    'pdf.fd.ist.t2': 'état réel à T<sub>2</sub>',
+    'pdf.fd.hoehe.sok': 'Hauteur FC sur DRS',
+    'pdf.konstant': 'constant',
+    'pdf.nachspann': 'dispositif de tension',
+    'pdf.haenger.mast': 'Suspension au mât',
+    'pdf.haenger.tp': 'Suspension au point le plus bas',
+    'pdf.maximum': 'maximum',
+    'pdf.minimum': 'minimum',
     'ui.foto.ablauf.modus': 'Procédure (mode 7 clics) :',
-    'ui.foto.ablauf.1': 'Sommet du poteau gauche → pied du poteau gauche',
-    'ui.foto.ablauf.2': 'Sommet du poteau droit → pied du poteau droit',
-    'ui.foto.ablauf.3': 'Point d\'ancrage gauche (P1) → point d\'ancrage droit (P2)',
+    'ui.foto.ablauf.1': 'Sommet du mât gauche → pied du mât gauche',
+    'ui.foto.ablauf.2': 'Sommet du mât droit → pied du mât droit',
+    'ui.foto.ablauf.3': 'Point d’appui gauche (P1) → point d’appui droit (P2)',
     'ui.foto.ablauf.4': 'Une ligne de guidage apparaît à L/2 — y cliquer sur le conducteur',
     'ui.foto.hinweise': 'Remarques :',
-    'ui.foto.hinweis.1': 'Saisir la longueur du poteau dans la barre latérale sous «Photo — données des poteaux»',
+    'ui.foto.hinweis.1': 'Saisir la longueur du mât dans la barre latérale sous «Photo — données des mâts»',
     'ui.foto.hinweis.2': 'L, le matériau et la température sont repris de la barre latérale',
     'ui.foto.hinweis.3': 'Tenir l\'appareil à l\'horizontale — l\'angle horizontal n\'a pas d\'importance',
     'ui.foto.hinweis.4': 'Les points peuvent être déplacés après leur placement',
     'card.temperatur': 'Température',
-    'ui.mastangaben': 'Données des poteaux : DRS m s.n.m., nom, km',
+    'ui.mastangaben': 'Données des mâts : DRS m s.n.m., nom, km',
     'ui.mastangaben.sub': '(optionnel)',
   },
   it: {
     'app.subtitle':         'Catenaria — curva del cavo con influenza della temperatura',
     'app.subtitle.el':      'Conduttore singolo — curva del cavo con influenza della temperatura',
-    'app.title.nfl':        'Freccia N-FL',
-    'app.title.rfl':        'Freccia R-FL',
+    'app.title.nfl':        'Freccia LC N',
+    'app.title.rfl':        'Freccia LC R',
     'app.title.el':         'Freccia conduttore singolo',
     'app.handbuch':         'Manuale',
     // Card titles
-    'card.befestigung':     'Punti di fissaggio FP',
+    'card.befestigung':     'Punti d’aggancio FP',
     'card.befestigung.sub': '(sul PRF)',
     'card.spannweite':      'Campata',
     'card.system':          'Sistema',
@@ -12853,7 +12913,7 @@ const LANG = {
     'bp.ueber.sok':         'sul PRF',
     'bp.sok.label':         'PRF m s.l.m. (opzionale)',
     'bp.sok.clear':         '✕ cancella',
-    'bp.drag.hint':         'Punti di ancoraggio spostabili nel diagramma',
+    'bp.drag.hint':         'Punti d’aggancio spostabili nel diagramma',
     // Δ Piede palo / Denominazione / KM
     'bp.delta.sok.li':     'Δ Piede palo-PRF sinistro',
     'bp.delta.sok.re':     'Δ Piede palo-PRF destro',
@@ -12867,12 +12927,12 @@ const LANG = {
     'probe.h.hdr':         'Punto H: p.es. intradosso ponte / opera',
     'probe.h.placeholder': 'Altezza',
     'probe.mindest.hdr':   'Distanza minima',
-    'bp.befestigung.li':   'Fissaggio sinistro',
-    'bp.befestigung.re':    'Fissaggio destro',
+    'bp.befestigung.li':   'Punto d’aggancio sinistro',
+    'bp.befestigung.re':    'Punto d’aggancio destro',
     'bp.mum.abbrev':        'm s.l.m.',
     // Spannweite
     'span.einzel':          'Campata singola',
-    'span.mittel':          'Campata equivalente',
+    'span.mittel':          'Lunghezza media',
     'span.L.label':         'Campata L',
     'span.count':           'Numero di campate',
     'span.display':         'Campata visualizzata',
@@ -12881,8 +12941,8 @@ const LANG = {
     'span.info.text':       'Per l\'inserimento di c<sub>proj</sub> o c<sub>m</sub>, procedere secondo il documento <strong>0161.1013.0005.1</strong>.',
     // System
     'sys.el':               'Conduttore singolo',
-    'sys.info.nfl':         'Ancoraggio fisso — forza di tiro dipendente dalla temperatura',
-    'sys.info.rfl':         'Tendifilo automatico — forza di tiro costante',
+    'sys.info.nfl':         'Ancoraggio fisso — forza di trazione dipendente dalla temperatura',
+    'sys.info.rfl':         'Tendifilo automatico — forza di trazione costante',
     'sys.info.el':          'Conduttore singolo — tensione secondo equazione di stato',
     'sys.kombination':      'Combinazione',
     'sys.material':         'Materiale conduttore',
@@ -12912,7 +12972,7 @@ const LANG = {
     'cm.label.placeholder': 'es. StCu 120 + Cu 120 · sh 2.20 m',
     'cm.bezeichnung':       'Denominazione',
     'cm.system':            'Sistema',
-    'cm.ts':                'Fune portante',
+    'cm.ts':                'Filo portante',
     'cm.fd':                'Filo di contatto',
     'cm.reg':               'Regolazione',
     'cm.eigengewicht':      'Peso proprio q',
@@ -12942,15 +13002,15 @@ const LANG = {
     'par.T1':               'Temperatura T<sub>1</sub>',
     'par.T1.sub':           '(posa)',
     'par.T2':               'Temperatura T<sub>2</sub>',
-    'par.eislast':          'Carico neve Z<sub>L</sub>',
+    'par.eislast':          'Carico di ghiaccio Z<sub>L</sub>',
     'par.eislast.sub':      '(a T<sub>2</sub> = −5 °C)',
-    'par.eislast.hint':     'Carico aggiuntivo da ghiaccio [N/m] — attivo per N-FL e −20 °C ≤ T<sub>2</sub> ≤ −5 °C.',
+    'par.eislast.hint':     'Carico aggiuntivo da ghiaccio [N/m] — attivo per LC N e −20 °C ≤ T<sub>2</sub> ≤ −5 °C.',
     // Buttons
     'btn.pdf':              'Protocollo di calcolo PDF',
     'btn.drawing':          'Disegno',
     // Canvas / Legend
     'canvas.title':         'Diagramma',
-    'canvas.drag':          'Punti di ancoraggio spostabili',
+    'canvas.drag':          'Punti d’aggancio spostabili',
     'canvas.y.sok':         'Altezza [m s.PRF]',
     'canvas.y.mum':         'Altezza [m s.l.m.]',
     'canvas.x.label':       'Distanza orizzontale [m]',
@@ -12960,7 +13020,7 @@ const LANG = {
     'canvas.probe.hint':    'Punti di misura: cliccare/trascinare nel diagramma o inserire x',
     'canvas.probe.reset':   '✕ Reset',
     'leg.ts1':              'FP a T<sub>1</sub>',
-    'leg.ts1.rfl':          'Fune portante (FP)',
+    'leg.ts1.rfl':          'Filo portante (FP)',
     'leg.ts2':              'FP a T<sub>2</sub>',
     'leg.fd':               'Filo di contatto (FC)',
     'leg.fd.nfl':           'FC effettivo (T<sub>2</sub>)',
@@ -12984,29 +13044,29 @@ const LANG = {
     'res.x_low':            'Punto più basso x',
     'res.tiefpunkt.label':  'Punto più basso',
     'res.tiefpunkt.x0':     'Punto più basso x₀',
-    'res.sag.belastet':     'Freccia FP caricata',
+    'res.sag.belastet':     'Freccia FP caricato',
     'res.sag.ts.label':     'Freccia f FP',
     'res.sag.el.label':     'Freccia f',
     'res.seillange.ts':     'Lunghezza FP s',
     'res.seillange.el':     'Lunghezza s',
-    'res.zugkraft.ts':      'Forza di tiro H FP',
-    'res.zugkraft.el':      'Forza di tiro H',
-    'res.max.seilkraft':    'Forza max. cavo',
+    'res.zugkraft.ts':      'Forza di trazione H FP',
+    'res.zugkraft.el':      'Forza di trazione H',
+    'res.max.seilkraft':    'Forza di trazione max. del filo',
     'res.fd.title':         'Filo di contatto (FC)',
-    'res.haenger.mast':     'Pendolo al palo (= sh)',
-    'res.haenger.tiefpunkt':'Pendolo al punto più basso',
-    'res.q.sum':            'q FP + q FC + q pendoli',
+    'res.haenger.mast':     'Ballerina al palo (= sh)',
+    'res.haenger.tiefpunkt':'Ballerina al punto più basso',
+    'res.q.sum':            'q FP + q FC + q ballerine',
     'res.gesamtlast':       'Carico totale q',
     'res.delta.durchhang':  'Δ Freccia',
-    'res.delta.zugkraft':   'Δ Forza di tiro H',
-    'res.rfl.title':        'FP — H costante (R-FL tendifilo)',
+    'res.delta.zugkraft':   'Δ Forza di trazione H',
+    'res.rfl.title':        'FP — H costante (LC R tendifilo)',
     'res.leiter.label':     'Conduttore',
     'res.eigengewicht':     'Peso proprio q',
     'res.material':         'Materiale',
     'res.abnutzung.fd':     'Usura FC',
     'res.h.ts':             'H FP',
     // Handbuch
-    'hb.modal.title':       'Manuale — Calcolatore catenaria N-FL / R-FL',
+    'hb.modal.title':       'Manuale — Calcolatore catenaria LC N / LC R',
     'hb.toc.1':  '1 Panoramica',      'hb.toc.2':  '2 Dati di ingresso',
     'hb.toc.3':  '3 Procedura',       'hb.toc.4':  '4 Dati conduttori',
     'hb.toc.5':  '5 Catenarie',       'hb.toc.6':  '6 Strumenti',
@@ -13014,13 +13074,13 @@ const LANG = {
     'hb.toc.9':  '9 Glossario',
     'hb.s1':     'Panoramica',
     'hb.s2':     'Parametri di ingresso',
-    'hb.s2.1':   '2.1  Geometria & fissaggi',
-    'hb.s2.2':   '2.2  Forze di tiro & temperature (N-FL)',
+    'hb.s2.1':   '2.1  Geometria & punti d’aggancio',
+    'hb.s2.2':   '2.2  Forze di trazione & temperature (LC N)',
     'hb.s3':     'Procedura di calcolo',
     'hb.s4':     'Dati dei conduttori predefiniti',
     'hb.s5':     'Catenarie predefinite & personalizzate',
     'hb.s6':     'Strumenti di diagnosi & funzioni speciali',
-    'hb.s7':     'Esempio di calcolo passo per passo (N-FL)',
+    'hb.s7':     'Esempio di calcolo passo per passo (LC N)',
     'hb.s8':     'Fonti',
     'hb.s9':     'Glossario DE / FR / IT',
     'hb.tab.param':   'Parametro',
@@ -13032,16 +13092,16 @@ const LANG = {
     'pdf.systemtyp':        'Tipo di sistema',
     'pdf.berechnungsmodell':'Modello di calcolo',
     'pdf.hoehendiff':       'Differenza di altezza',
-    'pdf.befhoehen':        'Altezze di fissaggio (sul PRF)',
+    'pdf.befhoehen':        'Altezze dei punti d’aggancio (sul PRF)',
     'pdf.systemhoehe':      'Altezza di sistema',
-    'pdf.haenger':          'Pendoli',
+    'pdf.haenger':          'Ballerine',
     'pdf.temperaturen':     'Temperature',
     'pdf.abnutzung':        'Usura',
-    'pdf.eislast':          'Carico neve Z<sub>L</sub>',
-    'pdf.sok.links':        'PRF montante sinistra',
-    'pdf.sok.rechts':       'PRF montante destra',
-    'pdf.zugkraft.direkt':  'Forza di tiro H (diretto)',
-    'pdf.zugkraft.const':   'Forza di tiro FP (costante)',
+    'pdf.eislast':          'Carico di ghiaccio Z<sub>L</sub>',
+    'pdf.sok.links':        'PRF piede palo sinistro',
+    'pdf.sok.rechts':       'PRF piede palo destro',
+    'pdf.zugkraft.direkt':  'Forza di trazione H (diretto)',
+    'pdf.zugkraft.const':   'Forza di trazione FP (costante)',
     'pdf.betrieb.temp':     'Temperatura (servizio)',
     'pdf.h.ub':             'H FP non caricato (regolazione)',
     'pdf.h.b':              'H FP caricato (calcolato)',
@@ -13049,7 +13109,7 @@ const LANG = {
     'pdf.step1.title':      'Carico totale distribuito',
     'pdf.step1.el':         'Carico conduttore',
     'pdf.step1b':           'Fase 1b',
-    'pdf.step1b.title':     'Forza di tiro FP caricato (eq. di stato non caricato → caricato)',
+    'pdf.step1b.title':     'Forza di trazione FP caricato (eq. di stato non caricato → caricato)',
     'pdf.step2':            'Fase 2',
     'pdf.step3':            'Fase 3',
     'pdf.step3b':           'Fase 3b',
@@ -13065,32 +13125,32 @@ const LANG = {
     'pdf.kub.poly':         'Polinomio cubico con valori numerici',
     'pdf.allg.zustgl':      'Equazione generale di stato del cavo',
     'pdf.fd.kombi':         'Freccia FC combinata secondo VEM formula 7.66',
-    'pdf.fd.kombibody':     'Nel N-FL, FP (H<sub>Ts</sub>) e FC (H<sub>Fd</sub>) agiscono insieme. La freccia determinante è quella del FC:',
+    'pdf.fd.kombibody':     'Nella LC N, FP (H<sub>Ts</sub>) e FC (H<sub>Fd</sub>) agiscono insieme. La freccia determinante è quella del FC:',
     'pdf.berechn.werte':    'Calcolo con valori numerici',
-    'pdf.phys.body':        'La FP viene prima posata da sola (non caricata) e tensionata a H<sub>ub</sub>. Appendendo FC e pendoli, il carico aumenta — la FP si allunga elasticamente fino a un nuovo equilibrio.',
+    'pdf.phys.body':        'Il FP viene prima posato da solo (non caricato) e tensionato a H<sub>ub</sub>. Appendendo FC e ballerine, il carico aumenta — il FP si allunga elasticamente fino a un nuovo equilibrio.',
     'pdf.zielzustand':      'Stato obiettivo',
     'pdf.ausgangszustand':  'Stato iniziale',
     'pdf.messpunkte':       'Punti di misura',
     'pdf.mp.punkt':         'Punto di misura',
     'pdf.mp.durchhang':     'Freccia [m]',
     'pdf.3pt.title':        'Misura 3 punti (ricalcolo da misura in campo)',
-    'pdf.3pt.body':         'La forza di tiro è stata ricalcolata numericamente dal punto C misurato (Newton-Raphson sulla formula catenaria).',
+    'pdf.3pt.body':         'La forza di trazione è stata ricalcolata numericamente dal punto C misurato (Newton-Raphson sulla formula catenaria).',
     'pdf.3pt.pos':          'Posizione di misura',
     'pdf.3pt.wert':         'Valore misurato',
     'pdf.3pt.result':       'Risultato',
-    'pdf.footer':           'Calcolatore catenaria N-FL / R-FL / conduttore singolo',
+    'pdf.footer':           'Calcolatore catenaria LC N / LC R / conduttore singolo',
     'pdf.quelle':           'Fonte regolazione: SBB 0161.1013.0001',
-    'pdf.sys.nfl':          'N-FL — ancoraggio fisso',
-    'pdf.sys.rfl':          'R-FL — tendifilo automatico',
+    'pdf.sys.nfl':          'LC N — ancoraggio fisso',
+    'pdf.sys.rfl':          'LC R — tendifilo automatico',
     'pdf.sys.el':           'Conduttore singolo — equazione di stato (influenza temperatura)',
     'pdf.span.single':      'Campata singola',
-    'pdf.span.ruling':      'Campata equivalente',
+    'pdf.span.ruling':      'Lunghezza media',
     'pdf.diagramm.legende': 'Diagramma',
     'pdf.vergleich':        'Confronto',
     'pdf.cmp.groesse':      'Grandezza',
     'pdf.cmp.aenderung':    'Variazione',
     'pdf.fd.hoehe':         'Altezza FC',
-    'pdf.ts.label':         'Fune portante',
+    'pdf.ts.label':         'Filo portante',
     'pdf.mum.short':        's.l.m.',
     'pdf.sok.short':        's.PRF',
     // Foto-Tab
@@ -13101,8 +13161,8 @@ const LANG = {
     'foto.lbl.base_L':     'Piede palo / PRF sinistro',
     'foto.lbl.top_R':      'Cima palo destro',
     'foto.lbl.base_R':     'Piede palo / PRF destro',
-    'foto.lbl.p1':         'Punto di ancoraggio sinistro (fissaggio conduttore)',
-    'foto.lbl.p2':         'Punto di ancoraggio destro (fissaggio conduttore)',
+    'foto.lbl.p1':         'Punto d’aggancio sinistro (fissaggio conduttore)',
+    'foto.lbl.p2':         'Punto d’aggancio destro (fissaggio conduttore)',
     'foto.lbl.cmid':       'Fare clic sul conduttore a metà campata (L/2)',
     'foto.lbl.curve':      'Punto sul conduttore',
     // T3 Curva comparativa
@@ -13123,9 +13183,9 @@ const LANG = {
     'val.feld.q.ts':    'Peso proprio q FP',
     'val.feld.q.fd':    'Peso proprio q FC',
     'val.feld.q.el':    'Peso proprio q',
-    'val.feld.H.ts':    'Forza di tiro H FP',
-    'val.feld.H.fd':    'Forza di tiro H FC',
-    'val.feld.H.el':    'Forza di tiro H',
+    'val.feld.H.ts':    'Forza di trazione H FP',
+    'val.feld.H.fd':    'Forza di trazione H FC',
+    'val.feld.H.el':    'Forza di trazione H',
     'val.feld.h1':      'Altezza sinistra h\u2081',
     'val.feld.h2':      'Altezza destra h\u2082',
     'val.feld.T1':      'Temperatura T\u2081',
@@ -13134,7 +13194,7 @@ const LANG = {
     'err.ausgangszustand':  'Stato iniziale',
     'err.zielzustand.ts':   'Stato finale FP',
     'err.zielzustand':      'Stato finale',
-    'err.dh.groesser':      'Dislivello maggiore della lunghezza del cavo.',
+    'err.dh.groesser':      'Differenza di altezza maggiore della lunghezza del cavo.',
     'err.seil.kurz':        'Lunghezza del cavo insufficiente per la campata.',
     'warn.tiefpunkt.t1':    'T<sub>1</sub>: punto più basso fuori dalla campata.',
     'warn.tiefpunkt.t2':    'T<sub>2</sub>: punto più basso fuori dalla campata.',
@@ -13185,7 +13245,7 @@ const LANG = {
     'rf.umbenennen': 'Rinomina',
     'rf.zuruecksetzen': 'Reimposta',
     'rf.name.frage': 'Nuovo nome:',
-    'foto.uebernahme.ruling': 'Il calcolo principale è in modalità campata equivalente.\nPer la ripresa si passerà a campata singola — continuare?',
+    'foto.uebernahme.ruling': 'Il calcolo principale è in modalità lunghezza media.\nPer la ripresa si passerà a campata singola — continuare?',
     // Foto — indicazioni e messaggi
     'foto.skaliert':        'Immagine ridimensionata a {nw}×{nh} px (originale: {ow}×{oh}).',
     'foto.ziel.waehlen':    'Scegliere sopra la destinazione del clic',
@@ -13255,7 +13315,7 @@ const LANG = {
     'foto.col.messung':  'Misura',
     'foto.label.masten': 'Pali',
     'foto.label.f':      'Freccia f',
-    'foto.label.H':      'Forza tiro H',
+    'foto.label.H':      'Forza di trazione H',
     'foto.label.xC':     'Posizione x\u1D436',
     'foto.label.dh':     'Diff. altezza dh',
     'foto.label.k':      'Scala k',
@@ -13285,11 +13345,11 @@ const LANG = {
     'ui.thema.auto': 'Visualizzazione: automatica come il dispositivo (clic per chiaro)',
     'ui.thema.hell': 'Visualizzazione: chiara (clic per scura)',
     'ui.thema.dunkel': 'Visualizzazione: scura (clic per automatica)',
-    'par.ba.hint.starr': 'Forza di tiro con la campata di progetto c_proj (SBB 0161.1013.0005.1)',
-    'par.ba.hint.ausg': 'Forza di tiro con la campata media c_m, freccia per campata (SBB 0161.1013.0005.1)',
-    'pdf.bezug.titel': 'Stato di riferimento: FP carico a 10 °C',
-    'pdf.bezug.text': 'Come SBB «Durchhang 2026.xlsm»: a 10 °C il filo di contatto è orizzontale; la sua trazione agisce solo in caso di scostamento. La trazione di montaggio scarica H<sub>ub</sub> a T<sub>1</sub> viene prima convertita nello stato carico a 10 °C (peso totale, filo nuovo, senza trazione del filo di contatto).',
-    'pdf.nfl.zustgl': 'Equazione di stato N-FL con trazione del filo di contatto (VEM, Excel «Upro1»)',
+    'par.ba.hint.starr': 'Forza di trazione con la campata del progetto c_proj (SBB 0161.1013.0005.1)',
+    'par.ba.hint.ausg': 'Forza di trazione con la lunghezza media c_m, freccia per campata (SBB 0161.1013.0005.1)',
+    'pdf.bezug.titel': 'Stato di riferimento: FP caricato a 10 °C',
+    'pdf.bezug.text': 'Come SBB «Durchhang 2026.xlsm»: a 10 °C il filo di contatto è orizzontale; la sua trazione agisce solo in caso di scostamento. La trazione di montaggio non caricata H<sub>ub</sub> a T<sub>1</sub> viene prima convertita nello stato caricato a 10 °C (peso totale, filo nuovo, senza trazione del filo di contatto).',
+    'pdf.nfl.zustgl': 'Equazione di stato LC N con trazione del filo di contatto (VEM, Excel «Upro1»)',
     'pdf.gerundet.10': 'arrotondato a 10 N come Excel',
     'pdf.gerundet.5': 'risultato arrotondato a 5 N (con ghiaccio 10 N) come Excel',
     'ui.t2.fix.eis': '(fissato a −5 °C per il carico di ghiaccio)',
@@ -13357,13 +13417,13 @@ const LANG = {
     'ui.kombination': 'Combinazione',
     'ui.abnutzung': 'Usura',
     'ui.rgl.quelle': 'Fonte: SBB 0161.1013.0001 &nbsp;·&nbsp; Metodo di calcolo: compensato &nbsp;·&nbsp; Lm = 45 m &nbsp;·&nbsp; T = +10 °C',
-    'ui.rgl.nfl.titel': 'N-FL — Linea di contatto normale',
-    'ui.rgl.rfl.titel': 'R-FL — Linea di contatto regolata',
+    'ui.rgl.nfl.titel': 'LC N — Linea di contatto N',
+    'ui.rgl.rfl.titel': 'LC R — Linea di contatto R',
     'ui.rgl.el.titel': 'Conduttore singolo — Forza di regolazione',
-    'ui.rgl.hts.bel': 'H<sub>FP</sub> carico',
-    'ui.rgl.hts.ub': 'H<sub>FP</sub> scarico',
+    'ui.rgl.hts.bel': 'H<sub>FP</sub> caricato',
+    'ui.rgl.hts.ub': 'H<sub>FP</sub> non caricato',
     'ui.rgl.hts.konst': 'H<sub>FP</sub> costante',
-    'ui.rgl.nfl.note': 'H<sub>FP</sub> carico = con filo di contatto &nbsp;·&nbsp; H<sub>FP</sub> scarico = senza filo di contatto &nbsp;·&nbsp; a +10 °C &nbsp;·&nbsp; (SBB 0161.1013.0001)',
+    'ui.rgl.nfl.note': 'H<sub>FP</sub> caricato = con filo di contatto &nbsp;·&nbsp; H<sub>FP</sub> non caricato = senza filo di contatto &nbsp;·&nbsp; a +10 °C &nbsp;·&nbsp; (SBB 0161.1013.0001)',
     'ui.rgl.rfl.note': 'H<sub>FP</sub> costante tramite dispositivo di tensionamento &nbsp;·&nbsp; indipendente dalla temperatura &nbsp;·&nbsp; (SBB 0161.1013.0001)',
     'ui.rgl.el.note': 'Forza di regolazione a +10 °C, Lm = 45 m, metodo di calcolo «compensato» &nbsp;·&nbsp; (SBB «Durchhang 2026.xlsm»)',
     'ui.reglage.bei': 'Regolazione a',
@@ -13388,10 +13448,31 @@ const LANG = {
     'ui.hinzufuegen': '+ Aggiungi',
     'ui.alle': '✕ Tutti',
     'ui.foto.ablauf.titel': 'Analisi foto — Procedura',
+    'ui.foto.genau.titel': 'Analisi foto — solo stima',
+    'ui.foto.genau.text': 'L\'analisi foto non è un calcolo preciso. È adatta solo per stimare la freccia.\n\nPer valori affidabili utilizzare il calcolo nel diagramma con altezze e campata misurate.',
+    'ui.foto.genau.ok': 'Capito',
+    'ui.foto.genau.kurz': 'Solo stima — nessun calcolo preciso',
+    'sys.nfl.kurz': 'LC N',
+    'sys.rfl.kurz': 'LC R',
+    'ui.sok.kurz': 'PRF',
+    'err.3pt.sok.fehlt': 'PRF m s.l.m. non definito',
+    'err.3pt.ueber.sehne': 'Il punto C si trova sopra la linea di corda (corda a {h} m {was})',
+    'ui.obs.name.ph': 'Nome (p. es. intradosso ponte)',
+    'ui.obs.h.titel': 'Altezza sul PRF [m]',
+    'ui.obs.legende': 'x = posizione nella campata [m] &nbsp;·&nbsp; h = altezza sul PRF [m]',
+    'pdf.fd.hoehe.tp': 'Altezza FC sul PRF al punto più basso',
+    'pdf.fd.ist.t2': 'stato reale a T<sub>2</sub>',
+    'pdf.fd.hoehe.sok': 'Altezza FC sul PRF',
+    'pdf.konstant': 'costante',
+    'pdf.nachspann': 'dispositivo di tensionamento',
+    'pdf.haenger.mast': 'Ballerina al palo',
+    'pdf.haenger.tp': 'Ballerina al punto più basso',
+    'pdf.maximum': 'massimo',
+    'pdf.minimum': 'minimo',
     'ui.foto.ablauf.modus': 'Procedura (modalità 7 clic):',
     'ui.foto.ablauf.1': 'Cima del palo sinistro → piede del palo sinistro',
     'ui.foto.ablauf.2': 'Cima del palo destro → piede del palo destro',
-    'ui.foto.ablauf.3': 'Punto di ancoraggio sinistro (P1) → punto di ancoraggio destro (P2)',
+    'ui.foto.ablauf.3': 'Punto d’aggancio sinistro (P1) → punto d’aggancio destro (P2)',
     'ui.foto.ablauf.4': 'Appare una linea guida a L/2 — cliccare lì sul conduttore',
     'ui.foto.hinweise': 'Note:',
     'ui.foto.hinweis.1': 'Inserire la lunghezza del palo nella barra laterale sotto «Foto — dati dei pali»',
@@ -13505,9 +13586,9 @@ function setLang(lang) {
 
   // ── Custom modal ─────────────────────────────────────────────
   const cmAFd = document.getElementById('cm-alpha-fd-label');
-  if (cmAFd) cmAFd.innerHTML = `${t('cm.waerme')} <span style="font-size:.7em;color:var(--tertiary)">(N-FL)</span>`;
+  if (cmAFd) cmAFd.innerHTML = `${t('cm.waerme')} <span style="font-size:.7em;color:var(--tertiary)">(${t('sys.nfl.kurz')})</span>`;
   const cmEAFd = document.getElementById('cm-ea-fd-label');
-  if (cmEAFd) cmEAFd.innerHTML = `${t('cm.steif')} <span style="font-size:.7em;color:var(--tertiary)">(N-FL)</span>`;
+  if (cmEAFd) cmEAFd.innerHTML = `${t('cm.steif')} <span style="font-size:.7em;color:var(--tertiary)">(${t('sys.nfl.kurz')})</span>`;
 
   // ── Buttons ───────────────────────────────────────────────────
 
@@ -14156,18 +14237,18 @@ renderObstacleList();
       <div class="hb-lang hb-fr" style="display:none">
         <p>Cette application calcule la géométrie caténaire des lignes de contact SBB pour trois types de systèmes&nbsp;:</p>
         <ul style="margin:.4rem 0 .5rem 1.2rem">
-          <li><strong>N-FL</strong> — ancrage fixe&nbsp;: câble porteur + fil de contact + pendotes, force de traction du CP dépendante de la température (équation d'état)</li>
-          <li><strong>R-FL</strong> — ancrage mobile (tendeur automatique)&nbsp;: force de traction constante, aucune correction thermique nécessaire</li>
-          <li><strong>Conducteur seul</strong> — calcul caténaire simple d'un conducteur unique (câble d'alimentation, câble de retour, etc.) sans fil de contact ni pendotes</li>
+          <li><strong>LC N</strong> — ancrage fixe&nbsp;: câble porteur + fil de contact + suspensions, force de traction du CP dépendante de la température (équation d'état)</li>
+          <li><strong>LC R</strong> — ancrage mobile (tendeur automatique)&nbsp;: force de traction constante, aucune correction thermique nécessaire</li>
+          <li><strong>Conducteur simple</strong> — calcul caténaire simple d'un conducteur unique (câble d'alimentation, câble de retour, etc.) sans fil de contact ni suspensions</li>
         </ul>
         <p>Le modèle de calcul correspond au modèle de référence SBB <em>Durchhang 2026.xlsm</em> (VBA Upro1 / DurchhangNFL) et utilise pour les combinaisons FL connues la <strong>formule VEM Manuel 7.66</strong> pour la flèche du fil de contact.</p>
       </div>
       <div class="hb-lang hb-it" style="display:none">
         <p>Questa applicazione calcola la geometria della catenaria delle linee di contatto FFS per tre tipi di sistema:</p>
         <ul style="margin:.4rem 0 .5rem 1.2rem">
-          <li><strong>N-FL</strong> — ancoraggio fisso: fune portante + filo di contatto + pendoli, forza di tiro della FP dipendente dalla temperatura (equazione di stato)</li>
-          <li><strong>R-FL</strong> — ancoraggio mobile (tendifilo automatico): forza di tiro costante, nessuna correzione termica necessaria</li>
-          <li><strong>Conduttore singolo</strong> — calcolo semplice della catenaria di un singolo conduttore (cavo di alimentazione, cavo di ritorno, ecc.) senza filo di contatto né pendoli</li>
+          <li><strong>LC N</strong> — ancoraggio fisso: filo portante + filo di contatto + ballerine, forza di trazione del FP dipendente dalla temperatura (equazione di stato)</li>
+          <li><strong>LC R</strong> — ancoraggio mobile (tendifilo automatico): forza di trazione costante, nessuna correzione termica necessaria</li>
+          <li><strong>Conduttore singolo</strong> — calcolo semplice della catenaria di un singolo conduttore (cavo di alimentazione, cavo di ritorno, ecc.) senza filo di contatto né ballerine</li>
         </ul>
         <p>Il modello di calcolo corrisponde al modello di riferimento FFS <em>Durchhang 2026.xlsm</em> (VBA Upro1 / DurchhangNFL) e utilizza per le combinazioni FL note la <strong>formula VEM Manuale 7.66</strong> per la freccia del filo di contatto.</p>
       </div>
@@ -14212,22 +14293,22 @@ renderObstacleList();
             <td style="padding:4px 8px;font-weight:600;width:32%">Paramètre</td>
             <td style="padding:4px 8px;font-weight:600">Description</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">h<sub>1</sub> / h<sub>2</sub></td><td style="padding:3px 8px">Hauteurs de fixation CP gauche/droite <strong>au-dessus du dessus du rail (DRS)</strong> [m]. Ces valeurs restent toujours en «au-dessus DRS» — indépendamment de si les DRS m s.n.m. sont saisis.</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">DRS m s.n.m. (optionnel)</td><td style="padding:3px 8px">Hauteur absolue du dessus du rail en mètres sur niveau de la mer [m s.n.m.], séparément pour le poteau gauche et le poteau droit. Si défini, toutes les coordonnées dans le diagramme, les callouts des points de mesure et l'affichage du point le plus bas sont présentés en m s.n.m. La valeur droite est automatiquement reprise de la gauche, mais peut être ajustée indépendamment (tronçons en pente).</td></tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">L / Lm</td><td style="padding:3px 8px">Portée L [m] ou portée équivalente Lm [m] pour calcul multi-travées. Note: pour la saisie de c<sub>proj</sub> ou c<sub>m</sub>, procéder selon le document <strong>0161.1013.0005.1</strong> (bouton ⓘ du champ).</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">sh</td><td style="padding:3px 8px">Hauteur de système: distance verticale entre le point de fixation CP et la hauteur FC au poteau [m]. N-FL suspendu: 2.40 m; N-FL pendu: 1.90 m; R-FL: 1.60 m</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">h<sub>1</sub> / h<sub>2</sub></td><td style="padding:3px 8px">Hauteurs des points d’appui CP gauche/droite <strong>au-dessus du dessus du rail (DRS)</strong> [m]. Ces valeurs restent toujours en «au-dessus DRS» — indépendamment de si les DRS m s.n.m. sont saisis.</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">DRS m s.n.m. (optionnel)</td><td style="padding:3px 8px">Hauteur absolue du dessus du rail en mètres sur niveau de la mer [m s.n.m.], séparément pour le mât gauche et le mât droit. Si défini, toutes les coordonnées dans le diagramme, les callouts des points de mesure et l'affichage du point le plus bas sont présentés en m s.n.m. La valeur droite est automatiquement reprise de la gauche, mais peut être ajustée indépendamment (tronçons en pente).</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">L / Lm</td><td style="padding:3px 8px">Portée L [m] ou portée moyenne Lm [m] pour calcul multi-portées. Note: pour la saisie de c<sub>proj</sub> ou c<sub>m</sub>, procéder selon le document <strong>0161.1013.0005.1</strong> (bouton ⓘ du champ).</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">sh</td><td style="padding:3px 8px">Hauteur de système: distance verticale entre le point d’appui CP et la hauteur FC au mât [m]. LC N suspendu: 2.40 m; LC N pendu: 1.90 m; LC R: 1.60 m</td></tr>
         </table>
-        <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">2.2 &nbsp;Forces de traction &amp; températures (N-FL)</p>
+        <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">2.2 &nbsp;Forces de traction &amp; températures (LC N)</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem">
           <tr style="background:var(--s3)">
             <td style="padding:4px 8px;font-weight:600;width:32%">Paramètre</td>
             <td style="padding:4px 8px;font-weight:600">Description</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">H CP non chargé</td><td style="padding:3px 8px">Force de traction CP lors de la pose (sans FC et pendotes) à T<sub>1</sub> [N] — N-FL seulement</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">H CP non chargé</td><td style="padding:3px 8px">Force de traction CP lors de la pose (sans FC et suspensions) à T<sub>1</sub> [N] — LC N seulement</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">H CP chargé</td><td style="padding:3px 8px">Force de traction CP après fixation de toutes les charges — calculée automatiquement via l'équation d'état [N]</td></tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">H FC</td><td style="padding:3px 8px">Traction du fil de contact — constante (N-FL: généralement 8 500 N; Gothard / R-FL: 10 000 N) [N]</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">T<sub>1</sub> / T<sub>2</sub></td><td style="padding:3px 8px">Température de pose T<sub>1</sub> (température de réglage) et température cible T<sub>2</sub> [°C] — N-FL seulement</td></tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">Charge de glace Z<sub>L</sub></td><td style="padding:3px 8px">Charge supplémentaire due au givrage [N/m] — apparaît automatiquement pour N-FL à T<sub>2</sub> = −5 °C</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">H FC</td><td style="padding:3px 8px">Traction du fil de contact — constante (LC N: généralement 8 500 N; Gothard / LC R: 10 000 N) [N]</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">T<sub>1</sub> / T<sub>2</sub></td><td style="padding:3px 8px">Température de pose T<sub>1</sub> (température de réglage) et température cible T<sub>2</sub> [°C] — LC N seulement</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">Charge de glace Z<sub>L</sub></td><td style="padding:3px 8px">Charge additionnelle due au givrage [N/m] — apparaît automatiquement pour LC N à T<sub>2</sub> = −5 °C</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Usure</td><td style="padding:3px 8px">Usure du fil de contact en % (curseur). Réduit le poids propre q<sub>FC</sub> proportionnellement. Colore le diagramme lors du dépassement de la valeur limite admissible pour la caténaire choisie.</td></tr>
           <tr><td style="padding:3px 8px;color:var(--muted)">Matériaux</td><td style="padding:3px 8px">Matériau des conducteurs CP et FC: détermine q, E, α, A (voir tableau section 4)</td></tr>
         </table>
@@ -14241,22 +14322,22 @@ renderObstacleList();
             <td style="padding:4px 8px;font-weight:600;width:32%">Parametro</td>
             <td style="padding:4px 8px;font-weight:600">Descrizione</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">h<sub>1</sub> / h<sub>2</sub></td><td style="padding:3px 8px">Altezze di fissaggio FP sinistra/destra <strong>sopra il piano del ferro (PRF)</strong> [m]. Questi valori restano sempre in «sopra PRF» — indipendentemente da se il PRF m s.l.m. è inserito.</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">h<sub>1</sub> / h<sub>2</sub></td><td style="padding:3px 8px">Altezze dei punti d’aggancio FP sinistra/destra <strong>sopra il piano del ferro (PRF)</strong> [m]. Questi valori restano sempre in «sopra PRF» — indipendentemente da se il PRF m s.l.m. è inserito.</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">PRF m s.l.m. (opzionale)</td><td style="padding:3px 8px">Altezza assoluta del piano del ferro in metri sul livello del mare [m s.l.m.], separatamente per il palo sinistro e il palo destro. Se impostato, tutte le coordinate nel diagramma, nelle callout dei punti di misura e nella visualizzazione del punto più basso sono presentate in m s.l.m. Il valore destro viene automaticamente ripreso da quello sinistro, ma può essere adattato indipendentemente (tratti in pendenza).</td></tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">L / Lm</td><td style="padding:3px 8px">Campata L [m] o campata equivalente Lm [m] per il calcolo multi-campata. Nota: per l'inserimento di c<sub>proj</sub> o c<sub>m</sub>, procedere secondo il documento <strong>0161.1013.0005.1</strong> (pulsante ⓘ del campo).</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">sh</td><td style="padding:3px 8px">Altezza di sistema: distanza verticale tra il punto di fissaggio FP e l'altezza FC al palo [m]. N-FL sostenuto: 2.40 m; N-FL appeso: 1.90 m; R-FL: 1.60 m</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">L / Lm</td><td style="padding:3px 8px">Campata L [m] o lunghezza media Lm [m] per il calcolo multi-campata. Nota: per l'inserimento di c<sub>proj</sub> o c<sub>m</sub>, procedere secondo il documento <strong>0161.1013.0005.1</strong> (pulsante ⓘ del campo).</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">sh</td><td style="padding:3px 8px">Altezza di sistema: distanza verticale tra il punto d’aggancio FP e l'altezza FC al palo [m]. LC N sostenuto: 2.40 m; LC N appeso: 1.90 m; LC R: 1.60 m</td></tr>
         </table>
-        <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">2.2 &nbsp;Forze di tiro &amp; temperature (N-FL)</p>
+        <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">2.2 &nbsp;Forze di trazione &amp; temperature (LC N)</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem">
           <tr style="background:var(--s3)">
             <td style="padding:4px 8px;font-weight:600;width:32%">Parametro</td>
             <td style="padding:4px 8px;font-weight:600">Descrizione</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">H FP non caricato</td><td style="padding:3px 8px">Forza di tiro FP durante la posa (senza FC e pendoli) a T<sub>1</sub> [N] — solo N-FL</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">H FP caricato</td><td style="padding:3px 8px">Forza di tiro FP dopo il montaggio di tutti i carichi — calcolata automaticamente tramite l'equazione di stato [N]</td></tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">H FC</td><td style="padding:3px 8px">Tiro del filo di contatto — costante (N-FL: generalmente 8 500 N; Gottardo / R-FL: 10 000 N) [N]</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">T<sub>1</sub> / T<sub>2</sub></td><td style="padding:3px 8px">Temperatura di posa T<sub>1</sub> (temperatura di regolazione) e temperatura obiettivo T<sub>2</sub> [°C] — solo N-FL</td></tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">Carico di ghiaccio Z<sub>L</sub></td><td style="padding:3px 8px">Carico supplementare dovuto alla formazione di ghiaccio [N/m] — appare automaticamente per N-FL a T<sub>2</sub> = −5 °C</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">H FP non caricato</td><td style="padding:3px 8px">Forza di trazione FP durante la posa (senza FC e ballerine) a T<sub>1</sub> [N] — solo LC N</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">H FP caricato</td><td style="padding:3px 8px">Forza di trazione FP dopo il montaggio di tutti i carichi — calcolata automaticamente tramite l'equazione di stato [N]</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">H FC</td><td style="padding:3px 8px">Trazione del filo di contatto — costante (LC N: generalmente 8 500 N; Gottardo / LC R: 10 000 N) [N]</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">T<sub>1</sub> / T<sub>2</sub></td><td style="padding:3px 8px">Temperatura di posa T<sub>1</sub> (temperatura di regolazione) e temperatura obiettivo T<sub>2</sub> [°C] — solo LC N</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">Carico di ghiaccio Z<sub>L</sub></td><td style="padding:3px 8px">Carico aggiuntivo dovuto alla formazione di ghiaccio [N/m] — appare automaticamente per LC N a T<sub>2</sub> = −5 °C</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Usura</td><td style="padding:3px 8px">Usura del filo di contatto in % (cursore). Riduce il peso proprio q<sub>FC</sub> proporzionalmente. Colora il diagramma al superamento del valore limite ammissibile per la catenaria scelta.</td></tr>
           <tr><td style="padding:3px 8px;color:var(--muted)">Materiali</td><td style="padding:3px 8px">Materiale dei conduttori FP e FC: determina q, E, α, A (vedere tabella sez. 4)</td></tr>
         </table>
@@ -14298,11 +14379,11 @@ renderObstacleList();
       <!-- FR -->
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;margin-top:.5rem">Étape 1 &nbsp;—&nbsp; Charge totale distribuée</p>
-        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>tot</sub> = q<sub>CP</sub> + q<sub>FC</sub> + q<sub>pendote</sub> &nbsp;[N/m]</p>
-        <p style="color:var(--muted);font-size:.8rem">Pendote: 0.020 kg/m × 9.81 m/s² = 0.196 N/m. Pour combinaison FL connue: q<sub>tot</sub> = MFL (valeur VBA exacte incl. pinces).</p>
+        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>tot</sub> = q<sub>CP</sub> + q<sub>FC</sub> + q<sub>suspension</sub> &nbsp;[N/m]</p>
+        <p style="color:var(--muted);font-size:.8rem">Suspension: 0.020 kg/m × 9.81 m/s² = 0.196 N/m. Pour combinaison FL connue: q<sub>tot</sub> = MFL (valeur VBA exacte incl. pinces).</p>
 
-        <p style="font-weight:600;margin-top:.7rem">Étape 2 &nbsp;—&nbsp; Équation d'état niveau 1: non chargé → chargé (N-FL)</p>
-        <p>Lors du montage du fil de contact et des pendotes, le CP se déforme élastiquement. Équilibre via polynôme cubique:</p>
+        <p style="font-weight:600;margin-top:.7rem">Étape 2 &nbsp;—&nbsp; Équation d'état niveau 1: non chargé → chargé (LC N)</p>
+        <p>Lors du montage du fil de contact et des suspensions, le CP se déforme élastiquement. Équilibre via polynôme cubique:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q²<sub>tot</sub>·Lm² / (24·H²<sub>ch</sub>) − H<sub>ch</sub>/(E·A)<sub>CP</sub> = q²<sub>CP</sub>·Lm² / (24·H²<sub>nch</sub>) − H<sub>nch</sub>/(E·A)<sub>CP</sub></p>
         <p style="color:var(--muted);font-size:.8rem">Résolution Newton-Raphson (E·A du câble porteur uniquement; conforme VBA). Résultat: H<sub>CP,chargé</sub> = F₀ (état de référence).</p>
 
@@ -14311,7 +14392,7 @@ renderObstacleList();
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">y(x) = a · cosh((x − x₀) / a) + C₀</p>
         <p style="color:var(--muted);font-size:.8rem">Point le plus bas x₀ et constante C₀ déterminés à partir des conditions aux limites h<sub>1</sub>, h<sub>2</sub> (solution exacte, pas d'approximation parabolique).</p>
 
-        <p style="font-weight:600;margin-top:.7rem">Étape 4 &nbsp;—&nbsp; Équation d'état niveau 2: variation de température (N-FL, conforme VBA)</p>
+        <p style="font-weight:600;margin-top:.7rem">Étape 4 &nbsp;—&nbsp; Équation d'état niveau 2: variation de température (LC N, conforme VBA)</p>
         <p>Pour combinaisons FL connues selon VEM Manuel / VBA Upro1:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">((MFL + Z<sub>L</sub> + MFL·H<sub>FC</sub>/F₀) / (H<sub>FC</sub> + x))² − (MFL/F₀)² − G·(α·ΔT + (x−F₀)/(E·A)) = 0</p>
         <p style="color:var(--muted);font-size:.8rem">F₀ = H<sub>CP</sub> à T<sub>1</sub> (chargé). G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = charge de glace [N/m] (0 si non applicable). Newton-Raphson → H<sub>CP,2</sub>.</p>
@@ -14328,20 +14409,20 @@ renderObstacleList();
       <!-- IT -->
       <div class="hb-lang hb-it" style="display:none">
         <p style="font-weight:600;margin-top:.5rem">Passo 1 &nbsp;—&nbsp; Carico totale distribuito</p>
-        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>tot</sub> = q<sub>FP</sub> + q<sub>FC</sub> + q<sub>pendolo</sub> &nbsp;[N/m]</p>
-        <p style="color:var(--muted);font-size:.8rem">Pendolo: 0.020 kg/m × 9.81 m/s² = 0.196 N/m. Per combinazione FL nota: q<sub>tot</sub> = MFL (valore VBA esatto incl. morsetti).</p>
+        <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>tot</sub> = q<sub>FP</sub> + q<sub>FC</sub> + q<sub>ballerina</sub> &nbsp;[N/m]</p>
+        <p style="color:var(--muted);font-size:.8rem">Ballerina: 0.020 kg/m × 9.81 m/s² = 0.196 N/m. Per combinazione FL nota: q<sub>tot</sub> = MFL (valore VBA esatto incl. morsetti).</p>
 
-        <p style="font-weight:600;margin-top:.7rem">Passo 2 &nbsp;—&nbsp; Equazione di stato livello 1: non caricato → caricato (N-FL)</p>
-        <p>Durante il montaggio del filo di contatto e dei pendoli, la FP si deforma elasticamente. Equilibrio tramite polinomio cubico:</p>
+        <p style="font-weight:600;margin-top:.7rem">Passo 2 &nbsp;—&nbsp; Equazione di stato livello 1: non caricato → caricato (LC N)</p>
+        <p>Durante il montaggio del filo di contatto e delle ballerine, il FP si deforma elasticamente. Equilibrio tramite polinomio cubico:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q²<sub>tot</sub>·Lm² / (24·H²<sub>c</sub>) − H<sub>c</sub>/(E·A)<sub>FP</sub> = q²<sub>FP</sub>·Lm² / (24·H²<sub>nc</sub>) − H<sub>nc</sub>/(E·A)<sub>FP</sub></p>
-        <p style="color:var(--muted);font-size:.8rem">Soluzione Newton-Raphson (solo E·A della fune portante; conforme VBA). Risultato: H<sub>FP,caricato</sub> = F₀ (stato di riferimento).</p>
+        <p style="color:var(--muted);font-size:.8rem">Soluzione Newton-Raphson (solo E·A del filo portante; conforme VBA). Risultato: H<sub>FP,caricato</sub> = F₀ (stato di riferimento).</p>
 
         <p style="font-weight:600;margin-top:.7rem">Passo 3 &nbsp;—&nbsp; Catenaria stato iniziale (T<sub>1</sub>)</p>
-        <p>La FP è modellata come catenaria esatta con parametro catenaria <em>a = H/q</em>:</p>
+        <p>Il FP è modellato come catenaria esatta con parametro catenaria <em>a = H/q</em>:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">y(x) = a · cosh((x − x₀) / a) + C₀</p>
         <p style="color:var(--muted);font-size:.8rem">Punto più basso x₀ e costante C₀ determinati dalle condizioni al contorno h<sub>1</sub>, h<sub>2</sub> (soluzione esatta, nessuna approssimazione parabolica).</p>
 
-        <p style="font-weight:600;margin-top:.7rem">Passo 4 &nbsp;—&nbsp; Equazione di stato livello 2: variazione di temperatura (N-FL, conforme VBA)</p>
+        <p style="font-weight:600;margin-top:.7rem">Passo 4 &nbsp;—&nbsp; Equazione di stato livello 2: variazione di temperatura (LC N, conforme VBA)</p>
         <p>Per combinazioni FL note secondo VEM Manuale / VBA Upro1:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">((MFL + Z<sub>L</sub> + MFL·H<sub>FC</sub>/F₀) / (H<sub>FC</sub> + x))² − (MFL/F₀)² − G·(α·ΔT + (x−F₀)/(E·A)) = 0</p>
         <p style="color:var(--muted);font-size:.8rem">F₀ = H<sub>FP</sub> a T<sub>1</sub> (caricato). G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = carico di ghiaccio [N/m] (0 se non applicabile). Newton-Raphson → H<sub>FP,2</sub>.</p>
@@ -14383,7 +14464,7 @@ renderObstacleList();
 
       <div class="hb-lang hb-de"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">Tragseil (Ts)</p></div>
       <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">Câble porteur (CP)</p></div>
-      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">Fune portante (FP)</p></div>
+      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">Filo portante (FP)</p></div>
       <table style="width:100%;border-collapse:collapse;font-size:.8rem">
         <tr style="background:var(--text2);color:white">
           <td style="padding:4px 8px;font-weight:600">Bezeichnung</td>
@@ -14399,8 +14480,8 @@ renderObstacleList();
       </table>
 
       <div class="hb-lang hb-de"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">Rückleiter / Speiseleiter (R-FL)</p></div>
-      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">Conducteur de retour / d'alimentation (R-FL)</p></div>
-      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">Conduttore di ritorno / di alimentazione (R-FL)</p></div>
+      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">Conducteur de retour / d'alimentation (LC R)</p></div>
+      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">Conduttore di ritorno / di alimentazione (LC R)</p></div>
       <table style="width:100%;border-collapse:collapse;font-size:.8rem">
         <tr style="background:var(--text2);color:white">
           <td style="padding:4px 8px;font-weight:600">Bezeichnung</td>
@@ -14424,18 +14505,18 @@ renderObstacleList();
         <p>Die App enthält vordefinierte Kettenwerke für N-FL und R-FL. Daneben können über die <strong>＋-Schaltfläche</strong> eigene Kettenwerke erfasst und gespeichert werden (lokaler Browser-Speicher). Benutzerdefinierte Kettenwerke erlauben die freie Eingabe von MFL, E, α, A sowie sh, Zugkräften und Abnutzungsgrenzwert.</p>
       </div>
       <div class="hb-lang hb-fr" style="display:none">
-        <p>L'application contient des caténaires prédéfinies pour N-FL et R-FL. En plus, il est possible d'enregistrer ses propres caténaires via le <strong>bouton ＋</strong> (mémoire locale du navigateur). Les caténaires personnalisées permettent la saisie libre de MFL, E, α, A ainsi que sh, forces de traction et valeur limite d'usure.</p>
+        <p>L'application contient des caténaires prédéfinies pour LC N et LC R. En plus, il est possible d'enregistrer ses propres caténaires via le <strong>bouton ＋</strong> (mémoire locale du navigateur). Les caténaires personnalisées permettent la saisie libre de MFL, E, α, A ainsi que sh, forces de traction et valeur limite d'usure.</p>
       </div>
       <div class="hb-lang hb-it" style="display:none">
-        <p>L'applicazione contiene catenarie predefinite per N-FL e R-FL. Inoltre, è possibile registrare le proprie catenarie tramite il <strong>pulsante ＋</strong> (memoria locale del browser). Le catenarie personalizzate permettono l'inserimento libero di MFL, E, α, A nonché sh, forze di tiro e valore limite di usura.</p>
+        <p>L'applicazione contiene catenarie predefinite per LC N e LC R. Inoltre, è possibile registrare le proprie catenarie tramite il <strong>pulsante ＋</strong> (memoria locale del browser). Le catenarie personalizzate permettono l'inserimento libero di MFL, E, α, A nonché sh, forze di trazione e valore limite di usura.</p>
       </div>
 
       <div class="hb-lang hb-de"><p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .25rem">5.1 &nbsp;N-FL — Kombinationskennwerte (VBA-Quelle: SBB Durchhang 2026.xlsm)</p>
       <p style="font-size:.8rem;color:var(--muted);margin-bottom:.35rem">MFL = Gesamtlast (Ts + Fd + Klemmen) belastet. MTS = q<sub>Ts</sub>. E·A und α = kombinierte Werte des Tragseils (VBA-konform).</p></div>
-      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .25rem">5.1 &nbsp;N-FL — Valeurs de combinaison (source VBA: SBB Durchhang 2026.xlsm)</p>
+      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .25rem">5.1 &nbsp;LC N — Valeurs de combinaison (source VBA: SBB Durchhang 2026.xlsm)</p>
       <p style="font-size:.8rem;color:var(--muted);margin-bottom:.35rem">MFL = charge totale (CP + FC + pinces) chargé. MTS = q<sub>CP</sub>. E·A et α = valeurs combinées du câble porteur (conforme VBA).</p></div>
-      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .25rem">5.1 &nbsp;N-FL — Valori di combinazione (fonte VBA: SBB Durchhang 2026.xlsm)</p>
-      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.35rem">MFL = carico totale (FP + FC + morsetti) caricato. MTS = q<sub>FP</sub>. E·A e α = valori combinati della fune portante (conforme VBA).</p></div>
+      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .25rem">5.1 &nbsp;LC N — Valori di combinazione (fonte VBA: SBB Durchhang 2026.xlsm)</p>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.35rem">MFL = carico totale (FP + FC + morsetti) caricato. MTS = q<sub>FP</sub>. E·A e α = valori combinati del filo portante (conforme VBA).</p></div>
       <table style="width:100%;border-collapse:collapse;font-size:.8rem">
         <tr style="background:var(--text2);color:white">
           <td style="padding:4px 8px;font-weight:600">Kombination</td>
@@ -14451,8 +14532,8 @@ renderObstacleList();
       </table>
 
       <div class="hb-lang hb-de"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.2 &nbsp;N-FL — Reglagewerte (Quelle: SBB 0161.1013.0001)</p></div>
-      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.2 &nbsp;N-FL — Valeurs de réglage (source: SBB 0161.1013.0001)</p></div>
-      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.2 &nbsp;N-FL — Valori di regolazione (fonte: SBB 0161.1013.0001)</p></div>
+      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.2 &nbsp;LC N — Valeurs de réglage (source: SBB 0161.1013.0001)</p></div>
+      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.2 &nbsp;LC N — Valori di regolazione (fonte: SBB 0161.1013.0001)</p></div>
       <table style="width:100%;border-collapse:collapse;font-size:.8rem">
         <tr style="background:var(--text2);color:white">
           <td style="padding:4px 8px;font-weight:600">Kombination / Anwendung</td>
@@ -14470,8 +14551,8 @@ renderObstacleList();
       </table>
 
       <div class="hb-lang hb-de"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.3 &nbsp;R-FL — Reglagewerte</p></div>
-      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.3 &nbsp;R-FL — Valeurs de réglage</p></div>
-      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.3 &nbsp;R-FL — Valori di regolazione</p></div>
+      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.3 &nbsp;LC R — Valeurs de réglage</p></div>
+      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.3 &nbsp;LC R — Valori di regolazione</p></div>
       <table style="width:100%;border-collapse:collapse;font-size:.8rem">
         <tr style="background:var(--text2);color:white">
           <td style="padding:4px 8px;font-weight:600">Kombination</td>
@@ -14486,7 +14567,7 @@ renderObstacleList();
 
       <div class="hb-lang hb-de"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.4 &nbsp;Einzelleiter — Basiszugkraft bei −20 °C</p>
       <p style="font-size:.82rem">Für Einzelleiter ohne tabellarische Herstellerwerte gilt 6 000 N als Basiszugkraft. Leiter mit offizieller Reglagetabelle (z. B. Cu 95 / Cu 150) verwenden diese Tabelle direkt. Alle Werte können in der Reglagetabelle oder in der Seitenleiste per <em>Bearbeiten</em> überschrieben werden (→ Abschn. 6.5 / 6.6).</p></div>
-      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.4 &nbsp;Conducteur seul — Force de base à −20 °C</p>
+      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.4 &nbsp;Conducteur simple — Force de base à −20 °C</p>
       <p style="font-size:.82rem">Pour les conducteurs seuls sans valeurs tabulaires du fabricant, 6 000 N est appliqué comme force de base. Les conducteurs avec un tableau de réglage officiel (p. ex. Cu 95 / Cu 150) utilisent directement ce tableau. Toutes les valeurs peuvent être remplacées dans le tableau de réglage ou dans la barre latérale via <em>Modifier</em> (→ sect. 6.5 / 6.6).</p></div>
       <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.4 &nbsp;Conduttore singolo — Forza di base a −20 °C</p>
       <p style="font-size:.82rem">Per i conduttori singoli senza valori tabulari del produttore, 6 000 N viene applicato come forza di base. I conduttori con una tabella di regolazione ufficiale (es. Cu 95 / Cu 150) utilizzano direttamente questa tabella. Tutti i valori possono essere sostituiti nella tabella di regolazione o nella barra laterale tramite <em>Modifica</em> (→ sez. 6.5 / 6.6).</p></div>
@@ -14537,7 +14618,7 @@ renderObstacleList();
       <!-- FR -->
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.1 &nbsp;Points de mesure M1 – M4</p>
-        <p>Dans la zone <em>Points de mesure</em>, il est possible de saisir jusqu'à quatre positions x quelconques (distances depuis le poteau gauche). L'application calcule pour chaque point:</p>
+        <p>Dans la zone <em>Points de mesure</em>, il est possible de saisir jusqu'à quatre positions x quelconques (distances depuis le mât gauche). L'application calcule pour chaque point:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li>Hauteur CP au-dessus DRS (et en m s.n.m. si DRS défini)</li>
           <li>Hauteur FC au-dessus DRS</li>
@@ -14548,13 +14629,13 @@ renderObstacleList();
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.2 &nbsp;Mesure 3 points</p>
         <p>La mesure 3 points permet le calcul inverse de la force de traction CP H<sub>CP</sub> à partir d'une mesure de terrain. Saisies:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
-          <li><strong>x<sub>C</sub></strong> — Position de mesure (distance depuis le poteau gauche, milieu de travée recommandé)</li>
+          <li><strong>x<sub>C</sub></strong> — Position de mesure (distance depuis le mât gauche, milieu de portée recommandé)</li>
           <li><strong>y<sub>C</sub></strong> — Hauteur CP mesurée en ce point, au choix en «m au-dessus DRS» ou en «m s.n.m.» (si DRS défini)</li>
         </ul>
         <p style="font-size:.82rem">L'application résout numériquement pour H<sub>CP</sub> (Newton-Raphson sur la formule caténaire), de sorte que la courbe calculée passe exactement par le point de mesure. Le résultat apparaît comme «H<sub>CP</sub> de la mesure 3 pts» dans la zone résultats. La mesure 3 points s'active via le commutateur <strong>⊕ Mesure 3 points</strong>.</p>
 
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.3 &nbsp;DRS m s.n.m. — référence d'altitude absolue</p>
-        <p>Les deux champs DRS (<em>Poteau gauche</em> / <em>Poteau droit</em>) reçoivent la hauteur absolue du dessus du rail en m s.n.m. Règles importantes:</p>
+        <p>Les deux champs DRS (<em>Mât gauche</em> / <em>Mât droit</em>) reçoivent la hauteur absolue du dessus du rail en m s.n.m. Règles importantes:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li>h<sub>1</sub> / h<sub>2</sub> restent <em>toujours</em> en valeurs «au-dessus DRS» — ils ne sont pas convertis lors de la saisie DRS.</li>
           <li>En cas de valeurs DRS différentes à gauche et à droite (pente), l'application interpole linéairement pour chaque point du diagramme entre les deux valeurs DRS.</li>
@@ -14565,7 +14646,7 @@ renderObstacleList();
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.4 &nbsp;Diagramme &amp; interaction</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li>L'axe Y affiche «Hauteur [m s. DRS]» ou «Hauteur [m s.n.m.]» selon le réglage DRS.</li>
-          <li>Les labels d'ancrage aux positions des poteaux indiquent h<sub>1</sub>/h<sub>2</sub> en hauteur absolue (m s.n.m.) ou en «h = x.xx m».</li>
+          <li>Les labels des points d’appui aux positions des mâts indiquent h<sub>1</sub>/h<sub>2</sub> en hauteur absolue (m s.n.m.) ou en «h = x.xx m».</li>
           <li>Les callouts des points de mesure sont sur deux niveaux: désignation (M1–M4) en haut, valeur de hauteur en bas.</li>
           <li>La carte orange du point le plus bas indique également m s.n.m. si DRS est défini.</li>
           <li>Export PDF: le protocole de calcul contient toutes les saisies, résultats et le diagramme.</li>
@@ -14586,7 +14667,7 @@ renderObstacleList();
         <p style="font-size:.82rem;color:var(--muted)">Nel diagramma i punti di misura appaiono come marcatori colorati con una callout. Se PRF m s.l.m. è impostato, la callout mostra l'altezza assoluta in m s.l.m. come valore principale.</p>
 
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.2 &nbsp;Misura 3 punti</p>
-        <p>La misura 3 punti permette il calcolo inverso della forza di tiro FP H<sub>FP</sub> da una misura sul campo. Inserimenti:</p>
+        <p>La misura 3 punti permette il calcolo inverso della forza di trazione FP H<sub>FP</sub> da una misura sul campo. Inserimenti:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>x<sub>C</sub></strong> — Posizione di misura (distanza dal palo sinistro, centro campata consigliato)</li>
           <li><strong>y<sub>C</sub></strong> — Altezza FP misurata in quel punto, a scelta in «m sopra PRF» o in «m s.l.m.» (se PRF impostato)</li>
@@ -14605,7 +14686,7 @@ renderObstacleList();
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.4 &nbsp;Diagramma &amp; interazione</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li>L'asse Y mostra «Altezza [m s. PRF]» o «Altezza [m s.l.m.]» a seconda dell'impostazione PRF.</li>
-          <li>Le etichette di ancoraggio alle posizioni dei pali mostrano h<sub>1</sub>/h<sub>2</sub> come altezza assoluta (m s.l.m.) o come «h = x.xx m».</li>
+          <li>Le etichette dei punti d’aggancio alle posizioni dei pali mostrano h<sub>1</sub>/h<sub>2</sub> come altezza assoluta (m s.l.m.) o come «h = x.xx m».</li>
           <li>Le callout dei punti di misura sono su due livelli: denominazione (M1–M4) in alto, valore di altezza in basso.</li>
           <li>La scheda arancione del punto più basso mostra anch'essa m s.l.m. se PRF è impostato.</li>
           <li>Esportazione PDF: il protocollo di calcolo contiene tutti gli inserimenti, risultati e il diagramma.</li>
@@ -14634,8 +14715,8 @@ renderObstacleList();
 
       <!-- FR -->
       <div class="hb-lang hb-fr" style="display:none">
-        <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.5 &nbsp;Conducteur seul — Valeurs de réglage &amp; force de base</p>
-        <p>En mode <em>Conducteur seul</em>, la barre latérale affiche une boîte d'information <strong>Valeurs de réglage</strong>. L'icône <strong>ⓘ</strong> affiche le tableau de réglage en lecture seule. Pour modifier les paramètres de référence, ouvrir le <strong>Tableau de réglage</strong> global (icône tableau dans l'en-tête) et cliquer sur <strong>Modifier</strong>:</p>
+        <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.5 &nbsp;Conducteur simple — Valeurs de réglage &amp; force de base</p>
+        <p>En mode <em>Conducteur simple</em>, la barre latérale affiche une boîte d'information <strong>Valeurs de réglage</strong>. L'icône <strong>ⓘ</strong> affiche le tableau de réglage en lecture seule. Pour modifier les paramètres de référence, ouvrir le <strong>Tableau de réglage</strong> global (icône tableau dans l'en-tête) et cliquer sur <strong>Modifier</strong>:</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
           <tr style="background:var(--s3)">
             <td style="padding:4px 8px;font-weight:600;width:32%">Paramètre</td>
@@ -14645,7 +14726,7 @@ renderObstacleList();
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">L ref</td><td style="padding:3px 8px">Portée de référence [m] sur laquelle l'équation d'état est appliquée. Standard: 45 m (Cu); 30 m (Aldrey c ≤ 35 m).</td></tr>
         </table>
         <p>Les modifications prennent effet immédiatement sur le diagramme et sont valables comme substitution de session (pas de mémoire permanente). Avec <strong>↺ Reset</strong>, les valeurs du fabricant sont restaurées.</p>
-        <p style="font-size:.82rem;color:var(--muted)">Pour les conducteurs Aldrey (240 / 300 / 400 / 550 mm²), la variante de réglage est sélectionnée <strong>automatiquement</strong> selon la portée équivalente Lm: c ≤ 35 m → référence 30 m; c > 35 m → référence 45 m.</p>
+        <p style="font-size:.82rem;color:var(--muted)">Pour les conducteurs Aldrey (240 / 300 / 400 / 550 mm²), la variante de réglage est sélectionnée <strong>automatiquement</strong> selon la portée moyenne Lm: c ≤ 35 m → référence 30 m; c > 35 m → référence 45 m.</p>
       </div><!-- /hb-fr -->
 
       <!-- IT -->
@@ -14661,7 +14742,7 @@ renderObstacleList();
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">L ref</td><td style="padding:3px 8px">Campata di riferimento [m] su cui viene applicata l'equazione di stato. Standard: 45 m (Cu); 30 m (Aldrey c ≤ 35 m).</td></tr>
         </table>
         <p>Le modifiche hanno effetto immediato sul diagramma e valgono come sostituzione di sessione (nessuna memoria permanente). Con <strong>↺ Reset</strong> vengono ripristinati i valori del produttore.</p>
-        <p style="font-size:.82rem;color:var(--muted)">Per i conduttori Aldrey (240 / 300 / 400 / 550 mm²), la variante di regolazione viene selezionata <strong>automaticamente</strong> in base alla campata equivalente Lm: c ≤ 35 m → riferimento 30 m; c > 35 m → riferimento 45 m.</p>
+        <p style="font-size:.82rem;color:var(--muted)">Per i conduttori Aldrey (240 / 300 / 400 / 550 mm²), la variante di regolazione viene selezionata <strong>automaticamente</strong> in base alla lunghezza media Lm: c ≤ 35 m → riferimento 30 m; c > 35 m → riferimento 45 m.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 6.6 Reglagetabelle — CSV Export/Import ══ -->
@@ -14693,7 +14774,7 @@ renderObstacleList();
       <!-- IT -->
       <div class="hb-lang hb-it" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.6 &nbsp;Tabella di regolazione — Export / Import CSV</p>
-        <p>La tabella di regolazione (accessibile tramite l'icona tabella nell'intestazione) mostra per tutti i tipi di conduttori singoli la forza di tiro di regolazione dipendente dalla temperatura da −20 °C a +40 °C. Tramite i pulsanti nell'intestazione della tabella:</p>
+        <p>La tabella di regolazione (accessibile tramite l'icona tabella nell'intestazione) mostra per tutti i tipi di conduttori singoli la forza di trazione di regolazione dipendente dalla temperatura da −20 °C a +40 °C. Tramite i pulsanti nell'intestazione della tabella:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>Modifica</strong> — sblocca tutti i parametri materiale (H a −20 °C e L ref) per la modifica. Le modifiche si applicano all'intera sessione.</li>
           <li><strong>Export CSV</strong> — esporta tutti i valori H(−20 °C) e L ref attuali come file CSV separato da punti e virgola (UTF-8 BOM, apribile direttamente in Excel).</li>
@@ -14724,8 +14805,8 @@ renderObstacleList();
 
       <!-- FR -->
       <div class="hb-lang hb-fr" style="display:none">
-        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.7 &nbsp;Portée équivalente &amp; formule Lm</p>
-        <p>Dans le panneau <em>Portée</em>, il est possible de choisir entre <strong>portée unique</strong> et <strong>portée équivalente</strong> (2–10 travées). En mode portée équivalente, Lm détermine l'équation d'état; le diagramme de flèche affiche la portée unitaire sélectionnée (champ Display).</p>
+        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.7 &nbsp;Portée moyenne &amp; formule Lm</p>
+        <p>Dans le panneau <em>Portée</em>, il est possible de choisir entre <strong>portée unique</strong> et <strong>portée moyenne</strong> (2–10 portées). En mode portée moyenne, Lm détermine l'équation d'état; le diagramme de flèche affiche la portée unitaire sélectionnée (champ Display).</p>
         <p style="margin-top:.5rem">Deux formules sont disponibles:</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
           <tr style="background:var(--s3)">
@@ -14740,8 +14821,8 @@ renderObstacleList();
 
       <!-- IT -->
       <div class="hb-lang hb-it" style="display:none">
-        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.7 &nbsp;Campata equivalente &amp; formula Lm</p>
-        <p>Nel pannello <em>Campata</em> è possibile scegliere tra <strong>campata singola</strong> e <strong>campata equivalente</strong> (2–10 campate). In modalità campata equivalente, Lm determina l'equazione di stato; il diagramma di freccia visualizza la campata singola selezionata (campo Display).</p>
+        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.7 &nbsp;Lunghezza media &amp; formula Lm</p>
+        <p>Nel pannello <em>Campata</em> è possibile scegliere tra <strong>campata singola</strong> e <strong>lunghezza media</strong> (2–10 campate). In modalità lunghezza media, Lm determina l'equazione di stato; il diagramma di freccia visualizza la campata singola selezionata (campo Display).</p>
         <p style="margin-top:.5rem">Sono disponibili due formule:</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
           <tr style="background:var(--s3)">
@@ -14774,15 +14855,15 @@ renderObstacleList();
 
       <!-- FR -->
       <div class="hb-lang hb-fr" style="display:none">
-        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.8 &nbsp;Conducteur seul — Mode de calcul</p>
-        <p>En mode <em>Conducteur seul</em>, le commutateur <strong>Mode de calcul</strong> apparaît sous la sélection de la force de base:</p>
+        <p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .2rem">6.8 &nbsp;Conducteur simple — Mode de calcul</p>
+        <p>En mode <em>Conducteur simple</em>, le commutateur <strong>Mode de calcul</strong> apparaît sous la sélection de la force de base:</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
           <tr style="background:var(--s3)">
             <td style="padding:4px 8px;font-weight:600;width:32%">Paramètre</td>
             <td style="padding:4px 8px;font-weight:600">Effet</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">Compensé</td><td style="padding:3px 8px">L<sub>réf</sub> = valeur matériau (45 m Cu, 30 m Aldrey). Mode portée équivalente disponible.</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Rigide</td><td style="padding:3px 8px">L<sub>réf</sub> = 25 m (fixe). Pour conducteurs à ancrage rigide. Mode portée équivalente désactivé.</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">Compensé</td><td style="padding:3px 8px">L<sub>réf</sub> = valeur matériau (45 m Cu, 30 m Aldrey). Mode portée moyenne disponible.</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Rigide</td><td style="padding:3px 8px">L<sub>réf</sub> = 25 m (fixe). Pour conducteurs à ancrage rigide. Mode portée moyenne désactivé.</td></tr>
         </table>
         <p style="font-size:.82rem;color:var(--muted)">Le mode de calcul influence le tableau des forces de traction de réglage et la valeur H dérivée de T<sub>1</sub>. En mode «Rigide», l'équation d'état est calculée avec L<sub>réf</sub> = 25 m.</p>
       </div><!-- /hb-fr -->
@@ -14796,10 +14877,10 @@ renderObstacleList();
             <td style="padding:4px 8px;font-weight:600;width:32%">Impostazione</td>
             <td style="padding:4px 8px;font-weight:600">Effetto</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">Compensato</td><td style="padding:3px 8px">L<sub>rif</sub> = valore materiale (45 m Cu, 30 m Aldrey). Modalità campata equivalente disponibile.</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Rigido</td><td style="padding:3px 8px">L<sub>rif</sub> = 25 m (fisso). Per conduttori ad ancoraggio rigido. Modalità campata equivalente disattivata.</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">Compensato</td><td style="padding:3px 8px">L<sub>rif</sub> = valore materiale (45 m Cu, 30 m Aldrey). Modalità lunghezza media disponibile.</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Rigido</td><td style="padding:3px 8px">L<sub>rif</sub> = 25 m (fisso). Per conduttori ad ancoraggio rigido. Modalità lunghezza media disattivata.</td></tr>
         </table>
-        <p style="font-size:.82rem;color:var(--muted)">La modalità di calcolo influenza la tabella delle forze di tiro di regolazione e il valore H derivato da T<sub>1</sub>. Con «Rigido» l'equazione di stato viene calcolata con L<sub>rif</sub> = 25 m.</p>
+        <p style="font-size:.82rem;color:var(--muted)">La modalità di calcolo influenza la tabella delle forze di trazione di regolazione e il valore H derivato da T<sub>1</sub>. Con «Rigido» l'equazione di stato viene calcolata con L<sub>rif</sub> = 25 m.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 6.9 Projekte speichern & laden ══ -->
@@ -14948,7 +15029,7 @@ renderObstacleList();
       <!-- FR -->
       <div class="hb-lang hb-fr" style="display:none">
         <div style="background:var(--warn-s);border:1px solid var(--warn);border-radius:6px;padding:.6rem 1rem;margin-bottom:.7rem;font-size:.82rem">
-          <strong>Tâche:</strong> Calculer la flèche du fil de contact et la hauteur CP au milieu de la travée pour une travée N-FL plane.<br>
+          <strong>Tâche:</strong> Calculer la flèche du fil de contact et la hauteur CP au milieu de la portée pour une portée LC N plane.<br>
           <strong>Caténaire:</strong> StCu 50 mm² + Cu 107 mm², suspendu, 6 kN &nbsp;|&nbsp;
           <strong>Portée:</strong> L = Lm = 50 m &nbsp;|&nbsp;
           <strong>Hauteurs:</strong> h<sub>1</sub> = h<sub>2</sub> = 5.50 m &nbsp;|&nbsp; sh = 2.40 m<br>
@@ -14976,7 +15057,7 @@ renderObstacleList();
           <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Étape 3 &nbsp;—&nbsp; Caténaire à T<sub>1</sub> = +10 °C</p>
           <p style="margin:.1rem 0">Paramètre caténaire:</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s3);padding:3px 6px;border-radius:3px">a = H<sub>CP</sub> / MFL = 3 860 / 13.876 = <strong>278.1 m</strong></p>
-          <p style="margin:.1rem 0">Travée plane (h<sub>1</sub> = h<sub>2</sub>) → point le plus bas au milieu de travée: x₀ = 25.000 m</p>
+          <p style="margin:.1rem 0">Portée plane (h<sub>1</sub> = h<sub>2</sub>) → point le plus bas au milieu de portée: x₀ = 25.000 m</p>
           <p style="margin:.1rem 0">Hauteur CP au point le plus bas: y<sub>CP</sub>(25 m) = h<sub>1</sub> − f<sub>CP</sub></p>
           <p style="margin:.1rem 0">Flèche FC selon VEM 7.66:</p>
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s3);padding:3px 6px;border-radius:3px">
@@ -15002,7 +15083,7 @@ renderObstacleList();
           <p style="margin:.15rem 0 .1rem;font-family:monospace;font-size:.8rem;background:var(--s4);padding:3px 6px;border-radius:3px">
             f<sub>FC,2</sub> = 50² / 8 × 44.43 / (2880 + 8500) = 312.5 × 44.43 / 11 380 = <strong>≈ 1.220 m</strong>
           </p>
-          <p style="margin:.1rem 0">Hauteur CP DRS au milieu de travée à T<sub>2</sub> ≈ 5.50 − 1.220 = <strong>env. 4.28 m s. DRS</strong></p>
+          <p style="margin:.1rem 0">Hauteur CP DRS au milieu de portée à T<sub>2</sub> ≈ 5.50 − 1.220 = <strong>env. 4.28 m s. DRS</strong></p>
           <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">Contrôle: Hauteur minimale FC ≥ 5.00 m s. DRS (hauteur FC = hauteur CP − sh = 4.28 − 2.40 ≈ 5.38 m → valeur limite respectée ✓)</p>
         </div>
         <div style="background:var(--s2);border:1px solid var(--border2);border-radius:6px;padding:.5rem .9rem;margin:.6rem 0;font-size:.81rem">
@@ -15013,11 +15094,11 @@ renderObstacleList();
       <!-- IT -->
       <div class="hb-lang hb-it" style="display:none">
         <div style="background:var(--warn-s);border:1px solid var(--warn);border-radius:6px;padding:.6rem 1rem;margin-bottom:.7rem;font-size:.82rem">
-          <strong>Compito:</strong> Calcolare la freccia del filo di contatto e l'altezza FP al punto medio della campata per una campata N-FL piana.<br>
+          <strong>Compito:</strong> Calcolare la freccia del filo di contatto e l'altezza FP al punto medio della campata per una campata LC N piana.<br>
           <strong>Catenaria:</strong> StCu 50 mm² + Cu 107 mm², sostenuta, 6 kN &nbsp;|&nbsp;
           <strong>Campata:</strong> L = Lm = 50 m &nbsp;|&nbsp;
           <strong>Altezze:</strong> h<sub>1</sub> = h<sub>2</sub> = 5.50 m &nbsp;|&nbsp; sh = 2.40 m<br>
-          <strong>Forze di tiro:</strong> H<sub>FP,nc</sub> = 1 700 N &nbsp;|&nbsp; H<sub>FC</sub> = 8 500 N &nbsp;|&nbsp;
+          <strong>Forze di trazione:</strong> H<sub>FP,nc</sub> = 1 700 N &nbsp;|&nbsp; H<sub>FC</sub> = 8 500 N &nbsp;|&nbsp;
           <strong>Temperature:</strong> T<sub>1</sub> = +10 °C → T<sub>2</sub> = +40 °C
         </div>
         <div style="border-left:3px solid var(--primary);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
@@ -15060,7 +15141,7 @@ renderObstacleList();
             α·ΔT = 11.5×10⁻⁶ × 30 = 3.450×10⁻⁴<br>
             Iterazione → <strong>H<sub>FP,2</sub> ≈ 2 880 N</strong>
           </p>
-          <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">La forza di tiro diminuisce con il riscaldamento (la FP si dilata → tensione minore).</p>
+          <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">La forza di trazione diminuisce con il riscaldamento (il FP si dilata → tensione minore).</p>
         </div>
         <div style="border-left:3px solid var(--xdim);padding:.4rem .8rem;margin:.5rem 0;background:var(--s2);border-radius:0 4px 4px 0">
           <p style="font-weight:700;color:var(--text);margin:0 0 .2rem">Passo 5 &nbsp;—&nbsp; Freccia FC a T<sub>2</sub> = +40 °C</p>
@@ -15089,8 +15170,8 @@ renderObstacleList();
       <div class="hb-lang hb-fr" style="display:none">
         <ul style="margin:.4rem 0 .4rem 1.2rem;font-size:.82rem;color:var(--muted)">
           <li>SBB Durchhang 2026.xlsm — Modèle de calcul VBA (Upro1, DurchhangNFL); NFL-Re!P14 = VEM 7.66</li>
-          <li>SBB 0161.1013.0001 — Spécification technique N-FL (valeurs de réglage, matériaux)</li>
-          <li>SBB 0161.1013.0005.1 — Prescriptions pour la saisie de c<sub>proj</sub> / c<sub>m</sub> (portée équivalente / portée individuelle)</li>
+          <li>SBB 0161.1013.0001 — Spécification technique LC N (valeurs de réglage, matériaux)</li>
+          <li>SBB 0161.1013.0005.1 — Prescriptions pour la saisie de c<sub>proj</sub> / c<sub>m</sub> (portée moyenne / portée individuelle)</li>
           <li>VEM Manuel des lignes aériennes — formule 7.66 / 7.82; système combiné CP+FC</li>
           <li>Bronštejn/Semendjajev — Manuel de mathématiques (formules caténaires exactes)</li>
         </ul>
@@ -15098,8 +15179,8 @@ renderObstacleList();
       <div class="hb-lang hb-it" style="display:none">
         <ul style="margin:.4rem 0 .4rem 1.2rem;font-size:.82rem;color:var(--muted)">
           <li>SBB Durchhang 2026.xlsm — Modello di calcolo VBA (Upro1, DurchhangNFL); NFL-Re!P14 = VEM 7.66</li>
-          <li>SBB 0161.1013.0001 — Specifiche tecniche N-FL (valori di regolazione, materiali)</li>
-          <li>SBB 0161.1013.0005.1 — Prescrizioni per l'inserimento di c<sub>proj</sub> / c<sub>m</sub> (campata equivalente / campata singola)</li>
+          <li>SBB 0161.1013.0001 — Specifiche tecniche LC N (valori di regolazione, materiali)</li>
+          <li>SBB 0161.1013.0005.1 — Prescrizioni per l'inserimento di c<sub>proj</sub> / c<sub>m</sub> (lunghezza media / campata singola)</li>
           <li>VEM Manuale delle linee aeree — formula 7.66 / 7.82; sistema combinato FP+FC</li>
           <li>Bronštejn/Semendjajev — Manuale di matematica (formule caténarie esatte)</li>
         </ul>
@@ -15109,7 +15190,7 @@ renderObstacleList();
       <h3 id="hb-glossar" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.2rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem">9 &nbsp;<span id="hb-s9">Glossar DE / FR / IT</span></h3>
       <div class="hb-lang hb-de"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">Dreisprachige Fachbegriffe gemäss SBB-Norm. Abkürzungen: Ts = Tragseil, Fd = Fahrdraht, SOK = Schienenoberkante.</p></div>
       <div class="hb-lang hb-fr" style="display:none"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">Termes techniques trilingues selon la norme SBB. Abréviations: CP = câble porteur, FC = fil de contact, DRS = dessus du rail.</p></div>
-      <div class="hb-lang hb-it" style="display:none"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">Terminologia tecnica trilingue secondo la norma FFS. Abbreviazioni: FP = fune portante, FC = filo di contatto, PRF = piano del ferro.</p></div>
+      <div class="hb-lang hb-it" style="display:none"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">Terminologia tecnica trilingue secondo la norma FFS. Abbreviazioni: FP = filo portante, FC = filo di contatto, PRF = piano del ferro.</p></div>
 
       <style>
         .gl { width:100%; border-collapse:collapse; font-size:.8rem; margin-bottom:.9rem; }
@@ -15134,22 +15215,27 @@ renderObstacleList();
         <tbody>
           <!-- Systemtypen -->
           <tr class="gl-cat"><td colspan="3">Systemtypen / Types de système / Tipi di sistema</td></tr>
-          <tr><td>Kettenwerk</td><td>caténaire</td><td>catenaria</td></tr>
-          <tr><td>N-FL (fixabgefangen)</td><td>N-FL (ancrage fixe)</td><td>N-FL (ancoraggio fisso)</td></tr>
-          <tr><td>R-FL (beweglich)</td><td>R-FL (tendeur automatique)</td><td>R-FL (tendifilo automatico)</td></tr>
-          <tr><td>Einzelleiter</td><td>conducteur seul</td><td>conduttore singolo</td></tr>
+          <tr><td>Fahrleitung (FL)</td><td>ligne de contact (LC)</td><td>linea di contatto (LC)</td></tr>
+          <tr><td>Kettenwerk / Drahtwerk</td><td>caténaire</td><td>catenaria</td></tr>
+          <tr><td>N-FL (fixabgefangen)</td><td>LC N — ligne de contact N (ancrage fixe)</td><td>LC N — linea di contatto N (ancoraggio fisso)</td></tr>
+          <tr><td>R-FL (beweglich)</td><td>LC R — ligne de contact R (tendeur automatique)</td><td>LC R — linea di contatto R (tendifilo automatico)</td></tr>
+          <tr><td>Einzelleiter</td><td>conducteur simple</td><td>conduttore singolo</td></tr>
+          <tr><td>Leitertyp</td><td>type de conducteur</td><td>tipo di conduttore</td></tr>
           <!-- Bauteile -->
           <tr class="gl-cat"><td colspan="3">Bauteile / Composants / Componenti</td></tr>
-          <tr><td>Tragseil (Ts)</td><td>câble porteur (CP)</td><td>fune portante (FP)</td></tr>
+          <tr><td>Tragseil (Ts)</td><td>câble porteur (CP)</td><td>filo portante (FP)</td></tr>
           <tr><td>Fahrdraht (Fd)</td><td>fil de contact (FC)</td><td>filo di contatto (FC)</td></tr>
-          <tr><td>Hänger</td><td>pendelote</td><td>pendolo</td></tr>
+          <tr><td>Hänger</td><td>suspension</td><td>ballerina</td></tr>
+          <tr><td>Mast</td><td>mât</td><td>palo</td></tr>
           <tr><td>Kombination</td><td>combinaison</td><td>combinazione</td></tr>
           <!-- Geometrie -->
           <tr class="gl-cat"><td colspan="3">Geometrie / Géométrie / Geometria</td></tr>
           <tr><td>Spannweite</td><td>portée</td><td>campata</td></tr>
-          <tr><td>Mittelspannweite</td><td>portée équivalente</td><td>campata equivalente</td></tr>
+          <tr><td>Mittelspannweite</td><td>portée moyenne</td><td>lunghezza media</td></tr>
+          <tr><td>Projektspannweite c<sub>proj</sub></td><td>portée du projet</td><td>campata del progetto</td></tr>
+          <tr><td>Höhenunterschied</td><td>différence de hauteur</td><td>differenza di altezza</td></tr>
           <tr><td>Systemhöhe</td><td>hauteur de système</td><td>altezza di sistema</td></tr>
-          <tr><td>Befestigungspunkt</td><td>point de fixation</td><td>punto di fissaggio</td></tr>
+          <tr><td>Aufhänge-/Befestigungspunkt</td><td>point d’appui</td><td>punto d’aggancio</td></tr>
           <tr><td>Tiefpunkt</td><td>point le plus bas</td><td>punto più basso</td></tr>
           <tr><td>Durchhang</td><td>flèche</td><td>freccia</td></tr>
           <tr><td>Sehnenlinie</td><td>ligne de corde</td><td>linea di corda</td></tr>
@@ -15161,15 +15247,21 @@ renderObstacleList();
           <tr><td>m über Meer (m ü. M.)</td><td>m sur niveau de la mer (m s.n.m.)</td><td>m sul livello del mare (m s.l.m.)</td></tr>
           <!-- Kräfte & Physik -->
           <tr class="gl-cat"><td colspan="3">Kräfte &amp; Physik / Forces &amp; physique / Forze &amp; fisica</td></tr>
-          <tr><td>Zugkraft</td><td>force de traction</td><td>forza di tiro</td></tr>
+          <tr><td>Zugkraft</td><td>force de traction</td><td>forza di trazione</td></tr>
+          <tr><td>Horizontal-Zugkraft Fh</td><td>force de traction horizontale Fh</td><td>forza di trazione orizzontale Fh</td></tr>
           <tr><td>H Ts unbelastet</td><td>H CP non chargé</td><td>H FP non caricato</td></tr>
           <tr><td>H Ts belastet</td><td>H CP chargé</td><td>H FP caricato</td></tr>
-          <tr><td>H Ts konstant (R-FL)</td><td>H CP constant (R-FL)</td><td>H FP costante (R-FL)</td></tr>
-          <tr><td>Eigengewicht</td><td>poids propre</td><td>peso proprio</td></tr>
+          <tr><td>H Ts konstant (R-FL)</td><td>H CP constant (LC R)</td><td>H FP costante (LC R)</td></tr>
+          <tr><td>Eigengewicht / Gewichtskraft</td><td>poids propre / force de poids</td><td>peso proprio / forza-peso</td></tr>
+          <tr><td>Elastizitätsmodul</td><td>module d’élasticité</td><td>modulo di elasticità</td></tr>
+          <tr><td>Ausdehnungskoeffizient</td><td>coefficient de dilatation</td><td>coefficiente di dilatazione</td></tr>
+          <tr><td>Querschnitt</td><td>section</td><td>sezione</td></tr>
           <tr><td>Gesamtlast</td><td>charge totale</td><td>carico totale</td></tr>
-          <tr><td>Eislast / Schneelast</td><td>charge de glace / neige</td><td>carico di neve / ghiaccio</td></tr>
-          <tr><td>Seilkraft (max.)</td><td>force de câble (max.)</td><td>forza del cavo (max.)</td></tr>
-          <tr><td>Abnutzung Fahrdraht</td><td>usure fil de contact</td><td>usura filo di contatto</td></tr>
+          <tr><td>Zusatzlast</td><td>charge additionnelle</td><td>carico aggiuntivo</td></tr>
+          <tr><td>Eislast</td><td>charge de glace</td><td>carico di ghiaccio</td></tr>
+          <tr><td>Seilkraft (max.)</td><td>force de traction du câble (max.)</td><td>forza di trazione del filo (max.)</td></tr>
+          <tr><td>Mastbelastung</td><td>force sur les mâts</td><td>forza sui pali</td></tr>
+          <tr><td>Abnutzung Fahrdraht / abgenutzt</td><td>usure fil de contact / usé</td><td>usura filo di contatto / usurato</td></tr>
           <!-- Temperaturen & Zustände -->
           <tr class="gl-cat"><td colspan="3">Temperaturen &amp; Zustände / Températures &amp; états / Temperature &amp; stati</td></tr>
           <tr><td>Montagetemperatur T<sub>1</sub></td><td>température de pose T<sub>1</sub></td><td>temperatura di posa T<sub>1</sub></td></tr>
@@ -15186,7 +15278,7 @@ renderObstacleList();
       </table>
 
       <p style="font-size:.75rem;color:var(--tertiary);margin-top:1rem;border-top:1px solid var(--border);padding-top:.75rem">
-        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; v2.1 &nbsp;·&nbsp; Statikteam, Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
+        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; v3.6 &nbsp;·&nbsp; Statikteam, Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
         Quelle Reglage: SBB 0161.1013.0001
       </p>
     </div>
@@ -15547,7 +15639,7 @@ renderObstacleList();
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
-  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span>v3.5</span>
+  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span>v3.6</span>
 </footer>
 
 </body>
