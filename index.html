@@ -80,7 +80,7 @@
   --acc-s: rgba(74,92,184,.10);
   --on-acc: #ffffff;
   --warm: var(--primary);
-  --ok: #2f9e54;    --ok-s: rgba(47,158,84,.09);
+  --ok: #2f9e54;    --ok-s: rgba(47,158,84,.09);  --ok-text: #1f7a3c;
   --warn: #9a7b1a;  --warn-s: rgba(154,123,26,.10);
   --fail: #a02020;  --fail-s: rgba(160,32,32,.08);
   --scrim: rgba(0,0,0,.35);
@@ -111,7 +111,7 @@
   --primary-dk: #9aa8ea;
   --acc-s: rgba(124,141,224,.14);
   --on-acc: #0e0f11;
-  --ok: #6fcf8e;    --ok-s: rgba(111,207,142,.10);
+  --ok: #6fcf8e;    --ok-s: rgba(111,207,142,.10);  --ok-text: #6fcf8e;
   --warn: #c9a84c;  --warn-s: rgba(201,168,76,.10);
   --fail: #cf7070;  --fail-s: rgba(207,112,112,.10);
   --scrim: rgba(0,0,0,.55);
@@ -977,8 +977,7 @@ body {
 }
 .probe-h-input:focus { outline: none; border-color: var(--h-clr); }
 .probe-h-unit { font-size: .65rem; color: var(--h-clr); white-space: nowrap; flex-shrink: 0; }
-/* Hindernispunkte (standalone — veraltet, ausgeblendet) */
-.obs-section { display: none; }
+/* Hindernisse oberhalb — Liste unter dem Diagramm (renderObstacleList) */
 .obs-row { display: flex; align-items: center; gap: .4rem; margin-bottom: .3rem; }
 .obs-badge {
   font-size: .68rem; font-weight: 700;
@@ -1305,6 +1304,63 @@ button.header-manual-link:hover {
 
 /* ── Rückfrage-Dialog (ersetzt confirm/prompt) ── */
 #rueckfrage .modal-card { max-width: 26rem; }
+#abschnitt-view { padding: .8rem 1rem 1rem; }
+.abs-leiste { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; margin-bottom: .4rem; }
+.abs-titel { font-size: .82rem; margin-right: .4rem; color: var(--text); }
+.abs-trenner { flex: 1; }
+.abs-knopf { font-size: .72rem; padding: .22rem .55rem; border-radius: 7px; border: 1px solid var(--border); background: var(--card);
+  color: var(--text2); cursor: pointer; font-family: inherit; }
+.abs-knopf:hover:not(:disabled) { background: var(--s3); }
+.abs-knopf:disabled { opacity: .45; cursor: default; }
+.abs-knopf.leise { color: var(--muted); }
+.abs-knopf.klein { font-size: .68rem; padding: .12rem .45rem; }
+.abs-hinweis { font-size: .68rem; color: var(--tertiary); margin: .2rem 0 .6rem; line-height: 1.45; }
+.abs-leer { font-size: .8rem; color: var(--muted); padding: 1.2rem 0; text-align: center; }
+.abs-scroll { overflow-x: auto; margin-bottom: .6rem; }
+.abs-tab { border-collapse: collapse; font-size: .72rem; width: 100%; font-variant-numeric: tabular-nums; }
+.abs-tab th { text-align: left; font-weight: 600; font-size: .64rem; color: var(--tertiary); padding: .2rem .3rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.abs-tab td { padding: .16rem .3rem; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--text); }
+.abs-tab tr.offen td { background: var(--acc-s); }
+.abs-inp { border: 1px solid var(--border); border-radius: 5px; padding: .16rem .3rem; font-size: .72rem; font-family: inherit;
+  color: var(--text); background: var(--card); width: 100%; min-width: 3.5rem; }
+.abs-inp.zahl { min-width: 5.2rem; font-variant-numeric: tabular-nums; }
+.abs-masten td:nth-child(2) .abs-inp { min-width: 4rem; }
+.abs-nr { color: var(--tertiary); }
+.abs-quelle { font-size: .6rem; color: var(--tertiary); }
+.abs-fehlt { color: var(--warn); }
+.abs-ok { color: var(--ok-text); font-weight: 600; }
+.nur-vorlesen { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } .abs-nok { color: var(--fail); font-weight: 700; }
+.abs-h4 { font-size: .74rem; font-weight: 700; margin: .7rem 0 .3rem; color: var(--text2); }
+.abs-lm { font-weight: 400; color: var(--muted); margin-left: .4rem; }
+.abs-svg { width: 100%; height: auto; display: block; background: var(--s2); border-radius: 8px; }
+.abs-svg .abs-raster { stroke: var(--border); stroke-width: 1; }
+.abs-svg .abs-achse { fill: var(--muted); font-size: 11px; }
+.abs-svg .abs-feld { fill: transparent; cursor: pointer; }
+.abs-svg .abs-feld:hover { fill: var(--acc-s); }
+.abs-svg .abs-feld.offen { fill: var(--acc-s); }
+.abs-svg .abs-sok { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.abs-svg .abs-leiter { fill: none; stroke: var(--primary); stroke-width: 2.2; pointer-events: none; }
+.abs-svg .abs-fd { fill: none; stroke: var(--muted); stroke-width: 1.3; pointer-events: none; }
+.abs-svg .abs-mast { stroke: var(--text2); stroke-width: 2; }
+.abs-svg .abs-mastname { fill: var(--text2); font-size: 11px; font-weight: 600; }
+.abs-svg .abs-hind { stroke-width: 3.5; } .abs-svg .abs-hind.ok { stroke: var(--ok); } .abs-svg .abs-hind.nok { stroke: var(--fail); }
+.hind-kopf { display: flex; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap; margin-bottom: .4rem; }
+.hind-titel { font-size: .72rem; font-weight: 600; color: var(--muted); }
+.hind-min-lbl { display: inline-flex; align-items: center; gap: .3rem; font-size: .7rem; color: var(--muted); }
+.hind-tab { display: grid; grid-template-columns: minmax(6rem, 1.4fr) repeat(3, minmax(3.6rem, .7fr)) auto; gap: .25rem .35rem; align-items: center; }
+.hind-tab.mit-feld { grid-template-columns: minmax(6rem, 1.4fr) 3.2rem repeat(3, minmax(3.6rem, .7fr)) auto; }
+.hind-th { font-size: .62rem; color: var(--tertiary); }
+.hind-inp { border: 1px solid var(--border); border-radius: 6px; padding: .2rem .35rem; font-size: .74rem; font-family: inherit;
+  color: var(--text); background: var(--card); width: 100%; min-width: 0; }
+.hind-num { font-variant-numeric: tabular-nums; max-width: 6.5rem; }
+.hind-min-lbl .hind-num { width: 4.2rem; }
+.hind-erg { grid-column: 1 / -1; font-size: .68rem; color: var(--muted); margin: -.05rem 0 .3rem .15rem; }
+.hind-erg.ok { color: var(--ok-text); } .hind-erg.nok { color: var(--fail); font-weight: 600; }
+.hind-legende { font-size: .62rem; color: var(--tertiary); margin: .2rem 0 0; line-height: 1.4; }
+#obs-section { padding: .55rem .9rem .7rem; border-top: 1px solid var(--border); }
+.lf-zeile { display: flex; align-items: center; gap: .5rem; margin: .5rem 0; font-size: .8rem; color: var(--text); }
+.lf-zeile input[type=text], .lf-zeile input[type=number] { border: 1px solid var(--border); border-radius: 6px; padding: .3rem .45rem;
+  font-family: inherit; font-size: .8rem; color: var(--text); background: var(--card); }
 .koord-block { margin-top: .8rem; padding-top: .6rem; border-top: 1px solid var(--border); }
 .schalter-zeile { display: flex; align-items: center; gap: .5rem; font-size: .75rem; color: var(--text2); cursor: pointer; user-select: none; }
 .schalter-zeile input { position: absolute; opacity: 0; width: 1px; height: 1px; }
@@ -2394,6 +2450,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
           <button class="seg-btn active" id="view-seg-diagramm" data-i18n="canvas.title"  onclick="setCanvasView('diagramm')">Diagramm</button>
           <button class="seg-btn"        id="view-seg-zeichnung" data-i18n="btn.drawing" onclick="setCanvasView('zeichnung')">Zeichnung</button>
           <button class="seg-btn"        id="view-seg-foto" data-i18n="btn.foto"      onclick="setCanvasView('foto')">Foto</button>
+          <button class="seg-btn"        id="view-seg-abschnitt" data-i18n="abs.tab"  onclick="abschnittAnsicht()">Abschnitt</button>
         </div>
         <!-- Status-Info (nur im Foto-Tab sichtbar) -->
         <span id="foto-status" style="display:none;font-size:.71rem;color:var(--primary);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" data-i18n="ui.foto.laden.hinweis">Foto laden, dann Punkte klicken</span>
@@ -2745,6 +2802,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
       <div class="legend-item" id="leg-fd-solllage-item" style="display:none"><div class="legend-dot" style="background:var(--muted);opacity:.35"></div><span id="leg-fd-solllage-label" data-i18n-html="leg.fd.solllage">Fd Solllage (T<sub>1</sub>)</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--muted);opacity:.7"></div><span id="leg-sehne-label" data-i18n="leg.sehne">Sehnenlinie</span></div>
     </div>
+    <div id="abschnitt-view" style="display:none"></div>
     <div id="canvas-scroll-area">
     <div class="probe-readout">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.4rem">
@@ -2830,7 +2888,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
             <span class="probe-h-badge">a</span>
             <div class="probe-input-wrap">
               <input type="number" id="min-clearance-input" class="probe-h-input" step="0.01" min="0" placeholder="—"
-                oninput="minClearance=this.value===''?null:parseFloat(this.value);_triggerDrawingRebuild()">
+                oninput="setMindestabstand(this.value)">
               <span class="probe-mp-unit">m</span>
             </div>
           </div>
@@ -2870,6 +2928,38 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 </button>
 
 <!-- Rückfrage (ersetzt confirm / prompt) -->
+<div class="modal-overlay" id="lastfall-modal" role="dialog" aria-modal="true" aria-labelledby="lf-titel" onclick="if(event.target===this)closeLastfaelle()">
+  <div class="modal-card" style="max-width:460px;width:100%">
+    <div class="modal-header">
+      <div class="modal-title" id="lf-titel" data-i18n="lf.titel">Lastfälle Abstandsprüfung</div>
+      <button class="modal-close" onclick="closeLastfaelle()" title="Schliessen" data-i18n-title="ui.schliessen" aria-label="Schliessen">✕</button>
+    </div>
+    <div style="padding:.6rem 1.25rem 1.1rem;font-size:.8rem;color:var(--text)">
+      <p style="margin:0 0 .6rem;color:var(--muted);line-height:1.5" data-i18n="lf.hinweis">Für jedes Leitersystem getrennt. Die App rechnet alle Lastfälle durch und zeigt den ungünstigsten (kleinster Abstand zum Hindernis oberhalb).</p>
+      <div class="seg-ctrl" style="margin-bottom:.4rem">
+        <button class="seg-btn" id="lf-seg-nfl" onclick="lastfallSystem('nfl')" data-i18n="sys.nfl.kurz">N-FL</button>
+        <button class="seg-btn" id="lf-seg-rfl" onclick="lastfallSystem('rfl')" data-i18n="sys.rfl.kurz">R-FL</button>
+        <button class="seg-btn" id="lf-seg-el"  onclick="lastfallSystem('el')"  data-i18n="sys.el">Einzelleiter</button>
+      </div>
+      <label class="lf-zeile" for="lf-temps"><span data-i18n="lf.temps" style="min-width:9rem">Temperaturen [°C]</span>
+        <input type="text" id="lf-temps" autocomplete="off" style="flex:1;min-width:0" oninput="_lastfallAusFormular();_lastfallFormular()"></label>
+      <p style="margin:-.3rem 0 .4rem 9.5rem;font-size:.66rem;color:var(--tertiary)" data-i18n="lf.temps.hinweis">getrennt durch ; oder Leerzeichen (−50 … +120)</p>
+      <div class="lf-zeile">
+        <label style="display:flex;align-items:center;gap:.4rem;min-width:9rem"><input type="checkbox" id="lf-eis" onchange="_lastfallAusFormular();_lastfallFormular()"> <span data-i18n="lf.eis">Eislast bei −5 °C</span></label>
+        <label style="display:flex;align-items:center;gap:.35rem">Z<sub>L</sub> <input type="number" id="lf-zl" min="0" step="1" style="width:4.5rem" oninput="_lastfallAusFormular();_lastfallFormular()"> N/m</label>
+      </div>
+      <div class="lf-zeile" id="lf-abn-zeile">
+        <label style="display:flex;align-items:center;gap:.4rem"><input type="checkbox" id="lf-abn" onchange="_lastfallAusFormular();_lastfallFormular()"> <span data-i18n="lf.abnutzung">Fahrdraht neu und abgenutzt prüfen</span></label>
+      </div>
+      <p id="lf-anzahl" style="margin:.4rem 0 .8rem;font-size:.72rem;color:var(--muted)"></p>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end">
+        <button class="rf-btn" onclick="lastfallVorgabe()" data-i18n="lf.vorgabe" style="padding:.35rem .8rem;border-radius:7px;border:1px solid var(--border);background:var(--s2);color:var(--text);cursor:pointer;font-family:inherit">Vorgabe</button>
+        <button onclick="lastfallUebernehmen()" data-i18n="lf.uebernehmen" style="padding:.35rem .9rem;border-radius:7px;border:none;background:var(--primary);color:var(--on-acc);cursor:pointer;font-family:inherit">Übernehmen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="rueckfrage" role="dialog" aria-modal="true">
   <div class="modal-card">
     <div class="modal-header">
@@ -2886,9 +2976,10 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 
 <script src="rechenkern.js"></script>
 <script src="export3d.js"></script>
+<script src="abschnitt.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.8';
+const APP_VERSION = 'v3.9';
 
 // Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
 function sysName(mode) {
@@ -2912,6 +3003,7 @@ const DIAGRAMM_FARBEN = {
     box: 'rgba(255,255,255,.93)', boxLeicht: 'rgba(255,255,255,.88)', boxRand: 'rgba(148,163,184,.45)',
     text: '#111218', text2: '#3a3c48', dim: '#5f616c', rahmen: '#d5d9e0',
     marke: '#1e2a4a', markeText: '#e8ecfb', hpunkt: '#3a3c48',
+    gut: '#2f7a3d', hindernisFlaeche: 'rgba(95,97,108,.14)',
   },
   dunkel: {
     hg1: '#121317', hg2: '#0b0c0f', raster: '#2a2c32', achse: '#8b8d97',
@@ -2920,6 +3012,7 @@ const DIAGRAMM_FARBEN = {
     box: 'rgba(28,29,34,.93)', boxLeicht: 'rgba(28,29,34,.88)', boxRand: 'rgba(68,70,79,.8)',
     text: '#e1e2e8', text2: '#b8bac4', dim: '#8b8d97', rahmen: '#44464f',
     marke: '#7c8de0', markeText: '#0e0f11', hpunkt: '#b8bac4',
+    gut: '#6fcf8e', hindernisFlaeche: 'rgba(139,141,151,.18)',
   },
 };
 let _diagrammDruck = false;
@@ -2951,8 +3044,9 @@ let probeX1 = null; // M1: Realwelt-x-Position, null = nicht gesetzt
 let probeX2 = null; // M2: Realwelt-x-Position, null = nicht gesetzt
 let probeX3 = null; // M3
 let probeX4 = null; // M4
-let obstaclePoints = []; // legacy — nicht mehr aktiv genutzt
-let _obsIdCounter  = 1;
+let hindernisse = [];     // Hindernisse oberhalb: { id, name, feld, von, bis, uk } — siehe abschnitt.js
+let _hindernisId = 1;
+let _nachweis    = [];     // Abstandsprüfung des angezeigten Felds: [{ h, best, ok }]
 let _drawingObstData = []; // [{xFrac, name, h, clearance}] für HTML-Strip
 // H-Punkte pro Messpunkt (absolute Höhe m ü.M., nur wenn hasSok)
 let probeH1 = null, probeH2 = null, probeH3 = null, probeH4 = null;
@@ -6604,7 +6698,7 @@ function getProjectState() {
   const fotoState = typeof window._fotoGetProjectState === 'function'
                     ? window._fotoGetProjectState() : null;
   return { schemaVersion: PROJEKT_SCHEMA_VERSION,
-           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, fotoState, elBerechnungsart, koordAktiv, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: _elMatEdits };
+           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, fotoState, elBerechnungsart, koordAktiv, abschnitt, hindernisse, lastfaelle: lastfallEinst, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: _elMatEdits };
 }
 
 // ── Projektzustand: Version, Pruefung, transaktionales Laden ──────────────
@@ -6765,6 +6859,7 @@ function _setProjectStateIntern(s) {
     if (el && flds[id] != null) el.value = flds[id];
   });
   koordSchalten(s.koordAktiv === true, { rechnen: false });
+  _abschnittLaden(s);
   // KM-rechts: userEdited-Flag wiederherstellen falls Wert gesetzt
   const kmR = document.getElementById('mast-km-right');
   if (kmR && flds['mast-km-right']) kmR.dataset.userEdited = '1';
@@ -8207,19 +8302,23 @@ function fN(v, dp = 1) {
 
 // Alle Eingabefelder auslesen und kombinierte Materialwerte berechnen.
 // Wird von berechnen() und quickDraw() gemeinsam verwendet.
-function readInputs() {
-  const L          = getActiveSpan();
-  const Lm         = getEffectiveSpan();
+// ov (optional): Werte übersteuern, ohne die Eingabefelder zu ändern —
+//   { L, Lm, h1, h2, T2, wearPct, zl }. Wird für Abschnitt und Abstandsprüfung
+//   genutzt; ohne ov liest die Funktion wie bisher nur die Eingabefelder.
+function readInputs(ov = {}) {
+  const L          = ov.L  ?? getActiveSpan();
+  const Lm         = ov.Lm ?? getEffectiveSpan();
   const H_Ts_ub    = parseFloat(document.getElementById('tension').value); // unbelastet (N-FL) oder konstant (R-FL)
   const H_Fd       = parseFloat(document.getElementById('tension-fd').value);
   // h1/h2 sind immer in Meter über SOK — SOK-Felder sind nur die absolute Referenz
-  const h1         = parseFloat(document.getElementById('h1').value);
-  const h2         = parseFloat(document.getElementById('h2').value);
+  const h1         = ov.h1 ?? parseFloat(document.getElementById('h1').value);
+  const h2         = ov.h2 ?? parseFloat(document.getElementById('h2').value);
   const T1         = parseFloat(document.getElementById('temp1').value);
-  const T2         = parseFloat(document.getElementById('temp2').value);
+  const T2         = ov.T2 ?? parseFloat(document.getElementById('temp2').value);
+  const wp         = ov.wearPct ?? wearPct;
   const q_Ts       = parseFloat(document.getElementById('weight-ts').value);
   const q_Fd_base  = parseFloat(document.getElementById('weight-fd').value);
-  const q_Fd       = q_Fd_base * (1 - wearPct / 100);
+  const q_Fd       = q_Fd_base * (1 - wp / 100);
   const sh         = parseFloat(document.getElementById('sh').value);
   const q_ges      = q_Ts + q_Fd + Q_HAENGER;   // Hänger: siehe rechenkern.js
 
@@ -8244,7 +8343,7 @@ function readInputs() {
     // Wie SBB-Excel: Abnutzungsgewicht aus der Kombination; H_Ts ist der
     // Bezugszustand «Ts belastet bei 10 °C» (neuer Draht), aus der unbelasteten
     // Montagezugkraft bei T1 — siehe nflBezugszustand() in rechenkern.js
-    q_ges_eff = mflAbgenutzt(flCombo, wearPct, q_Fd_base);
+    q_ges_eff = mflAbgenutzt(flCombo, wp, q_Fd_base);
     H_Ts = nflBezugszustand(H_Ts_ub, T1, flCombo, Lm);
     H_Ts_abgeleitet = true;
   } else if (sysMode === 'rfl' && flCombo) {
@@ -8252,7 +8351,7 @@ function readInputs() {
     // q_Haenger im manuellen q_ges wäre 0.196 N/m (falsch), FL-Tabelle hat 0.706 N/m
     // Abnutzung wie SBB-Excel: Gewichtsverlust aus der Kombination (Blatt Daten),
     // im Rechenkern als negative Zusatzlast auf Ts+Fd verteilt (_rflLast)
-    q_abnutzung = (flCombo.qFdAbnutzung ?? q_Fd_base) * (wearPct / 100);
+    q_abnutzung = (flCombo.qFdAbnutzung ?? q_Fd_base) * (wp / 100);
     q_ges_eff = flCombo.MFL - q_abnutzung;
     H_Ts = H_Ts_ub;  // R-FL: Zugkraft konstant (Nachspannvorrichtung)
   } else if (sysMode === 'nfl' && EA_Ts !== null && !isNaN(H_Ts_ub)) {
@@ -8272,8 +8371,8 @@ function readInputs() {
   const deltaT = (sysMode === 'nfl' || sysMode === 'el') ? (T2 - T1) : 0;
   // Eislast: wirksam bei T₂ = −5 °C — Bedingung aus isEislastAktiv(),
   // nicht aus der Sichtbarkeit des Eingabefelds.
-  const ZL = isEislastAktiv(T2)
-    ? (parseFloat(document.getElementById('zl-eis').value) || 0)
+  const ZL = ov.zl !== undefined ? ov.zl
+    : isEislastAktiv(T2) ? (parseFloat(document.getElementById('zl-eis').value) || 0)
     : 0;
 
   // Einzelleiter: nur ein Leiter, kein Fahrdraht, keine Hänger, H direkt
@@ -8297,6 +8396,17 @@ function readInputs() {
 // Wichtig: berechnen() selbst bleibt synchron. Ein direkter Aufruf verwirft
 // einen vorgemerkten Frame, damit die Reihenfolge eindeutig bleibt.
 let _berechnenFrame = null;
+
+// Rechnet einen Zustand mit übersteuerten Eingaben (siehe readInputs), ohne
+// Anzeige oder calcState zu verändern. oben = oberster Leiter bei T2
+// (N-FL: kombiniertes System wie im Diagramm, sonst Tragseil bzw. Leiter).
+function rechneFall(ov = {}) {
+  const e = readInputs(ov);
+  const z = berechneZustaende({ sysMode, L: e.L, Lm: e.Lm, H_Ts: e.H_Ts, H_Fd: e.H_Fd, h1: e.h1, h2: e.h2,
+    T1: e.T1, q_ges: e.q_ges, EA: e.EA, alpha: e.alpha, deltaT: e.deltaT, flCombo: e.flCombo, ZL: e.ZL,
+    wearPct: ov.wearPct ?? wearPct, q_abnutzung: e.q_abnutzung, T3: null });
+  return { e, z, oben: (sysMode === 'nfl' && z.c2_vem) ? z.c2_vem : z.c2 };
+}
 
 function berechnenEntprellt() {
   if (_berechnenFrame !== null) return;          // für diesen Frame bereits vorgemerkt
@@ -8407,12 +8517,15 @@ function berechnen() {
   if (warns.length) { warnBox.innerHTML = warns.join('<br>'); warnBox.classList.remove('hidden'); }
 
   renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, z.c2_vem, ZL, z.c3, _T3, z.c_fd_ref);
+  _nachweisAktualisieren();
   drawCanvas(c1, c2, L, h1, h2, sh, false, z.c2_vem, z.c3_zeichnung);
 
   calcState = { L, Lm, spanMode, q_Ts, q_Fd, q_ges, H_Ts, H_Ts_ub, H_Fd, sh, h1, h2, T1, T2,
                 alpha, EA, EA_Ts, deltaT, c1, c2, flCombo, ZL,
                 LT1_vem: z.LT1_vem, q_vem_vem: z.q_vem_vem, c2_vem: z.c2_vem, c3: z.c3, c_fd_ref: z.c_fd_ref,
                 matTs: getMaterialNameTs(), matFd: getMaterialNameFd() };
+  _hindernisErgebnisse();
+  if (_abschnittSichtbar) abschnittAktualisieren();
   updateAllMesspunkte();
   updateHInputVisibility();
   refreshScaleViewIfActive();
@@ -8651,6 +8764,8 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     if (showT3 && c3) ys.push(catYD(x, c3));
   }
   ys.push(h1d, h2d);
+  // Hindernisse oberhalb sichtbar halten (nur in der Nähe der Leiter)
+  _nachweis.forEach(n => { if (n.best && n.h.uk - Math.max(...ys) < 5) ys.push(n.h.uk); });
   const yMin = Math.min(...ys), yMax = Math.max(...ys);
   const yRange = Math.max(yMax - yMin, 0.5);
 
@@ -8719,6 +8834,35 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.beginPath(); ctx.moveTo(cx(xv), cy(yv)); ctx.lineTo(cx(xv), padT + plotH); ctx.stroke();
   });
   ctx.setLineDash([]);
+
+  // ── Hindernisse oberhalb: Unterkante von–bis, massgebender Lastfall gestrichelt ──
+  _nachweis.forEach(({ h, best, ok }) => {
+    if (!best) return;
+    const farbe = ok ? DF.gut : DF.fehler;
+    const xa = Math.max(0, Math.min(h.von, h.bis)), xb = Math.min(L, Math.max(h.von, h.bis));
+    // Massgebender Lastfall im Bereich des Hindernisses
+    ctx.setLineDash([5, 4]); ctx.strokeStyle = farbe; ctx.lineWidth = 1.4; ctx.globalAlpha = .9;
+    ctx.beginPath();
+    for (let i = 0; i <= 200; i++) {
+      const x = (i / 200) * L, y = aY(x, catY(x, best.c));
+      i === 0 ? ctx.moveTo(cx(x), cy(y)) : ctx.lineTo(cx(x), cy(y));
+    }
+    ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+    // Unterkante mit Schraffur nach oben
+    const yk = cy(h.uk);
+    ctx.fillStyle = DF.hindernisFlaeche; ctx.fillRect(cx(xa), yk - 9, Math.max(2, cx(xb) - cx(xa)), 9);
+    ctx.strokeStyle = farbe; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(cx(xa), yk); ctx.lineTo(cx(xb), yk); ctx.stroke();
+    ctx.lineWidth = 1;
+    for (let px = cx(xa); px < cx(xb); px += 6) { ctx.beginPath(); ctx.moveTo(px, yk); ctx.lineTo(px + 5, yk - 7); ctx.stroke(); }
+    // Abstand an der massgebenden Stelle
+    const yl = aY(best.x, catY(best.x, best.c));
+    ctx.strokeStyle = farbe; ctx.beginPath(); ctx.moveTo(cx(best.x), yk); ctx.lineTo(cx(best.x), cy(yl)); ctx.stroke();
+    ctx.font = `600 10px ${DIAGRAMM_SCHRIFT}`; ctx.fillStyle = farbe; ctx.textAlign = 'left';
+    const txt = `${h.name ? h.name + ': ' : ''}a = ${best.abstand.toFixed(2)} m ${ok ? '✓' : '✗'}`;
+    const tx = Math.min(cx(best.x) + 5, padL + plotW - ctx.measureText(txt).width - 2);
+    ctx.fillText(txt, tx, yk - 12);
+  });
 
   // ── Chord ──
   ctx.setLineDash([6, 5]); ctx.strokeStyle = DF.t1; ctx.lineWidth = 1; ctx.globalAlpha = .5;
@@ -9602,60 +9746,195 @@ function updateHInputVisibility() {
   if (!show) { probeH1=probeH2=probeH3=probeH4=null; }
 }
 
-// ── Hindernispunkte (legacy) ─────────────────────────────────────────────────
+// ── Hindernisse oberhalb + Abstandsprüfung ──────────────────────────────────
+// Geprüft wird der oberste Leiter (Tragseil bzw. Einzelleiter) über alle
+// Lastfälle des Leitersystems (Optionen «Lastfälle», abschnitt.js); massgebend
+// ist der kleinste Abstand zur Unterkante im Bereich von–bis.
+let lastfallEinst = (() => { try { return JSON.parse(localStorage.getItem('dh_lastfaelle')) || null; } catch { return null; } })();
+
+function _lastfallText(f) {
+  const teile = [`${f.T < 0 ? '−' : f.T > 0 ? '+' : ''}${Math.abs(f.T)} °C`];
+  if (f.zl > 0) teile.push(t('lf.eis.kurz').replace('{zl}', fN(f.zl, 0)));
+  if (sysMode !== 'el') teile.push(f.abgenutzt ? t('lf.abgenutzt') : t('lf.neu'));
+  return teile.join(', ');
+}
+
+// Hindernisse des angezeigten Felds (Abschnitt: nur das geöffnete Feld)
+function _hindernisseAngezeigt() {
+  const feld = (typeof abschnittOffenesFeld === 'function') ? abschnittOffenesFeld() : null;
+  return hindernisse.filter(h => feld === null || (h.feld ?? 0) === feld);
+}
+
+// Nachweis für eine Liste Hindernisse. ov: Feldwerte (L, Lm, h1, h2) für
+// rechneFall; sokFn: x → SOK m ü. M. (oder null, dann Höhen über SOK).
+function abstandsNachweis(liste, ov = {}, sokFn = null) {
+  if (!liste.length) return [];
+  const L = ov.L ?? getActiveSpan();
+  const kurven = [];
+  for (const f of lastfaelle(lastfallEinst, sysMode)) {
+    try {
+      const r = rechneFall({ ...ov, T2: f.T, wearPct: f.abgenutzt ? currentWearMax : 0, zl: f.zl });
+      if (r.oben) kurven.push({ f, c: r.oben });
+    } catch (e) { _spur('Abstandsprüfung', e, 'debug'); }
+  }
+  return liste.map(h => {
+    let best = null;
+    if ([h.von, h.bis, h.uk].every(Number.isFinite)) {
+      for (const k of kurven) {
+        const hoehe = x => kettenY(k.c, x) + (sokFn ? sokFn(x) : 0);
+        const r = abstandOberhalb(hoehe, h.von, h.bis, h.uk, L);
+        if (r && (!best || r.abstand < best.abstand)) best = { ...r, fall: k.f, c: k.c };
+      }
+    }
+    const grenze = minClearance ?? 0;
+    return { h, best, ok: best ? best.abstand >= grenze : null };
+  });
+}
+
+// Nachweis für das angezeigte Feld (wird in berechnen() aufgerufen)
+function _nachweisAktualisieren() {
+  const sL = getSokMumLeft(), sR = getSokMumRight();
+  const hasSok = sL !== null || sR !== null;
+  const L = getActiveSpan();
+  const l = sL ?? sR, r = sR ?? sL;
+  _nachweis = abstandsNachweis(_hindernisseAngezeigt(), {}, hasSok ? (x => l + (r - l) * x / L) : null);
+}
+
+function setMindestabstand(wert) {
+  minClearance = wert === '' || wert === null ? null : parseFloat(wert);
+  if (!Number.isFinite(minClearance)) minClearance = null;
+  const a = document.getElementById('min-clearance-input'), b = document.getElementById('hind-min');
+  const txt = minClearance === null ? '' : String(minClearance);
+  if (a && a.value !== txt && document.activeElement !== a) a.value = txt;
+  if (b && b.value !== txt && document.activeElement !== b) b.value = txt;
+  berechnenEntprellt();
+  _triggerDrawingRebuild();
+}
+
 function addObstacle() {
-  obstaclePoints.push({ id: _obsIdCounter++, name: '', x: null, h: null });
+  const feld = (typeof abschnittOffenesFeld === 'function') ? abschnittOffenesFeld() : null;
+  hindernisse.push({ id: _hindernisId++, name: '', feld: feld ?? 0, von: null, bis: null, uk: null });
   renderObstacleList();
-  _triggerDrawingRebuild();
 }
-
 function removeObstacle(id) {
-  obstaclePoints = obstaclePoints.filter(o => o.id !== id);
-  renderObstacleList();
-  _triggerDrawingRebuild();
+  hindernisse = hindernisse.filter(h => h.id !== id);
+  renderObstacleList(); berechnen();
 }
-
-function updateObstacle(id, field, val) {
-  const o = obstaclePoints.find(o => o.id === id);
-  if (!o) return;
-  if (field === 'name') o.name = val;
-  else o[field] = val === '' ? null : parseFloat(val);
-  _triggerDrawingRebuild();
+function updateObstacle(id, feld, wert) {
+  const h = hindernisse.find(h => h.id === id);
+  if (!h) return;
+  if (feld === 'name') h.name = wert;
+  else if (feld === 'feld') h.feld = parseInt(wert) || 0;
+  else { const v = parseFloat(wert); h[feld] = Number.isFinite(v) ? v : null; }
+  berechnenEntprellt();
 }
-
 function clearObstacles() {
-  obstaclePoints = [];
-  renderObstacleList();
-  _triggerDrawingRebuild();
+  hindernisse = [];
+  renderObstacleList(); berechnen();
+}
+
+// Ergebnistext je Hindernis (ohne die Eingabefelder neu aufzubauen)
+function _hindernisErgebnisse() {
+  const hasSok = getSokMumLeft() !== null || getSokMumRight() !== null;
+  document.querySelectorAll('.hind-uk-einheit').forEach(el => el.textContent = hasSok ? t('hind.uk.mum') : t('hind.uk.sok'));
+  const angezeigt = new Set(_hindernisseAngezeigt().map(h => h.id));
+  hindernisse.forEach(h => {
+    const el = document.getElementById(`hind-erg-${h.id}`);
+    if (!el) return;
+    const n = _nachweis.find(x => x.h.id === h.id);
+    el.className = 'hind-erg';
+    if (!angezeigt.has(h.id)) { el.textContent = t('hind.anderes.feld'); return; }
+    if (!n || !n.best) {
+      el.textContent = [h.von, h.bis, h.uk].every(Number.isFinite) ? t('hind.ausserhalb') : t('hind.unvollstaendig');
+      return;
+    }
+    el.classList.add(n.ok ? 'ok' : 'nok');
+    el.textContent = `${n.ok ? '✓' : '✗'} a = ${fN(n.best.abstand, 2)} m${minClearance !== null ? ` (≥ ${fN(minClearance, 2)})` : ''} · ${_lastfallText(n.best.fall)} · x = ${fN(n.best.x, 1)} m`;
+  });
 }
 
 function renderObstacleList() {
   const sec = document.getElementById('obs-section');
   if (!sec) return;
-  const hasAny = obstaclePoints.length > 0;
-  let html = `<div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:${hasAny ? '.4rem' : '0'}">
-    <span style="font-size:.72rem;font-weight:600;color:var(--muted)">${t('ui.hindernis')}</span>
-    <div style="display:flex;gap:.35rem">
-      <button onclick="addObstacle()" style="font-size:.7rem;padding:.14rem .45rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer">${t('ui.hinzufuegen')}</button>
-      ${hasAny ? `<button onclick="clearObstacles()" style="font-size:.7rem;padding:.14rem .45rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer">${t('ui.alle')}</button>` : ''}
+  sec.style.display = '';
+  const mitFeld = (typeof abschnittFelderAnzahl === 'function') && abschnittFelderAnzahl() > 1;
+  const nFelder = mitFeld ? abschnittFelderAnzahl() : 0;
+  const knopf = 'font-size:.7rem;padding:.14rem .45rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer';
+  const hasAny = hindernisse.length > 0;
+  let html = `<div class="hind-kopf">
+    <span class="hind-titel">${t('hind.titel')}</span>
+    <div style="display:flex;gap:.35rem;flex-wrap:wrap;align-items:center">
+      <label class="hind-min-lbl" for="hind-min">${t('hind.mindest')}
+        <input type="number" id="hind-min" class="hind-inp hind-num" step="0.01" min="0" placeholder="—"
+          value="${minClearance ?? ''}" oninput="setMindestabstand(this.value)"> m</label>
+      <button onclick="openLastfaelle()" style="${knopf}">${t('lf.knopf')}</button>
+      <button onclick="addObstacle()" style="${knopf}">${t('hind.hinzu')}</button>
+      ${hasAny ? `<button onclick="clearObstacles()" style="${knopf}" aria-label="${escHtml(t('ui.alle'))}">${t('ui.alle')}</button>` : ''}
     </div>
   </div>`;
-  obstaclePoints.forEach((o, i) => {
-    html += `<div class="obs-row">
-      <span class="obs-badge">H${i+1}</span>
-      <input class="obs-name-input" placeholder="${escHtml(t('ui.obs.name.ph'))}" value="${escHtml(o.name)}"
-        oninput="updateObstacle(${o.id},'name',this.value)">
-      <input class="obs-num-input" type="number" placeholder="x [m]" step="0.5" min="0"
-        value="${o.x ?? ''}" oninput="updateObstacle(${o.id},'x',this.value)" title="Position x [m]">
-      <input class="obs-num-input" type="number" placeholder="h [m]" step="0.01"
-        value="${o.h ?? ''}" oninput="updateObstacle(${o.id},'h',this.value)" title="${escHtml(t('ui.obs.h.titel'))}">
-      <button class="obs-rm-btn" onclick="removeObstacle(${o.id})">✕</button>
-    </div>`;
-  });
   if (hasAny) {
-    html += `<div style="font-size:.64rem;color:var(--muted);margin-top:-.1rem">${t('ui.obs.legende')}</div>`;
+    html += `<div class="hind-tab${mitFeld ? ' mit-feld' : ''}">
+      <span class="hind-th">${t('hind.name')}</span>
+      ${mitFeld ? `<span class="hind-th">${t('hind.feld')}</span>` : ''}
+      <span class="hind-th">${t('hind.von')}</span><span class="hind-th">${t('hind.bis')}</span>
+      <span class="hind-th">${t('hind.uk')} <span class="hind-uk-einheit"></span></span><span></span>`;
+    hindernisse.forEach(h => {
+      const feldSel = mitFeld ? `<select class="hind-inp" aria-label="${escHtml(t('hind.feld'))}" onchange="updateObstacle(${h.id},'feld',this.value);berechnen()">${
+        Array.from({ length: nFelder }, (_, i) => `<option value="${i}"${(h.feld ?? 0) === i ? ' selected' : ''}>${i + 1}</option>`).join('')}</select>` : '';
+      html += `
+      <input class="hind-inp" aria-label="${escHtml(t('hind.name'))}" placeholder="${escHtml(t('ui.obs.name.ph'))}" value="${escHtml(h.name)}" oninput="updateObstacle(${h.id},'name',this.value)">
+      ${feldSel}
+      <input class="hind-inp hind-num" type="number" step="0.1" aria-label="${escHtml(t('hind.von'))}" value="${h.von ?? ''}" oninput="updateObstacle(${h.id},'von',this.value)">
+      <input class="hind-inp hind-num" type="number" step="0.1" aria-label="${escHtml(t('hind.bis'))}" value="${h.bis ?? ''}" oninput="updateObstacle(${h.id},'bis',this.value)">
+      <input class="hind-inp hind-num" type="number" step="0.01" aria-label="${escHtml(t('hind.uk'))}" value="${h.uk ?? ''}" oninput="updateObstacle(${h.id},'uk',this.value)">
+      <button class="obs-rm-btn" onclick="removeObstacle(${h.id})" aria-label="${escHtml(t('ui.loeschen'))}">✕</button>
+      <span class="hind-erg" id="hind-erg-${h.id}" aria-live="polite"></span>`;
+    });
+    html += `</div><p class="hind-legende">${t('hind.legende')}</p>`;
   }
   sec.innerHTML = html;
+  _hindernisErgebnisse();
+}
+
+// ── Optionen: Lastfälle je Leitersystem ──
+let _lfSys = 'nfl';
+function openLastfaelle() {
+  _lfSys = sysMode;
+  _lastfallFormular();
+  document.getElementById('lastfall-modal').classList.add('open');
+}
+function closeLastfaelle() { document.getElementById('lastfall-modal').classList.remove('open'); }
+function _lastfallFormular() {
+  const e = lastfallEinstellung(lastfallEinst, _lfSys);
+  ['nfl', 'rfl', 'el'].forEach(s => document.getElementById(`lf-seg-${s}`)?.classList.toggle('active', s === _lfSys));
+  document.getElementById('lf-temps').value = e.temperaturen.join('; ');
+  document.getElementById('lf-eis').checked = e.eis;
+  document.getElementById('lf-zl').value = e.zl;
+  document.getElementById('lf-abn').checked = e.abnutzung;
+  zeigeElement(document.getElementById('lf-abn-zeile'), _lfSys !== 'el');
+  document.getElementById('lf-anzahl').textContent = t('lf.anzahl').replace('{n}', lastfaelle(lastfallEinst, _lfSys).length);
+}
+function _lastfallAusFormular() {
+  const einst = { ...(lastfallEinst || {}) };
+  einst[_lfSys] = {
+    temperaturen: temperaturenLesen(document.getElementById('lf-temps').value),
+    eis: document.getElementById('lf-eis').checked,
+    zl: parseFloat(document.getElementById('lf-zl').value) || 0,
+    abnutzung: document.getElementById('lf-abn').checked,
+  };
+  lastfallEinst = einst;
+  try { localStorage.setItem('dh_lastfaelle', JSON.stringify(lastfallEinst)); } catch (e) { /* privat */ }
+}
+function lastfallSystem(sys) { _lastfallAusFormular(); _lfSys = sys; _lastfallFormular(); }
+function lastfallVorgabe() {
+  if (lastfallEinst) delete lastfallEinst[_lfSys];
+  _lastfallFormular();
+}
+function lastfallUebernehmen() {
+  _lastfallAusFormular();
+  closeLastfaelle();
+  berechnen();
+  if (typeof abschnittAktualisieren === 'function') abschnittAktualisieren();
 }
 
 function hitTarget(px, py) {
@@ -11290,6 +11569,7 @@ function _syncHighlightFsVisibility() {
 }
 
 function setCanvasView(view) {
+  _abschnittAusblenden();
   const isScale   = view === 'zeichnung';
   const isFoto    = view === 'foto';
   const scaleDiv  = document.getElementById('scale-view');
@@ -11661,6 +11941,426 @@ function _koordAnwenden() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// ABSPANNABSCHNITT (Reiter «Abschnitt»)
+// Masttabelle → Feldlängen (Koordinaten, KM oder Eingabe) → alle Felder mit
+// derselben Rechnung wie das Einzelfeld (rechneFall). Ausgleichend: Zugkraft
+// aus der Mittelspannweite Lm aller Felder; starr: jedes Feld mit eigener
+// Länge; R-FL: konstante Zugkraft. «Öffnen» überträgt ein Feld in die
+// Eingaben (Mittelspannweite mit allen Feldern), sodass Diagramm, Zeichnung,
+// PDF und Export genau dieses Feld zeigen.
+// ═══════════════════════════════════════════════════════════════
+let abschnitt = { masten: [], offen: null };
+let _abschnittSichtbar = false;
+
+function abschnittFelderAnzahl() { return Math.max(0, abschnitt.masten.length - 1); }
+function abschnittOffenesFeld() {
+  return abschnitt.masten.length >= 2 && Number.isInteger(abschnitt.offen)
+    && abschnitt.offen < abschnittFelderAnzahl() ? abschnitt.offen : null;
+}
+const _abschnittStarr = () => sysMode !== 'rfl' && elBerechnungsart === 'starr';
+
+// Alle Felder rechnen (ohne die Anzeige zu verändern)
+function abschnittRechnen() {
+  const m = abschnitt.masten;
+  if (m.length < 2) return null;
+  // Feldlängen auf mm wie in den Eingabefeldern — Übersicht und geöffnetes Feld rechnen gleich
+  const fl = feldLaengen(m).map(f => ({ ...f, L: f.L > 0 ? +f.L.toFixed(3) : f.L }));
+  const Ls = fl.map(f => f.L);
+  const starr = _abschnittStarr();
+  const Lm = mittelspannweite(Ls, lmFormula);
+  const sh = parseFloat(document.getElementById('sh').value);
+  const felder = fl.map((f, i) => {
+    const a = m[i], b = m[i + 1];
+    const res = { i, a, b, L: f.L, quelle: f.quelle, fehler: null };
+    if (!(f.L > 0) || !Number.isFinite(a.h) || !Number.isFinite(b.h)) { res.fehler = 'unvollstaendig'; return res; }
+    const sA = mastSok(a), sB = mastSok(b);
+    res.hatSok = sA !== null || sB !== null;
+    const sL = sA ?? sB, sR = sB ?? sA;
+    res.sokFn = res.hatSok ? (x => sL + (sR - sL) * x / f.L) : null;
+    res.ov = { L: f.L, Lm: (starr || !(Lm > 0)) ? f.L : Lm, h1: a.h, h2: b.h };
+    try {
+      const r = rechneFall(res.ov);
+      res.z = r.z; res.oben = r.oben;
+    } catch (e) { res.fehler = e.message; return res; }
+    const z = res.z;
+    // Fahrdraht wie im Einzelfeld (N-FL: Tragseil-Verschiebung gegenüber T1; R-FL: VEM 7.53a)
+    res.fdY = sysMode === 'el' ? null : (x => (a.h - sh) + (b.h - a.h) * x / f.L
+      + (sysMode === 'nfl' ? kettenY(res.oben, x) - kettenY(z.c1, x) : rflFahrdrahtVerschiebung(z.c2, z.c_fd_ref, x)));
+    const abs = (x, y) => y + (res.sokFn ? res.sokFn(x) : 0);
+    // Tiefste Punkte: absolut (m ü. M., wenn das Feld SOK hat) und über SOK
+    let tief = Infinity, fdTief = Infinity, tiefRel = Infinity, fdTiefRel = Infinity;
+    for (let k = 0; k <= 100; k++) {
+      const x = f.L * k / 100, yl = kettenY(res.oben, x);
+      tief = Math.min(tief, abs(x, yl)); tiefRel = Math.min(tiefRel, yl);
+      if (res.fdY) { const yf = res.fdY(x); fdTief = Math.min(fdTief, abs(x, yf)); fdTiefRel = Math.min(fdTiefRel, yf); }
+    }
+    res.tief = tief; res.tiefRel = tiefRel;
+    res.fdTief = res.fdY ? fdTief : null; res.fdTiefRel = res.fdY ? fdTiefRel : null;
+    res.nachweis = abstandsNachweis(hindernisse.filter(h => (h.feld ?? 0) === i), res.ov, res.sokFn);
+    return res;
+  });
+  return { felder, Lm, starr };
+}
+
+// Abschnitt, Hindernisse und Lastfälle aus einem Projektzustand übernehmen (tolerant)
+function _abschnittLaden(s) {
+  const zahl = v => (typeof v === 'number' && Number.isFinite(v)) ? v : null;
+  const text = v => (typeof v === 'string' || typeof v === 'number') ? String(v) : '';
+  const masten = Array.isArray(s.abschnitt?.masten) ? s.abschnitt.masten.filter(x => x && typeof x === 'object')
+    .map(x => ({ name: text(x.name), e: zahl(x.e), n: zahl(x.n), z: zahl(x.z), delta: zahl(x.delta), h: zahl(x.h), km: text(x.km), L: zahl(x.L) })) : [];
+  abschnitt = { masten, offen: Number.isInteger(s.abschnitt?.offen) ? s.abschnitt.offen : null };
+  hindernisse = Array.isArray(s.hindernisse) ? s.hindernisse.filter(x => x && typeof x === 'object')
+    .map(x => ({ id: _hindernisId++, name: text(x.name), feld: Number.isInteger(x.feld) ? x.feld : 0, von: zahl(x.von), bis: zahl(x.bis), uk: zahl(x.uk) })) : [];
+  if (s.lastfaelle && typeof s.lastfaelle === 'object') lastfallEinst = s.lastfaelle;
+  renderObstacleList();
+  if (_abschnittSichtbar) renderAbschnitt();
+}
+
+// ── Ansicht ein-/ausblenden ──
+function abschnittAnsicht() {
+  setCanvasView('diagramm');
+  _abschnittSichtbar = true;
+  ['main-canvas', 'canvas-scroll-area', 'result-card', 'legend'].forEach(id => zeigeElement(document.getElementById(id), false));
+  zeigeElement(document.getElementById('abschnitt-view'), true);
+  ['view-seg-diagramm', 'view-seg-zeichnung', 'view-seg-foto'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+  document.getElementById('view-seg-abschnitt')?.classList.add('active');
+  renderAbschnitt();
+}
+function _abschnittAusblenden() {
+  if (!_abschnittSichtbar) return;
+  _abschnittSichtbar = false;
+  zeigeElement(document.getElementById('abschnitt-view'), false);
+  ['canvas-scroll-area', 'result-card', 'legend'].forEach(id => zeigeElement(document.getElementById(id), true));
+  document.getElementById('view-seg-abschnitt')?.classList.remove('active');
+}
+
+// ── Masttabelle bearbeiten ──
+const _ABS_SPALTEN = [
+  ['name', 'abs.sp.mast', 'text'], ['e', 'abs.sp.e', 'zahl'], ['n', 'abs.sp.n', 'zahl'], ['z', 'abs.sp.z', 'zahl'],
+  ['delta', 'abs.sp.delta', 'zahl'], ['h', 'abs.sp.h', 'zahl'], ['km', 'abs.sp.km', 'text'],
+];
+function abschnittMastWert(i, k, wert) {
+  const m = abschnitt.masten[i];
+  if (!m) return;
+  if (k === 'name' || k === 'km') m[k] = String(wert).trim();
+  else { const v = parseFloat(String(wert).replace(',', '.')); m[k] = Number.isFinite(v) ? v : null; }
+  abschnittAktualisieren();
+}
+function abschnittMastHinzu() {
+  const m = abschnitt.masten, letzter = m[m.length - 1];
+  const nr = letzter && /^\d+$/.test(letzter.name) ? String(+letzter.name + 1) : String(m.length + 1);
+  m.push({ name: nr, e: null, n: null, z: null, delta: letzter?.delta ?? null, h: letzter?.h ?? null, km: '', L: null });
+  renderAbschnitt();
+}
+function abschnittMastWeg(i) {
+  abschnitt.masten.splice(i, 1);
+  if (abschnitt.offen !== null && abschnitt.offen >= abschnittFelderAnzahl()) abschnitt.offen = null;
+  renderAbschnitt(); renderObstacleList();
+}
+async function abschnittAlleLoeschen() {
+  if (!abschnitt.masten.length) return;
+  if (!await frageBestaetigung(t('abs.loeschen.frage').replace('{n}', abschnitt.masten.length), { ok: t('rf.loeschen') })) return;
+  abschnitt = { masten: [], offen: null };
+  renderAbschnitt(); renderObstacleList(); berechnen();
+}
+
+// ── CSV ──
+function abschnittCsvWaehlen() { document.getElementById('abs-csv-datei')?.click(); }
+function _dateiText(datei) {
+  return new Promise((ok, fehler) => {
+    const lesen = kodierung => new Promise((r, f) => {
+      const fr = new FileReader(); fr.onload = () => r(fr.result); fr.onerror = () => f(fr.error);
+      fr.readAsText(datei, kodierung);
+    });
+    lesen('utf-8').then(txt => txt.includes('�') ? lesen('windows-1252') : txt).then(ok, fehler);
+  });
+}
+async function abschnittCsvGewaehlt(input) {
+  const datei = input.files?.[0];
+  input.value = '';
+  if (!datei) return;
+  let erg;
+  try { erg = csvLesen(await _dateiText(datei)); }
+  catch (e) { meldung(t('msg.importfehler') + ': ' + e.message, 'fehler'); return; }
+  if (!erg.masten.length) { meldung(t('abs.csv.fehler'), 'fehler'); return; }
+  if (abschnitt.masten.length && !await frageBestaetigung(
+      t('abs.csv.ersetzen').replace('{n}', abschnitt.masten.length).replace('{m}', erg.masten.length), { ok: t('abs.csv.import') })) return;
+  abschnitt = { masten: erg.masten, offen: null };
+  const hinweise = [t('abs.csv.gelesen').replace('{n}', erg.masten.length)];
+  const ohneH = erg.warnungen.filter(w => w.startsWith('h:')).length;
+  if (ohneH) hinweise.push(t('abs.csv.warn.h').replace('{n}', ohneH));
+  erg.warnungen.filter(w => w.startsWith('spalte:')).forEach(w => hinweise.push(t('abs.csv.warn.spalte').replace('{s}', w.slice(7).toUpperCase())));
+  meldung(hinweise.join(' '), ohneH ? 'warnung' : 'info');
+  renderAbschnitt(); renderObstacleList();
+}
+function abschnittCsvExport() {
+  _dateiHerunterladen(csvSchreiben(abschnitt.masten), 'abschnitt_masten.csv', 'text/csv;charset=utf-8');
+}
+function abschnittCsvVorlage() {
+  _dateiHerunterladen(csvVorlage(), 'vorlage_masten.csv', 'text/csv;charset=utf-8');
+}
+
+// ── Feld in die Eingaben übertragen ──
+function abschnittFeldOeffnen(i, { ansicht = true, koord = null } = {}) {
+  const m = abschnitt.masten, a = m[i], b = m[i + 1];
+  const fl = feldLaengen(m);
+  if (!a || !b || !(fl[i]?.L > 0)) return false;
+  abschnitt.offen = i;
+  const setze = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ''; };
+  const zahl = (v, s) => Number.isFinite(v) ? v.toFixed(s) : '';
+  koordSchalten(false, { rechnen: false });           // gesperrte Felder freigeben
+  const alleL = fl.every(f => f.L > 0);
+  if (!_abschnittStarr() && fl.length > 1 && alleL) {
+    spanMode = 'ruling';
+    spanCount = fl.length;
+    document.getElementById('span-count-val').textContent = spanCount;
+    rebuildSpanList();
+    fl.forEach((f, k) => setze(`span-${k}`, f.L.toFixed(3)));
+    lmOvr = null;
+    setze('lm-display', '');
+    setze('display-span', String(i));
+  } else {
+    spanMode = 'single';
+    setze('span', fl[i].L.toFixed(3));
+  }
+  document.getElementById('seg-single').classList.toggle('active', spanMode === 'single');
+  document.getElementById('seg-ruling').classList.toggle('active', spanMode === 'ruling');
+  zeigeElement(document.getElementById('panel-single'), spanMode === 'single');
+  zeigeElement(document.getElementById('panel-ruling'), spanMode === 'ruling');
+  if (spanMode === 'ruling') { updateLm(); highlightActiveSpan(); }
+
+  setze('h1', zahl(a.h, 2)); setze('h2', zahl(b.h, 2));
+  setze('mast-delta-sok-left', zahl(a.delta, 2)); setze('mast-delta-sok-right', zahl(b.delta, 2));
+  setze('mast-num-left', a.name); setze('mast-num-right', b.name);
+  setze('mast-km-left', a.km); setze('mast-km-right', b.km);
+  const sA = mastSok(a), sB = mastSok(b);
+  setze('sok-mum-left', zahl(sA, 3)); setze('sok-mum-right', zahl(sB, 3));
+  document.getElementById('sok-mum-right').dataset.userEdited = sB !== null ? '1' : '';
+  const kmR = document.getElementById('mast-km-right'); if (kmR) kmR.dataset.userEdited = b.km ? '1' : '';
+  [['e', a.e, b.e], ['n', a.n, b.n], ['z', a.z, b.z]].forEach(([k, va, vb]) => {
+    setze(`koord-${k}-left`, zahl(va, 3)); setze(`koord-${k}-right`, zahl(vb, 3));
+  });
+  const mitKoord = koord ?? [a.e, a.n, b.e, b.n].every(Number.isFinite);
+  if (mitKoord) koordSchalten(true, { rechnen: false });
+  if (typeof _syncMastNames === 'function') _syncMastNames();
+  updateSokMumUI();
+  _mastangabenOeffnenFallsBelegt();
+  berechnen();
+  renderObstacleList();
+  if (ansicht) setCanvasView('diagramm');
+  return true;
+}
+
+// ── Darstellung ──
+function renderAbschnitt() {
+  const box = document.getElementById('abschnitt-view');
+  if (!box) return;
+  const knopf = 'abs-knopf';
+  const m = abschnitt.masten;
+  let html = `<div class="abs-leiste">
+      <strong class="abs-titel">${t('abs.titel')}</strong>
+      <button class="${knopf}" onclick="abschnittMastHinzu()">${t('abs.mast.hinzu')}</button>
+      <button class="${knopf}" onclick="abschnittCsvWaehlen()">${t('abs.csv.import')}</button>
+      <input type="file" id="abs-csv-datei" accept=".csv,.txt,text/csv" style="display:none" onchange="abschnittCsvGewaehlt(this)">
+      <button class="${knopf}" onclick="abschnittCsvExport()" ${m.length ? '' : 'disabled'}>${t('abs.csv.export')}</button>
+      <button class="${knopf}" onclick="abschnittCsvVorlage()">${t('abs.csv.vorlage')}</button>
+      <span class="abs-trenner"></span>
+      <button class="${knopf}" onclick="abschnittExport('ifc')" ${m.length > 1 ? '' : 'disabled'}>${t('abs.ifc')}</button>
+      <button class="${knopf}" onclick="abschnittExport('dxf')" ${m.length > 1 ? '' : 'disabled'}>${t('abs.dxf')}</button>
+      ${m.length ? `<button class="${knopf} leise" onclick="abschnittAlleLoeschen()">${t('abs.alle.loeschen')}</button>` : ''}
+    </div>
+    <p class="abs-hinweis">${t('abs.hinweis')}</p>`;
+  if (!m.length) {
+    html += `<p class="abs-leer">${t('abs.leer')}</p>`;
+  } else {
+    html += `<div class="abs-scroll"><table class="abs-tab abs-masten"><thead><tr><th>#</th>${
+      _ABS_SPALTEN.map(([, k]) => `<th>${t(k)}</th>`).join('')}<th>${t('abs.sp.L')}</th><th><span class="nur-vorlesen">${t('ui.loeschen')}</span></th></tr></thead><tbody>`;
+    m.forEach((mast, i) => {
+      html += `<tr><td class="abs-nr">${i + 1}</td>${_ABS_SPALTEN.map(([k, lbl, typ]) =>
+        `<td><input class="abs-inp${typ === 'zahl' ? ' zahl' : ''}" ${typ === 'zahl' ? 'inputmode="decimal"' : ''}
+          aria-label="${escHtml(t(lbl))} ${escHtml(mast.name || String(i + 1))}"
+          value="${escHtml(mast[k] ?? '')}" onchange="abschnittMastWert(${i},'${k}',this.value)"></td>`).join('')}
+        <td class="abs-L" id="abs-L-${i}"></td>
+        <td><button class="obs-rm-btn" onclick="abschnittMastWeg(${i})" aria-label="${escHtml(t('ui.loeschen'))} ${escHtml(mast.name)}">✕</button></td></tr>`;
+    });
+    html += `</tbody></table></div>
+      <div id="abs-felder"></div>
+      <div id="abs-profil" class="abs-profil"></div>`;
+  }
+  box.innerHTML = html;
+  abschnittAktualisieren();
+}
+
+// Ergebnisse, Feldlängen und Längsprofil neu rechnen (Masttabelle bleibt stehen)
+function abschnittAktualisieren() {
+  if (!_abschnittSichtbar) return;
+  const m = abschnitt.masten;
+  const fl = feldLaengen(m);
+  const quelleTxt = q => q ? t('abs.quelle.' + q) : '';
+  m.forEach((mast, i) => {
+    const td = document.getElementById(`abs-L-${i}`);
+    if (!td) return;
+    if (i >= fl.length) { td.textContent = ''; return; }
+    const f = fl[i];
+    if (f.quelle === 'koord' || f.quelle === 'km') td.innerHTML = `${fN(f.L, 3)} <span class="abs-quelle">${quelleTxt(f.quelle)}</span>`;
+    else td.innerHTML = `<input class="abs-inp zahl" inputmode="decimal" style="width:5.5rem" aria-label="${escHtml(t('abs.sp.L'))} ${escHtml(mast.name)}"
+      value="${mast.L ?? ''}" onchange="abschnittMastWert(${i},'L',this.value)">`;
+  });
+  const felderBox = document.getElementById('abs-felder');
+  const profilBox = document.getElementById('abs-profil');
+  if (!felderBox) return;
+  const erg = abschnittRechnen();
+  if (!erg) { felderBox.innerHTML = ''; if (profilBox) profilBox.innerHTML = ''; return; }
+  const absolut = m.every(x => mastSok(x) !== null);
+  const einh = absolut ? t('bp.mum.abbrev') : `m ${t('dyn.ueber.sok')}`;
+  const lmTxt = erg.starr ? t('abs.starr') : sysMode === 'rfl' ? t('abs.rfl')
+    : erg.Lm ? t('abs.lm').replace('{lm}', fN(erg.Lm, 2)).replace('{formel}', lmFormula === 'arith' ? t('lm.arith') : t('lm.ruling')) : '';
+  let html = `<p class="abs-h4">${t('abs.felder')} <span class="abs-lm">${lmTxt}</span></p>
+    <div class="abs-scroll"><table class="abs-tab abs-erg"><thead><tr>
+      <th>${t('abs.sp.feld')}</th><th>L [m]</th><th>${t('abs.sp.f')}</th><th>${t('abs.sp.H')}</th>
+      <th>${t('abs.sp.tief')} [${einh}]</th>${sysMode !== 'el' ? `<th>${t('abs.sp.fd')} [${einh}]</th>` : ''}
+      <th>${t('abs.sp.hind')}</th><th><span class="nur-vorlesen">${t('abs.oeffnen')}</span></th></tr></thead><tbody>`;
+  erg.felder.forEach(f => {
+    const offen = abschnittOffenesFeld() === f.i;
+    const name = `${f.i + 1} · ${escHtml(f.a.name)}–${escHtml(f.b.name)}`;
+    if (f.fehler) {
+      html += `<tr${offen ? ' class="offen"' : ''}><td>${name}</td><td colspan="${sysMode !== 'el' ? 6 : 5}" class="abs-fehlt">${
+        f.fehler === 'unvollstaendig' ? t('abs.unvollstaendig') : escHtml(f.fehler)}</td><td></td></tr>`;
+      return;
+    }
+    const hoehe = (yAbs, yRel) => fN(absolut ? yAbs : yRel, 2);
+    const n = f.nachweis.filter(x => x.best);
+    const schlecht = n.reduce((a, x) => (!a || x.best.abstand < a.best.abstand) ? x : a, null);
+    const hind = !f.nachweis.length ? '—'
+      : !schlecht ? `<span class="abs-fehlt">${t('hind.unvollstaendig')}</span>`
+      : `<span class="${schlecht.ok ? 'abs-ok' : 'abs-nok'}">${schlecht.ok ? '✓' : '✗'} ${fN(schlecht.best.abstand, 2)} m</span>`;
+    html += `<tr${offen ? ' class="offen"' : ''}><td>${name}</td>
+      <td>${fN(f.L, 2)}</td><td>${fN(f.oben.sag, 3)} m</td><td>${fN(f.z.c2.H, 0)} N</td>
+      <td>${hoehe(f.tief, f.tiefRel)}</td>${sysMode !== 'el' ? `<td>${hoehe(f.fdTief, f.fdTiefRel)}</td>` : ''}
+      <td>${hind}</td>
+      <td><button class="abs-knopf klein" onclick="abschnittFeldOeffnen(${f.i})">${offen ? t('abs.offen') : t('abs.oeffnen')}</button></td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  if (!absolut && m.some(x => mastSok(x) !== null)) html += `<p class="abs-hinweis">${t('abs.ohne.sok')}</p>`;
+  felderBox.innerHTML = html;
+  if (profilBox) profilBox.innerHTML = _abschnittProfil(erg, absolut);
+}
+
+// Unterkante im Bezug des Längsprofils (Hindernis ist absolut, wenn sein Feld SOK hat)
+function _ukProfil(f, h, absolut) {
+  if (absolut || !f.hatSok) return h.uk;
+  const x = Math.max(0, Math.min(f.L, (h.von + h.bis) / 2));
+  return h.uk - f.sokFn(x);
+}
+
+// Längsprofil als SVG: Leiter bei T2, Fahrdraht, SOK, Masten, Hindernisse
+function _abschnittProfil(erg, absolut) {
+  const F = erg.felder;
+  if (F.some(f => f.fehler)) return `<p class="abs-hinweis">${t('abs.profil.fehlt')}</p>`;
+  const st = [0]; F.forEach(f => st.push(st[st.length - 1] + f.L));
+  const S = st[st.length - 1];
+  const hoehe = (f, x, y) => y + (absolut && f.sokFn ? f.sokFn(x) : 0);
+  const sok = (f, x) => absolut && f.sokFn ? f.sokFn(x) : 0;
+  // Wertebereich
+  let yMin = Infinity, yMax = -Infinity;
+  F.forEach(f => {
+    for (let k = 0; k <= 40; k++) {
+      const x = f.L * k / 40;
+      yMin = Math.min(yMin, sok(f, x), hoehe(f, x, f.fdY ? f.fdY(x) : kettenY(f.oben, x)));
+      yMax = Math.max(yMax, hoehe(f, x, kettenY(f.oben, x)));
+    }
+    yMax = Math.max(yMax, hoehe(f, 0, f.a.h), hoehe(f, f.L, f.b.h));
+    f.nachweis.forEach(n => { if (n.best) yMax = Math.max(yMax, _ukProfil(f, n.h, absolut)); });
+  });
+  const W = 1000, H = 300, pl = 48, pr = 30, pt = 30, pb = 30;
+  const sx = x => pl + (W - pl - pr) * x / S;
+  const sy = y => pt + (H - pt - pb) * (1 - (y - yMin) / Math.max(0.5, yMax - yMin));
+  let svg = `<svg viewBox="0 0 ${W} ${H}" class="abs-svg" role="img" aria-label="${escHtml(t('abs.profil'))}">`;
+  // Raster + Beschriftung Höhe
+  for (let k = 0; k <= 4; k++) {
+    const y = yMin + (yMax - yMin) * k / 4;
+    svg += `<line x1="${pl}" x2="${W - pr}" y1="${sy(y)}" y2="${sy(y)}" class="abs-raster"/>
+      <text x="${pl - 5}" y="${sy(y) + 3.5}" class="abs-achse" text-anchor="end">${y.toFixed(1)}</text>`;
+  }
+  svg += `<text x="${pl}" y="14" class="abs-achse">${absolut ? t('canvas.y.mum') : t('canvas.y.sok')}</text>`;
+  F.forEach((f, i) => {
+    const x0 = st[i];
+    const pfad = fn => Array.from({ length: 61 }, (_, k) => { const x = f.L * k / 60; return `${k ? 'L' : 'M'}${sx(x0 + x).toFixed(1)},${sy(hoehe(f, x, fn(x))).toFixed(1)}`; }).join('');
+    svg += `<rect x="${sx(x0)}" y="${pt}" width="${sx(x0 + f.L) - sx(x0)}" height="${H - pt - pb}" class="abs-feld${abschnittOffenesFeld() === i ? ' offen' : ''}"
+      onclick="abschnittFeldOeffnen(${i})"><title>${t('abs.sp.feld')} ${i + 1}: ${escHtml(f.a.name)}–${escHtml(f.b.name)} · L = ${fN(f.L, 2)} m</title></rect>`;
+    if (absolut) svg += `<line x1="${sx(x0)}" y1="${sy(sok(f, 0))}" x2="${sx(x0 + f.L)}" y2="${sy(sok(f, f.L))}" class="abs-sok"/>`;
+    if (f.fdY) svg += `<path d="${pfad(f.fdY)}" class="abs-fd"/>`;
+    svg += `<path d="${pfad(x => kettenY(f.oben, x))}" class="abs-leiter"/>`;
+    f.nachweis.forEach(n => {
+      if (!n.best) return;
+      const xa = Math.max(0, Math.min(n.h.von, n.h.bis)), xb = Math.min(f.L, Math.max(n.h.von, n.h.bis));
+      const uk = _ukProfil(f, n.h, absolut);
+      svg += `<line x1="${sx(x0 + xa)}" x2="${sx(x0 + xb)}" y1="${sy(uk)}" y2="${sy(uk)}" class="abs-hind ${n.ok ? 'ok' : 'nok'}"><title>${escHtml(n.h.name || t('hind.titel'))}: a = ${fN(n.best.abstand, 2)} m</title></line>`;
+    });
+    svg += `<text x="${sx(x0 + f.L / 2)}" y="${H - 8}" class="abs-achse" text-anchor="middle">${fN(f.L, 1)} m</text>`;
+  });
+  // Masten
+  abschnitt.masten.forEach((mast, i) => {
+    const f = F[Math.min(i, F.length - 1)], x = i < F.length ? 0 : f.L;
+    const unten = sok(f, x), oben = hoehe(f, x, mast.h);
+    svg += `<line x1="${sx(st[i])}" x2="${sx(st[i])}" y1="${sy(unten)}" y2="${sy(oben)}" class="abs-mast"/>
+      <text x="${sx(st[i])}" y="${sy(oben) - 6}" class="abs-mastname" text-anchor="middle">${escHtml(mast.name)}</text>`;
+  });
+  svg += '</svg>';
+  return `<p class="abs-h4">${t('abs.profil')}</p>${svg}`;
+}
+
+// ── Export des ganzen Abschnitts (IFC / 3D-DXF) ──
+// Jedes Feld wird kurz geöffnet und wie das Einzelfeld modelliert; danach
+// wird der vorherige Zustand vollständig wiederhergestellt.
+function abschnittExport(art) {
+  const erg = abschnittRechnen();
+  if (!erg || erg.felder.some(f => f.fehler)) { meldung(t('abs.exp.unvollstaendig'), 'fehler'); return; }
+  const m = abschnitt.masten;
+  const mitKoord = m.every(x => Number.isFinite(x.e) && Number.isFinite(x.n));
+  if (mitKoord && !m.every(x => mastSok(x) !== null)) { meldung(t('exp.geo.sok.fehlt'), 'fehler'); return; }
+  const sicherung = JSON.parse(JSON.stringify(getProjectState()));
+  const warSichtbar = _abschnittSichtbar;
+  _abschnittAusblenden();   // während des Durchlaufs nicht bei jeder Rechnung neu zeichnen
+  const leiter = [];
+  let gemeinsam = null, station = 0, fehler = null;
+  try {
+    for (const f of erg.felder) {
+      abschnittFeldOeffnen(f.i, { ansicht: false, koord: mitKoord });
+      const r = modell3d(art === 'ifc' ? 80 : 200);
+      if (r.fehler) { fehler = r.fehler; break; }
+      const praefix = `${t('abs.sp.feld')} ${f.i + 1} (${f.a.name}–${f.b.name}) · `;
+      r.modell.leiter.forEach(l => {
+        l.name = praefix + l.name;
+        if (!mitKoord) l.punkte = l.punkte.map(p => [p[0] + station, p[1], p[2]]);
+        l.eigenschaften = [{ name: t('abs.sp.feld'), typ: 'text', wert: `${f.i + 1} (${f.a.name}–${f.b.name})` },
+                           { name: t('exp.p.spannweite'), typ: 'laenge', wert: +f.L.toFixed(3) }, ...(l.eigenschaften || [])];
+        leiter.push(l);
+      });
+      if (!gemeinsam) gemeinsam = r.modell.eigenschaften.filter(e =>
+        ![t('exp.p.spannweite'), t('exp.p.mast.li'), t('exp.p.mast.re'), t('exp.p.km.li'), t('exp.p.km.re')].includes(e.name));
+      station += f.L;
+    }
+  } finally {
+    setProjectState(sicherung);
+    if (warSichtbar) abschnittAnsicht();
+  }
+  if (fehler) { meldung(fehler, 'fehler'); return; }
+  const titel = `${t('abs.titel')} ${m[0].name}–${m[m.length - 1].name}`;
+  if (!erg.starr && sysMode !== 'rfl' && erg.Lm) gemeinsam.push({ name: 'Lm', typ: 'laenge', wert: +erg.Lm.toFixed(3) });
+  const modell = { name: `${sysName(sysMode)} · ${titel}`, geo: mitKoord ? { epsg: 2056 } : null, leiter, eigenschaften: gemeinsam,
+    dateiname: `durchhang_abschnitt_${sysName(sysMode)}_${m[0].name}-${m[m.length - 1].name}`.replace(/[^\w.\-]+/g, '_') };
+  if (art === 'ifc') {
+    let inhalt;
+    try { inhalt = ifcErzeugen(modell, { programm: `Durchhang ${APP_VERSION}` }); }
+    catch (e) { meldung(t('exp.fehler') + ': ' + e.message, 'fehler'); return; }
+    _dateiHerunterladen(inhalt, modell.dateiname + '.ifc', 'application/x-step');
+  } else {
+    _dateiHerunterladen(dxfErzeugen(modellAlsDxfLinien(modell)), modell.dateiname + '.dxf', 'application/dxf');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
 // 3D-MODELL für DXF und IFC
 // Gleiche Geometrie wie die massstäbliche Zeichnung: Tragseil bei T₂
 // (N-FL: kombiniertes System), Fahrdraht = Solllage + Tragseil-Verschiebung
@@ -11693,7 +12393,7 @@ function modell3d(stuetzpunkte = 100) {
   if (achse && !hasSok) return { fehler: t('exp.geo.sok.fehlt') };
   const sL = sokL ?? sokR ?? 0, sR = sokR ?? sokL ?? 0;
   const absY = (x, y) => hasSok ? y + sL + (sR - sL) * x / L : y;
-  const P = (x, y) => feldPunkt(achse, x, absY(x, y));
+  const P = (x, y) => feldPunkt(achse, achse ? x * achse.L / L : x, absY(x, y));   // L auf mm gerundet → exakt auf die Aufhängepunkte
 
   // Fahrdraht (wie Zeichnung): Solllage + Tragseil-Verschiebung
   const matFdKey = document.getElementById('material-fd')?.value;
@@ -11786,7 +12486,7 @@ function exportDxf() {
   const r = modell3d(200);
   if (r.fehler) { meldung(r.fehler, 'fehler'); return; }
   const { achse, hasSok, L, absY, catY, c1, cDisp } = r;
-  const P = (x, y) => feldPunkt(achse, x, absY(x, y));
+  const P = (x, y) => feldPunkt(achse, achse ? x * achse.L / L : x, absY(x, y));   // L auf mm gerundet → exakt auf die Aufhängepunkte
   const linien = modellAlsDxfLinien(r.modell);
 
   // Zusätzlich wie bisher: Tragseil bei T₁, SOK-Linie, Messpunkte
@@ -12524,6 +13224,78 @@ const LANG = {
     'exp.p.km.re': 'KM rechts',
     'exp.p.crs': 'Koordinatensystem',
     'exp.p.quelle': 'Erzeugt mit',
+    'abs.tab': 'Abschnitt',
+    'abs.titel': 'Abspannabschnitt',
+    'abs.hinweis': 'Masten in Reihenfolge erfassen. E/N = Aufhängepunkt des Leiters (LV95), Z = Mastfuss m ü. M., Δ = Mastfuss − SOK, h = Aufhängehöhe über SOK. L wird aus den Koordinaten oder der KM-Differenz berechnet, sonst bis zum nächsten Mast eingeben. Klick auf ein Feld öffnet es im Diagramm.',
+    'abs.mast.hinzu': '+ Mast',
+    'abs.csv.import': 'CSV importieren',
+    'abs.csv.export': 'CSV exportieren',
+    'abs.csv.vorlage': 'CSV-Vorlage',
+    'abs.alle.loeschen': 'Alle löschen',
+    'abs.ifc': 'IFC Abschnitt',
+    'abs.dxf': '3D-DXF Abschnitt',
+    'abs.sp.mast': 'Mast',
+    'abs.sp.e': 'E',
+    'abs.sp.n': 'N',
+    'abs.sp.z': 'Z Mastfuss',
+    'abs.sp.delta': 'Δ Mastfuss-SOK',
+    'abs.sp.h': 'h über SOK',
+    'abs.sp.km': 'KM',
+    'abs.sp.L': 'L bis nächster [m]',
+    'abs.quelle.koord': 'Koord.',
+    'abs.quelle.km': 'KM',
+    'abs.quelle.eingabe': 'Eingabe',
+    'abs.felder': 'Felder',
+    'abs.lm': 'Mittelspannweite Lm = {lm} m ({formel})',
+    'abs.starr': 'Berechnungsart starr: jedes Feld mit eigener Spannweite',
+    'abs.rfl': 'R-FL: konstante Zugkraft, jedes Feld einzeln',
+    'abs.sp.feld': 'Feld',
+    'abs.sp.f': 'Durchhang f bei T2',
+    'abs.sp.H': 'Zugkraft H bei T2',
+    'abs.sp.tief': 'Leiter tiefst',
+    'abs.sp.fd': 'Fahrdraht tiefst',
+    'abs.sp.hind': 'Hindernis',
+    'abs.oeffnen': 'Öffnen',
+    'abs.offen': 'geöffnet',
+    'abs.leer': 'Noch keine Masten erfasst — «+ Mast» oder «CSV importieren».',
+    'abs.unvollstaendig': 'L oder h fehlt',
+    'abs.profil': 'Längsprofil (Höhe überhöht)',
+    'abs.profil.fehlt': 'Das Längsprofil erscheint, sobald alle Felder vollständig sind.',
+    'abs.csv.ersetzen': 'Die {n} vorhandenen Masten durch {m} Masten aus der Datei ersetzen?',
+    'abs.csv.gelesen': '{n} Masten eingelesen.',
+    'abs.csv.fehler': 'In der Datei wurden keine Masten gefunden.',
+    'abs.csv.warn.h': 'Bei {n} Masten fehlt die Aufhängehöhe h.',
+    'abs.csv.warn.spalte': 'Spalte {s} nicht gefunden.',
+    'abs.exp.unvollstaendig': 'Export nicht möglich: Nicht alle Felder sind vollständig (L und h).',
+    'abs.loeschen.frage': 'Alle {n} Masten des Abschnitts löschen?',
+    'abs.ohne.sok': 'Höhen über SOK: nicht alle Masten haben Z Mastfuss.',
+    'hind.titel': 'Hindernisse oberhalb (z. B. Brücke, Decke)',
+    'hind.hinzu': '+ Hindernis',
+    'hind.mindest': 'Mindestabstand a',
+    'hind.name': 'Bezeichnung',
+    'hind.feld': 'Feld',
+    'hind.von': 'von x [m]',
+    'hind.bis': 'bis x [m]',
+    'hind.uk': 'Unterkante',
+    'hind.uk.mum': '[m ü. M.]',
+    'hind.uk.sok': '[m ü. SOK]',
+    'hind.unvollstaendig': 'von, bis und Unterkante eingeben',
+    'hind.ausserhalb': 'Bereich liegt ausserhalb des Felds',
+    'hind.anderes.feld': 'gehört zu einem anderen Feld des Abschnitts',
+    'hind.legende': 'Geprüft wird der oberste Leiter (Tragseil bzw. Einzelleiter) in allen Lastfällen; massgebend ist der kleinste Abstand im Bereich. Im Diagramm gestrichelt: massgebender Lastfall.',
+    'lf.knopf': 'Lastfälle …',
+    'lf.titel': 'Lastfälle Abstandsprüfung',
+    'lf.hinweis': 'Je Leitersystem getrennt einstellbar. Die App rechnet alle Lastfälle durch und zeigt den ungünstigsten (kleinster Abstand zum Hindernis oberhalb).',
+    'lf.temps': 'Temperaturen [°C]',
+    'lf.temps.hinweis': 'getrennt durch ; oder Leerzeichen (−50 … +120)',
+    'lf.eis': 'Eislast bei −5 °C',
+    'lf.abnutzung': 'Fahrdraht neu und abgenutzt prüfen',
+    'lf.vorgabe': 'Vorgabe',
+    'lf.uebernehmen': 'Übernehmen',
+    'lf.anzahl': '{n} Lastfälle',
+    'lf.eis.kurz': 'Eis {zl} N/m',
+    'lf.abgenutzt': 'abgenutzt',
+    'lf.neu': 'neu',
     'ui.foto.ablauf.modus': 'Ablauf (7-Klick Modus):',
     'ui.foto.ablauf.1': 'Mastspitze links → Mastfuss links',
     'ui.foto.ablauf.2': 'Mastspitze rechts → Mastfuss rechts',
@@ -13149,6 +13921,78 @@ const LANG = {
     'exp.p.km.re': 'KM droit',
     'exp.p.crs': 'Système de coordonnées',
     'exp.p.quelle': 'Généré avec',
+    'abs.tab': 'Canton',
+    'abs.titel': 'Canton de pose',
+    'abs.hinweis': 'Saisir les mâts dans l’ordre. E/N = point d’appui du conducteur (MN95), Z = pied de mât m s.n.m., Δ = pied de mât − DRS, h = hauteur d’appui sur DRS. L est calculée à partir des coordonnées ou de la différence de KM, sinon la saisir jusqu’au mât suivant. Un clic sur une portée l’ouvre dans le diagramme.',
+    'abs.mast.hinzu': '+ Mât',
+    'abs.csv.import': 'Importer CSV',
+    'abs.csv.export': 'Exporter CSV',
+    'abs.csv.vorlage': 'Modèle CSV',
+    'abs.alle.loeschen': 'Tout supprimer',
+    'abs.ifc': 'IFC canton',
+    'abs.dxf': 'DXF 3D canton',
+    'abs.sp.mast': 'Mât',
+    'abs.sp.e': 'E',
+    'abs.sp.n': 'N',
+    'abs.sp.z': 'Z pied de mât',
+    'abs.sp.delta': 'Δ pied de mât-DRS',
+    'abs.sp.h': 'h sur DRS',
+    'abs.sp.km': 'KM',
+    'abs.sp.L': 'L jusqu’au suivant [m]',
+    'abs.quelle.koord': 'coord.',
+    'abs.quelle.km': 'KM',
+    'abs.quelle.eingabe': 'saisie',
+    'abs.felder': 'Portées',
+    'abs.lm': 'Portée moyenne Lm = {lm} m ({formel})',
+    'abs.starr': 'Mode de calcul rigide : chaque portée avec sa propre longueur',
+    'abs.rfl': 'LC R : force de traction constante, chaque portée séparément',
+    'abs.sp.feld': 'Portée',
+    'abs.sp.f': 'Flèche f à T2',
+    'abs.sp.H': 'Force de traction H à T2',
+    'abs.sp.tief': 'Conducteur le plus bas',
+    'abs.sp.fd': 'Fil de contact le plus bas',
+    'abs.sp.hind': 'Obstacle',
+    'abs.oeffnen': 'Ouvrir',
+    'abs.offen': 'ouverte',
+    'abs.leer': 'Aucun mât saisi — «+ Mât» ou «Importer CSV».',
+    'abs.unvollstaendig': 'L ou h manque',
+    'abs.profil': 'Profil en long (hauteur exagérée)',
+    'abs.profil.fehlt': 'Le profil en long apparaît dès que toutes les portées sont complètes.',
+    'abs.csv.ersetzen': 'Remplacer les {n} mâts existants par {m} mâts du fichier ?',
+    'abs.csv.gelesen': '{n} mâts importés.',
+    'abs.csv.fehler': 'Aucun mât trouvé dans le fichier.',
+    'abs.csv.warn.h': 'La hauteur d’appui h manque pour {n} mâts.',
+    'abs.csv.warn.spalte': 'Colonne {s} introuvable.',
+    'abs.exp.unvollstaendig': 'Export impossible : toutes les portées ne sont pas complètes (L et h).',
+    'abs.loeschen.frage': 'Supprimer les {n} mâts du canton ?',
+    'abs.ohne.sok': 'Hauteurs sur DRS : tous les mâts n’ont pas de Z pied de mât.',
+    'hind.titel': 'Obstacles au-dessus (p. ex. pont, plafond)',
+    'hind.hinzu': '+ Obstacle',
+    'hind.mindest': 'Distance minimale a',
+    'hind.name': 'Désignation',
+    'hind.feld': 'Portée',
+    'hind.von': 'de x [m]',
+    'hind.bis': 'à x [m]',
+    'hind.uk': 'Sous-face',
+    'hind.uk.mum': '[m s.n.m.]',
+    'hind.uk.sok': '[m s. DRS]',
+    'hind.unvollstaendig': 'saisir de, à et sous-face',
+    'hind.ausserhalb': 'la zone est hors de la portée',
+    'hind.anderes.feld': 'appartient à une autre portée du canton',
+    'hind.legende': 'Le conducteur le plus haut (câble porteur resp. conducteur simple) est vérifié dans tous les cas de charge ; la distance la plus faible dans la zone est déterminante. En pointillé dans le diagramme : cas de charge déterminant.',
+    'lf.knopf': 'Cas de charge …',
+    'lf.titel': 'Cas de charge vérification des distances',
+    'lf.hinweis': 'Réglable séparément pour chaque système. L’application calcule tous les cas de charge et affiche le plus défavorable (plus petite distance à l’obstacle au-dessus).',
+    'lf.temps': 'Températures [°C]',
+    'lf.temps.hinweis': 'séparées par ; ou espace (−50 … +120)',
+    'lf.eis': 'Charge de glace à −5 °C',
+    'lf.abnutzung': 'Vérifier fil de contact neuf et usé',
+    'lf.vorgabe': 'Par défaut',
+    'lf.uebernehmen': 'Appliquer',
+    'lf.anzahl': '{n} cas de charge',
+    'lf.eis.kurz': 'glace {zl} N/m',
+    'lf.abgenutzt': 'usé',
+    'lf.neu': 'neuf',
     'ui.foto.ablauf.modus': 'Procédure (mode 7 clics) :',
     'ui.foto.ablauf.1': 'Sommet du mât gauche → pied du mât gauche',
     'ui.foto.ablauf.2': 'Sommet du mât droit → pied du mât droit',
@@ -13774,6 +14618,78 @@ const LANG = {
     'exp.p.km.re': 'KM destro',
     'exp.p.crs': 'Sistema di coordinate',
     'exp.p.quelle': 'Generato con',
+    'abs.tab': 'Tratta',
+    'abs.titel': 'Tratta di regolazione',
+    'abs.hinweis': 'Inserire i pali in ordine. E/N = punto d’aggancio del conduttore (MN95), Z = piede del palo m s.l.m., Δ = piede del palo − PRF, h = altezza d’aggancio sul PRF. L viene calcolata dalle coordinate o dalla differenza di KM, altrimenti inserirla fino al palo successivo. Un clic su una campata la apre nel diagramma.',
+    'abs.mast.hinzu': '+ Palo',
+    'abs.csv.import': 'Importa CSV',
+    'abs.csv.export': 'Esporta CSV',
+    'abs.csv.vorlage': 'Modello CSV',
+    'abs.alle.loeschen': 'Elimina tutti',
+    'abs.ifc': 'IFC tratta',
+    'abs.dxf': 'DXF 3D tratta',
+    'abs.sp.mast': 'Palo',
+    'abs.sp.e': 'E',
+    'abs.sp.n': 'N',
+    'abs.sp.z': 'Z piede del palo',
+    'abs.sp.delta': 'Δ piede palo-PRF',
+    'abs.sp.h': 'h sul PRF',
+    'abs.sp.km': 'KM',
+    'abs.sp.L': 'L fino al successivo [m]',
+    'abs.quelle.koord': 'coord.',
+    'abs.quelle.km': 'KM',
+    'abs.quelle.eingabe': 'inserita',
+    'abs.felder': 'Campate',
+    'abs.lm': 'Lunghezza media Lm = {lm} m ({formel})',
+    'abs.starr': 'Modalità di calcolo rigida: ogni campata con la propria lunghezza',
+    'abs.rfl': 'LC R: forza di trazione costante, ogni campata separatamente',
+    'abs.sp.feld': 'Campata',
+    'abs.sp.f': 'Freccia f a T2',
+    'abs.sp.H': 'Forza di trazione H a T2',
+    'abs.sp.tief': 'Conduttore più basso',
+    'abs.sp.fd': 'Filo di contatto più basso',
+    'abs.sp.hind': 'Ostacolo',
+    'abs.oeffnen': 'Apri',
+    'abs.offen': 'aperta',
+    'abs.leer': 'Nessun palo inserito — «+ Palo» o «Importa CSV».',
+    'abs.unvollstaendig': 'manca L o h',
+    'abs.profil': 'Profilo longitudinale (altezza esagerata)',
+    'abs.profil.fehlt': 'Il profilo longitudinale appare quando tutte le campate sono complete.',
+    'abs.csv.ersetzen': 'Sostituire i {n} pali esistenti con {m} pali dal file?',
+    'abs.csv.gelesen': '{n} pali importati.',
+    'abs.csv.fehler': 'Nessun palo trovato nel file.',
+    'abs.csv.warn.h': 'Per {n} pali manca l’altezza d’aggancio h.',
+    'abs.csv.warn.spalte': 'Colonna {s} non trovata.',
+    'abs.exp.unvollstaendig': 'Esportazione impossibile: non tutte le campate sono complete (L e h).',
+    'abs.loeschen.frage': 'Eliminare tutti i {n} pali della tratta?',
+    'abs.ohne.sok': 'Altezze sul PRF: non tutti i pali hanno Z piede del palo.',
+    'hind.titel': 'Ostacoli sopra (p. es. ponte, soffitto)',
+    'hind.hinzu': '+ Ostacolo',
+    'hind.mindest': 'Distanza minima a',
+    'hind.name': 'Denominazione',
+    'hind.feld': 'Campata',
+    'hind.von': 'da x [m]',
+    'hind.bis': 'a x [m]',
+    'hind.uk': 'Intradosso',
+    'hind.uk.mum': '[m s.l.m.]',
+    'hind.uk.sok': '[m s. PRF]',
+    'hind.unvollstaendig': 'inserire da, a e intradosso',
+    'hind.ausserhalb': 'la zona è fuori dalla campata',
+    'hind.anderes.feld': 'appartiene a un’altra campata della tratta',
+    'hind.legende': 'Viene verificato il conduttore più alto (filo portante risp. conduttore singolo) in tutti i casi di carico; è determinante la distanza minima nella zona. Tratteggiato nel diagramma: caso di carico determinante.',
+    'lf.knopf': 'Casi di carico …',
+    'lf.titel': 'Casi di carico verifica delle distanze',
+    'lf.hinweis': 'Impostabile separatamente per ogni sistema. L’applicazione calcola tutti i casi di carico e mostra il più sfavorevole (distanza minima dall’ostacolo sopra).',
+    'lf.temps': 'Temperature [°C]',
+    'lf.temps.hinweis': 'separate da ; o spazio (−50 … +120)',
+    'lf.eis': 'Carico di ghiaccio a −5 °C',
+    'lf.abnutzung': 'Verificare filo di contatto nuovo e usurato',
+    'lf.vorgabe': 'Predefinito',
+    'lf.uebernehmen': 'Applica',
+    'lf.anzahl': '{n} casi di carico',
+    'lf.eis.kurz': 'ghiaccio {zl} N/m',
+    'lf.abgenutzt': 'usurato',
+    'lf.neu': 'nuovo',
     'ui.foto.ablauf.modus': 'Procedura (modalità 7 clic):',
     'ui.foto.ablauf.1': 'Cima del palo sinistro → piede del palo sinistro',
     'ui.foto.ablauf.2': 'Cima del palo destro → piede del palo destro',
@@ -15310,6 +16226,50 @@ renderObstacleList();
         <p style="font-size:.8rem;color:var(--muted)">Le ballerine sono distribuite uniformemente, al massimo ogni 5 m. Il diametro del conduttore è ricavato dalla sezione. Pali e mensole non fanno parte del modello.</p>
       </div><!-- /hb-it -->
 
+      <!-- ══ 6.11 Abspannabschnitt / 6.12 Abstandsprüfung ══ -->
+      <div class="hb-lang hb-de">
+        <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.11 &nbsp;Abspannabschnitt (Reiter «Abschnitt»)</p>
+        <p>Im Reiter <strong>Abschnitt</strong> werden alle Masten eines Abschnitts in Reihenfolge erfasst — von Hand oder per <strong>CSV-Import</strong> (Vorlage im Reiter). Spalten: Mast, E, N (Aufhängepunkt LV95), Z Mastfuss, Δ Mastfuss-SOK, h über SOK, KM, optional L bis zum nächsten Mast. Die Kopfzeile wird erkannt (auch Y/X, Höhe, Punkt); Dezimalkomma und Tausendertrenner sind erlaubt.</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li>Feldlänge L: aus den Koordinaten, sonst aus der KM-Differenz, sonst Eingabe.</li>
+          <li>Berechnung wie im Einzelfeld: <em>ausgleichend</em> mit der Mittelspannweite Lm aller Felder (Formel wie unter Spannweite), <em>starr</em> je Feld mit eigener Länge, R-FL mit konstanter Zugkraft.</li>
+          <li>Übersicht je Feld: L, Durchhang, Zugkraft, tiefster Punkt von Leiter und Fahrdraht, Abstandsprüfung. Dazu ein Längsprofil (Höhe überhöht).</li>
+          <li><strong>Öffnen</strong> (oder Klick ins Längsprofil) überträgt das Feld in die Eingaben: Diagramm, Zeichnung, PDF und Export zeigen dann genau dieses Feld.</li>
+          <li><strong>IFC / 3D-DXF Abschnitt</strong> exportiert alle Felder in einer Datei (mit Koordinaten georeferenziert).</li>
+        </ul>
+        <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Abstandsprüfung zu Hindernissen oberhalb</p>
+        <p>Unter dem Diagramm lassen sich <strong>Hindernisse oberhalb</strong> (z. B. Brücke, Decke) als Bereich <em>von–bis</em> mit Unterkante erfassen (m ü. M., wenn SOK bekannt, sonst über SOK). Die App prüft den obersten Leiter (Tragseil bzw. Einzelleiter) in allen <strong>Lastfällen</strong> und zeigt den ungünstigsten: kleinster Abstand, Lastfall und Stelle; mit Mindestabstand a grün ✓ oder rot ✗. Im Diagramm ist der massgebende Lastfall gestrichelt eingezeichnet.</p>
+        <p style="font-size:.8rem;color:var(--muted)">Lastfälle je Leitersystem unter «Lastfälle …»: Temperaturen (Vorgabe −20 °C und +80 °C), Eislast bei −5 °C (Z<sub>L</sub> einstellbar, Vorgabe 15 N/m) und Fahrdraht neu/abgenutzt. Bei R-FL wirkt die Temperatur nicht (Nachspannung).</p>
+      </div><!-- /hb-de -->
+      <div class="hb-lang hb-fr" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.11 &nbsp;Canton de pose (onglet «Canton»)</p>
+        <p>Dans l’onglet <strong>Canton</strong>, tous les mâts d’un canton sont saisis dans l’ordre — à la main ou par <strong>import CSV</strong> (modèle dans l’onglet). Colonnes : mât, E, N (point d’appui MN95), Z pied de mât, Δ pied de mât-DRS, h sur DRS, KM, facultativement L jusqu’au mât suivant. L’en-tête est reconnu (aussi Y/X, hauteur, point) ; virgule décimale et séparateur de milliers admis.</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li>Longueur de portée L : selon les coordonnées, sinon la différence de KM, sinon saisie.</li>
+          <li>Calcul comme pour la portée simple : <em>compensé</em> avec la portée moyenne Lm de toutes les portées, <em>rigide</em> par portée avec sa propre longueur, LC R avec force de traction constante.</li>
+          <li>Aperçu par portée : L, flèche, force de traction, point le plus bas du conducteur et du fil de contact, vérification des distances ; en plus un profil en long (hauteur exagérée).</li>
+          <li><strong>Ouvrir</strong> (ou clic dans le profil) transfère la portée dans la saisie : diagramme, dessin, PDF et export montrent alors cette portée.</li>
+          <li><strong>IFC / DXF 3D canton</strong> exporte toutes les portées dans un fichier (géoréférencé avec coordonnées).</li>
+        </ul>
+        <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Vérification des distances aux obstacles au-dessus</p>
+        <p>Sous le diagramme, des <strong>obstacles au-dessus</strong> (p. ex. pont, plafond) peuvent être saisis comme zone <em>de–à</em> avec sous-face (m s.n.m. si le DRS est connu, sinon sur DRS). L’application vérifie le conducteur le plus haut (câble porteur resp. conducteur simple) dans tous les <strong>cas de charge</strong> et affiche le plus défavorable : distance minimale, cas de charge et position ; avec distance minimale a en vert ✓ ou rouge ✗. Le cas déterminant est tracé en pointillé dans le diagramme.</p>
+        <p style="font-size:.8rem;color:var(--muted)">Cas de charge par système sous «Cas de charge …» : températures (par défaut −20 °C et +80 °C), charge de glace à −5 °C (Z<sub>L</sub> réglable, par défaut 15 N/m) et fil de contact neuf/usé. En LC R, la température n’a pas d’effet (tension automatique).</p>
+      </div><!-- /hb-fr -->
+      <div class="hb-lang hb-it" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.11 &nbsp;Tratta di regolazione (scheda «Tratta»)</p>
+        <p>Nella scheda <strong>Tratta</strong> si inseriscono in ordine tutti i pali di una tratta — a mano o tramite <strong>importazione CSV</strong> (modello nella scheda). Colonne: palo, E, N (punto d’aggancio MN95), Z piede del palo, Δ piede palo-PRF, h sul PRF, KM, facoltativamente L fino al palo successivo. L’intestazione viene riconosciuta (anche Y/X, altezza, punto); ammessi virgola decimale e separatore delle migliaia.</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li>Lunghezza della campata L: dalle coordinate, altrimenti dalla differenza di KM, altrimenti inserita.</li>
+          <li>Calcolo come per la campata singola: <em>compensato</em> con la lunghezza media Lm di tutte le campate, <em>rigido</em> per campata con la propria lunghezza, LC R con forza di trazione costante.</li>
+          <li>Panoramica per campata: L, freccia, forza di trazione, punto più basso del conduttore e del filo di contatto, verifica delle distanze; inoltre un profilo longitudinale (altezza esagerata).</li>
+          <li><strong>Apri</strong> (o clic nel profilo) trasferisce la campata nei dati: diagramma, disegno, PDF ed esportazione mostrano allora questa campata.</li>
+          <li><strong>IFC / DXF 3D tratta</strong> esporta tutte le campate in un unico file (georeferenziato con coordinate).</li>
+        </ul>
+        <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Verifica delle distanze da ostacoli sopra</p>
+        <p>Sotto il diagramma si possono inserire <strong>ostacoli sopra</strong> (p. es. ponte, soffitto) come zona <em>da–a</em> con intradosso (m s.l.m. se il PRF è noto, altrimenti sul PRF). L’applicazione verifica il conduttore più alto (filo portante risp. conduttore singolo) in tutti i <strong>casi di carico</strong> e mostra il più sfavorevole: distanza minima, caso di carico e posizione; con distanza minima a in verde ✓ o rosso ✗. Il caso determinante è tratteggiato nel diagramma.</p>
+        <p style="font-size:.8rem;color:var(--muted)">Casi di carico per sistema in «Casi di carico …»: temperature (predefinite −20 °C e +80 °C), carico di ghiaccio a −5 °C (Z<sub>L</sub> regolabile, predefinito 15 N/m) e filo di contatto nuovo/usurato. Per LC R la temperatura non ha effetto (tensionamento automatico).</p>
+      </div><!-- /hb-it -->
+
       <!-- ══ 7 Beispielberechnung ══ -->
       <h3 id="hb-beispiel" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.2rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem">7 &nbsp;<span id="hb-s7">Schritt-für-Schritt Beispielberechnung (N-FL)</span></h3>
 
@@ -15630,7 +16590,7 @@ renderObstacleList();
       </table>
 
       <p style="font-size:.75rem;color:var(--tertiary);margin-top:1rem;border-top:1px solid var(--border);padding-top:.75rem">
-        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; v3.8 &nbsp;·&nbsp; Statikteam, Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
+        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; v3.9 &nbsp;·&nbsp; Statikteam, Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
         Quelle Reglage: SBB 0161.1013.0001
       </p>
     </div>
@@ -15991,7 +16951,7 @@ renderObstacleList();
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
-  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span>v3.8</span>
+  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span>v3.9</span>
 </footer>
 
 </body>

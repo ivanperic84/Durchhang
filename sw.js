@@ -12,7 +12,7 @@
  * CACHE_VERSION bei jeder Veröffentlichung erhöhen — alte Zwischenspeicher
  * werden beim Aktivieren automatisch entfernt.
  */
-const CACHE_VERSION = 'durchhang-v3.8.0';
+const CACHE_VERSION = 'durchhang-v3.9.0';
 
 /* Bestandteile der Anwendung. Relative Pfade, damit es sowohl unter
    /Durchhang/ auf GitHub Pages als auch in einem Unterordner funktioniert. */
@@ -21,6 +21,7 @@ const APP_DATEIEN = [
   './index.html',
   './rechenkern.js',
   './export3d.js',
+  './abschnitt.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',

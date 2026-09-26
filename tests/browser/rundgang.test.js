@@ -25,7 +25,7 @@ async function fensterAbfangen(seite) {
 }
 
 // Rohe Übersetzungsschlüssel (z. B. «koord.fehlt») im sichtbaren Text = fehlende Übersetzung
-const ROHSCHLUESSEL = /\b(?:ui|par|res|pdf|foto|koord|exp|sys|span|bp|hb|msg|err|leg|canvas|dyn|val|cm|preset|rf|t3|lm|draw|share|proj|reglage|mat|card|app|btn|probe|warn|pwa)\.[a-z0-9]+(?:\.[a-z0-9_]+)*\b/i;
+const ROHSCHLUESSEL = /\b(?:abs|hind|lf|ui|par|res|pdf|foto|koord|exp|sys|span|bp|hb|msg|err|leg|canvas|dyn|val|cm|preset|rf|t3|lm|draw|share|proj|reglage|mat|card|app|btn|probe|warn|pwa)\.[a-z0-9]+(?:\.[a-z0-9_]+)*\b/i;
 
 test('Start ohne Fehler, erste Berechnung vorhanden', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
