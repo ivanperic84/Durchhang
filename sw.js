@@ -22,6 +22,7 @@ const APP_DATEIEN = [
   './rechenkern.js',
   './export3d.js',
   './abschnitt.js',
+  './fahrdrahthoehe.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',

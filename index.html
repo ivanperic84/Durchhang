@@ -1310,6 +1310,32 @@ button.header-manual-link:hover {
 /* ── Rückfrage-Dialog (ersetzt confirm/prompt) ── */
 #rueckfrage .modal-card { max-width: 26rem; }
 #abschnitt-view { padding: .8rem 1rem 1rem; }
+.hf-gruppe { border: 1px solid var(--border); border-radius: 10px; padding: .55rem .75rem .6rem; margin-bottom: .7rem; background: var(--s2); }
+.hf-gruppe .abs-h4 { margin-top: .1rem; }
+.hf-seg { max-width: 16rem; margin-bottom: .5rem; }
+.hf-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr)); gap: .45rem .8rem; margin-bottom: .35rem; }
+.hf-feld { display: flex; flex-direction: column; gap: .15rem; font-size: .72rem; color: var(--text2); justify-content: flex-start; min-width: 0; }
+.hf-lbl { font-size: .7rem; color: var(--muted); }
+.hf-hw { font-size: .62rem; color: var(--tertiary); line-height: 1.35; }
+.hf-zahl { display: flex; align-items: center; gap: .3rem; }
+.hf-einh { font-size: .68rem; color: var(--muted); }
+.hf-haken { display: flex; align-items: center; gap: .4rem; font-size: .74rem; color: var(--text); cursor: pointer; min-height: 1.6rem; margin-top: 1.05rem; }
+.hf-feld select.abs-inp { width: auto; max-width: 100%; }
+.hf-feld .abs-inp:disabled { opacity: .5; }
+.hf-zwei { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .7rem; }
+@media (max-width: 760px) { .hf-zwei { grid-template-columns: 1fr; } }
+.hf-karte { border: 1px solid var(--border); border-radius: 10px; padding: .65rem .75rem; background: var(--card); }
+.hf-titel { font-size: .72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.hf-wert { font-size: 1.45rem; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; margin: .15rem 0; }
+.hf-wert span { font-size: .8rem; font-weight: 500; color: var(--muted); }
+.hf-formel { font-size: .72rem; color: var(--text2); margin-bottom: .4rem; }
+.abs-tab.hf-tab td { white-space: normal; vertical-align: top; }
+.abs-tab.hf-tab .hf-sym { white-space: nowrap; width: 5.5rem; }
+.abs-tab.hf-tab .hf-w { text-align: right; white-space: nowrap; width: 4.5rem; }
+.hf-tab tr.hf-zw td { font-weight: 700; background: var(--s2); }
+.hf-liste { margin: .5rem 0 .3rem 1.1rem; font-size: .74rem; line-height: 1.5; }
+.hf-hinweise { color: var(--warn); }
+.hf-fehler { border: 1px solid var(--primary); border-radius: 8px; padding: .3rem .6rem; color: var(--text); background: var(--acc-s); }
 .abs-leiste { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; margin-bottom: .4rem; }
 .abs-titel { font-size: .82rem; margin-right: .4rem; color: var(--text); }
 .abs-trenner { flex: 1; }
@@ -1814,6 +1840,10 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
     </svg>
     <span id="quick-save-label" style="display:none"></span>
     <span class="header-manual-text header-label" data-i18n="ui.speichern">Speichern</span>
+  </button>
+  <button onclick="openHf()" id="hf-btn" class="header-manual-link" title="Fahrdrahthöhe hf_min / hf_max" data-i18n-title="hf.titel" style="background:none;border:none;cursor:pointer;color:var(--text2)">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1.5 14.5h13M8 2v9.5M5.8 4.2L8 2l2.2 2.2M5.8 9.3L8 11.5l2.2-2.2M1.5 2h13"/></svg>
+    <span class="header-manual-text header-label" data-i18n="hf.kurz">hf min/max</span>
   </button>
   <button onclick="openReglageModal()" class="header-manual-link" title="Reglagetabelle" data-i18n-title="ui.reglage" style="background:none;border:none;cursor:pointer;color:var(--text2)">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="2" rx="1" style="fill:var(--text2)"/><rect x="2" y="7" width="12" height="2" rx="1" style="fill:var(--text2)"/><rect x="2" y="11" width="8" height="2" rx="1" style="fill:var(--text2)"/></svg>
@@ -2888,6 +2918,17 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 </button>
 
 <!-- Rückfrage (ersetzt confirm / prompt) -->
+<!-- ── Ansicht: Fahrdrahthöhe hf_min / hf_max (fahrdrahthoehe.js) ── -->
+<div class="modal-overlay" id="hf-modal" role="dialog" aria-modal="true" aria-labelledby="hf-titel" onclick="if(event.target===this)closeHf()" style="align-items:flex-start;padding:1.5rem 1rem;overflow-y:auto">
+  <div class="modal-card" style="max-width:980px;width:100%;max-height:none">
+    <div class="modal-header">
+      <h2 class="modal-title" id="hf-titel" data-i18n="hf.titel" style="margin:0">Fahrdrahthöhe hf_min / hf_max</h2>
+      <button class="modal-close" onclick="closeHf()" title="Schliessen" data-i18n-title="ui.schliessen" aria-label="Schliessen">✕</button>
+    </div>
+    <div id="hf-inhalt"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="lastfall-modal" role="dialog" aria-modal="true" aria-labelledby="lf-titel" onclick="if(event.target===this)closeLastfaelle()">
   <div class="modal-card" style="max-width:460px;width:100%">
     <div class="modal-header">
@@ -2944,6 +2985,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 <script src="rechenkern.js"></script>
 <script src="export3d.js"></script>
 <script src="abschnitt.js"></script>
+<script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
 const APP_VERSION = 'v3.9.3';
@@ -6660,7 +6702,7 @@ function getProjectState() {
   const fotoState = typeof window._fotoGetProjectState === 'function'
                     ? window._fotoGetProjectState() : null;
   return { schemaVersion: PROJEKT_SCHEMA_VERSION,
-           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, fotoState, elBerechnungsart, koordAktiv, abschnitt, hindernisse, lastfaelle: lastfallEinst, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: _elMatEdits };
+           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, fotoState, elBerechnungsart, koordAktiv, abschnitt, hindernisse, lastfaelle: lastfallEinst, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: _elMatEdits, hf: hfEingabe };
 }
 
 // ── Projektzustand: Version, Pruefung, transaktionales Laden ──────────────
@@ -6822,6 +6864,8 @@ function _setProjectStateIntern(s) {
   });
   koordSchalten(s.koordAktiv === true, { rechnen: false });
   _abschnittLaden(s);
+  hfEingabe = s.hf && typeof s.hf === 'object' ? { ...HF_VORGABE, ...s.hf } : null;
+  if (document.getElementById('hf-modal')?.classList.contains('open')) { if (!hfEingabe) { hfEingabe = { ...HF_VORGABE }; hfAusDurchhang(true); } renderHf(); }
   // KM-rechts: userEdited-Flag wiederherstellen falls Wert gesetzt
   const kmR = document.getElementById('mast-km-right');
   if (kmR && flds['mast-km-right']) kmR.dataset.userEdited = '1';
@@ -12572,8 +12616,13 @@ function pdfExport() {
   const bodyContent = buildPdfSectionHtml(projName, canvasImg);
   if (!bodyContent) return;
 
+  _pdfDrucken(t('pdf.title'), bodyContent);
+}
+
+// Druckfenster für PDF-Protokolle (Berechnung, Fahrdrahthöhe)
+function _pdfDrucken(titel, bodyContent) {
   const html = `<!DOCTYPE html><html lang="${currentLang}"><head><meta charset="UTF-8">
-<title>${t('pdf.title')}</title>
+<title>${titel}</title>
 <style>
 @page { size: A4 portrait; margin: 16mm 14mm; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -12619,6 +12668,286 @@ ${bodyContent}
   win.document.write(html);
   win.document.close();
   win.onload = () => win.print();
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// FAHRDRAHTHÖHE hf_min / hf_max — eigene Ansicht (Rechnung: fahrdrahthoehe.js)
+// ═══════════════════════════════════════════════════════════════
+// Eingaben wie SBB-Excel (Blätter hfmin_v11_D / hfmax_v11_D). Vorgaben = in
+// der Excel gespeicherter Fall; Temperaturen: hf_min −5 °C mit Eis, hf_max −20 °C.
+const HF_KOMBINATIONEN = { stcu50_cu107: 'StCu 50 + Cu 107', stcu92_cu107: 'StCu 92 + Cu 107', stcu92_cu150: 'StCu 92 + Cu 150' };
+const HF_VORGABE = {
+  typ: 'nfl', c: 30, v: 141, bue: false,
+  kombi: 'stcu50_cu107', Lm: 30, H_ub: 1700, T_montage: 10, H_Fd: 8500,
+  un: 15, schotter: false, ebv: 2, f: 0, H: 0, Tmin: -5, zlMin: 7, cUebr: 0, p11: false, p12: false,
+  lrp: false, Tmax: -20, zlMax: 0,
+};
+let hfEingabe = null;          // null: beim ersten Öffnen aus der Durchhang-Berechnung übernehmen
+
+function openHf() {
+  if (!hfEingabe) { hfEingabe = { ...HF_VORGABE }; hfAusDurchhang(true); }
+  document.getElementById('hf-modal').classList.add('open');
+  renderHf();
+}
+function closeHf() { document.getElementById('hf-modal').classList.remove('open'); }
+
+// FL-Typ, Kombination, Spannweite, Lm und Zugkräfte aus der Durchhang-Berechnung
+function hfAusDurchhang(still = false) {
+  const e = hfEingabe, c = calcState;
+  if (!e || !c) return;
+  if (sysMode === 'el') { if (!still) meldung(t('hf.msg.el'), 'warnung'); return; }
+  const hinweise = [];
+  e.typ = sysMode;
+  const L = Math.round(c.L * 1000) / 1000;
+  const cNeu = [...HF_SPANNWEITEN].sort((a, b) => a - b).find(x => x >= L - 1e-6);
+  if (cNeu === undefined) { e.c = Math.round(L); hinweise.push(t('hf.msg.c.gross')); }
+  else {
+    e.c = cNeu;
+    if (Math.abs(cNeu - L) > 1e-6) hinweise.push(t('hf.msg.c.auf').replace('{L}', fN(L, 2)).replace('{c}', cNeu));
+  }
+  if (sysMode === 'nfl') {
+    const key = document.getElementById('material-ts').value + '_' + document.getElementById('material-fd').value;
+    if (HF_KOMBINATIONEN[key]) e.kombi = key; else hinweise.push(t('hf.msg.kombi'));
+    if (Number.isFinite(c.Lm)) e.Lm = Math.round(c.Lm * 100) / 100;
+    if (Number.isFinite(c.H_Ts_ub)) e.H_ub = c.H_Ts_ub;
+    if (Number.isFinite(c.T1)) e.T_montage = c.T1;
+    if (Number.isFinite(c.H_Fd)) e.H_Fd = c.H_Fd;
+  }
+  if (!still) {
+    renderHf();
+    meldung([t('hf.msg.uebernommen'), ...hinweise].join('\n'), hinweise.length ? 'warnung' : 'erfolg');
+  }
+}
+
+// ── Rechnen ──
+function hfRechnen() {
+  const e = hfEingabe;
+  let nfl = null;
+  const combo = FL_COMBINATIONS[e.kombi];
+  if (e.typ === 'nfl' && combo && e.Lm > 0 && e.H_ub > 0 && Number.isFinite(e.T_montage) && e.H_Fd > 0) {
+    nfl = hfNflZugkraefte({ nflBezugszustand, nflZugkraftBei }, { flCombo: combo, Lm: e.Lm, H_ub: e.H_ub,
+      T_montage: e.T_montage, H_Fd: e.H_Fd, Tmin: e.Tmin, zlMin: e.zlMin, Tmax: e.Tmax, zlMax: e.zlMax });
+    if (![nfl.H_t0, nfl.H_Tmin, nfl.H_Tmax].every(Number.isFinite)) nfl = null;
+  }
+  return { ...hfBerechnen({ ...e, nfl }), nfl };
+}
+
+// ── Eingaben ──
+const _hfZahl = v => { const n = parseFloat(String(v).replace(',', '.').replace('−', '-')); return Number.isFinite(n) ? n : null; };
+function hfWert(k, roh) {
+  const e = hfEingabe;
+  if (['bue', 'schotter', 'p11', 'p12'].includes(k)) e[k] = !!roh;
+  else if (k === 'typ' || k === 'kombi') e[k] = roh;
+  else if (k === 'lrp') e[k] = roh === 'J';
+  else e[k] = _hfZahl(roh);
+  // Abhängigkeiten wie Excel: Zusatzlast nur bei −5 °C; Fallprüfung P1.1–P1.3
+  if (k === 'Tmin' && e.Tmin !== HF_EIS_TEMPERATUR) e.zlMin = 0;
+  if (k === 'Tmax' && e.Tmax !== HF_EIS_TEMPERATUR) e.zlMax = 0;
+  if (k === 'p11' && e.p11) { e.p12 = false; e.cUebr = 0; }
+  if (k === 'p12' && !e.p12) e.cUebr = 0;
+  if (k === 'typ') renderHf(); else hfAktualisieren();
+}
+
+const _HF_SYM = {
+  GfA: 'GfA', k: 'k', be: 'b<sub>e</sub>', f: 'f', H: 'H',
+  fg: 'f<sub>g</sub>', thu: 't<sub>hu</sub>', fud: 'f<sub>ud</sub>', fuv: 'f<sub>uv</sub>',
+  fFDmaxZL: 'f<sub>FD,max,ZL</sub>', fFDmax40: 'f<sub>FD,max</sub>',
+  tho: 't<sub>ho</sub>', fudo: 'f<sub>udo</sub>', fh: 'f<sub>h</sub>', fFDmin: 'f<sub>FD,min</sub>',
+};
+
+function _hfFeld(label, inhalt, hinweis = '') {
+  return `<label class="hf-feld"><span class="hf-lbl">${label}</span>${inhalt}${hinweis ? `<span class="hf-hw">${hinweis}</span>` : ''}</label>`;
+}
+function _hfSelect(k, optionen, wert) {
+  return `<select id="hf-${k}" class="abs-inp" onchange="hfWert('${k}',this.value)">${optionen.map(([v, txt]) =>
+    `<option value="${escHtml(v)}"${String(v) === String(wert) ? ' selected' : ''}>${escHtml(txt)}</option>`).join('')}</select>`;
+}
+function _hfZahlFeld(k, wert, einheit, breite = '6rem') {
+  return `<span class="hf-zahl"><input id="hf-${k}" class="abs-inp zahl" inputmode="decimal" style="width:${breite}" value="${escHtml(wert ?? '')}"
+    onchange="hfWert('${k}',this.value)">${einheit ? `<span class="hf-einh">${einheit}</span>` : ''}</span>`;
+}
+function _hfHaken(k, wert, text) {
+  return `<label class="hf-haken"><input type="checkbox" id="hf-${k}"${wert ? ' checked' : ''} onchange="hfWert('${k}',this.checked)"> <span>${text}</span></label>`;
+}
+const _hfTemp = T => (T > 0 ? '+' : T < 0 ? '−' : '') + Math.abs(T) + ' °C';
+
+function renderHf() {
+  const box = document.getElementById('hf-inhalt');
+  if (!box || !hfEingabe) return;
+  const e = hfEingabe;
+  const temps = HF_TEMPERATUREN.map(T => [T, _hfTemp(T)]);
+  const zls = HF_ZUSATZLASTEN.map(z => [z, z + ' N/m']);
+  box.innerHTML = `
+  <p class="abs-hinweis" style="margin-top:0">${t('hf.einleitung')}</p>
+  <div class="abs-leiste">
+    <button class="abs-knopf" onclick="hfAusDurchhang()">${t('hf.uebernehmen')}</button>
+    <button class="abs-knopf" onclick="hfZuruecksetzen()">${t('hf.vorgabe')}</button>
+    <span class="abs-trenner"></span>
+    <button class="abs-knopf" onclick="hfPdf()">${t('hf.pdf')}</button>
+  </div>
+
+  <section class="hf-gruppe" aria-labelledby="hf-h-fl">
+    <h3 class="abs-h4" id="hf-h-fl">${t('hf.g.fl')}</h3>
+    <div class="seg-ctrl hf-seg" role="group" aria-label="${escHtml(t('hf.typ'))}">
+      <button class="seg-btn${e.typ === 'nfl' ? ' active' : ''}" id="hf-typ-nfl" onclick="hfWert('typ','nfl')">${t('sys.nfl.kurz')}</button>
+      <button class="seg-btn${e.typ === 'rfl' ? ' active' : ''}" id="hf-typ-rfl" onclick="hfWert('typ','rfl')">${t('sys.rfl.kurz')}</button>
+    </div>
+    <div class="hf-raster">
+      ${_hfFeld(t('hf.c'), _hfSelect('c', HF_SPANNWEITEN.map(c => [c, c + ' m']), e.c), t('hf.c.hw'))}
+      ${_hfFeld(t('hf.v'), _hfZahlFeld('v', e.v, 'km/h'))}
+      <div class="hf-feld">${_hfHaken('bue', e.bue, t('hf.bue'))}</div>
+    </div>
+    ${e.typ === 'nfl' ? `
+    <div class="hf-raster">
+      ${_hfFeld(t('sys.kombination'), _hfSelect('kombi', Object.entries(HF_KOMBINATIONEN), e.kombi))}
+      ${_hfFeld('L<sub>m</sub>', _hfZahlFeld('Lm', e.Lm, 'm'), t('hf.lm.hw'))}
+      ${_hfFeld(t('hf.hub'), _hfZahlFeld('H_ub', e.H_ub, 'N'))}
+      ${_hfFeld(t('hf.tm'), _hfZahlFeld('T_montage', e.T_montage, '°C', '4.5rem'))}
+      ${_hfFeld('H<sub>Fd</sub>', _hfZahlFeld('H_Fd', e.H_Fd, 'N'))}
+    </div>
+    <p class="abs-hinweis" id="hf-nfl-zug"></p>` : `
+    <p class="abs-hinweis">${t('hf.rfl.zug')}</p>`}
+  </section>
+
+  <div class="hf-zwei">
+    <section class="hf-gruppe" aria-labelledby="hf-h-min">
+      <h3 class="abs-h4" id="hf-h-min">${t('hf.g.min')}</h3>
+      <div class="hf-raster">
+        ${_hfFeld(t('hf.un'), _hfSelect('un', [[15, '15 kV'], [25, '25 kV']], e.un))}
+        ${_hfFeld(t('hf.ebv'), _hfSelect('ebv', [1, 2, 3, 4].map(n => [n, 'EBV ' + n]), e.ebv))}
+        <div class="hf-feld">${_hfHaken('schotter', e.schotter, t('hf.schotter'))}</div>
+        ${_hfFeld(t('hf.f'), _hfZahlFeld('f', e.f, 'mm', '4.5rem'))}
+        ${_hfFeld(t('hf.h'), _hfZahlFeld('H', e.H, 'mm', '4.5rem'))}
+        ${_hfFeld(t('hf.tmin'), _hfSelect('Tmin', temps, e.Tmin))}
+        ${_hfFeld(t('hf.zl'), _hfSelect('zlMin', zls, e.zlMin), t('hf.zl.hw'))}
+      </div>
+      ${e.typ === 'rfl' ? `
+      <p class="abs-hinweis" style="margin-bottom:.3rem">${t('hf.p.titel')}</p>
+      <div class="hf-raster">
+        <div class="hf-feld">${_hfHaken('p11', e.p11, 'P1.1 / P1.3')}</div>
+        <div class="hf-feld">${_hfHaken('p12', e.p12, 'P1.2')}</div>
+        ${_hfFeld(t('hf.cuebr'), _hfZahlFeld('cUebr', e.cUebr, 'm', '4.5rem'))}
+      </div>` : ''}
+    </section>
+    <section class="hf-gruppe" aria-labelledby="hf-h-max">
+      <h3 class="abs-h4" id="hf-h-max">${t('hf.g.max')}</h3>
+      <div class="hf-raster">
+        ${_hfFeld('LRP', _hfSelect('lrp', [['J', t('hf.lrp.j')], ['N', t('hf.lrp.n')]], e.lrp ? 'J' : 'N'))}
+        ${_hfFeld(t('hf.tmax'), _hfSelect('Tmax', temps, e.Tmax))}
+        ${_hfFeld(t('hf.zl'), _hfSelect('zlMax', zls, e.zlMax), t('hf.zl.hw'))}
+      </div>
+    </section>
+  </div>
+  <p class="abs-hinweis">${t('hf.t.regel')}</p>
+  <div id="hf-erg" aria-live="polite"></div>`;
+  hfAktualisieren();
+}
+
+function hfZuruecksetzen() {
+  hfEingabe = { ...HF_VORGABE };
+  hfAusDurchhang(true);
+  renderHf();
+}
+
+function _hfTabelle(teil, art, e) {
+  const zeile = (sym, txt, wert, klasse = '') =>
+    `<tr class="${klasse}"><td class="hf-sym">${sym}</td><td>${txt}</td><td class="hf-w">${wert === null ? '' : fN(wert, 1)}</td></tr>`;
+  const Z = art === 'min' ? 'Z<sub>hf,min</sub>' : 'Z<sub>hf,max</sub>';
+  const hf = art === 'min' ? 'hf<sub>min</sub>' : 'hf<sub>max</sub>';
+  let rows = '';
+  if (teil.bue) rows += zeile('', t('hf.bue.basis'), teil.absolut, 'hf-zw');
+  else if (art === 'min') {
+    rows += teil.basis.map(z => zeile(_HF_SYM[z.sym], t(z.schluessel), z.wert)).join('');
+    rows += zeile(hf + '<sub>,abs</sub>', t('hf.abs'), teil.absolut, 'hf-zw');
+  } else rows += zeile(hf + '<sub>,abs</sub>', t(e.lrp ? 'hf.lrp.j' : 'hf.lrp.n'), teil.absolut, 'hf-zw');
+  rows += teil.zeilen.map(z => zeile(_HF_SYM[z.sym], t(z.schluessel), z.wert)).join('');
+  rows += zeile(Z, t(art === 'min' ? 'hf.z.summe.min' : 'hf.z.summe.max'), teil.summe, 'hf-zw');
+  const formel = teil.bue ? `${hf} = 5510 + ${Z}` : art === 'min' ? `${hf} = GfA + k + b<sub>e</sub> + f + H + ${Z}` : `${hf} = ${hf}<sub>,abs</sub> − ${Z}`;
+  return `<div class="hf-karte">
+    <div class="hf-titel">${t(art === 'min' ? 'hf.erg.min' : 'hf.erg.max')}</div>
+    <div class="hf-wert" id="hf-wert-${art}">${fN(teil.wert, 0)} mm <span>(${(teil.wert / 1000).toFixed(3)} m)</span></div>
+    <div class="hf-formel">${formel}</div>
+    <div class="abs-scroll"><table class="abs-tab hf-tab">
+      <thead><tr><th scope="col">${t('hf.sp.sym')}</th><th scope="col">${t('hf.sp.txt')}</th><th scope="col" class="hf-w">[mm]</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+  </div>`;
+}
+
+function hfAktualisieren() {
+  const e = hfEingabe, erg = document.getElementById('hf-erg');
+  if (!e || !erg) return;
+  // Zusatzlast nur bei −5 °C; Fallprüfung nur in sinnvoller Kombination
+  const sperre = (id, aus) => { const el = document.getElementById(id); if (el) el.disabled = aus; };
+  sperre('hf-zlMin', e.Tmin !== HF_EIS_TEMPERATUR);
+  sperre('hf-zlMax', e.Tmax !== HF_EIS_TEMPERATUR);
+  sperre('hf-p12', e.p11);
+  sperre('hf-cUebr', e.p11 || !e.p12);
+  for (const k of ['zlMin', 'zlMax', 'cUebr', 'p12']) {
+    const el = document.getElementById('hf-' + k);
+    if (!el) continue;
+    if (el.type === 'checkbox') el.checked = !!e[k]; else el.value = e[k] ?? '';
+  }
+  const r = hfRechnen();
+  const zug = document.getElementById('hf-nfl-zug');
+  if (zug) zug.innerHTML = r.nfl ? t('hf.nfl.zug')
+      .replace('{h0}', fN(r.nfl.H_t0, 0))
+      .replace('{hmin}', fN(r.nfl.H_Tmin, 0)).replace('{tmin}', _hfTemp(e.Tmin) + (e.zlMin ? `, ${e.zlMin} N/m` : ''))
+      .replace('{hmax}', fN(r.nfl.H_Tmax, 0)).replace('{tmax}', _hfTemp(e.Tmax) + (e.zlMax ? `, ${e.zlMax} N/m` : ''))
+    : '';
+  const liste = (keys, klasse) => keys.length ? `<ul class="hf-liste ${klasse}">${keys.map(k => `<li>${t(k)}</li>`).join('')}</ul>` : '';
+  if (r.fehler.length) {
+    erg.innerHTML = `<div class="hf-fehler" role="alert">${liste(r.fehler, '')}</div>${liste(r.hinweise, 'hf-hinweise')}`;
+    return;
+  }
+  erg.innerHTML = `<div class="hf-zwei">${_hfTabelle(r.min, 'min', e)}${_hfTabelle(r.max, 'max', e)}</div>
+    ${liste(r.hinweise, 'hf-hinweise')}
+    <p class="abs-hinweis">${t('hf.quelle')}</p>`;
+}
+
+// ── PDF-Protokoll ──
+function hfPdf() {
+  const e = hfEingabe;
+  if (!e) return;
+  const r = hfRechnen();
+  if (r.fehler.length) { meldung(r.fehler.map(k => t(k)).join('\n'), 'warnung'); return; }
+  const _pid = Projekte.aktuelleProjektId;
+  const projName = _pid ? (getProjMeta().find(m => m.id === _pid)?.name || '') : '';
+  const jn = b => (b ? t('hf.ja') : t('hf.nein'));
+  const ein = [
+    [t('hf.typ'), sysName(e.typ)], [t('hf.c'), e.c + ' m'], [t('hf.v'), e.v + ' km/h'], [t('hf.bue'), jn(e.bue)],
+    ...(e.typ === 'nfl' ? [[t('sys.kombination'), HF_KOMBINATIONEN[e.kombi]], ['L<sub>m</sub>', fN(e.Lm, 2) + ' m'],
+      [t('hf.hub'), fN(e.H_ub, 0) + ' N'], [t('hf.tm'), _hfTemp(e.T_montage)], ['H<sub>Fd</sub>', fN(e.H_Fd, 0) + ' N']]
+      : [[t('hf.rfl.zug.kurz'), '12 kN / 10 kN']]),
+    [t('hf.un'), e.un + ' kV'], [t('hf.ebv'), 'EBV ' + e.ebv], [t('hf.schotter'), jn(e.schotter)],
+    [t('hf.f'), e.f + ' mm'], [t('hf.h'), e.H + ' mm'], [t('hf.tmin'), _hfTemp(e.Tmin)], [t('hf.zl') + ' (hf<sub>min</sub>)', e.zlMin + ' N/m'],
+    ...(e.typ === 'rfl' ? [['P1.1 / P1.3', jn(e.p11)], ['P1.2', jn(e.p12)], [t('hf.cuebr'), e.cUebr + ' m']] : []),
+    ['LRP', t(e.lrp ? 'hf.lrp.j' : 'hf.lrp.n')], [t('hf.tmax'), _hfTemp(e.Tmax)], [t('hf.zl') + ' (hf<sub>max</sub>)', e.zlMax + ' N/m'],
+  ];
+  const tab = (teil, art) => {
+    const zeilen = [];
+    if (teil.bue) zeilen.push([t('hf.bue.basis'), '', teil.absolut]);
+    else if (art === 'min') { teil.basis.forEach(z => zeilen.push([_HF_SYM[z.sym], t(z.schluessel), z.wert])); zeilen.push(['hf<sub>min,abs</sub>', t('hf.abs'), teil.absolut]); }
+    else zeilen.push(['hf<sub>max,abs</sub>', t(e.lrp ? 'hf.lrp.j' : 'hf.lrp.n'), teil.absolut]);
+    teil.zeilen.forEach(z => zeilen.push([_HF_SYM[z.sym], t(z.schluessel), z.wert]));
+    zeilen.push([art === 'min' ? 'Z<sub>hf,min</sub>' : 'Z<sub>hf,max</sub>', t(art === 'min' ? 'hf.z.summe.min' : 'hf.z.summe.max'), teil.summe]);
+    return `<table class="cmp"><tr><th>${t('hf.sp.sym')}</th><th>${t('hf.sp.txt')}</th><th style="text-align:right">[mm]</th></tr>
+      ${zeilen.map(([s, x, w]) => `<tr><td>${s}</td><td>${x}</td><td style="text-align:right">${fN(w, 1)}</td></tr>`).join('')}</table>`;
+  };
+  const datum = new Date().toLocaleString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE');
+  const body = `<div class="hdr"><h1>${t('hf.titel')} &nbsp;(${sysName(e.typ)})</h1>
+  <p>${t('pdf.erstellt')}: ${datum}${projName ? ` &nbsp;|&nbsp; ${escHtml(projName)}` : ''} &nbsp;|&nbsp; c = ${e.c} m</p></div>
+<h2>${t('pdf.eingabewerte')}</h2>
+<div class="step"><table class="inp">${ein.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table></div>
+${r.nfl ? `<p class="sub">${document.getElementById('hf-nfl-zug')?.innerHTML || ''}</p>` : ''}
+<h2>${t('hf.erg.min')}: <strong class="r">${fN(r.min.wert, 0)} mm</strong></h2>
+<div class="step">${tab(r.min, 'min')}</div>
+<h2>${t('hf.erg.max')}: <strong class="r">${fN(r.max.wert, 0)} mm</strong></h2>
+<div class="step">${tab(r.max, 'max')}</div>
+${r.hinweise.length ? `<h2 class="warm">${t('hf.hinweise')}</h2><div class="step">${r.hinweise.map(k => `<p>${t(k)}</p>`).join('')}</div>` : ''}
+<p class="sub2" style="margin-top:8px">${t('hf.quelle')}</p>
+<footer>${t('pdf.footer')} &nbsp;·&nbsp; ${APP_VERSION} &nbsp;|&nbsp; ${t('hf.titel')}</footer>`;
+  _pdfDrucken(t('hf.titel'), body);
 }
 
 
@@ -13320,6 +13649,91 @@ const LANG = {
     'hind.anderes.feld': 'gehört zu einem anderen Feld des Abschnitts',
     'hind.legende': 'Geprüft wird der oberste Leiter (Tragseil bzw. Einzelleiter) in allen Lastfällen. «Punkte verbinden»: Unterkante als Linie durch die nach x sortierten Punkte (Reihenfolge der Eingabe egal); aus: jeder Punkt einzeln. Im Diagramm gestrichelt: massgebender Lastfall.',
     'lf.knopf': 'Lastfälle …',
+    'hf.titel': 'Fahrdrahthöhe hf_min / hf_max',
+    'hf.kurz': 'hf min/max',
+    'hf.einleitung': 'Minimale und maximale Auslegungsfahrdrahthöhe nach AB-EBV 2024, Art. 5.2.1 und 5.2.2 — Nachbildung der SBB-Excel (Blätter hfmin / hfmax). Getrennt von der Durchhang-Berechnung; N-FL mit neuem Fahrdraht (ohne Abnutzung).',
+    'hf.uebernehmen': 'Aus Durchhang übernehmen',
+    'hf.vorgabe': 'Vorgabewerte',
+    'hf.pdf': 'PDF-Protokoll',
+    'hf.g.fl': 'Fahrleitung und Strecke',
+    'hf.g.min': 'hf_min — minimale Auslegungsfahrdrahthöhe',
+    'hf.g.max': 'hf_max — maximale Auslegungsfahrdrahthöhe',
+    'hf.typ': 'FL-Typ',
+    'hf.c': 'Spannweite c',
+    'hf.c.hw': 'Sonderfall c < 24 m: 20, 16, 12, 8 m',
+    'hf.v': 'Geschwindigkeit',
+    'hf.bue': 'Bahnübergang',
+    'hf.lm.hw': 'Mittelspannweite für die Zugkraft Ts',
+    'hf.hub': 'Ts unbelastet (Montage)',
+    'hf.tm': 'Montagetemperatur',
+    'hf.nfl.zug': 'Zugkraft Ts belastet (wie Excel «NFL-Tab»): H<sub>t0</sub> = {h0} N bei +10 °C · hf_min: H<sub>Tx</sub> = {hmin} N ({tmin}) · hf_max: H<sub>Tx</sub> = {hmax} N ({tmax})',
+    'hf.rfl.zug': 'R-FL: Fahrdraht-Durchhang bei Eislast mit fest H<sub>Ts</sub> = 12 kN und H<sub>Fd</sub> = 10 kN (wie Excel).',
+    'hf.rfl.zug.kurz': 'Zugkräfte Ts / Fd (fest)',
+    'hf.un': 'Nennspannung',
+    'hf.ebv': 'Grenzlinie',
+    'hf.schotter': 'Schottergleis',
+    'hf.f': 'Zuschlag Kuppen/Wannen f',
+    'hf.h': 'Zuschlag Rollschemel H',
+    'hf.tmin': 'Leitertemperatur',
+    'hf.tmax': 'Umgebungstemperatur',
+    'hf.zl': 'Zusatzlast (Schnee)',
+    'hf.zl.hw': 'nur bei −5 °C',
+    'hf.p.titel': 'Nur R-FL: Fallprüfung der Eislast nach Priorität P1.1 bis P1.3 (Handbuch 0161.1010.0012, Bl. 14)',
+    'hf.cuebr': 'c_übr (überdeckt)',
+    'hf.lrp.j': 'J — alle EBV: 6.05 m',
+    'hf.lrp.n': 'N — EBV C: 6.20 m',
+    'hf.t.regel': 'Regel (0161.1010.0012, Bl. 6): höchste Leitertemperatur für hf_min (N-FL StCu 50 mm²: bis +56 °C), tiefste Umgebungstemperatur für hf_max (min. −20 °C). Temperaturen in 5-K-Schritten wie Excel.',
+    'hf.erg.min': 'Minimale Auslegungsfahrdrahthöhe hf_min',
+    'hf.erg.max': 'Maximale Auslegungsfahrdrahthöhe hf_max',
+    'hf.sp.sym': 'Grösse',
+    'hf.sp.txt': 'Beschreibung',
+    'hf.abs': 'hf_min, absolut',
+    'hf.bue.basis': 'Bahnübergang: 5.50 m + 10 mm Bodenplatten',
+    'hf.b.gfa': 'Höhe der Grenzlinie der festen Anlagen (AB-EBV Art. 5.2.1.1)',
+    'hf.b.k': 'Sicherheitszuschlag (EBV 1: 70 mm)',
+    'hf.b.be': 'Elektrischer Sicherheitsabstand (AB-EBV Art. 5.9.2)',
+    'hf.b.f': 'Höhenzuschlag bei Kuppen und Wannen',
+    'hf.b.h': 'Höhenzuschlag bei Rollschemel- bzw. Rollbockbetrieb',
+    'hf.z.fg': 'Gleishebungsreserve (RTE 20012, Art. 2.6.3)',
+    'hf.z.thu': 'Montagetoleranz Fahrdraht (0161.1010.0011, Amplitude)',
+    'hf.z.fud': 'Dynamische Schwingung des Fahrdrahts nach unten',
+    'hf.z.fuv': 'Vordurchhang Fahrdraht (nur R-FL, v ≤ 140 km/h)',
+    'hf.z.ffdzl': 'Fahrdraht-Durchhang bei Eislast (nur R-FL, 0161.1010.0012, Bl. 14)',
+    'hf.z.ffd40': 'Fahrdraht-Durchhang bei der Leitertemperatur (nur N-FL, 0161.1010.0012, Bl. 15)',
+    'hf.z.tho': 'Montagetoleranz Fahrdraht (0161.1010.0011, Amplitude)',
+    'hf.z.fudo': 'Dynamische Schwingung nach oben (80 % von nach unten)',
+    'hf.z.fuvo': 'Vordurchhang Fahrdraht, Vorzeichen umgekehrt (nur R-FL, v ≤ 140 km/h)',
+    'hf.z.fh': 'Fahrdrahtanhub (0161.1010.0201)',
+    'hf.z.ffdmin': 'Fahrdraht-Durchhang bei der Umgebungstemperatur, Vorzeichen umgekehrt (nur N-FL)',
+    'hf.z.summe.min': 'Summe der Zuschläge nach unten',
+    'hf.z.summe.max': 'Summe der Zuschläge nach oben',
+    'hf.w.bue': 'Achtung: Bahnübergang ≥ 5.51 m!',
+    'hf.w.buenfl': 'Bahnübergang bei N-FL situativ prüfen! (Längenprofil)',
+    'hf.w.buemax': 'hf_max beim Bahnübergang wie Excel: 5510 mm + Zuschläge nach oben — fachlich prüfen.',
+    'hf.w.p11': 'P1.1 / P1.3 = J: c_übr muss 0 und P1.2 = N sein.',
+    'hf.w.p12j': 'P1.2 = J: c_übr muss grösser als 0 sein.',
+    'hf.w.p12n': 'P1.2 = N: c_übr muss 0 sein (sonst f_FD,max,ZL = 0 wie Excel).',
+    'hf.w.t56': 'N-FL: Die Leitertemperatur des StCu 50 mm² erreicht höchstens +56 °C.',
+    'hf.err.typ': 'Nur für N-FL und R-FL.',
+    'hf.err.c': 'Spannweite c nur 60 … 26, 24, 20, 16, 12 oder 8 m (wie Excel).',
+    'hf.err.v': 'Geschwindigkeit angeben.',
+    'hf.err.t.min': 'Leitertemperatur: −20 … +80 °C in 5-K-Schritten.',
+    'hf.err.t.max': 'Umgebungstemperatur: −20 … +80 °C in 5-K-Schritten.',
+    'hf.err.zl.min': 'Zusatzlast hf_min: 0, 7 oder 15 N/m.',
+    'hf.err.zl.max': 'Zusatzlast hf_max: 0, 7 oder 15 N/m.',
+    'hf.err.zlt.min': 'Zusatzlast hf_min nur bei −5 °C.',
+    'hf.err.zlt.max': 'Zusatzlast hf_max nur bei −5 °C.',
+    'hf.err.nfl': 'N-FL: Kombination, Lm, Ts unbelastet, Montagetemperatur und H_Fd angeben.',
+    'hf.err.cuebr': 'c_übr: ganze Zahl von 0 bis c.',
+    'hf.hinweise': 'Hinweise',
+    'hf.ja': 'Ja',
+    'hf.nein': 'Nein',
+    'hf.quelle': 'Quelle: SBB-Excel «Durchhang 2026», Blätter hfmin_v11_D / hfmax_v11_D (AB-EBV 2024); Regelungen 0161.1010.0011, 0161.1010.0012, 0161.1010.0201; Zeichnung 0162.1020.0006.',
+    'hf.msg.uebernommen': 'Werte aus der Durchhang-Berechnung übernommen.',
+    'hf.msg.el': 'Einzelleiter: keine Fahrdrahthöhe — bitte N-FL oder R-FL wählen.',
+    'hf.msg.c.auf': 'Spannweite {L} m → c = {c} m (nächster Tabellenwert, sicher).',
+    'hf.msg.c.gross': 'Spannweite grösser als 60 m — nicht in der Excel-Tabelle.',
+    'hf.msg.kombi': 'Kombination nicht in der Excel-Tabelle — bitte wählen.',
     'lf.titel': 'Lastfälle Abstandsprüfung',
     'lf.hinweis': 'Je Leitersystem getrennt einstellbar. Die App rechnet alle Lastfälle durch und zeigt den ungünstigsten (kleinster Abstand zum Hindernis oberhalb).',
     'lf.temps': 'Temperaturen [°C]',
@@ -14023,6 +14437,91 @@ const LANG = {
     'hind.anderes.feld': 'appartient à une autre portée du canton',
     'hind.legende': 'Le conducteur le plus haut (câble porteur resp. conducteur simple) est vérifié dans tous les cas de charge. «Relier les points» : sous-face comme ligne passant par les points triés selon x (ordre de saisie sans importance) ; désactivé : chaque point séparément. En pointillé dans le diagramme : cas de charge déterminant.',
     'lf.knopf': 'Cas de charge …',
+    'hf.titel': 'Hauteur du fil de contact hf_min / hf_max',
+    'hf.kurz': 'hf min/max',
+    'hf.einleitung': 'Hauteur du fil de contact minimale et maximale de conception selon DE-OCF 2024, art. 5.2.1 et 5.2.2 — reproduction de l’Excel CFF (feuilles hfmin / hfmax). Séparée du calcul de flèche ; LC N avec fil de contact neuf (sans usure).',
+    'hf.uebernehmen': 'Reprendre du calcul de flèche',
+    'hf.vorgabe': 'Valeurs par défaut',
+    'hf.pdf': 'Protocole PDF',
+    'hf.g.fl': 'Ligne de contact et tronçon',
+    'hf.g.min': 'hf_min — hauteur du fc minimale de conception',
+    'hf.g.max': 'hf_max — hauteur du fc maximale de conception',
+    'hf.typ': 'Type de LC',
+    'hf.c': 'Portée c',
+    'hf.c.hw': 'Cas particulier c < 24 m : 20, 16, 12, 8 m',
+    'hf.v': 'Vitesse',
+    'hf.bue': 'Passage à niveau',
+    'hf.lm.hw': 'Portée moyenne pour la traction CP',
+    'hf.hub': 'CP non chargé (montage)',
+    'hf.tm': 'Température de montage',
+    'hf.nfl.zug': 'Traction CP chargé (comme Excel « NFL-Tab ») : H<sub>t0</sub> = {h0} N à +10 °C · hf_min : H<sub>Tx</sub> = {hmin} N ({tmin}) · hf_max : H<sub>Tx</sub> = {hmax} N ({tmax})',
+    'hf.rfl.zug': 'LC R : flèche du fil de contact sous charge de glace avec H<sub>CP</sub> = 12 kN et H<sub>FC</sub> = 10 kN fixes (comme Excel).',
+    'hf.rfl.zug.kurz': 'Tractions CP / FC (fixes)',
+    'hf.un': 'Tension nominale',
+    'hf.ebv': 'Gabarit limite',
+    'hf.schotter': 'Voie sur ballast',
+    'hf.f': 'Supplément dômes/cuvelages f',
+    'hf.h': 'Supplément bogie transporteur H',
+    'hf.tmin': 'Température du conducteur',
+    'hf.tmax': 'Température ambiante',
+    'hf.zl': 'Charge add. (neige)',
+    'hf.zl.hw': 'seulement à −5 °C',
+    'hf.p.titel': 'Seulement LC R : essai de cas de charge de glace par priorité P1.1 à P1.3 (manuel 0161.1010.0012, F. 14)',
+    'hf.cuebr': 'c_übr (couverte)',
+    'hf.lrp.j': 'J — tous OCF : 6.05 m',
+    'hf.lrp.n': 'N — OCF C : 6.20 m',
+    'hf.t.regel': 'Règle (0161.1010.0012, F. 6) : température du conducteur maximale pour hf_min (LC N StCu 50 mm² : jusqu’à +56 °C), température ambiante minimale pour hf_max (min. −20 °C). Températures par pas de 5 K comme Excel.',
+    'hf.erg.min': 'Hauteur du fc minimale de conception hf_min',
+    'hf.erg.max': 'Hauteur du fc maximale de conception hf_max',
+    'hf.sp.sym': 'Grandeur',
+    'hf.sp.txt': 'Description',
+    'hf.abs': 'hf_min, absolue',
+    'hf.bue.basis': 'Passage à niveau : 5.50 m + 10 mm dalles',
+    'hf.b.gfa': 'Hauteur de gabarit limite des obstacles (DE-OCF art. 5.2.1.1)',
+    'hf.b.k': 'Supplément de sécurité (OCF 1 : 70 mm)',
+    'hf.b.be': 'Distance de protection électrique (DE-OCF art. 5.9.2)',
+    'hf.b.f': 'Supplément de hauteur pour dômes et cuvelages',
+    'hf.b.h': 'Supplément de hauteur bogie transporteur',
+    'hf.z.fg': 'Réserve de relèvement de la voie (RTE 20012, art. 2.6.3)',
+    'hf.z.thu': 'Tolérance de montage du fil de contact (0161.1010.0011, amplitude)',
+    'hf.z.fud': 'Abaissement dynamique du fil de contact vers le bas',
+    'hf.z.fuv': 'Pré-flèche du fil de contact (seulement LC R, v ≤ 140 km/h)',
+    'hf.z.ffdzl': 'Flèche du fil de contact sous charge de glace (seulement LC R, 0161.1010.0012, F. 14)',
+    'hf.z.ffd40': 'Flèche du fil de contact à la température du conducteur (seulement LC N, 0161.1010.0012, F. 15)',
+    'hf.z.tho': 'Tolérance de montage du fil de contact (0161.1010.0011, amplitude)',
+    'hf.z.fudo': 'Oscillation dynamique vers le haut (80 % de celle vers le bas)',
+    'hf.z.fuvo': 'Pré-flèche du fil de contact, signe inversé (seulement LC R, v ≤ 140 km/h)',
+    'hf.z.fh': 'Soulèvement du fil de contact (0161.1010.0201)',
+    'hf.z.ffdmin': 'Flèche du fil de contact à la température ambiante, signe inversé (seulement LC N)',
+    'hf.z.summe.min': 'Somme des suppléments vers le bas',
+    'hf.z.summe.max': 'Somme des suppléments vers le haut',
+    'hf.w.bue': 'Attention : passage à niveau ≥ 5.51 m !',
+    'hf.w.buenfl': 'Passage à niveau en LC N : vérifier selon la situation ! (profil en long)',
+    'hf.w.buemax': 'hf_max au passage à niveau comme Excel : 5510 mm + suppléments vers le haut — à vérifier.',
+    'hf.w.p11': 'P1.1 / P1.3 = J : c_übr doit être 0 et P1.2 = N.',
+    'hf.w.p12j': 'P1.2 = J : c_übr doit être supérieur à 0.',
+    'hf.w.p12n': 'P1.2 = N : c_übr doit être 0 (sinon f_FD,max,ZL = 0 comme Excel).',
+    'hf.w.t56': 'LC N : la température du conducteur StCu 50 mm² atteint au maximum +56 °C.',
+    'hf.err.typ': 'Seulement pour LC N et LC R.',
+    'hf.err.c': 'Portée c seulement 60 … 26, 24, 20, 16, 12 ou 8 m (comme Excel).',
+    'hf.err.v': 'Indiquer la vitesse.',
+    'hf.err.t.min': 'Température du conducteur : −20 … +80 °C par pas de 5 K.',
+    'hf.err.t.max': 'Température ambiante : −20 … +80 °C par pas de 5 K.',
+    'hf.err.zl.min': 'Charge add. hf_min : 0, 7 ou 15 N/m.',
+    'hf.err.zl.max': 'Charge add. hf_max : 0, 7 ou 15 N/m.',
+    'hf.err.zlt.min': 'Charge add. hf_min seulement à −5 °C.',
+    'hf.err.zlt.max': 'Charge add. hf_max seulement à −5 °C.',
+    'hf.err.nfl': 'LC N : indiquer combinaison, Lm, CP non chargé, température de montage et H_FC.',
+    'hf.err.cuebr': 'c_übr : nombre entier de 0 à c.',
+    'hf.hinweise': 'Remarques',
+    'hf.ja': 'Oui',
+    'hf.nein': 'Non',
+    'hf.quelle': 'Source : Excel CFF « Durchhang 2026 », feuilles hfmin_v11_D / hfmax_v11_D (DE-OCF 2024) ; règlements 0161.1010.0011, 0161.1010.0012, 0161.1010.0201 ; plan 0162.1020.0006.',
+    'hf.msg.uebernommen': 'Valeurs reprises du calcul de flèche.',
+    'hf.msg.el': 'Conducteur simple : pas de hauteur du fil de contact — choisir LC N ou LC R.',
+    'hf.msg.c.auf': 'Portée {L} m → c = {c} m (valeur de tableau suivante, du côté sûr).',
+    'hf.msg.c.gross': 'Portée supérieure à 60 m — hors du tableau Excel.',
+    'hf.msg.kombi': 'Combinaison absente du tableau Excel — veuillez choisir.',
     'lf.titel': 'Cas de charge vérification des distances',
     'lf.hinweis': 'Réglable séparément pour chaque système. L’application calcule tous les cas de charge et affiche le plus défavorable (plus petite distance à l’obstacle au-dessus).',
     'lf.temps': 'Températures [°C]',
@@ -14726,6 +15225,91 @@ const LANG = {
     'hind.anderes.feld': 'appartiene a un’altra campata della tratta',
     'hind.legende': 'Viene verificato il conduttore più alto (filo portante risp. conduttore singolo) in tutti i casi di carico. «Collega i punti»: intradosso come linea attraverso i punti ordinati secondo x (ordine di inserimento irrilevante); disattivato: ogni punto singolarmente. Tratteggiato nel diagramma: caso di carico determinante.',
     'lf.knopf': 'Casi di carico …',
+    'hf.titel': 'Altezza del filo di contatto hf_min / hf_max',
+    'hf.kurz': 'hf min/max',
+    'hf.einleitung': 'Altezza minima e massima di progetto del filo di contatto secondo DE-OFerr 2024, art. 5.2.1 e 5.2.2 — riproduzione dell’Excel FFS (fogli hfmin / hfmax). Separata dal calcolo della freccia; LC N con filo di contatto nuovo (senza usura).',
+    'hf.uebernehmen': 'Riprendi dal calcolo della freccia',
+    'hf.vorgabe': 'Valori predefiniti',
+    'hf.pdf': 'Protocollo PDF',
+    'hf.g.fl': 'Linea di contatto e tratta',
+    'hf.g.min': 'hf_min — altezza minima di progetto del FC',
+    'hf.g.max': 'hf_max — altezza massima di progetto del FC',
+    'hf.typ': 'Tipo di LC',
+    'hf.c': 'Campata c',
+    'hf.c.hw': 'Caso speciale c < 24 m: 20, 16, 12, 8 m',
+    'hf.v': 'Velocità',
+    'hf.bue': 'Passaggio a livello',
+    'hf.lm.hw': 'Campata media per il tiro della FP',
+    'hf.hub': 'FP scarica (montaggio)',
+    'hf.tm': 'Temperatura di montaggio',
+    'hf.nfl.zug': 'Tiro FP carica (come Excel «NFL-Tab»): H<sub>t0</sub> = {h0} N a +10 °C · hf_min: H<sub>Tx</sub> = {hmin} N ({tmin}) · hf_max: H<sub>Tx</sub> = {hmax} N ({tmax})',
+    'hf.rfl.zug': 'LC R: freccia del filo di contatto con carico di ghiaccio con H<sub>FP</sub> = 12 kN e H<sub>FC</sub> = 10 kN fissi (come Excel).',
+    'hf.rfl.zug.kurz': 'Tiri FP / FC (fissi)',
+    'hf.un': 'Tensione nominale',
+    'hf.ebv': 'Profilo limite',
+    'hf.schotter': 'Binario su ballast',
+    'hf.f': 'Supplemento dossi/avvallamenti f',
+    'hf.h': 'Supplemento carrelli trasportatori H',
+    'hf.tmin': 'Temperatura del conduttore',
+    'hf.tmax': 'Temperatura ambiente',
+    'hf.zl': 'Carico add. (neve)',
+    'hf.zl.hw': 'solo a −5 °C',
+    'hf.p.titel': 'Solo LC R: verifica del caso di carico di ghiaccio secondo priorità P1.1 a P1.3 (manuale 0161.1010.0012, F. 14)',
+    'hf.cuebr': 'c_übr (coperta)',
+    'hf.lrp.j': 'J — tutti OFerr: 6.05 m',
+    'hf.lrp.n': 'N — OFerr C: 6.20 m',
+    'hf.t.regel': 'Regola (0161.1010.0012, F. 6): temperatura massima del conduttore per hf_min (LC N StCu 50 mm²: fino a +56 °C), temperatura ambiente minima per hf_max (min. −20 °C). Temperature a passi di 5 K come Excel.',
+    'hf.erg.min': 'Altezza minima di progetto del FC hf_min',
+    'hf.erg.max': 'Altezza massima di progetto del FC hf_max',
+    'hf.sp.sym': 'Grandezza',
+    'hf.sp.txt': 'Descrizione',
+    'hf.abs': 'hf_min, assoluta',
+    'hf.bue.basis': 'Passaggio a livello: 5.50 m + 10 mm lastre',
+    'hf.b.gfa': 'Altezza del profilo limite degli ostacoli (DE-OFerr art. 5.2.1.1)',
+    'hf.b.k': 'Supplemento di sicurezza (OFerr 1: 70 mm)',
+    'hf.b.be': 'Distanza di sicurezza elettrica (DE-OFerr art. 5.9.2)',
+    'hf.b.f': 'Supplemento di altezza per dossi e avvallamenti',
+    'hf.b.h': 'Supplemento di altezza per carrelli trasportatori',
+    'hf.z.fg': 'Riserva di sollevamento del binario (RTE 20012, art. 2.6.3)',
+    'hf.z.thu': 'Tolleranza di montaggio del filo di contatto (0161.1010.0011, ampiezza)',
+    'hf.z.fud': 'Oscillazione dinamica del filo di contatto verso il basso',
+    'hf.z.fuv': 'Pre-freccia del filo di contatto (solo LC R, v ≤ 140 km/h)',
+    'hf.z.ffdzl': 'Freccia del filo di contatto con carico di ghiaccio (solo LC R, 0161.1010.0012, F. 14)',
+    'hf.z.ffd40': 'Freccia del filo di contatto alla temperatura del conduttore (solo LC N, 0161.1010.0012, F. 15)',
+    'hf.z.tho': 'Tolleranza di montaggio del filo di contatto (0161.1010.0011, ampiezza)',
+    'hf.z.fudo': 'Oscillazione dinamica verso l’alto (80 % di quella verso il basso)',
+    'hf.z.fuvo': 'Pre-freccia del filo di contatto, segno invertito (solo LC R, v ≤ 140 km/h)',
+    'hf.z.fh': 'Sollevamento del filo di contatto (0161.1010.0201)',
+    'hf.z.ffdmin': 'Freccia del filo di contatto alla temperatura ambiente, segno invertito (solo LC N)',
+    'hf.z.summe.min': 'Somma dei supplementi verso il basso',
+    'hf.z.summe.max': 'Somma dei supplementi verso l’alto',
+    'hf.w.bue': 'Attenzione: passaggio a livello ≥ 5.51 m!',
+    'hf.w.buenfl': 'Passaggio a livello con LC N: verificare secondo la situazione! (profilo longitudinale)',
+    'hf.w.buemax': 'hf_max al passaggio a livello come Excel: 5510 mm + supplementi verso l’alto — da verificare.',
+    'hf.w.p11': 'P1.1 / P1.3 = J: c_übr deve essere 0 e P1.2 = N.',
+    'hf.w.p12j': 'P1.2 = J: c_übr deve essere maggiore di 0.',
+    'hf.w.p12n': 'P1.2 = N: c_übr deve essere 0 (altrimenti f_FD,max,ZL = 0 come Excel).',
+    'hf.w.t56': 'LC N: la temperatura del conduttore StCu 50 mm² raggiunge al massimo +56 °C.',
+    'hf.err.typ': 'Solo per LC N e LC R.',
+    'hf.err.c': 'Campata c solo 60 … 26, 24, 20, 16, 12 o 8 m (come Excel).',
+    'hf.err.v': 'Indicare la velocità.',
+    'hf.err.t.min': 'Temperatura del conduttore: −20 … +80 °C a passi di 5 K.',
+    'hf.err.t.max': 'Temperatura ambiente: −20 … +80 °C a passi di 5 K.',
+    'hf.err.zl.min': 'Carico add. hf_min: 0, 7 o 15 N/m.',
+    'hf.err.zl.max': 'Carico add. hf_max: 0, 7 o 15 N/m.',
+    'hf.err.zlt.min': 'Carico add. hf_min solo a −5 °C.',
+    'hf.err.zlt.max': 'Carico add. hf_max solo a −5 °C.',
+    'hf.err.nfl': 'LC N: indicare combinazione, Lm, FP scarica, temperatura di montaggio e H_FC.',
+    'hf.err.cuebr': 'c_übr: numero intero da 0 a c.',
+    'hf.hinweise': 'Note',
+    'hf.ja': 'Sì',
+    'hf.nein': 'No',
+    'hf.quelle': 'Fonte: Excel FFS «Durchhang 2026», fogli hfmin_v11_D / hfmax_v11_D (DE-OFerr 2024); regolamenti 0161.1010.0011, 0161.1010.0012, 0161.1010.0201; disegno 0162.1020.0006.',
+    'hf.msg.uebernommen': 'Valori ripresi dal calcolo della freccia.',
+    'hf.msg.el': 'Conduttore singolo: nessuna altezza del filo di contatto — scegliere LC N o LC R.',
+    'hf.msg.c.auf': 'Campata {L} m → c = {c} m (valore di tabella successivo, a favore della sicurezza).',
+    'hf.msg.c.gross': 'Campata superiore a 60 m — fuori dalla tabella Excel.',
+    'hf.msg.kombi': 'Combinazione non presente nella tabella Excel — sceglierla.',
     'lf.titel': 'Casi di carico verifica delle distanze',
     'lf.hinweis': 'Impostabile separatamente per ogni sistema. L’applicazione calcola tutti i casi di carico e mostra il più sfavorevole (distanza minima dall’ostacolo sopra).',
     'lf.temps': 'Temperature [°C]',
@@ -14801,6 +15385,7 @@ function setLang(lang) {
   const _thBtn = document.getElementById('thema-btn');
   if (_thBtn) _thBtn.title = t('ui.thema.' + (document.documentElement.dataset.themaWahl || 'auto'));
   if (typeof renderObstacleList === 'function') renderObstacleList();
+  if (document.getElementById('hf-modal')?.classList.contains('open')) renderHf();
 
   // Hinweis: Der Handbuch-Knopf im Header ist reines Symbol ohne Textlabel.
   // Die frühere Zuweisung an 'header-manual-text' lief ins Leere (die ID gibt
