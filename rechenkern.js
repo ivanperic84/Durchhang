@@ -353,19 +353,33 @@ function _rflLast(e, zl) {
   return (q_ges + q_abn) + (zl - q_abn) * anteil;
 }
 
+// Kettenlinie: Höhe an der Stelle x
+function kettenY(c, x) { return c.a * Math.cosh((x - c.x_low) / c.a) + c.C; }
+
+// R-FL: Verschiebung des Fahrdrahts gegenüber seiner Solllage (m, + = nach oben).
+// Tragseil und Fahrdraht sind nachgespannt, die Temperatur wirkt nicht. Eislast
+// und Abnutzung verschieben das Kettenwerk gemeinsam (Hängerlängen fest): Der
+// Fahrdraht folgt dem Tragseil gegenüber dem Referenzzustand «neuer Fahrdraht,
+// ohne Eis» (SBB «Durchhang 2026.xlsm», Blatt RFL, VEM-Formel 7.53a).
+function rflFahrdrahtVerschiebung(cIst, cRef, x) {
+  return (cIst && cRef) ? kettenY(cIst, x) - kettenY(cRef, x) : 0;
+}
+
 // Berechnet alle Zustände aus den (bereits ausgelesenen) Eingaben.
 //   e: { sysMode 'nfl'|'rfl'|'el', L, Lm, H_Ts, H_Fd, h1, h2, T1, q_ges, EA,
 //        alpha, deltaT, flCombo, ZL, wearPct, T3 (null = keine Vergleichskurve) }
 //   H_Ts: bei N-FL mit Kombination = Ts belastet bei 10 °C (nflBezugszustand),
 //         sonst Ts-Zugkraft bei T1.
 //   q_abnutzung (nur R-FL): Gewichtsverlust des Fahrdrahts durch Abnutzung.
-// Rückgabe: { c1, c2, c2_vem, LT1_vem, q_vem_vem, c3, c3_zeichnung, t3Fehler }
+// Rückgabe: { c1, c2, c2_vem, LT1_vem, q_vem_vem, c3, c3_zeichnung, t3Fehler, c_fd_ref }
+//   c_fd_ref (nur R-FL): Tragseil im Referenzzustand (neu, ohne Eis) — Bezug
+//   für die Fahrdrahtlage, siehe rflFahrdrahtVerschiebung().
 // Fehler im Ausgangs- bzw. Zielzustand werden geworfen, mit err.phase = 'c1' | 'c2'.
 // Ein Fehler der T3-Vergleichskurve bricht nicht ab (t3Fehler, c3 = null).
 function berechneZustaende(e) {
   const { sysMode, L, H_Ts, H_Fd, h1, h2, T1, q_ges, deltaT, ZL, T3 } = e;
   const r = { c1: null, c2: null, c2_vem: null, LT1_vem: null, q_vem_vem: null,
-              c3: null, c3_zeichnung: null, t3Fehler: null };
+              c3: null, c3_zeichnung: null, t3Fehler: null, c_fd_ref: null };
 
   try {
     // N-FL mit Kombination: H_Ts ist der Bezugszustand bei 10 °C — der Zustand
@@ -381,6 +395,8 @@ function berechneZustaende(e) {
       r.c2 = (ZL > 0 && !isNaN(H_Fd) && H_Fd > 0)
         ? computeBase(L, _rflLast(e, ZL), H_Ts, h1, h2)
         : r.c1;
+      const q_abn = e.q_abnutzung || 0;
+      r.c_fd_ref = q_abn > 0 ? computeBase(L, q_ges + q_abn, H_Ts, h1, h2) : r.c1;
     } else {
       const z = _zielzustand(e, r.c1, deltaT, ZL);
       r.c2 = z.c; r.c2_vem = z.vem; r.LT1_vem = z.LT1; r.q_vem_vem = z.q_vem;
@@ -407,6 +423,7 @@ if (typeof module !== 'undefined' && module.exports) {
     nflBezugszustand, nflZugkraftBei, nflUnbelastetAusGemessen,
     solveLoadingEq, solveStateEq, solveNFLStateEq, catSagAt, solve3point,
     solveLoadingInverse, solveM_fromS, buildCatenary, maxSeilkraft,
+    kettenY, rflFahrdrahtVerschiebung,
     computeBase, computeThermal, berechneZustaende,
   };
 }

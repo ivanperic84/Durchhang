@@ -130,3 +130,31 @@ for (const fall of FAELLE) {
     nahe(r.c2.T_max, s.Tmax2, 0.5,  'Max. Seilkraft T2 [N]');
   });
 }
+
+// ── R-FL: Fahrdrahtlage wie SBB-Excel (Blatt RFL, VEM-Formel 7.53a) ──
+test('R-FL Fahrdraht: ohne Eis und Abnutzung in der Solllage, Temperatur ohne Wirkung', () => {
+  const basis = { sysMode: 'rfl', L: 45, Lm: 45, H_Ts: 12000, H_Fd: 10000, h1: 7, h2: 7,
+                  T1: 10, q_ges: 13.8764, EA: 1e7, alpha: 1.7e-5, ZL: 0, T3: null };
+  for (const deltaT of [-30, 0, 70]) {
+    const r = K.berechneZustaende({ ...basis, deltaT });
+    for (const x of [5, 22.5, 40])
+      assert.equal(K.rflFahrdrahtVerschiebung(r.c2, r.c_fd_ref, x), 0);
+  }
+});
+
+test('R-FL Fahrdraht: Eislast senkt Tragseil und Fahrdraht gemeinsam um L²/8·ZL/(H_Ts+H_Fd)', () => {
+  const e = { sysMode: 'rfl', L: 45, Lm: 45, H_Ts: 12000, H_Fd: 10000, h1: 7, h2: 7,
+              T1: 10, deltaT: -15, q_ges: 13.8764, EA: 1e7, alpha: 1.7e-5, ZL: 15, T3: null };
+  const r = K.berechneZustaende(e);
+  const dy = K.rflFahrdrahtVerschiebung(r.c2, r.c_fd_ref, 22.5);
+  nahe(dy, -(45 ** 2) / 8 * 15 / (12000 + 10000), 0.002, 'Absenkung Feldmitte');
+  assert.equal(K.rflFahrdrahtVerschiebung(r.c2, r.c_fd_ref, 0), 0);   // Aufhängepunkte fest
+});
+
+test('R-FL Fahrdraht: Abnutzung hebt das Kettenwerk leicht an', () => {
+  const e = { sysMode: 'rfl', L: 45, Lm: 45, H_Ts: 12000, H_Fd: 10000, h1: 7, h2: 7,
+              T1: 10, deltaT: -15, q_ges: 13.8764 - 2.7, q_abnutzung: 2.7, EA: 1e7, alpha: 1.7e-5, ZL: 0, T3: null };
+  const r = K.berechneZustaende(e);
+  const dy = K.rflFahrdrahtVerschiebung(r.c2, r.c_fd_ref, 22.5);
+  nahe(dy, (45 ** 2) / 8 * 2.7 / (12000 + 10000), 0.002, 'Anhebung Feldmitte');
+});
