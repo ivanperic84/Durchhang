@@ -195,6 +195,7 @@ test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', asy
   const r = await seite.evaluate(() => {
     document.getElementById('hf-btn').click();
     const offen = document.getElementById('hf-modal').classList.contains('open');
+    const hauptKnopf = document.getElementById('hf-uebernehmen').classList.contains('haupt');
     // In der Excel gespeicherter Fall (hfmin_v11_D / hfmax_v11_D)
     Object.assign(hfEingabe, { typ: 'nfl', c: 30, v: 141, bue: false, kombi: 'stcu50_cu107', Lm: 30, H_ub: 1700,
       T_montage: 10, H_Fd: 8500, un: 15, schotter: false, ebv: 2, f: 0, H: 0, Tmin: -5, zlMin: 7, lrp: false, Tmax: -5, zlMax: 7 });
@@ -216,9 +217,10 @@ test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', asy
     hfEingabe = null; setProjectState(zustand);
     const geladen = hfEingabe && hfEingabe.typ === 'rfl' && hfEingabe.Tmax === -20;
     closeHf();
-    return { offen, excel, zlGesperrt, rfl, grafiken, texte, pdf, geladen };
+    return { offen, hauptKnopf, excel, zlGesperrt, rfl, grafiken, texte, pdf, geladen };
   });
   assert.equal(r.offen, true);
+  assert.equal(r.hauptKnopf, true, '«Aus Durchhang übernehmen» farblich abgesetzt');
   assert.deepEqual(r.excel.map(s => s.split(' mm')[0]), ["4'928", "6'104"]);
   assert.equal(r.zlGesperrt, true);
   assert.equal(r.rfl, true);

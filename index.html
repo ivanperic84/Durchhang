@@ -1361,6 +1361,9 @@ button.header-manual-link:hover {
 .abs-knopf:disabled { opacity: .45; cursor: default; }
 .abs-knopf.leise { color: var(--muted); }
 .abs-knopf.klein { font-size: .68rem; padding: .12rem .45rem; }
+/* Hauptaktion farblich abgesetzt (z. B. «Aus Durchhang übernehmen») */
+.abs-knopf.haupt { background: var(--primary); border-color: var(--primary); color: var(--on-acc); font-weight: 600; }
+.abs-knopf.haupt:hover:not(:disabled) { background: var(--primary); filter: brightness(1.1); }
 .abs-hinweis { font-size: .68rem; color: var(--tertiary); margin: .2rem 0 .6rem; line-height: 1.45; }
 .abs-leer { font-size: .8rem; color: var(--muted); padding: 1.2rem 0; text-align: center; }
 .abs-scroll { overflow-x: auto; margin-bottom: .6rem; }
@@ -3044,7 +3047,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.13.0';
+const APP_VERSION = 'v3.13.1';
 
 // Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
 function sysName(mode) {
@@ -12957,7 +12960,7 @@ function renderHf() {
   box.innerHTML = `
   <p class="abs-hinweis" style="margin-top:0">${t('hf.einleitung')}</p>
   <div class="abs-leiste">
-    <button class="abs-knopf" onclick="hfAusDurchhang()">${t('hf.uebernehmen')}</button>
+    <button class="abs-knopf haupt" id="hf-uebernehmen" onclick="hfAusDurchhang()">${t('hf.uebernehmen')}</button>
     <button class="abs-knopf" onclick="hfZuruecksetzen()">${t('hf.vorgabe')}</button>
     <span class="abs-trenner"></span>
     <button class="abs-knopf" onclick="hfPdf()">${t('hf.pdf')}</button>
