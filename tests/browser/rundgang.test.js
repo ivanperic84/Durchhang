@@ -342,3 +342,26 @@ test('Zeichnung: «Kettenwerk» ohne Masten bis SOK; hf-Band mit Prüfung, PDF, 
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('H-Punkte ohne SOK gesperrt mit Link zu den Mastangaben; mit SOK Höhe über SOK', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await seite.evaluate(() => { clearSokMum?.(); document.getElementById('sok-mum-left').value = ''; document.getElementById('sok-mum-right').value = ''; berechnen(); });
+  const ohne = await seite.evaluate(() => ({ gesperrt: document.getElementById('probe-h1').disabled,
+    platz: document.getElementById('probe-h1').placeholder, link: document.getElementById('probe-sok-link').style.display !== 'none' }));
+  await seite.click('#probe-sok-link');
+  await seite.waitForTimeout(500);
+  const sprung = await seite.evaluate(() => ({ offen: document.getElementById('mastangaben').open, fokus: document.activeElement?.id }));
+  const mit = await seite.evaluate(() => {
+    document.getElementById('sok-mum-left').value = 500; onSokMumLeftInput();
+    _mpSetzen({ x: [22.5, null, null, null], h: [506.83, null, null, null] }); berechnen();
+    return { frei: !document.getElementById('probe-h1').disabled, rel: document.getElementById('probe-h-rel-1').textContent,
+             link: document.getElementById('probe-sok-link').style.display !== 'none' };
+  });
+  assert.deepEqual(ohne, { gesperrt: true, platz: 'SOK fehlt', link: true });
+  assert.deepEqual(sprung, { offen: true, fokus: 'sok-mum-left' });
+  assert.equal(mit.frei, true);
+  assert.match(mit.rel, /^≙ 6\.83 m /);
+  assert.equal(mit.link, false);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});

@@ -979,6 +979,10 @@ body {
 .probe-h-input:focus { outline: none; border-color: var(--h-clr); }
 .probe-h-unit { font-size: .65rem; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
 .probe-h-zeile { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; margin-top: .4rem; }
+.probe-h-rel { grid-column: 2; font-size: .62rem; color: var(--tertiary); min-height: .9em; padding-left: .2rem; font-variant-numeric: tabular-nums; }
+.probe-h-input:disabled { opacity: .55; cursor: not-allowed; }
+.probe-sok-link { margin-top: .35rem; background: none; border: none; padding: 0; font: inherit; font-size: .72rem; font-weight: 600;
+  color: var(--primary); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 .probe-h-input[readonly], .probe-mp-xinput[readonly] { opacity: .6; cursor: not-allowed; }
 /* Schloss je Messpunkt: gesperrt = nicht verschiebbar, nicht löschbar */
 .probe-lock { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 1.45rem; height: 1.45rem;
@@ -2925,32 +2929,37 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
         <div class="probe-m-group">
           <span class="probe-h-badge">H1</span>
           <div class="probe-input-wrap">
-            <input type="number" id="probe-h1" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H1 [m ü. M.]" oninput="setProbeH(1,this.value)">
+            <input type="number" id="probe-h1" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H1 [m ü. M.]" aria-describedby="probe-h-rel-1" oninput="setProbeH(1,this.value)">
             <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
           </div>
+          <span class="probe-h-rel" id="probe-h-rel-1"></span>
         </div>
         <div class="probe-m-group">
           <span class="probe-h-badge">H2</span>
           <div class="probe-input-wrap">
-            <input type="number" id="probe-h2" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H2 [m ü. M.]" oninput="setProbeH(2,this.value)">
+            <input type="number" id="probe-h2" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H2 [m ü. M.]" aria-describedby="probe-h-rel-2" oninput="setProbeH(2,this.value)">
             <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
           </div>
+          <span class="probe-h-rel" id="probe-h-rel-2"></span>
         </div>
         <div class="probe-m-group">
           <span class="probe-h-badge">H3</span>
           <div class="probe-input-wrap">
-            <input type="number" id="probe-h3" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H3 [m ü. M.]" oninput="setProbeH(3,this.value)">
+            <input type="number" id="probe-h3" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H3 [m ü. M.]" aria-describedby="probe-h-rel-3" oninput="setProbeH(3,this.value)">
             <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
           </div>
+          <span class="probe-h-rel" id="probe-h-rel-3"></span>
         </div>
         <div class="probe-m-group">
           <span class="probe-h-badge">H4</span>
           <div class="probe-input-wrap">
-            <input type="number" id="probe-h4" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H4 [m ü. M.]" oninput="setProbeH(4,this.value)">
+            <input type="number" id="probe-h4" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H4 [m ü. M.]" aria-describedby="probe-h-rel-4" oninput="setProbeH(4,this.value)">
             <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
           </div>
+          <span class="probe-h-rel" id="probe-h-rel-4"></span>
         </div>
       </div>
+      <button type="button" class="probe-sok-link" id="probe-sok-link" onclick="sokEintragen()" style="display:none" data-i18n="probe.sok.link">SOK m ü. M. eintragen →</button>
     </div>
     <div class="obs-section" id="obs-section" style="display:none"></div>
     </div><!-- /canvas-scroll-area -->
@@ -3047,7 +3056,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.13.1';
+const APP_VERSION = 'v3.13.2';
 
 // Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
 function sysName(mode) {
@@ -9835,6 +9844,7 @@ function _mpAnzeigen() {
     const s = document.getElementById(`probe-lock-${i}`);
     if (s) { s.setAttribute('aria-pressed', zu ? 'true' : 'false'); s.title = t(zu ? 'probe.entsperren' : 'probe.sperren'); }
   }
+  _hZeileStatus();
 }
 function setProbeH(i, wert) {
   if (probeSperre[i - 1]) return;
@@ -9939,8 +9949,39 @@ function setMindestabstand(wert) {
   _triggerDrawingRebuild();
 }
 
+// H-Zeile an den SOK-Bezug anpassen: ohne SOK m ü. M. gesperrt (Link zu den
+// Mastangaben), mit SOK unter jedem Wert die Höhe über SOK.
+function _hZeileStatus() {
+  const sL = getSokMumLeft(), sR = getSokMumRight();
+  const hasSok = sL !== null || sR !== null;
+  const l = sL ?? sR, r = sR ?? sL, L = getActiveSpan();
+  const xs = _probeXs();
+  for (let i = 1; i <= 4; i++) {
+    const inp = document.getElementById(`probe-h${i}`);
+    if (inp) {
+      inp.disabled = !hasSok;
+      inp.placeholder = t(hasSok ? 'probe.h.placeholder' : 'probe.h.sokfehlt');
+    }
+    const rel = document.getElementById(`probe-h-rel-${i}`);
+    const x = xs[i - 1], h = probeHWerte[i - 1];
+    if (rel) rel.textContent = hasSok && x !== null && h !== null && L > 0
+      ? `≙ ${fN(h - (l + (r - l) * x / L), 2)} m ${t('dyn.ueber.sok')}` : '';
+  }
+  zeigeElement(document.getElementById('probe-sok-link'), !hasSok);
+}
+// Mastangaben öffnen und ins Feld SOK m ü. M. springen
+function sokEintragen() {
+  const det = document.getElementById('mastangaben');
+  if (det) det.open = true;
+  const el = document.getElementById('sok-mum-left');
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => el.focus({ preventScroll: true }), 300);
+}
+
 // Ergebnis der H-Punkte (ohne die Eingabefelder neu aufzubauen)
 function _hindernisErgebnisse() {
+  _hZeileStatus();
   const hasSok = getSokMumLeft() !== null || getSokMumRight() !== null;
   const liste = _hindernisseAngezeigt();
   const sokHw = document.getElementById('hind-sok-fehlt');
@@ -13967,6 +14008,8 @@ const LANG = {
     'hind.punkt.hinzu': '+ Punkt',
     'hind.punkt.weg': 'Punkt löschen',
     'hind.titel': 'H-Punkte: Hindernis oberhalb (z. B. Unterkante Brücke / Bauwerk)',
+    'probe.h.sokfehlt': 'SOK fehlt',
+    'probe.sok.link': 'SOK m ü. M. eintragen →',
     'probe.h.name': 'H-Punkte',
     'probe.h.einheit': 'm ü. M.',
     'probe.sperren': 'Messpunkt sperren (nicht verschieben oder löschen)',
@@ -14784,6 +14827,8 @@ const LANG = {
     'hind.punkt.hinzu': '+ Point',
     'hind.punkt.weg': 'Supprimer le point',
     'hind.titel': 'Points H : obstacle au-dessus (p. ex. sous-face pont / ouvrage)',
+    'probe.h.sokfehlt': 'DRS manquant',
+    'probe.sok.link': 'Saisir le DRS m s.n.m. →',
     'probe.h.name': 'Points H',
     'probe.h.einheit': 'm s.n.m.',
     'probe.sperren': 'Verrouiller le point de mesure (ni déplacer ni supprimer)',
@@ -15601,6 +15646,8 @@ const LANG = {
     'hind.punkt.hinzu': '+ Punto',
     'hind.punkt.weg': 'Elimina punto',
     'hind.titel': 'Punti H: ostacolo sopra (p. es. intradosso ponte / opera)',
+    'probe.h.sokfehlt': 'PRF mancante',
+    'probe.sok.link': 'Inserire il PRF m s.l.m. →',
     'probe.h.name': 'Punti H',
     'probe.h.einheit': 'm s.l.m.',
     'probe.sperren': 'Bloccare il punto di misura (né spostare né eliminare)',
@@ -15823,6 +15870,7 @@ function setLang(lang) {
     const el = document.getElementById('probe-h' + i);
     if (el) el.placeholder = t('probe.h.placeholder');
   });
+  if (typeof _hZeileStatus === 'function') _hZeileStatus();
   const sokPlaceholder = `— ${t('dyn.ueber.mum')}`;
   const sokL = document.getElementById('sok-mum-left');
   if (sokL) sokL.placeholder = sokPlaceholder;
