@@ -2955,6 +2955,10 @@ const KETTENWERK_PRESETS = {
     // H_Ts_ub [N] gemäss Reglagetabelle SBB 0161.1013.0001 für T = -20…+40 °C (5 °C-Schritte)
     H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
                      vals:  [2500,2300,2100,2000,1900,1800,1700,1600,1600,1500,1400,1400,1300] },
+    // Berechnungsart «Starr»: SBB 0161.1013.0003_g (c = 25 m, Basiskraft bei −20 °C)
+    starr: { H_Ts: 3900, H_Ts_ub: 2100, note_ref: 'SBB 0161.1013.0003',
+             H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
+                              vals:  [4300,3800,3400,3100,2700,2400,2100,1900,1700,1500,1400,1200,1100] } },
   },
   nfl_stcu50_cu107_190_8: {
     label: 'StCu 50 + Cu 107 · 8 kN',
@@ -2965,6 +2969,10 @@ const KETTENWERK_PRESETS = {
     sh: 1.90, H_Ts: 6100, H_Ts_ub: 3500, H_Fd: 8500, T1: 10, wear_max: 30,
     H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
                      vals:  [5700,5300,4900,4500,4200,3800,3500,3200,3000,2700,2500,2300,2200] },
+    // Berechnungsart «Starr»: SBB 0161.1013.0003_g (c = 25 m, Basiskraft bei −20 °C)
+    starr: { H_Ts: 5600, H_Ts_ub: 4500, note_ref: 'SBB 0161.1013.0003',
+             H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
+                              vals:  [7100,6700,6200,5800,5400,4900,4500,4100,3700,3300,2900,2600,2300] } },
   },
   nfl_stcu92_cu107_240_6: {
     label: 'StCu 92 + Cu 107 · 6 kN',
@@ -2975,6 +2983,10 @@ const KETTENWERK_PRESETS = {
     sh: 2.40, H_Ts: 4300, H_Ts_ub: 2100, H_Fd: 8500, T1: 10, wear_max: 30,
     H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
                      vals:  [2600,2500,2400,2300,2200,2200,2100,2000,2000,1900,1900,1800,1800] },
+    // Berechnungsart «Starr»: SBB 0161.1013.0003_g (c = 25 m, Basiskraft bei −20 °C)
+    starr: { H_Ts: 3400, H_Ts_ub: 1700, note_ref: 'SBB 0161.1013.0003',
+             H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
+                              vals:  [2800,2500,2300,2100,1900,1800,1700,1600,1500,1500,1400,1300,1300] } },
   },
   nfl_stcu92_cu107_190_8: {
     label: 'StCu 92 + Cu 107 · 8 kN',
@@ -2985,6 +2997,10 @@ const KETTENWERK_PRESETS = {
     sh: 1.90, H_Ts: 5500, H_Ts_ub: 2900, H_Fd: 8500, T1: 10, wear_max: 30,
     H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
                      vals:  [4300,4000,3700,3400,3200,3100,2900,2800,2600,2500,2400,2300,2300] },
+    // Berechnungsart «Starr»: SBB 0161.1013.0003_g (c = 25 m, Basiskraft bei −20 °C)
+    starr: { H_Ts: 4400, H_Ts_ub: 2500, note_ref: 'SBB 0161.1013.0003',
+             H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
+                              vals:  [5500,4800,4200,3600,3200,2800,2500,2300,2100,1900,1800,1700,1600] } },
   },
   nfl_stcu92_cu150_gotthard: {
     label: 'StCu 92 + Cu 150 · 10 kN (Gotthard)',
@@ -2995,6 +3011,10 @@ const KETTENWERK_PRESETS = {
     sh: 2.40, H_Ts: 7100, H_Ts_ub: 3300, H_Fd: 10000, T1: 10, wear_max: 25,
     H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
                      vals:  [5200,4800,4400,4100,3800,3500,3300,3100,3000,2800,2700,2600,2500] },
+    // Berechnungsart «Starr»: SBB 0161.1013.0003_g (c = 25 m, Basiskraft bei −20 °C)
+    starr: { H_Ts: 5900, H_Ts_ub: 3400, note_ref: 'SBB 0161.1013.0003',
+             H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
+                              vals:  [7600,6700,5900,5200,4500,3900,3400,3000,2700,2400,2200,2000,1900] } },
   },
 
   // ── R-FL ────────────────────────────────────────────────────────────────────
@@ -3014,6 +3034,17 @@ const KETTENWERK_PRESETS = {
   },
 };
 
+// ── Reglagewerte eines Kettenwerks je Berechnungsart ──────────────────────────
+// Ausgleichend: Normal-Reglagetabelle SBB 0161.1013.0001 (c = 45 m)
+// Starr:        Starr-Reglagetabelle SBB 0161.1013.0003 (c = 25 m) — nur N-FL
+function _presetReglage(p) {
+  const starr = p.sysMode === 'nfl' && p.starr && typeof elBerechnungsart !== 'undefined'
+                && elBerechnungsart === 'starr';
+  return starr
+    ? { H_Ts: p.starr.H_Ts, H_Ts_ub: p.starr.H_Ts_ub, H_Ts_ub_table: p.starr.H_Ts_ub_table, note_ref: p.starr.note_ref }
+    : { H_Ts: p.H_Ts, H_Ts_ub: p.H_Ts_ub, H_Ts_ub_table: p.H_Ts_ub_table, note_ref: p.note_ref };
+}
+
 // ── Preset-Infobox: übersetzte Titel/Notiz-Texte ──────────────────────────────
 function buildPresetTitle(p) {
   const ts = t('preset.ts.abbr'), fd = t('preset.fd.abbr');
@@ -3027,11 +3058,12 @@ function buildPresetNote(p, currentH_Ts_ub, currentT1) {
   const ts = t('preset.ts.abbr'), fd = t('preset.fd.abbr');
   if (p.sysMode === 'nfl') {
     const bel = t('preset.nfl.bel'), ub = t('preset.nfl.ub'), bei = t('preset.bei.t1');
-    const ref = p.note_ref ? `  (${p.note_ref})` : '';
-    const H_ub = (currentH_Ts_ub != null) ? currentH_Ts_ub : p.H_Ts_ub;
+    const rg  = _presetReglage(p);
+    const ref = rg.note_ref ? `  (${rg.note_ref})` : '';
+    const H_ub = (currentH_Ts_ub != null) ? currentH_Ts_ub : rg.H_Ts_ub;
     const T1   = (currentT1   != null) ? currentT1   : p.T1;
     const sign = T1 >= 0 ? '+' : '';
-    return `Reglage ${ts}: ${bel} ${fmt(p.H_Ts)} N / ${ub} ${fmt(H_ub)} N ${bei} ${sign}${T1} °C  ·  H ${fd}: ${fmt(p.H_Fd)} N${ref}`;
+    return `Reglage ${ts}: ${bel} ${fmt(rg.H_Ts)} N / ${ub} ${fmt(H_ub)} N ${bei} ${sign}${T1} °C  ·  H ${fd}: ${fmt(p.H_Fd)} N${ref}`;
   } else if (p.sysMode === 'rfl') {
     const konst = t('preset.hts.konst');
     const abnutzung = t('preset.abnutzung');
@@ -5195,7 +5227,8 @@ function applyPreset() {
   // Sichtbare Eingabefelder setzen
   document.getElementById('sh').value      = preset.sh;
   // N-FL: Unbelastet-Zugkraft als Eingabe; H_belastet wird in readInputs() berechnet
-  document.getElementById('tension').value = (preset.sysMode === 'nfl' && preset.H_Ts_ub != null) ? preset.H_Ts_ub : preset.H_Ts;
+  const _rg = _presetReglage(preset);
+  document.getElementById('tension').value = (preset.sysMode === 'nfl' && _rg.H_Ts_ub != null) ? _rg.H_Ts_ub : preset.H_Ts;
   document.getElementById('temp1').value   = preset.T1;
 
   // Infobox unter dem Dropdown anzeigen (Standard-Stil zurücksetzen)
@@ -5220,8 +5253,8 @@ function applyPreset() {
     updateSysModeUI(sysMode);
   }
   // Referenzwerte für T1-abhängige H_Ts_ub-Berechnung speichern
-  if (preset.sysMode === 'nfl' && preset.H_Ts_ub_table != null) {
-    activePresetRef = { H_Ts_ub_table: preset.H_Ts_ub_table };
+  if (preset.sysMode === 'nfl' && _rg.H_Ts_ub_table != null) {
+    activePresetRef = { H_Ts_ub_table: _rg.H_Ts_ub_table };
     activePresetP   = preset;
   } else {
     activePresetRef = null;
@@ -5579,9 +5612,16 @@ function compute3pt(L, h1, h2) {
     const qFdBase  = parseFloat(document.getElementById('weight-fd').value);
     const qFd      = qFdBase * (1 - wearPct / 100);
     const qTs      = parseFloat(document.getElementById('weight-ts').value);
-    M = combo ? (sysMode === 'nfl' ? mflAbgenutzt(combo, wearPct, qFdBase)
-                                   : combo.MFL - qFdBase * (wearPct / 100))
-              : (qTs + qFd + Q_HAENGER);
+    if (combo && sysMode === 'rfl') {
+      // R-FL: Abnutzung als negative Zusatzlast, Anteil H_Ts/(H_Ts+H_Fd) —
+      // H_Ts ist hier gesucht, deshalb mit dem aktuellen Feldwert als Startwert
+      const q_abn = (combo.qFdAbnutzung ?? qFdBase) * (wearPct / 100);
+      const H_Fd  = parseFloat(document.getElementById('tension-fd').value);
+      const H0    = parseFloat(document.getElementById('tension').value) || 12000;
+      M = _rflLast({ q_ges: combo.MFL - q_abn, q_abnutzung: q_abn, H_Ts: H0, H_Fd }, 0);
+    } else {
+      M = combo ? mflAbgenutzt(combo, wearPct, qFdBase) : (qTs + qFd + Q_HAENGER);
+    }
   }
 
   if (xC <= 0 || xC >= c) {
@@ -7448,6 +7488,17 @@ function setBerechnungsart(art) {
     // Manuelle L_ref-Overrides verwerfen (Reglage Einzelleiter)
     elReglageLrefOvr = null;
     _applyReglageOvr();
+  } else if (sysMode === 'nfl' && activePresetP) {
+    // N-FL: Montagezugkraft aus Normal- bzw. Starr-Reglagetabelle — nur wenn der
+    // Wert noch aus der Tabelle stammt (kein manueller Wert, keine Foto-Aufnahme)
+    const rg = _presetReglage(activePresetP);
+    if (activePresetRef && rg.H_Ts_ub_table) {
+      activePresetRef = { H_Ts_ub_table: rg.H_Ts_ub_table };
+      updateH_Ts_ubFromT1();
+    }
+    const noteEl = document.getElementById('combo-note');
+    if (noteEl) noteEl.textContent = buildPresetNote(activePresetP,
+      parseInt(document.getElementById('tension').value), parseFloat(document.getElementById('temp1').value));
   }
   berechnen();
 }
@@ -7567,10 +7618,14 @@ function _applyReglageOvr() {
     updateH_Ts_ubFromT1();
   } else if (mat && H_max && mat.E && mat.AK) {
     // Override aktiv oder «Starr» (L_ref = 25 m): Werte aus H_max herleiten.
+    // Reine Starr-Herleitung (ohne manuelle Werte) auf 100 N runden wie die
+    // Reglagetabelle SBB 0161.1013.0003 — so entstehen exakt deren Werte.
+    const wieTabelle = elBerechnungsart === 'starr' && elReglageHmaxOvr === null && elReglageLrefOvr === null;
     const temps = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40];
     const vals  = temps.map(T => {
       const H = _reglageH(mat, H_max, L_ref, T);
-      return H !== null ? Math.round(H) : 0;
+      if (H === null) return 0;
+      return wieTabelle ? Math.round(H / 100) * 100 : Math.round(H);
     });
     activePresetRef = { H_Ts_ub_table: { temps, vals } };
     updateH_Ts_ubFromT1();
@@ -7927,7 +7982,7 @@ function readInputs() {
   // H_Ts_abgeleitet: H_Ts stammt aus der Zustandsgleichung und wird im Feld
   // «H Ts belastet» angezeigt. Das Schreiben übernimmt berechnen() — readInputs()
   // liest nur und darf das DOM nicht verändern (quickDraw() nutzt es beim Ziehen).
-  let H_Ts, q_ges_eff, H_Ts_abgeleitet = false;
+  let H_Ts, q_ges_eff, H_Ts_abgeleitet = false, q_abnutzung = 0;
   if (sysMode === 'nfl' && flCombo) {
     // Wie SBB-Excel: Abnutzungsgewicht aus der Kombination; H_Ts ist der
     // Bezugszustand «Ts belastet bei 10 °C» (neuer Draht), aus der unbelasteten
@@ -7938,8 +7993,10 @@ function readInputs() {
   } else if (sysMode === 'rfl' && flCombo) {
     // R-FL mit bekannter Kombination: MFL aus Tabelle (exakte Gewichte inkl. Klemmen/Hänger)
     // q_Haenger im manuellen q_ges wäre 0.196 N/m (falsch), FL-Tabelle hat 0.706 N/m
-    const MFL_eff = flCombo.MFL - q_Fd_base * (wearPct / 100);
-    q_ges_eff = MFL_eff;
+    // Abnutzung wie SBB-Excel: Gewichtsverlust aus der Kombination (Blatt Daten),
+    // im Rechenkern als negative Zusatzlast auf Ts+Fd verteilt (_rflLast)
+    q_abnutzung = (flCombo.qFdAbnutzung ?? q_Fd_base) * (wearPct / 100);
+    q_ges_eff = flCombo.MFL - q_abnutzung;
     H_Ts = H_Ts_ub;  // R-FL: Zugkraft konstant (Nachspannvorrichtung)
   } else if (sysMode === 'nfl' && EA_Ts !== null && !isNaN(H_Ts_ub)) {
     q_ges_eff = q_ges;
@@ -7973,7 +8030,7 @@ function readInputs() {
   }
 
   return { L, Lm, H_Ts, H_Ts_ub, H_Fd, h1, h2, T1, T2, q_Ts, q_Fd, q_Fd_base, sh,
-           q_ges: q_ges_eff, EA, EA_Ts, alpha, deltaT, flCombo, ZL, H_Ts_abgeleitet };
+           q_ges: q_ges_eff, EA, EA_Ts, alpha, deltaT, flCombo, ZL, H_Ts_abgeleitet, q_abnutzung };
 }
 
 // ── Entprellung ──────────────────────────────────────────────────────────
@@ -8010,7 +8067,7 @@ function berechnen() {
   // ein lokaler Bezeichner würde die globale Variable mit undefined verdecken.
   const { L, Lm, H_Ts, H_Ts_ub, H_Fd, h1, h2, T1, T2, q_Ts, q_Fd, q_Fd_base,
           sh, q_ges, EA, EA_Ts, alpha, deltaT, flCombo, ZL,
-          H_Ts_abgeleitet } = readInputs();
+          H_Ts_abgeleitet, q_abnutzung } = readInputs();
 
   // Anzeigefeld «H Ts belastet» aktualisieren (nur hier, nicht in readInputs()).
   if (H_Ts_abgeleitet) {
@@ -8053,7 +8110,7 @@ function berechnen() {
   let z;
   try {
     z = berechneZustaende({ sysMode, L, Lm, H_Ts, H_Fd, h1, h2, T1, q_ges, EA,
-                            alpha, deltaT, flCombo, ZL, wearPct, T3: _T3 });
+                            alpha, deltaT, flCombo, ZL, wearPct, q_abnutzung, T3: _T3 });
   } catch (e) {
     const titel = e.phase === 'c1' ? 'err.ausgangszustand'
                 : sysMode === 'nfl' ? 'err.zielzustand.ts' : 'err.zielzustand';
@@ -15157,7 +15214,7 @@ renderObstacleList();
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
-  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span style="opacity:.6">v3.2</span>
+  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span style="opacity:.6">v3.3</span>
 </footer>
 
 </body>

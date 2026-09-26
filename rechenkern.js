@@ -114,10 +114,13 @@ function solveLoadingEq(H_ub, q_Ts, q_ges, Lm, EA_Ts) {
 //   G = (q·Lm)²/24,  C = 1/EA,  K = G/H1² − C·H1 + α·ΔT
 // Gelöst mit Newton-Raphson (Startwert H2 = H1)
 // ═══════════════════════════════════════════════════════════════
-function solveStateEq(q, Lm, H1, EA, alpha, deltaT) {
+// q1 = Last im Ausgangszustand (Vorgabe: wie Zielzustand). Mit Eislast ist der
+// Ausgangszustand eisfrei: q1 = q ohne Z_L, q = q + Z_L (wie SBB-Excel; sonst
+// steigt die Zugkraft kaum und der Durchhang wird stark überschätzt).
+function solveStateEq(q, Lm, H1, EA, alpha, deltaT, q1 = q) {
   const G = (q * Lm) ** 2 / 24;
   const C = 1 / EA;
-  const K = G / (H1 * H1) - C * H1 + alpha * deltaT;
+  const K = (q1 * Lm) ** 2 / (24 * H1 * H1) - C * H1 + alpha * deltaT;
   let H = H1;
   // When K < 0 the cubic has a local minimum at H_crit = -2K/(3C).
   // If H1 lies left of that minimum, Newton-Raphson diverges.
@@ -328,7 +331,8 @@ function _zielzustand(e, c1, dT, zl) {
     return { c, vem, LT1, q_vem };
   }
   if (EA !== null && EA !== undefined) {
-    const H2 = solveStateEq(q_ges + zl, Lm, H_Ts, EA, alpha, dT);
+    // Ausgangszustand ohne Eis (q_ges), Zielzustand mit Eis (q_ges + zl)
+    const H2 = solveStateEq(q_ges + zl, Lm, H_Ts, EA, alpha, dT, q_ges);
     return { c: computeBase(L, q_ges + zl, H2, h1, h2), vem: null, LT1: null, q_vem: null };
   }
   // Ohne E·A: nur thermische Längenänderung
@@ -336,11 +340,25 @@ function _zielzustand(e, c1, dT, zl) {
   return { c: computeThermal(L, c1.W, s2, h1, h2), vem: null, LT1: null, q_vem: null };
 }
 
+// R-FL: wirksame Linienlast für die Ts-Kurve. Zusatzlasten wirken auf Ts und Fd
+// gemeinsam: f_ZL = ZL·c²/(8·(H_Ts+H_Fd)) → Anteil H_Ts/(H_Ts+H_Fd).
+// Die Fahrdraht-Abnutzung ist wie in der SBB-Excel eine NEGATIVE Zusatzlast
+// (Notiz 7c) und wird gleich verteilt. e.q_ges = Gewicht MIT Abnutzung,
+// e.q_abnutzung = Gewichtsverlust durch Abnutzung [N/m].
+function _rflLast(e, zl) {
+  const { q_ges, H_Ts, H_Fd } = e;
+  const q_abn = e.q_abnutzung || 0;
+  if (!(H_Fd > 0)) return q_ges + zl;
+  const anteil = H_Ts / (H_Ts + H_Fd);
+  return (q_ges + q_abn) + (zl - q_abn) * anteil;
+}
+
 // Berechnet alle Zustände aus den (bereits ausgelesenen) Eingaben.
 //   e: { sysMode 'nfl'|'rfl'|'el', L, Lm, H_Ts, H_Fd, h1, h2, T1, q_ges, EA,
 //        alpha, deltaT, flCombo, ZL, wearPct, T3 (null = keine Vergleichskurve) }
 //   H_Ts: bei N-FL mit Kombination = Ts belastet bei 10 °C (nflBezugszustand),
 //         sonst Ts-Zugkraft bei T1.
+//   q_abnutzung (nur R-FL): Gewichtsverlust des Fahrdrahts durch Abnutzung.
 // Rückgabe: { c1, c2, c2_vem, LT1_vem, q_vem_vem, c3, c3_zeichnung, t3Fehler }
 // Fehler im Ausgangs- bzw. Zielzustand werden geworfen, mit err.phase = 'c1' | 'c2'.
 // Ein Fehler der T3-Vergleichskurve bricht nicht ab (t3Fehler, c3 = null).
@@ -353,16 +371,15 @@ function berechneZustaende(e) {
     // N-FL mit Kombination: H_Ts ist der Bezugszustand bei 10 °C — der Zustand
     // bei T1 folgt daraus (bei T1 = 10 °C ohne Abnutzung identisch).
     const H1 = (sysMode === 'nfl' && e.flCombo) ? nflZugkraftBei(H_Ts, T1, 0, e) : H_Ts;
-    r.c1 = computeBase(L, q_ges, H1, h1, h2);
+    r.c1 = computeBase(L, sysMode === 'rfl' ? _rflLast(e, 0) : q_ges, H1, h1, h2);
   }
   catch (err) { err.phase = 'c1'; throw err; }
 
   try {
     if (sysMode === 'rfl') {
-      // R-FL: konstante Zugkraft; ZL (Eislast) teilt sich auf Ts+Fd auf:
-      // f_ZL = ZL·c²/(8·(H_Ts+H_Fd))
+      // R-FL: konstante Zugkraft; ZL (Eislast) teilt sich auf Ts+Fd auf
       r.c2 = (ZL > 0 && !isNaN(H_Fd) && H_Fd > 0)
-        ? computeBase(L, q_ges + ZL * H_Ts / (H_Ts + H_Fd), H_Ts, h1, h2)
+        ? computeBase(L, _rflLast(e, ZL), H_Ts, h1, h2)
         : r.c1;
     } else {
       const z = _zielzustand(e, r.c1, deltaT, ZL);
@@ -386,7 +403,7 @@ function berechneZustaende(e) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     Q_HAENGER, EISLAST_TEMPERATUR, eislastWirksamBei,
-    NFL_BEZUGSTEMPERATUR, runde5, runde10, mflAbgenutzt, nflBezugUngerundet,
+    NFL_BEZUGSTEMPERATUR, runde5, runde10, mflAbgenutzt, nflBezugUngerundet, _rflLast,
     nflBezugszustand, nflZugkraftBei, nflUnbelastetAusGemessen,
     solveLoadingEq, solveStateEq, solveNFLStateEq, catSagAt, solve3point,
     solveLoadingInverse, solveM_fromS, buildCatenary, maxSeilkraft,
