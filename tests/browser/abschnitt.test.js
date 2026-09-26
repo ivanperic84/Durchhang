@@ -58,7 +58,7 @@ test('Hindernis oberhalb: ungünstigster Lastfall, Grenzwert, Lastfall-Optionen'
   await abschnittLaden(seite);
   const r = await seite.evaluate(() => {
     abschnittFeldOeffnen(1);
-    hindernisse = [{ id: _hindernisId++, name: 'Brücke', feld: 1, von: 10, bis: 20, uk: 508.3 }];
+    hindernisse = [{ id: _hindernisId++, name: 'Brücke', feld: 1, verbinden: true, punkte: [{ x: 20, h: 508.3 }, { x: 10, h: 508.3 }] }];
     renderObstacleList();
     setMindestabstand('0.5'); berechnen();
     const vorgabe = _nachweis[0];
@@ -95,13 +95,13 @@ test('Export ganzer Abschnitt (IFC, DXF) und Speichern/Laden', async () => {
   const dxf = await laden(() => abschnittExport('dxf'));
   assert.match(dxf, /\n11\n2600128\.0000\n21\n1200016\.0000\n/);   // letzter Mast erreicht (Linienende)
   const r = await seite.evaluate(() => {
-    hindernisse = [{ id: _hindernisId++, name: 'X', feld: 2, von: 1, bis: 2, uk: 520 }];
+    hindernisse = [{ id: _hindernisId++, name: 'X', feld: 2, verbinden: false, punkte: [{ x: 1, h: 520 }] }];
     const st = JSON.parse(JSON.stringify(getProjectState()));
     abschnitt = { masten: [], offen: null }; hindernisse = [];
     setProjectState(st);
-    return { masten: abschnitt.masten.length, h: hindernisse.map(h => [h.feld, h.uk]) };
+    return { masten: abschnitt.masten.length, h: hindernisse.map(h => [h.feld, h.verbinden, h.punkte]) };
   });
-  assert.deepEqual(r, { masten: 4, h: [[2, 520]] });
+  assert.deepEqual(r, { masten: 4, h: [[2, false, [{ x: 1, h: 520 }]]] });
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
@@ -109,8 +109,40 @@ test('Export ganzer Abschnitt (IFC, DXF) und Speichern/Laden', async () => {
 test('Hindernisliste ist unter dem Diagramm sichtbar und bedienbar', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   await seite.click('text=' + await seite.evaluate(() => t('hind.hinzu')));
-  const sichtbar = await seite.isVisible('#obs-section .hind-tab input');
+  const sichtbar = await seite.isVisible('#obs-section .hind-block .hind-px');
   assert.equal(sichtbar, true);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Hindernis mit Punkten: schräge Unterkante, Einzelpunkte, alte H-Punkte werden übernommen', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    document.getElementById('sok-mum-left').value = 500; onSokMumLeftInput();
+    setMindestabstand('0.5');
+    // schräg ansteigend, ungeordnet eingegeben
+    hindernisse = [{ id: _hindernisId++, name: 'Rampe', feld: 0, verbinden: true, punkte: [{ x: 30, h: 510 }, { x: 5, h: 507.3 }] }];
+    renderObstacleList(); berechnen();
+    const schraeg = _nachweis[0].best;
+    // gleiche Punkte einzeln → nur an x = 5 und 30 geprüft
+    hindernisse[0].verbinden = false; berechnen();
+    const einzeln = _nachweis[0].best;
+    // Projekt mit alten H-Punkten (Stand vor v3.9.3) laden
+    const st = JSON.parse(JSON.stringify(getProjectState()));
+    delete st.hindernisse;
+    st.fields['probe-x1'] = '22.5'; st.fields['probe-h1'] = '508.9';
+    st.fields['min-clearance-input'] = '0.4'; delete st.fields['hind-min'];
+    setProjectState(st);
+    return { schraeg, einzeln, uebernommen: hindernisse.map(h => ({ name: h.name, verbinden: h.verbinden, punkte: h.punkte })), a: minClearance,
+             zeichnung: (setCanvasView('zeichnung'), document.getElementById('scale-svg-container').innerHTML.includes('a = ')) };
+  });
+  // Das Seil hängt durch, die Unterkante ist zwischen den Punkten gerade: der kleinste
+  // Abstand liegt daher immer an einem Punkt (oder am Feldrand) — verbunden = einzeln.
+  assert.ok([5, 30].includes(r.schraeg.x));
+  assert.ok(Math.abs(r.schraeg.abstand - r.einzeln.abstand) < 1e-9);
+  assert.deepEqual(r.uebernommen, [{ name: 'H-Punkte', verbinden: false, punkte: [{ x: 22.5, h: 508.9 }] }]);
+  assert.equal(r.a, 0.4);
+  assert.equal(r.zeichnung, true, 'Hindernis in der Zeichnung beschriftet');
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
