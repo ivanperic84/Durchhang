@@ -1305,6 +1305,24 @@ button.header-manual-link:hover {
 
 /* ── Rückfrage-Dialog (ersetzt confirm/prompt) ── */
 #rueckfrage .modal-card { max-width: 26rem; }
+.koord-block { margin-top: .8rem; padding-top: .6rem; border-top: 1px solid var(--border); }
+.schalter-zeile { display: flex; align-items: center; gap: .5rem; font-size: .75rem; color: var(--text2); cursor: pointer; user-select: none; }
+.schalter-zeile input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.schalter { position: relative; width: 30px; height: 17px; border-radius: 9px; background: var(--s4); transition: background .15s; flex-shrink: 0; }
+.schalter::after { content: ''; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: left .15s; }
+.schalter-zeile input:checked + .schalter { background: var(--primary); }
+.schalter-zeile input:checked + .schalter::after { left: 15px; }
+.schalter-zeile input:focus-visible + .schalter { outline: 2px solid var(--primary); outline-offset: 2px; }
+.koord-hinweis { margin: .45rem 0 .4rem; font-size: .66rem; color: var(--tertiary); line-height: 1.4; }
+.koord-grid > span[id^='koord-lbl-']:not(.koord-kopf) { font-weight: 600; color: var(--text2); }
+.koord-grid { display: grid; grid-template-columns: 1.1rem 1fr 1fr; gap: .28rem .4rem; align-items: center; font-size: .68rem; color: var(--muted); }
+.koord-kopf { font-size: .65rem; color: var(--tertiary); padding-left: .15rem; }
+.koord-inp { border: 1px solid var(--border); border-radius: 6px; padding: .22rem .35rem; font-size: .74rem; font-family: inherit;
+  color: var(--text); background: var(--card); width: 100%; min-width: 0; font-variant-numeric: tabular-nums; }
+.koord-info { margin: .4rem 0 0; font-size: .7rem; color: var(--muted); line-height: 1.5; }
+.koord-info .warn { color: var(--warn); }
+input.aus-koord { background: var(--acc-s) !important; color: var(--text) !important; cursor: not-allowed; }
 .foto-genau-hinweis {
   margin: 0 0 .7rem; padding: .4rem .6rem; border-radius: 6px;
   background: var(--warn-s); color: var(--warn); font-size: .74rem; font-weight: 600; line-height: 1.4;
@@ -2131,14 +2149,14 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
       <!-- Masthöhe h1 / h2 -->
       <div class="field-row">
         <div class="field">
-          <label for="h1" id="h1-label">Höhe Leiter h&#x2081; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über Mastfuss</span></label>
+          <label for="h1" id="h1-label">Höhe Leiter h&#x2081; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über SOK</span></label>
           <div class="input-wrap">
             <input type="text" inputmode="decimal" id="h1" value="7.00" oninput="onSokMumInput();berechnenEntprellt()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
             <span class="input-unit">m</span>
           </div>
         </div>
         <div class="field">
-          <label for="h2" id="h2-label">Höhe Leiter h&#x2082; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über Mastfuss</span></label>
+          <label for="h2" id="h2-label">Höhe Leiter h&#x2082; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über SOK</span></label>
           <div class="input-wrap">
             <input type="text" inputmode="decimal" id="h2" value="7.00" oninput="onSokMumInput();berechnenEntprellt()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
             <span class="input-unit">m</span>
@@ -2193,7 +2211,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
       <!-- Optionale Mastangaben: eingeklappt, öffnen sich automatisch, sobald
            ein Wert vorhanden ist (siehe _mastangabenOeffnenFallsBelegt) -->
       <details id="mastangaben" class="mast-details">
-        <summary data-i18n="ui.mastangaben">Mastangaben: SOK m ü. M., Name, KM</summary>
+        <summary data-i18n="ui.mastangaben">Mastangaben: SOK m ü. M., Name, KM, Koordinaten</summary>
       <!-- SOK m ü. M. (optional) -->
       <div style="margin-top:.65rem">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem">
@@ -2238,6 +2256,34 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
           <input type="text" id="mast-km-right" placeholder="000.000"
             oninput="_triggerDrawingRebuild()" onchange="_triggerDrawingRebuild()"
             style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%;letter-spacing:.03em">
+        </div>
+      </div>
+
+      <!-- Koordinaten LV95 (optional): E/N = Aufhängepunkt des Leiters, Z = Mastfuss.
+           Eingeschaltet: Spannweite L und SOK werden daraus berechnet (siehe _koordAnwenden). -->
+      <div class="koord-block">
+        <label class="schalter-zeile" for="koord-aktiv">
+          <input type="checkbox" id="koord-aktiv" role="switch" autocomplete="off" onchange="koordSchalten(this.checked)">
+          <span class="schalter" aria-hidden="true"></span>
+          <span data-i18n="koord.schalter">Koordinaten LV95</span>
+        </label>
+        <div id="koord-felder" style="display:none">
+          <p class="koord-hinweis" data-i18n-html="koord.hinweis">E/N [m] = Aufhängepunkt des Leiters (Ausleger/Joch), Z [m ü. M.] = Mastfuss. Spannweite L und SOK (= Z − Δ Mastfuss-SOK) werden daraus berechnet.</p>
+          <div class="koord-grid">
+            <span></span>
+            <span id="koord-lbl-li" class="koord-kopf" data-i18n="koord.links">links</span>
+            <span id="koord-lbl-re" class="koord-kopf" data-i18n="koord.rechts">rechts</span>
+            <span id="koord-lbl-e" data-i18n="koord.e">E</span>
+            <input type="number" id="koord-e-left"  class="koord-inp" step="0.001" autocomplete="off" placeholder="2'600'000" aria-labelledby="koord-lbl-e koord-lbl-li" oninput="berechnenEntprellt()" onchange="berechnen()">
+            <input type="number" id="koord-e-right" class="koord-inp" step="0.001" autocomplete="off" placeholder="2'600'000" aria-labelledby="koord-lbl-e koord-lbl-re" oninput="berechnenEntprellt()" onchange="berechnen()">
+            <span id="koord-lbl-n" data-i18n="koord.n">N</span>
+            <input type="number" id="koord-n-left"  class="koord-inp" step="0.001" autocomplete="off" placeholder="1'200'000" aria-labelledby="koord-lbl-n koord-lbl-li" oninput="berechnenEntprellt()" onchange="berechnen()">
+            <input type="number" id="koord-n-right" class="koord-inp" step="0.001" autocomplete="off" placeholder="1'200'000" aria-labelledby="koord-lbl-n koord-lbl-re" oninput="berechnenEntprellt()" onchange="berechnen()">
+            <span id="koord-lbl-z" data-i18n="koord.z">Z</span>
+            <input type="number" id="koord-z-left"  class="koord-inp" step="0.001" autocomplete="off" placeholder="—" aria-labelledby="koord-lbl-z koord-lbl-li" oninput="berechnenEntprellt()" onchange="berechnen()">
+            <input type="number" id="koord-z-right" class="koord-inp" step="0.001" autocomplete="off" placeholder="—" aria-labelledby="koord-lbl-z koord-lbl-re" oninput="berechnenEntprellt()" onchange="berechnen()">
+          </div>
+          <p id="koord-info" class="koord-info" aria-live="polite"></p>
         </div>
       </div>
 
@@ -2373,7 +2419,11 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
             </button>
             <button class="share-item" onclick="exportDxf();closeShareMenu()">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 2V14M2 5.5L14 5.5M2 10.5L14 10.5" stroke="currentColor" stroke-width="1" stroke-linejoin="round" opacity="0.5"/></svg>
-              3D DXF (1:100)
+              <span data-i18n="exp.dxf">3D-DXF</span>
+            </button>
+            <button class="share-item" onclick="exportIfc();closeShareMenu()">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 8L14 5.5M8 8L2 5.5M8 8V14" stroke="currentColor" stroke-width="1" stroke-linejoin="round" opacity="0.5"/></svg>
+              <span data-i18n="exp.ifc">IFC4 (BIM)</span>
             </button>
             <div style="height:1px;background:var(--border);margin:.1rem 0"></div>
             <button class="share-item" id="share-item-draw-pdf" onclick="pdfExportDrawing();closeShareMenu()">
@@ -2835,7 +2885,16 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 </div>
 
 <script src="rechenkern.js"></script>
+<script src="export3d.js"></script>
 <script>
+// Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
+const APP_VERSION = 'v3.7';
+
+// Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
+function sysName(mode) {
+  return mode === 'nfl' ? t('sys.nfl.kurz') : mode === 'rfl' ? t('sys.rfl.kurz') : t('sys.el');
+}
+
 // ═══════════════════════════════════════════════════════════════
 // GLOBALER ZUSTAND
 // ═══════════════════════════════════════════════════════════════
@@ -5628,7 +5687,7 @@ function _mastangabenOeffnenFallsBelegt() {
   const det = document.getElementById('mastangaben');
   if (!det) return;
   const belegt = ['sok-mum-left', 'sok-mum-right', 'mast-num-left', 'mast-num-right',
-                  'mast-km-left', 'mast-km-right']
+                  'mast-km-left', 'mast-km-right', 'koord-e-left', 'koord-e-right']
     .some(id => (document.getElementById(id)?.value ?? '').trim() !== '');
   if (belegt) det.open = true;
 }
@@ -6529,7 +6588,8 @@ function getProjectState() {
     'foto-hmast-L','foto-hmast-R',
     'mast-num-left','mast-num-right',
     'mast-km-left','mast-km-right',
-    'mast-delta-sok-left','mast-delta-sok-right'
+    'mast-delta-sok-left','mast-delta-sok-right',
+    'koord-e-left','koord-n-left','koord-z-left','koord-e-right','koord-n-right','koord-z-right'
   ];
   const fields = {};
   FIELD_IDS.forEach(id => {
@@ -6544,7 +6604,7 @@ function getProjectState() {
   const fotoState = typeof window._fotoGetProjectState === 'function'
                     ? window._fotoGetProjectState() : null;
   return { schemaVersion: PROJEKT_SCHEMA_VERSION,
-           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, fotoState, elBerechnungsart, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: _elMatEdits };
+           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, fotoState, elBerechnungsart, koordAktiv, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: _elMatEdits };
 }
 
 // ── Projektzustand: Version, Pruefung, transaktionales Laden ──────────────
@@ -6698,11 +6758,13 @@ function _setProjectStateIntern(s) {
     'foto-hmast-L','foto-hmast-R',
     'mast-num-left','mast-num-right',
     'mast-km-left','mast-km-right',
-    'mast-delta-sok-left','mast-delta-sok-right'];
+    'mast-delta-sok-left','mast-delta-sok-right',
+    'koord-e-left','koord-n-left','koord-z-left','koord-e-right','koord-n-right','koord-z-right'];
   FIELDS.forEach(id => {
     const el = document.getElementById(id);
     if (el && flds[id] != null) el.value = flds[id];
   });
+  koordSchalten(s.koordAktiv === true, { rechnen: false });
   // KM-rechts: userEdited-Flag wiederherstellen falls Wert gesetzt
   const kmR = document.getElementById('mast-km-right');
   if (kmR && flds['mast-km-right']) kmR.dataset.userEdited = '1';
@@ -6862,10 +6924,6 @@ function nextProjectName() {
   for (const ch of letters) { const n = `Projekt ${ch}`; if (!names.has(n)) return n; }
   for (const a of letters) for (const b of letters) { const n = `Projekt ${a}${b}`; if (!names.has(n)) return n; }
   return `Projekt ${Date.now()}`;
-}
-// Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
-function sysName(mode) {
-  return mode === 'nfl' ? t('sys.nfl.kurz') : mode === 'rfl' ? t('sys.rfl.kurz') : t('sys.el');
 }
 function nextCalcName(parentId) {
   const count = getProjMeta().filter(m => !m.isGroup && m.parentId === parentId).length;
@@ -8269,6 +8327,8 @@ function berechnen() {
     cancelAnimationFrame(_berechnenFrame);
     _berechnenFrame = null;
   }
+  // Koordinaten LV95: Spannweite und SOK vor dem Einlesen setzen
+  _koordAnwenden();
   // 3-Punkte-Modus: zuerst FH berechnen und ins tension-Feld schreiben,
   // damit readInputs() den korrekten Wert liest.
   if (mode3pt) {
@@ -10135,7 +10195,7 @@ ${(() => {
 </div>`;
 })()}
 
-<footer>${t('pdf.footer')} &nbsp;·&nbsp; v3.6 &nbsp;|&nbsp; ${new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE')} &nbsp;|&nbsp; Statikteam, Fachentwicklung FS &nbsp;|&nbsp; ${t('pdf.quelle')}</footer>`;
+<footer>${t('pdf.footer')} &nbsp;·&nbsp; ${APP_VERSION} &nbsp;|&nbsp; ${new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE')} &nbsp;|&nbsp; Statikteam, Fachentwicklung FS &nbsp;|&nbsp; ${t('pdf.quelle')}</footer>`;
   return bodyHtml;
 }
 
@@ -11514,125 +11574,281 @@ const _fotoSidebarSync = Ansicht._fotoSidebarSync;
 
 
 // ═══════════════════════════════════════════════════════════════
-// DXF-EXPORT (3D, Massstab 1:200, AC1009/R12)
+// KOORDINATEN LV95
+// E/N = Aufhängepunkt des Leiters (Ausleger/Joch), Z = Mastfuss (m ü. M.).
+// Eingeschaltet gilt: L = waagrechter Abstand der Aufhängepunkte,
+// SOK = Z − «Δ Mastfuss-SOK» (Δ positiv = Mastfuss liegt höher als SOK).
+// Aufhängehöhe = SOK + h₁ bzw. h₂ (h bleibt eine Eingabe).
 // ═══════════════════════════════════════════════════════════════
-function exportDxf() {
-  if (!calcState) return;
-  const { c1, c2, L, h1, h2, sh, flCombo, c2_vem } = calcState;
-  const isNfl = sysMode === 'nfl';
+var koordAktiv = false;   // var: vor der ersten Rechnung sicher lesbar
 
-  // 1:100 in cm → 1 Zeichnungs-cm pro Real-Meter
-  const SC = 1;
+function koordSchalten(an, { rechnen = true } = {}) {
+  koordAktiv = !!an;
+  const cb = document.getElementById('koord-aktiv');
+  if (cb) cb.checked = koordAktiv;
+  zeigeElement(document.getElementById('koord-felder'), koordAktiv);
+  if (!koordAktiv) _koordSperren([]);
+  if (rechnen) berechnen();
+}
 
-  // SOK
+function _koordWerte() {
+  const v = id => { const n = parseFloat(document.getElementById(id)?.value); return Number.isFinite(n) ? n : null; };
+  return {
+    eL: v('koord-e-left'),  nL: v('koord-n-left'),  zL: v('koord-z-left'),
+    eR: v('koord-e-right'), nR: v('koord-n-right'), zR: v('koord-z-right'),
+    dL: v('mast-delta-sok-left') ?? 0, dR: v('mast-delta-sok-right') ?? 0,
+  };
+}
+
+// Feldachse in LV95 oder null (Schalter aus / Werte unvollständig)
+function koordAchse() {
+  if (!koordAktiv) return null;
+  const k = _koordWerte();
+  return lv95Achse(k.eL, k.nL, k.eR, k.nR);
+}
+
+function _aktivesSpannweitenFeld() {
+  if (spanMode === 'single') return document.getElementById('span');
+  const idx = parseInt(document.getElementById('display-span')?.value) || 0;
+  return document.getElementById(`span-${idx}`);
+}
+
+// Felder, die aus den Koordinaten stammen, sperren; alle anderen freigeben
+function _koordSperren(felder) {
+  document.querySelectorAll('input.aus-koord').forEach(el => {
+    if (felder.includes(el)) return;
+    el.readOnly = false; el.classList.remove('aus-koord'); el.removeAttribute('title');
+  });
+  felder.forEach(el => {
+    el.readOnly = true; el.classList.add('aus-koord'); el.title = t('koord.gesperrt.titel');
+  });
+}
+
+function _koordAnwenden() {
+  const info = document.getElementById('koord-info');
+  if (!koordAktiv) { _koordSperren([]); return; }
+  const k = _koordWerte();
+  const achse = lv95Achse(k.eL, k.nL, k.eR, k.nR);
+  const gesperrt = [];
+  const teile = [];
+
+  if (achse) {
+    const spanEl = _aktivesSpannweitenFeld();
+    if (spanEl) {
+      const neuL = achse.L.toFixed(3);
+      if (spanEl.value !== neuL) {
+        spanEl.value = neuL;
+        if (spanMode !== 'single' && typeof updateLm === 'function') updateLm();
+      }
+      gesperrt.push(spanEl);
+    }
+    teile.push(t('koord.info.L').replace('{L}', fN(achse.L, 3)));
+    if (!lv95Plausibel(k.eL, k.nL) || !lv95Plausibel(k.eR, k.nR))
+      teile.push(`<span class="warn">⚠ ${t('koord.unplausibel')}</span>`);
+  } else {
+    teile.push(`<span class="warn">${t('koord.fehlt')}</span>`);
+  }
+
+  // SOK aus Z Mastfuss − Δ (nur Seiten mit Z)
+  const sokLEl = document.getElementById('sok-mum-left');
+  const sokREl = document.getElementById('sok-mum-right');
+  let sokGeaendert = false;
+  const setze = (el, wert) => {
+    const s = wert.toFixed(3);
+    if (el.value !== s) { el.value = s; sokGeaendert = true; }
+    gesperrt.push(el);
+  };
+  if (k.zL !== null) setze(sokLEl, k.zL - k.dL);
+  if (k.zR !== null) { setze(sokREl, k.zR - k.dR); sokREl.dataset.userEdited = '1'; }
+  if (k.zL !== null || k.zR !== null) {
+    const f = v => v === null ? '—' : fN(v, 3);
+    teile.push(t('koord.info.sok')
+      .replace('{l}', f(k.zL !== null ? k.zL - k.dL : getSokMumLeft()))
+      .replace('{r}', f(k.zR !== null ? k.zR - k.dR : getSokMumRight())));
+  }
+  if (sokGeaendert && typeof updateSokMumUI === 'function') updateSokMumUI();
+
+  _koordSperren(gesperrt);
+  if (info) info.innerHTML = teile.join('<br>');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 3D-MODELL für DXF und IFC
+// Gleiche Geometrie wie die massstäbliche Zeichnung: Tragseil bei T₂
+// (N-FL: kombiniertes System), Fahrdraht = Solllage + Tragseil-Verschiebung
+// (N-FL) bzw. eigene Kettenlinie (R-FL), Hänger mit fester Länge.
+// ═══════════════════════════════════════════════════════════════
+const HAENGER_ABSTAND_MAX = 5;      // m — Hänger gleichmässig, höchstens alle 5 m
+const HAENGER_RADIUS      = 0.0025; // m — Bronzeseil ca. Ø 5 mm
+
+function _leiterRadius(matKey) {
+  const m = matKey && typeof MATERIALS !== 'undefined' ? MATERIALS[matKey] : null;
+  return m && m.AK ? Math.sqrt(m.AK / Math.PI) : 0.005;  // aus Querschnitt
+}
+function _materialName(matKey) {
+  const m = matKey && typeof MATERIALS !== 'undefined' ? MATERIALS[matKey] : null;
+  return m ? m.name : null;
+}
+
+// Liefert { modell, fehler } — modell im Format von export3d.js
+function modell3d(stuetzpunkte = 100) {
+  if (!calcState) return { fehler: t('exp.keine.rechnung') };
+  const { c1, c2, L, h1, h2, T1, T2, sh, H_Fd, q_Fd, Lm, H_Ts } = calcState;
+  const isNFL = sysMode === 'nfl', isEl = sysMode === 'el';
+  const cDisp = (isNFL && calcState.c2_vem) ? calcState.c2_vem : c2;
+  const catY  = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
+
+  const achse = koordAchse();
   const sokL = getSokMumLeft(), sokR = getSokMumRight();
   const hasSok = sokL !== null || sokR !== null;
-  const sokLeft  = sokL ?? sokR ?? 0;
-  const sokRight = sokR ?? sokL ?? 0;
-  const sokAt = x => sokLeft + (sokRight - sokLeft) * x / L;
-  const absH  = (x, y) => hasSok ? y + sokAt(x) : y;
+  if (koordAktiv && !achse) return { fehler: t('koord.fehlt') };
+  if (achse && !hasSok) return { fehler: t('exp.geo.sok.fehlt') };
+  const sL = sokL ?? sokR ?? 0, sR = sokR ?? sokL ?? 0;
+  const absY = (x, y) => hasSok ? y + sL + (sR - sL) * x / L : y;
+  const P = (x, y) => feldPunkt(achse, x, absY(x, y));
 
-  // Anzeigeseil: VEM-kombiniert wenn vorhanden, sonst c2
-  const cDisp = (isNfl && flCombo && c2_vem) ? c2_vem : c2;
-  const catFn = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
-
-  const f4 = v => Number(v).toFixed(4);
-
-  // LINE-Entity (AC1009, 3D)
-  const lineEnt = (layer, x1, z1, x2, z2) =>
-    `0\nLINE\n8\n${layer}\n10\n${f4(x1)}\n20\n0.0000\n30\n${f4(z1)}\n11\n${f4(x2)}\n21\n0.0000\n31\n${f4(z2)}\n`;
-
-  let ents = '';
-
-  // --- Tragseil / Einzelleiter (T2, 200 Segmente) ---
-  const N = 200;
-  for (let i = 0; i < N; i++) {
-    const xa = L * i / N, xb = L * (i + 1) / N;
-    ents += lineEnt('TRAGSEIL',
-      xa * SC, absH(xa, catFn(xa, cDisp)) * SC,
-      xb * SC, absH(xb, catFn(xb, cDisp)) * SC);
-  }
-
-  // --- T1-Referenzseil (gestrichelt dargestellt, gleiche Entität) ---
-  for (let i = 0; i < N; i++) {
-    const xa = L * i / N, xb = L * (i + 1) / N;
-    ents += lineEnt('TRAGSEIL_T1',
-      xa * SC, absH(xa, catFn(xa, c1)) * SC,
-      xb * SC, absH(xb, catFn(xb, c1)) * SC);
-  }
-
-  // --- Masten (SOK → Aufhängepunkt) ---
-  const h1Abs = absH(0, h1), h2Abs = absH(L, h2);
-  ents += lineEnt('MAST', 0, sokLeft * SC, 0, h1Abs * SC);
-  ents += lineEnt('MAST', L * SC, sokRight * SC, L * SC, h2Abs * SC);
-
-  // --- SOK-Linie ---
-  if (hasSok) {
-    ents += lineEnt('SOK', 0, sokLeft * SC, L * SC, sokRight * SC);
-  }
-
-  // --- Messpunkte, H-Punkte, Mindestabstand ---
-  const allProbes = [
-    { xv: probeX1, h: probeH1 }, { xv: probeX2, h: probeH2 },
-    { xv: probeX3, h: probeH3 }, { xv: probeX4, h: probeH4 },
-  ].filter(p => p.xv !== null);
-
-  allProbes.forEach(({ xv, h }) => {
-    const hw   = Math.min(1.0, L * 0.03);
-    const catH = absH(xv, catFn(xv, cDisp));
-
-    // Kreuz-Marker auf dem Tragseil (immer, unabhängig von SOK/H)
-    ents += lineEnt('MESSPUNKT', (xv - hw) * SC, catH * SC, (xv + hw) * SC, catH * SC);
-    ents += lineEnt('MESSPUNKT', xv * SC, (catH - hw) * SC, xv * SC, (catH + hw) * SC);
-
-    // H-Punkt + Clearance-Linie (nur wenn H-Wert und SOK gesetzt)
-    if (h !== null && hasSok) {
-      ents += lineEnt('H_PUNKT', (xv - hw) * SC, h * SC, (xv + hw) * SC, h * SC);
-      if (Math.abs(h - catH) > 0.001)
-        ents += lineEnt('H_PUNKT', xv * SC, h * SC, xv * SC, catH * SC);
-
-      // Mindestabstand-Referenzlinie bei h − minClearance
-      if (minClearance !== null) {
-        const minZ = (h - minClearance) * SC;
-        ents += lineEnt('MINDESTABSTAND', (xv - hw) * SC, minZ, (xv + hw) * SC, minZ);
-      }
+  // Fahrdraht (wie Zeichnung)
+  const matFdKey = document.getElementById('material-fd')?.value;
+  const matFd = MATERIALS[matFdKey];
+  const EA_Fd = matFd ? matFd.E * matFd.AK : null;
+  const H_Fd_T2 = (!isNFL && EA_Fd && matFd.alpha != null && T2 !== T1 && q_Fd > 0)
+    ? solveStateEq(q_Fd, Lm || L, H_Fd, EA_Fd, matFd.alpha, T2 - T1) : H_Fd;
+  const fdY = x => {
+    const soll = (h1 - sh) + (h2 - h1) * x / L;
+    const tsShift = isNFL ? catY(x, cDisp) - catY(x, c1) : 0;
+    let kurve = 0;
+    if (!isNFL && q_Fd > 0 && isFinite(H_Fd_T2) && H_Fd_T2 > 0) {
+      const s1 = catSagAt(H_Fd, q_Fd, L, h2 - h1, x), s2 = catSagAt(H_Fd_T2, q_Fd, L, h2 - h1, x);
+      if (isFinite(s1) && isFinite(s2)) kurve = s2 - s1;
     }
+    return soll + tsShift - kurve;
+  };
+  const tsY = x => catY(x, cDisp);
+  const kurve = fn => Array.from({ length: stuetzpunkte + 1 }, (_, i) => { const x = L * i / stuetzpunkte; return P(x, fn(x)); });
+
+  const matTsKey = isEl ? document.getElementById('el-material-select')?.value
+                        : document.getElementById('material-ts')?.value;
+  const leiter = [];
+  leiter.push({
+    art: isEl ? 'leiter' : 'tragseil',
+    name: `${isEl ? t('sys.el') : t('cm.ts')} (T₂ ${T2} °C)`,
+    material: _materialName(matTsKey), radius: _leiterRadius(matTsKey),
+    punkte: kurve(tsY),
+    eigenschaften: [
+      { name: t('exp.p.material'), typ: 'text', wert: _materialName(matTsKey) || '—' },
+      { name: t('exp.p.zugkraft'), typ: 'kraft', wert: Math.round(c2.H) },
+      { name: t('exp.p.durchhang'), typ: 'laenge', wert: +cDisp.sag.toFixed(3) },
+    ],
   });
+  if (!isEl) {
+    leiter.push({
+      art: 'fahrdraht', name: `${t('cm.fd')} (T₂ ${T2} °C)`,
+      material: _materialName(matFdKey), radius: _leiterRadius(matFdKey),
+      punkte: kurve(fdY),
+      eigenschaften: [
+        { name: t('exp.p.material'), typ: 'text', wert: _materialName(matFdKey) || '—' },
+        { name: t('exp.p.zugkraft'), typ: 'kraft', wert: Math.round(H_Fd) },   // nachgespannt / konstant
+      ],
+    });
+    const n = Math.max(2, Math.ceil(L / HAENGER_ABSTAND_MAX));
+    for (let i = 1; i < n; i++) {
+      const x = L * i / n, yu = fdY(x), yo = tsY(x);
+      if (!(yo - yu > 0.01)) continue;   // Tragseil liegt auf dem Fahrdraht: kein Hänger
+      leiter.push({
+        art: 'haenger', name: `${t('exp.haenger')} ${i}`, radius: HAENGER_RADIUS,
+        punkte: [P(x, yu), P(x, yo)],
+        eigenschaften: [
+          { name: t('exp.p.position'), typ: 'laenge', wert: +x.toFixed(3) },
+          { name: t('exp.p.laenge'), typ: 'laenge', wert: +(yo - yu).toFixed(3) },
+        ],
+      });
+    }
+  }
 
-  // --- DXF zusammenbauen (AC1009 / R12) ---
-  const layerDefs = [
-    { name: 'TRAGSEIL',       color: 1  }, // Rot
-    { name: 'TRAGSEIL_T1',    color: 8  }, // Grau
-    { name: 'MAST',           color: 7  }, // Schwarz/Weiss
-    { name: 'SOK',            color: 30 }, // Orange
-    { name: 'H_PUNKT',        color: 3  }, // Grün
-    { name: 'MESSPUNKT',      color: 5  }, // Blau
-    { name: 'MINDESTABSTAND', color: 2  }, // Gelb
+  const txt = id => (document.getElementById(id)?.value || '').trim();
+  const eig = [
+    { name: t('exp.p.system'), typ: 'text', wert: sysName(sysMode) },
+    { name: t('exp.p.spannweite'), typ: 'laenge', wert: +L.toFixed(3) },
+    { name: t('exp.p.t1'), typ: 'temperatur', wert: T1 },
+    { name: t('exp.p.t2'), typ: 'temperatur', wert: T2 },
+    { name: t('exp.p.hoehen'), typ: 'text', wert: hasSok ? t('exp.p.hoehen.mum') : t('exp.p.hoehen.sok') },
   ];
+  if (isNFL || isEl) eig.push({ name: t('par.berechnungsart'), typ: 'text',
+    wert: elBerechnungsart === 'starr' ? t('par.ba.starr') : t('par.ba.ausg') });
+  if (!isEl) eig.push({ name: t('par.sh'), typ: 'laenge', wert: sh });
+  [['mast-num-left', 'exp.p.mast.li'], ['mast-num-right', 'exp.p.mast.re'],
+   ['mast-km-left', 'exp.p.km.li'], ['mast-km-right', 'exp.p.km.re']]
+    .forEach(([id, k]) => { if (txt(id)) eig.push({ name: t(k), typ: 'text', wert: txt(id) }); });
+  if (achse) eig.push({ name: t('exp.p.crs'), typ: 'text', wert: 'LV95 (EPSG:2056) / LN02' });
+  eig.push({ name: t('exp.p.quelle'), typ: 'text', wert: `Durchhang ${APP_VERSION}` });
 
-  let dxf = '';
-  // HEADER
-  dxf += '0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n0\nENDSEC\n';
-  // TABLES → LAYER
-  dxf += '0\nSECTION\n2\nTABLES\n';
-  dxf += `0\nTABLE\n2\nLAYER\n70\n${layerDefs.length + 1}\n`;
-  dxf += '0\nLAYER\n2\n0\n70\n0\n62\n7\n6\nCONTINUOUS\n';
-  layerDefs.forEach(l =>
-    dxf += `0\nLAYER\n2\n${l.name}\n70\n0\n62\n${l.color}\n6\nCONTINUOUS\n`);
-  dxf += '0\nENDTAB\n0\nENDSEC\n';
-  // ENTITIES
-  dxf += '0\nSECTION\n2\nENTITIES\n';
-  dxf += ents;
-  dxf += '0\nENDSEC\n0\nEOF\n';
+  const mastL = txt('mast-num-left'), mastR = txt('mast-num-right');
+  const feld = mastL || mastR ? `${mastL || '?'} – ${mastR || '?'}` : `L = ${fN(L, 2)} m`;
+  const dateiname = `durchhang_${sysName(sysMode)}_${(mastL || mastR) ? `${mastL}-${mastR}` : fN(L, 1) + 'm'}`
+    .replace(/[^\w.\-]+/g, '_');
+  return { achse, hasSok, L, absY, catY, c1, cDisp,
+           modell: { name: `${sysName(sysMode)} · ${feld}`, dateiname, geo: achse ? { epsg: 2056 } : null, leiter, eigenschaften: eig } };
+}
 
-  const fname = `kettenwerk_${L}m_1zu100.dxf`;
-  const blob = new Blob([dxf], { type: 'application/dxf' });
+function _dateiHerunterladen(inhalt, name, typ) {
+  const blob = new Blob([inhalt], { type: typ });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = fname;
+  a.href = url; a.download = name;
   document.body.appendChild(a); a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// ── 3D-DXF (AC1009/R12, Einheit m) ──
+// Ohne Koordinaten: x längs Feld, y = 0, z = Höhe. Mit Koordinaten: E, N, H (LV95/LN02).
+function exportDxf() {
+  const r = modell3d(200);
+  if (r.fehler) { meldung(r.fehler, 'fehler'); return; }
+  const { achse, hasSok, L, absY, catY, c1, cDisp } = r;
+  const P = (x, y) => feldPunkt(achse, x, absY(x, y));
+  const linien = modellAlsDxfLinien(r.modell);
+
+  // Zusätzlich wie bisher: Tragseil bei T₁, SOK-Linie, Messpunkte
+  const N = 200;
+  linien.push({ layer: 'TRAGSEIL_T1',
+    punkte: Array.from({ length: N + 1 }, (_, i) => { const x = L * i / N; return P(x, catY(x, c1)); }) });
+  const { h1, h2 } = calcState;
+  if (!achse) {   // Masten nur ohne Koordinaten: mit Koordinaten ist der Mast nicht am Aufhängepunkt
+    linien.push({ layer: 'MAST', punkte: [P(0, 0), P(0, h1)] });
+    linien.push({ layer: 'MAST', punkte: [P(L, 0), P(L, h2)] });
+  }
+  if (hasSok) linien.push({ layer: 'SOK', punkte: [P(0, 0), P(L, 0)] });
+
+  const hw = Math.min(1.0, L * 0.03);
+  [{ xv: probeX1, h: probeH1 }, { xv: probeX2, h: probeH2 },
+   { xv: probeX3, h: probeH3 }, { xv: probeX4, h: probeH4 }]
+    .filter(p => p.xv !== null)
+    .forEach(({ xv, h }) => {
+      const y = catY(xv, cDisp);
+      linien.push({ layer: 'MESSPUNKT', punkte: [P(xv - hw, y), P(xv + hw, y)] });
+      linien.push({ layer: 'MESSPUNKT', punkte: [P(xv, y - hw), P(xv, y + hw)] });
+      if (h !== null && hasSok) {
+        // H-Punkt ist absolut (m ü. M.) — in Höhe über SOK umrechnen
+        const hRel = h - absY(xv, 0);
+        linien.push({ layer: 'H_PUNKT', punkte: [P(xv - hw, hRel), P(xv + hw, hRel)] });
+        if (Math.abs(hRel - y) > 0.001) linien.push({ layer: 'H_PUNKT', punkte: [P(xv, hRel), P(xv, y)] });
+        if (minClearance !== null)
+          linien.push({ layer: 'MINDESTABSTAND', punkte: [P(xv - hw, hRel - minClearance), P(xv + hw, hRel - minClearance)] });
+      }
+    });
+
+  _dateiHerunterladen(dxfErzeugen(linien), r.modell.dateiname + '.dxf', 'application/dxf');
+}
+
+// ── IFC4 (BIM) ──
+function exportIfc() {
+  const r = modell3d(80);
+  if (r.fehler) { meldung(r.fehler, 'fehler'); return; }
+  let inhalt;
+  try { inhalt = ifcErzeugen(r.modell, { programm: `Durchhang ${APP_VERSION}` }); }
+  catch (e) { meldung(t('exp.fehler') + ': ' + e.message, 'fehler'); return; }
+  _dateiHerunterladen(inhalt, r.modell.dateiname + '.ifc', 'application/x-step');
 }
 
 function pdfExport() {
@@ -12291,6 +12507,42 @@ const LANG = {
     'pdf.haenger.tp': 'Hänger im Tiefpunkt',
     'pdf.maximum': 'Maximum',
     'pdf.minimum': 'Minimum',
+    'koord.schalter': 'Koordinaten LV95',
+    'koord.hinweis': 'E/N [m] = Aufhängepunkt des Leiters (Ausleger/Joch), Z [m ü. M.] = Mastfuss. Spannweite L und SOK (= Z − Δ Mastfuss-SOK) werden daraus berechnet.',
+    'koord.links': 'links',
+    'koord.rechts': 'rechts',
+    'koord.e': 'E',
+    'koord.n': 'N',
+    'koord.z': 'Z',
+    'koord.info.L': 'L = {L} m aus Koordinaten',
+    'koord.info.sok': 'SOK links / rechts = {l} / {r} m ü. M.',
+    'koord.fehlt': 'E und N links und rechts eingeben',
+    'koord.unplausibel': 'Koordinaten liegen ausserhalb des LV95-Bereichs (E ≈ 2 600 000, N ≈ 1 200 000)',
+    'koord.gesperrt.titel': 'Aus den Koordinaten berechnet — Schalter «Koordinaten LV95» ausschalten, um frei einzugeben',
+    'exp.dxf': '3D-DXF',
+    'exp.ifc': 'IFC4 (BIM)',
+    'exp.keine.rechnung': 'Keine gültige Berechnung — Eingaben prüfen',
+    'exp.geo.sok.fehlt': 'Für den Export mit Koordinaten fehlt die Höhe: Z Mastfuss oder SOK m ü. M. eingeben.',
+    'exp.fehler': 'Export fehlgeschlagen',
+    'exp.haenger': 'Hänger',
+    'exp.p.material': 'Material',
+    'exp.p.zugkraft': 'Zugkraft H bei T2',
+    'exp.p.durchhang': 'Durchhang f bei T2',
+    'exp.p.position': 'Position x',
+    'exp.p.laenge': 'Länge',
+    'exp.p.system': 'System',
+    'exp.p.spannweite': 'Spannweite L',
+    'exp.p.t1': 'Temperatur T1',
+    'exp.p.t2': 'Temperatur T2',
+    'exp.p.hoehen': 'Höhenbezug',
+    'exp.p.hoehen.mum': 'm ü. M. (LN02)',
+    'exp.p.hoehen.sok': 'über SOK (lokal)',
+    'exp.p.mast.li': 'Mast links',
+    'exp.p.mast.re': 'Mast rechts',
+    'exp.p.km.li': 'KM links',
+    'exp.p.km.re': 'KM rechts',
+    'exp.p.crs': 'Koordinatensystem',
+    'exp.p.quelle': 'Erzeugt mit',
     'ui.foto.ablauf.modus': 'Ablauf (7-Klick Modus):',
     'ui.foto.ablauf.1': 'Mastspitze links → Mastfuss links',
     'ui.foto.ablauf.2': 'Mastspitze rechts → Mastfuss rechts',
@@ -12302,7 +12554,7 @@ const LANG = {
     'ui.foto.hinweis.3': 'Kamera waagrecht halten — horizontaler Winkel irrelevant',
     'ui.foto.hinweis.4': 'Punkte können nach dem Setzen verschoben werden',
     'card.temperatur': 'Temperatur',
-    'ui.mastangaben': 'Mastangaben: SOK m ü. M., Name, KM',
+    'ui.mastangaben': 'Mastangaben: SOK m ü. M., Name, KM, Koordinaten',
     'ui.mastangaben.sub': '(optional)',
   },
   fr: {
@@ -12880,6 +13132,42 @@ const LANG = {
     'pdf.haenger.tp': 'Suspension au point le plus bas',
     'pdf.maximum': 'maximum',
     'pdf.minimum': 'minimum',
+    'koord.schalter': 'Coordonnées MN95',
+    'koord.hinweis': 'E/N [m] = point d’appui du conducteur (console/portique), Z [m s.n.m.] = pied de mât. La portée L et le DRS (= Z − Δ pied de mât-DRS) en sont calculés.',
+    'koord.links': 'gauche',
+    'koord.rechts': 'droite',
+    'koord.e': 'E',
+    'koord.n': 'N',
+    'koord.z': 'Z',
+    'koord.info.L': 'L = {L} m selon coordonnées',
+    'koord.info.sok': 'DRS gauche / droite = {l} / {r} m s.n.m.',
+    'koord.fehlt': 'Saisir E et N à gauche et à droite',
+    'koord.unplausibel': 'Coordonnées hors du domaine MN95 (E ≈ 2 600 000, N ≈ 1 200 000)',
+    'koord.gesperrt.titel': 'Calculé à partir des coordonnées — désactiver «Coordonnées MN95» pour saisir librement',
+    'exp.dxf': 'DXF 3D',
+    'exp.ifc': 'IFC4 (BIM)',
+    'exp.keine.rechnung': 'Aucun calcul valable — vérifier la saisie',
+    'exp.geo.sok.fehlt': 'Pour l’export avec coordonnées, la hauteur manque : saisir Z pied de mât ou DRS m s.n.m.',
+    'exp.fehler': 'Échec de l’export',
+    'exp.haenger': 'Suspension',
+    'exp.p.material': 'Matériau',
+    'exp.p.zugkraft': 'Force de traction H à T2',
+    'exp.p.durchhang': 'Flèche f à T2',
+    'exp.p.position': 'Position x',
+    'exp.p.laenge': 'Longueur',
+    'exp.p.system': 'Système',
+    'exp.p.spannweite': 'Portée L',
+    'exp.p.t1': 'Température T1',
+    'exp.p.t2': 'Température T2',
+    'exp.p.hoehen': 'Référence des hauteurs',
+    'exp.p.hoehen.mum': 'm s.n.m. (NF02)',
+    'exp.p.hoehen.sok': 'sur DRS (local)',
+    'exp.p.mast.li': 'Mât gauche',
+    'exp.p.mast.re': 'Mât droit',
+    'exp.p.km.li': 'KM gauche',
+    'exp.p.km.re': 'KM droit',
+    'exp.p.crs': 'Système de coordonnées',
+    'exp.p.quelle': 'Généré avec',
     'ui.foto.ablauf.modus': 'Procédure (mode 7 clics) :',
     'ui.foto.ablauf.1': 'Sommet du mât gauche → pied du mât gauche',
     'ui.foto.ablauf.2': 'Sommet du mât droit → pied du mât droit',
@@ -12891,7 +13179,7 @@ const LANG = {
     'ui.foto.hinweis.3': 'Tenir l\'appareil à l\'horizontale — l\'angle horizontal n\'a pas d\'importance',
     'ui.foto.hinweis.4': 'Les points peuvent être déplacés après leur placement',
     'card.temperatur': 'Température',
-    'ui.mastangaben': 'Données des mâts : DRS m s.n.m., nom, km',
+    'ui.mastangaben': 'Données des mâts : DRS m s.n.m., nom, km, coordonnées',
     'ui.mastangaben.sub': '(optionnel)',
   },
   it: {
@@ -13469,6 +13757,42 @@ const LANG = {
     'pdf.haenger.tp': 'Ballerina al punto più basso',
     'pdf.maximum': 'massimo',
     'pdf.minimum': 'minimo',
+    'koord.schalter': 'Coordinate MN95',
+    'koord.hinweis': 'E/N [m] = punto d’aggancio del conduttore (mensola/portale), Z [m s.l.m.] = piede del palo. La campata L e il PRF (= Z − Δ piede palo-PRF) vengono calcolati da questi valori.',
+    'koord.links': 'sinistra',
+    'koord.rechts': 'destra',
+    'koord.e': 'E',
+    'koord.n': 'N',
+    'koord.z': 'Z',
+    'koord.info.L': 'L = {L} m dalle coordinate',
+    'koord.info.sok': 'PRF sinistra / destra = {l} / {r} m s.l.m.',
+    'koord.fehlt': 'Inserire E e N a sinistra e a destra',
+    'koord.unplausibel': 'Coordinate fuori dal campo MN95 (E ≈ 2 600 000, N ≈ 1 200 000)',
+    'koord.gesperrt.titel': 'Calcolato dalle coordinate — disattivare «Coordinate MN95» per inserire liberamente',
+    'exp.dxf': 'DXF 3D',
+    'exp.ifc': 'IFC4 (BIM)',
+    'exp.keine.rechnung': 'Nessun calcolo valido — controllare i dati',
+    'exp.geo.sok.fehlt': 'Per l’esportazione con coordinate manca l’altezza: inserire Z piede del palo o PRF m s.l.m.',
+    'exp.fehler': 'Esportazione non riuscita',
+    'exp.haenger': 'Ballerina',
+    'exp.p.material': 'Materiale',
+    'exp.p.zugkraft': 'Forza di trazione H a T2',
+    'exp.p.durchhang': 'Freccia f a T2',
+    'exp.p.position': 'Posizione x',
+    'exp.p.laenge': 'Lunghezza',
+    'exp.p.system': 'Sistema',
+    'exp.p.spannweite': 'Campata L',
+    'exp.p.t1': 'Temperatura T1',
+    'exp.p.t2': 'Temperatura T2',
+    'exp.p.hoehen': 'Riferimento altezze',
+    'exp.p.hoehen.mum': 'm s.l.m. (RN02)',
+    'exp.p.hoehen.sok': 'sul PRF (locale)',
+    'exp.p.mast.li': 'Palo sinistro',
+    'exp.p.mast.re': 'Palo destro',
+    'exp.p.km.li': 'KM sinistro',
+    'exp.p.km.re': 'KM destro',
+    'exp.p.crs': 'Sistema di coordinate',
+    'exp.p.quelle': 'Generato con',
     'ui.foto.ablauf.modus': 'Procedura (modalità 7 clic):',
     'ui.foto.ablauf.1': 'Cima del palo sinistro → piede del palo sinistro',
     'ui.foto.ablauf.2': 'Cima del palo destro → piede del palo destro',
@@ -13480,7 +13804,7 @@ const LANG = {
     'ui.foto.hinweis.3': 'Tenere la fotocamera orizzontale — l’angolo orizzontale è irrilevante',
     'ui.foto.hinweis.4': 'I punti possono essere spostati dopo averli posizionati',
     'card.temperatur': 'Temperatura',
-    'ui.mastangaben': 'Dati dei pali: PRF m s.l.m., nome, km',
+    'ui.mastangaben': 'Dati dei pali: PRF m s.l.m., nome, km, coordinate',
     'ui.mastangaben.sub': '(opzionale)',
   },
 };
@@ -14568,7 +14892,7 @@ renderObstacleList();
       <div class="hb-lang hb-de"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.4 &nbsp;Einzelleiter — Basiszugkraft bei −20 °C</p>
       <p style="font-size:.82rem">Für Einzelleiter ohne tabellarische Herstellerwerte gilt 6 000 N als Basiszugkraft. Leiter mit offizieller Reglagetabelle (z. B. Cu 95 / Cu 150) verwenden diese Tabelle direkt. Alle Werte können in der Reglagetabelle oder in der Seitenleiste per <em>Bearbeiten</em> überschrieben werden (→ Abschn. 6.5 / 6.6).</p></div>
       <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.4 &nbsp;Conducteur simple — Force de base à −20 °C</p>
-      <p style="font-size:.82rem">Pour les conducteurs seuls sans valeurs tabulaires du fabricant, 6 000 N est appliqué comme force de base. Les conducteurs avec un tableau de réglage officiel (p. ex. Cu 95 / Cu 150) utilisent directement ce tableau. Toutes les valeurs peuvent être remplacées dans le tableau de réglage ou dans la barre latérale via <em>Modifier</em> (→ sect. 6.5 / 6.6).</p></div>
+      <p style="font-size:.82rem">Pour les conducteurs simples sans valeurs tabulaires du fabricant, 6 000 N est appliqué comme force de base. Les conducteurs avec un tableau de réglage officiel (p. ex. Cu 95 / Cu 150) utilisent directement ce tableau. Toutes les valeurs peuvent être remplacées dans le tableau de réglage ou dans la barre latérale via <em>Modifier</em> (→ sect. 6.5 / 6.6).</p></div>
       <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.4 &nbsp;Conduttore singolo — Forza di base a −20 °C</p>
       <p style="font-size:.82rem">Per i conduttori singoli senza valori tabulari del produttore, 6 000 N viene applicato come forza di base. I conduttori con una tabella di regolazione ufficiale (es. Cu 95 / Cu 150) utilizzano direttamente questa tabella. Tutti i valori possono essere sostituiti nella tabella di regolazione o nella barra laterale tramite <em>Modifica</em> (→ sez. 6.5 / 6.6).</p></div>
 
@@ -14762,7 +15086,7 @@ renderObstacleList();
       <!-- FR -->
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.6 &nbsp;Tableau de réglage — Export / Import CSV</p>
-        <p>Le tableau de réglage (accessible via l'icône tableau dans l'en-tête) affiche pour tous les types de conducteurs seuls la force de traction de réglage dépendante de la température de −20 °C à +40 °C. Via les boutons dans l'en-tête du tableau:</p>
+        <p>Le tableau de réglage (accessible via l'icône tableau dans l'en-tête) affiche pour tous les types de conducteurs simples la force de traction de réglage dépendante de la température de −20 °C à +40 °C. Via les boutons dans l'en-tête du tableau:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>Modifier</strong> — déverrouille tous les paramètres matériaux (H à −20 °C et L ref) pour modification. Les modifications s'appliquent à toute la session.</li>
           <li><strong>Export CSV</strong> — exporte toutes les valeurs H(−20 °C) et L ref actuelles sous forme de fichier CSV séparé par des points-virgules (UTF-8 BOM, directement ouvrable dans Excel).</li>
@@ -14956,6 +15280,53 @@ renderObstacleList();
           <li><strong>Import</strong> (icona file nell'intestazione) carica un file JSON esportato e ripristina lo stato.</li>
         </ul>
         <p style="font-size:.8rem;color:var(--muted)">Tutti i dati rimangono localmente nel browser — nessun server, nessun cloud. In caso di eliminazione della cache, i progetti vengono persi; si raccomandano esportazioni JSON regolari.</p>
+      </div><!-- /hb-it -->
+
+      <!-- ══ 6.10 Koordinaten LV95, 3D-DXF und IFC ══ -->
+      <div class="hb-lang hb-de">
+        <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.10 &nbsp;Koordinaten LV95, 3D-DXF und IFC</p>
+        <p>Unter <em>Mastangaben</em> lässt sich der Schalter <strong>Koordinaten LV95</strong> einschalten. Einzugeben sind je Seite:</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>E / N</strong> — Lage des <em>Aufhängepunkts des Leiters</em> (Rückleiter meist am Mast, Kettenwerk meist am Ausleger oder Joch).</li>
+          <li><strong>Z</strong> — Höhe des <em>Mastfusses</em> in m ü. M. (LN02).</li>
+        </ul>
+        <p>Daraus berechnet die App: Spannweite L = waagrechter Abstand der beiden Aufhängepunkte, SOK = Z − «Δ Mastfuss-SOK» (Δ positiv, wenn der Mastfuss höher liegt als SOK), Aufhängehöhe = SOK + h<sub>1</sub> bzw. h<sub>2</sub>. Diese Felder sind gesperrt, solange der Schalter eingeschaltet ist.</p>
+        <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Exporte (Menü «Teilen»)</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>3D-DXF</strong> — Linien in Metern (AC1009/R12): Tragseil bzw. Leiter bei T<sub>2</sub>, Fahrdraht, Hänger, Tragseil bei T<sub>1</sub>, SOK und Messpunkte. Mit Koordinaten in E / N / H (LV95/LN02), sonst lokal (x längs Feld, z Höhe).</li>
+          <li><strong>IFC4</strong> — Tragseil, Fahrdraht und Hänger als IfcCableSegment mit Material und Eigenschaften (Satz «CH_Durchhang»: System, Spannweite, Temperaturen, Zugkraft, Durchhang, Mastnamen, KM). Mit Koordinaten georeferenziert über IfcMapConversion (EPSG:2056).</li>
+        </ul>
+        <p style="font-size:.8rem;color:var(--muted)">Hänger werden gleichmässig verteilt, höchstens alle 5 m. Der Leiterdurchmesser wird aus dem Querschnitt abgeleitet. Masten und Ausleger sind nicht Teil des Modells.</p>
+      </div><!-- /hb-de -->
+      <div class="hb-lang hb-fr" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.10 &nbsp;Coordonnées MN95, DXF 3D et IFC</p>
+        <p>Sous <em>Données des mâts</em>, l’interrupteur <strong>Coordonnées MN95</strong> peut être activé. À saisir pour chaque côté :</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>E / N</strong> — position du <em>point d’appui du conducteur</em> (conducteur de retour généralement au mât, caténaire généralement à la console ou au portique).</li>
+          <li><strong>Z</strong> — altitude du <em>pied de mât</em> en m s.n.m. (NF02).</li>
+        </ul>
+        <p>L’application en déduit : portée L = distance horizontale des deux points d’appui, DRS = Z − «Δ pied de mât-DRS» (Δ positif si le pied de mât est plus haut que le DRS), hauteur d’appui = DRS + h<sub>1</sub> resp. h<sub>2</sub>. Ces champs sont verrouillés tant que l’interrupteur est activé.</p>
+        <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Exports (menu «Exporter»)</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>DXF 3D</strong> — lignes en mètres (AC1009/R12) : câble porteur resp. conducteur à T<sub>2</sub>, fil de contact, suspensions, câble porteur à T<sub>1</sub>, DRS et points de mesure. Avec coordonnées en E / N / H (MN95/NF02), sinon en local (x le long de la portée, z hauteur).</li>
+          <li><strong>IFC4</strong> — câble porteur, fil de contact et suspensions comme IfcCableSegment avec matériau et propriétés (jeu «CH_Durchhang» : système, portée, températures, force de traction, flèche, noms des mâts, KM). Avec coordonnées, géoréférencé via IfcMapConversion (EPSG:2056).</li>
+        </ul>
+        <p style="font-size:.8rem;color:var(--muted)">Les suspensions sont réparties régulièrement, au plus tous les 5 m. Le diamètre du conducteur est déduit de la section. Les mâts et consoles ne font pas partie du modèle.</p>
+      </div><!-- /hb-fr -->
+      <div class="hb-lang hb-it" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.10 &nbsp;Coordinate MN95, DXF 3D e IFC</p>
+        <p>In <em>Dati dei pali</em> si può attivare l’interruttore <strong>Coordinate MN95</strong>. Da inserire per ogni lato:</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>E / N</strong> — posizione del <em>punto d’aggancio del conduttore</em> (conduttore di ritorno di solito al palo, catenaria di solito alla mensola o al portale).</li>
+          <li><strong>Z</strong> — quota del <em>piede del palo</em> in m s.l.m. (RN02).</li>
+        </ul>
+        <p>L’applicazione ne ricava: campata L = distanza orizzontale dei due punti d’aggancio, PRF = Z − «Δ piede palo-PRF» (Δ positivo se il piede del palo è più alto del PRF), altezza d’aggancio = PRF + h<sub>1</sub> risp. h<sub>2</sub>. Questi campi sono bloccati finché l’interruttore è attivo.</p>
+        <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Esportazioni (menu «Esporta»)</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>DXF 3D</strong> — linee in metri (AC1009/R12): filo portante risp. conduttore a T<sub>2</sub>, filo di contatto, ballerine, filo portante a T<sub>1</sub>, PRF e punti di misura. Con coordinate in E / N / H (MN95/RN02), altrimenti in locale (x lungo la campata, z altezza).</li>
+          <li><strong>IFC4</strong> — filo portante, filo di contatto e ballerine come IfcCableSegment con materiale e proprietà (insieme «CH_Durchhang»: sistema, campata, temperature, forza di trazione, freccia, nomi dei pali, KM). Con coordinate, georeferenziato tramite IfcMapConversion (EPSG:2056).</li>
+        </ul>
+        <p style="font-size:.8rem;color:var(--muted)">Le ballerine sono distribuite uniformemente, al massimo ogni 5 m. Il diametro del conduttore è ricavato dalla sezione. Pali e mensole non fanno parte del modello.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 7 Beispielberechnung ══ -->
@@ -15278,7 +15649,7 @@ renderObstacleList();
       </table>
 
       <p style="font-size:.75rem;color:var(--tertiary);margin-top:1rem;border-top:1px solid var(--border);padding-top:.75rem">
-        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; v3.6 &nbsp;·&nbsp; Statikteam, Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
+        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; v3.7 &nbsp;·&nbsp; Statikteam, Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
         Quelle Reglage: SBB 0161.1013.0001
       </p>
     </div>
@@ -15639,7 +16010,7 @@ renderObstacleList();
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
-  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span>v3.6</span>
+  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span>v3.7</span>
 </footer>
 
 </body>
