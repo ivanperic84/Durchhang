@@ -10,9 +10,10 @@
  *             delta = Δ Mastfuss-SOK, h = Aufhängehöhe über SOK,
  *             km = Kilometrierung (Text, z. B. «12.345»),
  *             L  = Feldlänge bis zum nächsten Mast (nur wenn nicht berechenbar)
- * Hindernis:  { name, feld, von, bis, uk }  — Unterkante oberhalb der Leiter;
- *             feld = Feldnummer (0 = erstes Feld), von/bis = x im Feld [m],
- *             uk in m ü. M. (Feld mit SOK) bzw. über SOK.
+ * Hindernis:  { name, feld, verbinden, punkte: [{ x, h }] } — oberhalb der Leiter;
+ *             feld = Feldnummer (0 = erstes Feld), x im Feld [m], h in m ü. M.
+ *             (Feld mit SOK) bzw. über SOK. Die Punkte haben keine feste
+ *             Reihenfolge: verbunden wird immer nach x sortiert.
  *
  * Nach Änderungen an dieser Datei: CACHE_VERSION in sw.js erhöhen.
  */
@@ -65,19 +66,74 @@ function temperaturenLesen(text) {
 }
 
 // ── Abstand Leiter ↔ Hindernis oberhalb ──
-// hoehe(x): Leiterhöhe (gleicher Bezug wie uk). Liefert den kleinsten
-// Abstand uk − hoehe(x) im Bereich [von, bis] ∩ [0, L] und die Stelle.
-function abstandOberhalb(hoehe, von, bis, uk, L) {
-  let a = Math.max(0, Math.min(von, bis)), b = Math.min(L, Math.max(von, bis));
-  if (!(b >= a) || !Number.isFinite(uk)) return null;
-  const n = Math.max(20, Math.ceil((b - a) / 0.05));
-  let min = Infinity, xMin = a;
-  for (let i = 0; i <= n; i++) {
-    const x = a + (b - a) * i / n;
-    const d = uk - hoehe(x);
-    if (d < min) { min = d; xMin = x; }
+// Gültige Punkte, nach x sortiert (die Eingabereihenfolge spielt keine Rolle)
+function hindernisPunkte(punkte) {
+  return (Array.isArray(punkte) ? punkte : [])
+    .filter(p => p && Number.isFinite(p.x) && Number.isFinite(p.h))
+    .map(p => ({ x: p.x, h: p.h }))
+    .sort((a, b) => a.x - b.x || a.h - b.h);
+}
+
+// Unterkante an der Stelle x (verbundene Punkte, stückweise gerade);
+// bei gleichem x (senkrechter Sprung) gilt der tiefere Punkt. null ausserhalb.
+function unterkanteBei(P, x) {
+  if (!P.length || x < P[0].x || x > P[P.length - 1].x) return null;
+  let uk = Infinity;
+  for (let i = 0; i < P.length; i++) {
+    if (P[i].x === x) uk = Math.min(uk, P[i].h);
+    if (i + 1 < P.length && P[i].x < x && x < P[i + 1].x)
+      uk = Math.min(uk, P[i].h + (P[i + 1].h - P[i].h) * (x - P[i].x) / (P[i + 1].x - P[i].x));
   }
-  return { abstand: min, x: xMin };
+  return Number.isFinite(uk) ? uk : null;
+}
+
+// hoehe(x): Leiterhöhe (gleicher Bezug wie h). Liefert { abstand, x, uk } mit dem
+// kleinsten Abstand Unterkante − Leiter innerhalb des Felds [0, L], oder null.
+//   verbinden = true:  Unterkante als Linie durch die nach x sortierten Punkte
+//   verbinden = false: jeder Punkt einzeln (wie frühere H-Punkte)
+function abstandHindernis(hoehe, punkte, verbinden, L) {
+  const P = hindernisPunkte(punkte);
+  if (!P.length) return null;
+  let best = null;
+  const pruefe = (x, uk) => {
+    const d = uk - hoehe(x);
+    if (!best || d < best.abstand) best = { abstand: d, x, uk };
+  };
+  if (!verbinden || P.length === 1) {
+    for (const p of P) if (p.x >= 0 && p.x <= L) pruefe(p.x, p.h);
+    return best;
+  }
+  for (let i = 0; i + 1 < P.length; i++) {
+    const a = P[i], b = P[i + 1];
+    const x0 = Math.max(0, a.x), x1 = Math.min(L, b.x);
+    if (x1 < x0) continue;
+    const n = Math.max(1, Math.ceil((x1 - x0) / 0.05));
+    for (let k = 0; k <= n; k++) {
+      const x = x0 + (x1 - x0) * k / n;
+      pruefe(x, unterkanteBei(P, x));
+    }
+  }
+  return best;
+}
+
+// Kurzform für eine waagrechte Unterkante von–bis (frühere Eingabe)
+function abstandOberhalb(hoehe, von, bis, uk, L) {
+  return abstandHindernis(hoehe, [{ x: von, h: uk }, { x: bis, h: uk }], true, L);
+}
+
+// Frühere Formen eines Hindernisses in die Punktform überführen
+function hindernisNormieren(h) {
+  if (!h || typeof h !== 'object') return null;
+  const zahl = v => (typeof v === 'number' && Number.isFinite(v)) ? v : null;
+  let punkte = Array.isArray(h.punkte)
+    ? h.punkte.filter(p => p && typeof p === 'object').map(p => ({ x: zahl(p.x), h: zahl(p.h) }))
+    : [{ x: zahl(h.von), h: zahl(h.uk) }, { x: zahl(h.bis), h: zahl(h.uk) }];
+  return {
+    name: typeof h.name === 'string' ? h.name : '',
+    feld: Number.isInteger(h.feld) ? h.feld : 0,
+    verbinden: typeof h.verbinden === 'boolean' ? h.verbinden : true,
+    punkte,
+  };
 }
 
 // ── Masttabelle ──
@@ -223,7 +279,7 @@ function csvVorlage() {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     LASTFALL_VORGABE, EISLAST_HOEHENLAGE, EIS_TEMPERATUR, lastfallEinstellung, lastfaelle, temperaturenLesen,
-    abstandOberhalb, kmInMeter, feldLaengen, mittelspannweite, mastSok,
+    hindernisPunkte, unterkanteBei, abstandHindernis, abstandOberhalb, hindernisNormieren, kmInMeter, feldLaengen, mittelspannweite, mastSok,
     csvLesen, csvSchreiben, csvVorlage, CSV_KOPF,
   };
 }

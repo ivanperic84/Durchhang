@@ -57,6 +57,34 @@ test('Abstand zu Hindernis oberhalb: kleinster Abstand im Bereich', () => {
   nahe(A.abstandOberhalb(hoehe, 10, 0, 8, 40).abstand, 1, 1e-9, 'vertauscht');
 });
 
+test('Hindernis aus Punkten: Reihenfolge egal, verbunden nach x sortiert', () => {
+  const hoehe = () => 7;                        // Leiter waagrecht auf 7 m
+  const punkte = [{ x: 20, h: 9 }, { x: 10, h: 8 }, { x: 15, h: 7.5 }];   // ungeordnet
+  const v = A.abstandHindernis(hoehe, punkte, true, 40);
+  nahe(v.abstand, 0.5, 1e-9, 'tiefster Knick');
+  assert.equal(v.x, 15);
+  assert.deepEqual(A.hindernisPunkte(punkte).map(p => p.x), [10, 15, 20]);
+  // Zwischenwert auf der Geraden 10→15: bei x = 12.5 → 7.75
+  nahe(A.unterkanteBei(A.hindernisPunkte(punkte), 12.5), 7.75, 1e-12, 'Interpolation');
+  // Nicht verbunden: nur die Punkte selbst
+  const e = A.abstandHindernis(x => 6 + 0.1 * x, punkte, false, 40);
+  nahe(e.abstand, 7.5 - 7.5, 1e-9, 'Punkt bei x = 15');
+  // Punkte ausserhalb des Felds zählen nicht; Linie wird am Feldrand abgeschnitten
+  assert.equal(A.abstandHindernis(hoehe, [{ x: 50, h: 8 }], false, 40), null);
+  const r = A.abstandHindernis(hoehe, [{ x: -10, h: 8 }, { x: 10, h: 10 }], true, 40);
+  assert.equal(r.x, 0); nahe(r.uk, 9, 1e-9, 'Unterkante am Feldanfang');
+  // Senkrechter Sprung: am gleichen x gilt der tiefere Punkt
+  nahe(A.unterkanteBei(A.hindernisPunkte([{ x: 5, h: 9 }, { x: 5, h: 8 }, { x: 10, h: 9 }]), 5), 8, 1e-12, 'Sprung');
+  // unvollständige Punkte werden übergangen
+  assert.equal(A.abstandHindernis(hoehe, [{ x: 5, h: null }], true, 40), null);
+});
+
+test('Hindernis: frühere Form von–bis–Unterkante wird in Punkte übernommen', () => {
+  assert.deepEqual(A.hindernisNormieren({ name: 'B', feld: 1, von: 10, bis: 20, uk: 508.3 }),
+    { name: 'B', feld: 1, verbinden: true, punkte: [{ x: 10, h: 508.3 }, { x: 20, h: 508.3 }] });
+  assert.equal(A.hindernisNormieren({ punkte: [{ x: 1, h: 2 }], verbinden: false }).verbinden, false);
+});
+
 test('Feldlängen aus Koordinaten, KM oder Eingabe', () => {
   const m = [
     { name: '1', e: 2600000, n: 1200000, km: '12.300' },
