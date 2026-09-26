@@ -302,3 +302,41 @@ test('Wasserzeichen «BETA – nicht verifiziert»: Bildschirm in allen Sprachen
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Zeichnung: «Kettenwerk» ohne Masten bis SOK; hf-Band mit Prüfung, PDF, DXF, Speichern', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await fensterAbfangen(seite);
+  const r = await seite.evaluate(() => {
+    document.getElementById('h2').value = '6.50'; berechnen();
+    setCanvasView('zeichnung');
+    const svgText = () => document.getElementById('scale-svg-container').innerHTML;
+    setDrawingExtent('sok');
+    const mitSok = svgText();
+    setDrawingExtent('catenary');
+    const nurKw = svgText();
+    setDrawingHf(true);
+    const band = svgText();
+    window.__fenster.length = 0; pdfExportDrawing();
+    const pdf = window.__fenster[0]?.html || '';
+    let dxf = ''; const alt = window._dateiHerunterladen; window._dateiHerunterladen = x => { dxf = x; }; exportDxf(); window._dateiHerunterladen = alt;
+    const st = JSON.parse(JSON.stringify(getProjectState()));
+    setDrawingHf(false); setProjectState(st);
+    const geladen = document.getElementById('draw-hf').checked;
+    setSysMode('el');
+    const elVersteckt = document.querySelector('.draw-hf-teil').style.display === 'none';
+    setSysMode('nfl'); setCanvasView('diagramm');
+    return { sokLinie: />SOK</.test(mitSok), kwSok: />SOK</.test(nurKw), kwBruch: nurKw.includes('SOK ↓'),
+             band: band.includes('hf<tspan') && /[✓✗]/.test(band), pdf: pdf.includes('hf<tspan'),
+             dxf: /\nHF_MIN\n/.test(dxf) && /\nHF_MAX\n/.test(dxf), geladen, elVersteckt };
+  });
+  assert.equal(r.sokLinie, true, 'bis SOK: SOK-Linie');
+  assert.equal(r.kwSok, false, 'Kettenwerk: keine SOK-Linie');
+  assert.equal(r.kwBruch, true, 'Kettenwerk: Masten mit Bruchzeichen');
+  assert.equal(r.band, true, 'hf-Band mit Prüfung');
+  assert.equal(r.pdf, true, 'hf-Band im PDF');
+  assert.equal(r.dxf, true, 'DXF-Layer HF_MIN / HF_MAX');
+  assert.equal(r.geladen, true, 'Schalter im Projekt gespeichert');
+  assert.equal(r.elVersteckt, true, 'Einzelleiter: kein hf-Schalter');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});

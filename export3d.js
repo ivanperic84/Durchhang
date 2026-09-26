@@ -53,6 +53,7 @@ function lv95Plausibel(e, n) {
 const DXF_LAYER = {
   TRAGSEIL: 5, FAHRDRAHT: 1, HAENGER: 8, LEITER: 5,
   TRAGSEIL_T1: 9, MAST: 7, SOK: 30, H_PUNKT: 3, HINDERNIS: 6, MESSPUNKT: 4, MINDESTABSTAND: 2,
+  HF_MIN: 150, HF_MAX: 40,
 };
 const LAYER_FUER_ART = { tragseil: 'TRAGSEIL', fahrdraht: 'FAHRDRAHT', haenger: 'HAENGER', leiter: 'LEITER' };
 
