@@ -73,7 +73,7 @@
   --text: #111218;
   --text2: #3a3c48;
   --muted: #5f616c;
-  --tertiary: #676a75;
+  --tertiary: #62656f;
   --xdim: #9497a1;
   --primary: #4a5cb8;
   --primary-dk: #3d4ea3;
@@ -88,10 +88,10 @@
   --shadow-pop: 0 8px 24px rgba(16,18,24,.12);
   --radius: 10px;
   --radius-klein: 4px;
-  --mp-m1: #6b7280;
-  --mp-m2: #6b7280;
-  --mp-m3: #6b7280;
-  --mp-m4: #6b7280;
+  --mp-m1: #5f616c;
+  --mp-m2: #5f616c;
+  --mp-m3: #5f616c;
+  --mp-m4: #5f616c;
   color-scheme: light;
 }
 :root[data-thema="dunkel"] {
@@ -104,8 +104,8 @@
   --border2: #44464f;
   --text: #e1e2e8;
   --text2: #b8bac4;
-  --muted: #8b8d97;
-  --tertiary: #8b8d97;
+  --muted: #9a9ca6;      /* ≥ 5:1 auch auf --s4 (Vierendeel: #8b8d97) */
+  --tertiary: #9a9ca6;
   --xdim: #4e5058;
   --primary: #7c8de0;
   --primary-dk: #9aa8ea;
@@ -117,10 +117,10 @@
   --scrim: rgba(0,0,0,.55);
   --shadow: none;
   --shadow-pop: 0 12px 28px rgba(0,0,0,.38);
-  --mp-m1: #8b8d97;
-  --mp-m2: #8b8d97;
-  --mp-m3: #8b8d97;
-  --mp-m4: #8b8d97;
+  --mp-m1: #9a9ca6;
+  --mp-m2: #9a9ca6;
+  --mp-m3: #9a9ca6;
+  --mp-m4: #9a9ca6;
   color-scheme: dark;
 }
 
@@ -1584,6 +1584,28 @@ button.header-manual-link:hover {
 .proj-btn.bulk.danger:hover { background:color-mix(in srgb, var(--fail) 25%, transparent); border-color:var(--fail); }
 .proj-move-sel { border:1px solid var(--border); border-radius:5px; font-size:.68rem; padding:.15rem .3rem; background:var(--card); color:var(--muted); cursor:pointer; font-family:inherit; max-width:80px; }
 
+/* ── Tastatur-Fokus sichtbar (nur bei Tastaturbedienung, nicht bei Maus/Touch) ── */
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.input-wrap input:focus-visible, .input-wrap select:focus-visible,
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+/* ── Ungültige Eingabe: alte Ergebnisse nicht als aktuell zeigen ── */
+body.ergebnis-veraltet #highlight-card,
+body.ergebnis-veraltet #results { display: none; }
+body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
+.feld-fehler { box-shadow: 0 0 0 2px var(--fail) !important; border-radius: 6px; }
+
+/* ── Drucken (Strg+P) immer hell, unabhängig vom Thema ── */
+@media print {
+  :root, :root[data-thema="dunkel"] {
+    --bg: #ffffff; --card: #ffffff; --s2: #f7f8fa; --s3: #eef0f4; --s4: #e4e7ec;
+    --border: #dde0e6; --border2: #c2c7d1; --text: #111218; --text2: #3a3c48;
+    --muted: #5f616c; --tertiary: #62656f; --xdim: #9497a1;
+    --primary: #4a5cb8; --acc-s: rgba(74,92,184,.10); --on-acc: #ffffff;
+    color-scheme: light;
+  }
+}
+
 /* ── Massstäbliche Zeichnung = Papierplan: in beiden Themen hell ──
    Die Zeichnung (SVG) trägt feste Druckfarben, weil sie auch als PDF
    ausgegeben wird. Im Dunkelmodus deshalb die hellen Farbwerte für diesen
@@ -1635,7 +1657,7 @@ button.header-manual-link:hover {
 <body>
 
 
-<div class="header">
+<div class="header" role="banner">
   <div class="header-icon">
     <!-- Logo: gleiches Motiv wie das App-Icon (icon.svg), Farben aus dem Thema -->
     <svg width="28" height="28" viewBox="14 20 72 64" fill="none" stroke-linecap="round" aria-hidden="true">
@@ -1701,7 +1723,7 @@ button.header-manual-link:hover {
   </div>
 </div>
 
-<div class="layout">
+<div class="layout" role="main">
 
   <!-- ── Sidebar ── -->
   <aside class="sidebar">
@@ -1724,7 +1746,7 @@ button.header-manual-link:hover {
           <label id="combo-label" data-i18n="sys.kombination">Kombination</label>
           <div style="display:flex;gap:.4rem;align-items:stretch">
             <div class="input-wrap" style="flex:1">
-              <select id="preset-select" onchange="applyPreset()" style="padding-right:.75rem"></select>
+              <select id="preset-select" aria-labelledby="combo-label" onchange="applyPreset()" style="padding-right:.75rem"></select>
             </div>
             <button onclick="openCustomModal()" title="Eigenes Kettenwerk definieren" data-i18n-title="ui.kw.eigen" style="flex-shrink:0;background:none;border:1px solid var(--border);border-radius:8px;padding:.2rem .45rem;font-size:.72rem;color:var(--muted);cursor:pointer;line-height:1;transition:border-color .15s,color .15s" onmouseover="this.style.color = 'var(--text)';this.style.borderColor = 'var(--primary)'" onmouseout="this.style.color = 'var(--muted)';this.style.borderColor = 'var(--border)'">＋</button>
           </div>
@@ -1820,14 +1842,14 @@ button.header-manual-link:hover {
       <div class="field-group">
         <div class="field-row">
           <div class="field" id="t1-field">
-            <label id="t1-label">Temperatur T<sub>1</sub> <span style="font-weight:400;color:var(--tertiary);font-size:.75em">(Montage)</span></label>
+            <label for="temp1" id="t1-label">Temperatur T<sub>1</sub> <span style="font-weight:400;color:var(--tertiary);font-size:.75em">(Montage)</span></label>
             <div class="input-wrap">
               <input type="number" id="temp1" value="10" step="1" oninput="updateH_Ts_ubFromT1(); berechnenEntprellt()" onchange="updateH_Ts_ubFromT1(); berechnen()">
               <span class="input-unit">°C</span>
             </div>
           </div>
           <div class="field" id="t2-field">
-            <label id="t2-label" data-i18n-html="par.T2">Temperatur T<sub>2</sub></label>
+            <label for="temp2" id="t2-label" data-i18n-html="par.T2">Temperatur T<sub>2</sub></label>
             <div class="input-wrap">
               <input type="number" id="temp2" value="-20" min="-20" max="80" step="1"
                      oninput="onT2Input(this.value)"
@@ -1879,7 +1901,7 @@ button.header-manual-link:hover {
               <line x1="200" y1="0" x2="200" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
             </svg>
           </div>
-          <input type="range" id="temp2-slider" min="-20" max="80" step="5" value="80"
+          <input type="range" id="temp2-slider" aria-labelledby="t2-label" min="-20" max="80" step="5" value="80"
                  style="width:100%;accent-color:var(--primary);cursor:pointer;display:block;margin-top:2px"
                  oninput="onT2Slider(this.value,true)"
                  onchange="onT2Slider(this.value,false)"
@@ -1990,7 +2012,7 @@ button.header-manual-link:hover {
               <line x1="200" y1="0" x2="200" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
             </svg>
           </div>
-          <input type="range" id="temp3-slider" min="-20" max="80" step="5" value="80"
+          <input type="range" id="temp3-slider" aria-label="T3" min="-20" max="80" step="5" value="80"
                  style="width:100%;cursor:pointer;display:block;margin-top:2px"
                  oninput="onT3Slider(this.value,true)"
                  onchange="onT3Slider(this.value,false)"
@@ -2026,7 +2048,7 @@ button.header-manual-link:hover {
       <!-- Einzelspannweite -->
       <div id="panel-single">
         <div class="field">
-          <label id="span-L-label" data-i18n="span.L.label">Spannweite L</label>
+          <label for="span" id="span-L-label" data-i18n="span.L.label">Spannweite L</label>
           <div class="input-wrap">
             <input type="number" id="span" value="45" min="0.1" step="0.1" oninput="berechnenEntprellt()" onchange="berechnen()">
             <span class="input-unit">m</span>
@@ -2082,14 +2104,14 @@ button.header-manual-link:hover {
       <!-- Masthöhe h1 / h2 -->
       <div class="field-row">
         <div class="field">
-          <label id="h1-label">Höhe Leiter h&#x2081; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über Mastfuss</span></label>
+          <label for="h1" id="h1-label">Höhe Leiter h&#x2081; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über Mastfuss</span></label>
           <div class="input-wrap">
             <input type="text" inputmode="decimal" id="h1" value="7.00" oninput="onSokMumInput();berechnenEntprellt()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
             <span class="input-unit">m</span>
           </div>
         </div>
         <div class="field">
-          <label id="h2-label">Höhe Leiter h&#x2082; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über Mastfuss</span></label>
+          <label for="h2" id="h2-label">Höhe Leiter h&#x2082; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über Mastfuss</span></label>
           <div class="input-wrap">
             <input type="text" inputmode="decimal" id="h2" value="7.00" oninput="onSokMumInput();berechnenEntprellt()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
             <span class="input-unit">m</span>
@@ -2203,14 +2225,14 @@ button.header-manual-link:hover {
       <div class="field-group">
         <div class="field-row">
           <div class="field" id="sh-field">
-            <label id="sh-label" data-i18n="par.sh">Systemhöhe sh</label>
+            <label for="sh" id="sh-label" data-i18n="par.sh">Systemhöhe sh</label>
             <div class="input-wrap">
               <input type="number" id="sh" value="2.4" min="0.1" step="0.1" oninput="berechnenEntprellt()" onchange="berechnen()">
               <span class="input-unit">m</span>
             </div>
           </div>
           <div class="field">
-            <label id="tension-label" style="display:flex;justify-content:space-between;align-items:center;gap:.3rem">
+            <label for="tension" id="tension-label" style="display:flex;justify-content:space-between;align-items:center;gap:.3rem">
               <span>H Ts unbelastet</span>
               <button id="tension-reset-btn" onclick="resetHToReglage()" title="H auf Reglagetabellenwert zurücksetzen" data-i18n-title="ui.reglage.reset.titel"
                 style="display:none;padding:.1rem .35rem;border-radius:5px;border:1px solid var(--warn);background:none;color:var(--warn);font-size:.65rem;cursor:pointer;font-family:inherit;line-height:1.4;white-space:nowrap;flex-shrink:0" data-i18n="ui.reglage.reset">&#x21BA; Reglage</button>
@@ -2233,7 +2255,7 @@ button.header-manual-link:hover {
             </div>
             <!-- N-FL: berechnete Belastet-Zugkraft (passiv) -->
             <div id="h-belastet-display" style="margin-top:.4rem">
-              <label id="h-belastet-lbl" style="font-size:.72rem;font-weight:500;color:var(--muted)">H Ts belastet <span style="font-weight:400;color:var(--tertiary)">(berechnet, bei 10 °C)</span></label>
+              <label for="tension-belastet" id="h-belastet-lbl" style="font-size:.72rem;font-weight:500;color:var(--muted)">H Ts belastet <span style="font-weight:400;color:var(--tertiary)">(berechnet, bei 10 °C)</span></label>
               <div class="input-wrap" style="margin-top:.18rem">
                 <input type="number" id="tension-belastet" readonly tabindex="-1"
                   style="background:var(--bg);color:var(--muted);cursor:default;pointer-events:none">
@@ -8184,6 +8206,20 @@ function berechnenEntprellt() {
   });
 }
 
+// Bei ungültiger Eingabe: Ergebnisse ausblenden, Diagramm abdunkeln und das
+// beanstandete Feld markieren — sonst stehen alte Werte da, als wären sie aktuell.
+const _FEHLER_FELD = { L: 'span', 'H.ts': 'tension', 'H.el': 'tension', 'H.fd': 'tension-fd',
+                       h1: 'h1', h2: 'h2', T1: 'temp1', sh: 'sh' };
+function _ergebnisVeraltet(ja, feldId = null) {
+  document.body.classList.toggle('ergebnis-veraltet', ja);
+  document.querySelectorAll('.feld-fehler').forEach(el => {
+    el.classList.remove('feld-fehler'); el.removeAttribute('aria-invalid');
+  });
+  let el = feldId ? document.getElementById(feldId) : null;
+  if (feldId === 'span' && spanMode === 'ruling') el = document.getElementById('lm-display');
+  if (ja && el) { el.classList.add('feld-fehler'); el.setAttribute('aria-invalid', 'true'); }
+}
+
 function berechnen() {
   // Vorgemerkten Frame verwerfen — dieser Aufruf ersetzt ihn.
   if (_berechnenFrame !== null) {
@@ -8233,7 +8269,9 @@ function berechnen() {
     const grund = isNaN(wert) ? 'val.fehlt' : (positiv && wert <= 0 ? 'val.positiv' : null);
     if (grund) {
       errorBox.innerHTML = `${t('val.feld.' + feld)}: ${t(grund)}`;
-      errorBox.classList.remove('hidden'); return;
+      errorBox.classList.remove('hidden');
+      _ergebnisVeraltet(true, _FEHLER_FELD[feld]);
+      return;
     }
   }
 
@@ -8250,8 +8288,11 @@ function berechnen() {
     const titel = e.phase === 'c1' ? 'err.ausgangszustand'
                 : sysMode === 'nfl' ? 'err.zielzustand.ts' : 'err.zielzustand';
     errorBox.textContent = t(titel) + ': ' + e.message;
-    errorBox.classList.remove('hidden'); return;
+    errorBox.classList.remove('hidden');
+    _ergebnisVeraltet(true);
+    return;
   }
+  _ergebnisVeraltet(false);
   if (z.t3Fehler) _spur('T3-Vergleichskurve', z.t3Fehler, 'debug');
   const { c1, c2 } = z;
 
@@ -9248,7 +9289,7 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b72
         <div style="font-size:.72rem;font-weight:600;color:${t3Clr};letter-spacing:.02em">${badge}' &nbsp;T<sub style="font-size:.8em">3</sub></div>
         <div style="font-size:${compact?'1.05rem':'1.35rem'};font-weight:700;color:${t3Clr}">${f3(sag3)}<span style="font-size:.72rem;margin-left:.2rem">m</span></div>
         <div style="font-size:.72rem;color:var(--muted);margin-top:.1rem">Δh T<sub style="font-size:.8em">3</sub></div>
-        <div style="font-size:.7rem;color:var(--muted);opacity:.8;margin-top:${compact?'.5rem':'1rem'}">${y3SubLbl}</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:${compact?'.5rem':'1rem'}">${y3SubLbl}</div>
         <div style="font-size:${compact?'.9rem':'1.1rem'};font-weight:600;color:${t3Clr}">${y3_disp}<span style="font-size:.72rem;margin-left:.2rem">${mainUnit}</span></div>
       </div>`;
   }
@@ -9258,7 +9299,7 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b72
       <div class="istzustand-label" style="color:${t2Clr}">${badge} · x = ${xv.toFixed(2)} m</div>
       <div class="istzustand-value" style="font-size:${valSize};color:${t2Clr}">${f3(dhValue)}<span class="istzustand-unit">m</span></div>
       <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${dhLabel}</div>
-      <div style="font-size:.7rem;color:var(--muted);opacity:.8;margin-top:${topGap}">${subLabel}</div>
+      <div style="font-size:.7rem;color:var(--muted);margin-top:${topGap}">${subLabel}</div>
       <div class="istzustand-value" style="font-size:${sagSize};color:${t2Clr}">${mainVal}<span class="istzustand-unit">${mainUnit}</span></div>
       ${t3Row}
     </div>`;
@@ -9317,7 +9358,7 @@ function updateHighlightCard() {
           <div class="istzustand-label" style="color:${curveClr}">${t('res.tiefpunkt.label')} — x₀ = ${f3(x_ist)} m</div>
           <div class="istzustand-value" style="color:${curveClr}">${f3(sag)}<span class="istzustand-unit">m</span></div>
           <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${dhLabel}${tempLabel}</div>
-          <div style="font-size:.7rem;color:var(--muted);opacity:.8;margin-top:.6rem">${seilLabel}${tempLabel}${hasSokH ? ` &nbsp;<span style="opacity:.6">(${f3(y2_raw)} m ${t('dyn.ueber.sok')})</span>` : ` ${t('dyn.ueber.sok')}`}</div>
+          <div style="font-size:.7rem;color:var(--muted);margin-top:.6rem">${seilLabel}${tempLabel}${hasSokH ? ` &nbsp;<span style="opacity:.6">(${f3(y2_raw)} m ${t('dyn.ueber.sok')})</span>` : ` ${t('dyn.ueber.sok')}`}</div>
           <div class="istzustand-value" style="font-size:1.35rem;color:${curveClr}">${f3(y2_disp)}<span class="istzustand-unit">${hasSokH ? t('dyn.ueber.mum') : 'm'}</span></div>
         </div>
         <div style="display:flex;align-items:center;gap:.5rem;margin:.35rem 0;width:100%">
@@ -13488,6 +13529,22 @@ if (currentLang !== 'de') setLang(currentLang);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => berechnen());
 _mastangabenOeffnenFallsBelegt();
 
+// ── Escape: oberstes Fenster schliessen, sonst Vollbild verlassen ────────────
+// Die Rückfrage (Ja/Nein) hat eine eigene Tastenbehandlung und bleibt aussen vor.
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape' || e.defaultPrevented) return;
+  if (document.getElementById('rueckfrage')?.classList.contains('open')) return;
+  const offen = [...document.querySelectorAll('.modal-overlay.open')];
+  if (offen.length) {
+    const fenster = offen[offen.length - 1];
+    const zu = fenster.querySelector('.modal-close');
+    if (zu) zu.click(); else fenster.classList.remove('open');
+    e.preventDefault();
+    return;
+  }
+  if (document.querySelector('.canvas-card.canvas-fullscreen')) { toggleCanvasFullscreen(); e.preventDefault(); }
+});
+
 // ── Darstellung: Auto (wie Gerät) / Hell / Dunkel ──────────────────────────
 // Das Thema wird schon im <head> gesetzt (kein Aufblitzen); hier nur Knopf,
 // Wechsel und das Nachführen bei «Auto», wenn das Gerät umschaltet.
@@ -13904,7 +13961,7 @@ renderObstacleList();
       <!-- Speicherort -->
       <div style="margin-bottom:.38rem">
         <div class="proj-save-label" id="proj-speicherort-lbl" data-i18n="proj.speicherort">Speicherort</div>
-        <select id="proj-group-sel" class="proj-save-inp" onchange="onProjGroupSelChange()"></select>
+        <select id="proj-group-sel" aria-labelledby="proj-speicherort-lbl" class="proj-save-inp" onchange="onProjGroupSelChange()"></select>
       </div>
       <!-- Neues Projekt — nur bei "__new__" sichtbar -->
       <div id="proj-new-grp-row" style="display:none;margin-bottom:.38rem">
@@ -15398,7 +15455,7 @@ renderObstacleList();
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
-  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span style="opacity:.6">v3.4</span>
+  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span>v3.4</span>
 </footer>
 
 </body>
