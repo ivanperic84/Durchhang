@@ -195,6 +195,7 @@ test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', asy
   const r = await seite.evaluate(() => {
     document.getElementById('hf-btn').click();
     const offen = document.getElementById('hf-modal').classList.contains('open');
+    const hauptKnopf = document.getElementById('hf-uebernehmen').classList.contains('haupt');
     // In der Excel gespeicherter Fall (hfmin_v11_D / hfmax_v11_D)
     Object.assign(hfEingabe, { typ: 'nfl', c: 30, v: 141, bue: false, kombi: 'stcu50_cu107', Lm: 30, H_ub: 1700,
       T_montage: 10, H_Fd: 8500, un: 15, schotter: false, ebv: 2, f: 0, H: 0, Tmin: -5, zlMin: 7, lrp: false, Tmax: -5, zlMax: 7 });
@@ -216,9 +217,10 @@ test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', asy
     hfEingabe = null; setProjectState(zustand);
     const geladen = hfEingabe && hfEingabe.typ === 'rfl' && hfEingabe.Tmax === -20;
     closeHf();
-    return { offen, excel, zlGesperrt, rfl, grafiken, texte, pdf, geladen };
+    return { offen, hauptKnopf, excel, zlGesperrt, rfl, grafiken, texte, pdf, geladen };
   });
   assert.equal(r.offen, true);
+  assert.equal(r.hauptKnopf, true, '«Aus Durchhang übernehmen» farblich abgesetzt');
   assert.deepEqual(r.excel.map(s => s.split(' mm')[0]), ["4'928", "6'104"]);
   assert.equal(r.zlGesperrt, true);
   assert.equal(r.rfl, true);
@@ -337,6 +339,29 @@ test('Zeichnung: «Kettenwerk» ohne Masten bis SOK; hf-Band mit Prüfung, PDF, 
   assert.equal(r.dxf, true, 'DXF-Layer HF_MIN / HF_MAX');
   assert.equal(r.geladen, true, 'Schalter im Projekt gespeichert');
   assert.equal(r.elVersteckt, true, 'Einzelleiter: kein hf-Schalter');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('H-Punkte ohne SOK gesperrt mit Link zu den Mastangaben; mit SOK Höhe über SOK', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await seite.evaluate(() => { clearSokMum?.(); document.getElementById('sok-mum-left').value = ''; document.getElementById('sok-mum-right').value = ''; berechnen(); });
+  const ohne = await seite.evaluate(() => ({ gesperrt: document.getElementById('probe-h1').disabled,
+    platz: document.getElementById('probe-h1').placeholder, link: document.getElementById('probe-sok-link').style.display !== 'none' }));
+  await seite.click('#probe-sok-link');
+  await seite.waitForTimeout(500);
+  const sprung = await seite.evaluate(() => ({ offen: document.getElementById('mastangaben').open, fokus: document.activeElement?.id }));
+  const mit = await seite.evaluate(() => {
+    document.getElementById('sok-mum-left').value = 500; onSokMumLeftInput();
+    _mpSetzen({ x: [22.5, null, null, null], h: [506.83, null, null, null] }); berechnen();
+    return { frei: !document.getElementById('probe-h1').disabled, rel: document.getElementById('probe-h-rel-1').textContent,
+             link: document.getElementById('probe-sok-link').style.display !== 'none' };
+  });
+  assert.deepEqual(ohne, { gesperrt: true, platz: 'SOK fehlt', link: true });
+  assert.deepEqual(sprung, { offen: true, fokus: 'sok-mum-left' });
+  assert.equal(mit.frei, true);
+  assert.match(mit.rel, /^≙ 6\.83 m /);
+  assert.equal(mit.link, false);
   assert.deepEqual(fehler, []);
   await kontext.close();
 });

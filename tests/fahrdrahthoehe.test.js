@@ -110,3 +110,25 @@ test('Eingabeprüfung: Spannweite, Temperatur, Zusatzlast nur bei −5 °C, N-FL
   assert.ok(HF.hfBerechnen({ ...rfl, cUebr: 31 }).fehler.includes('hf.err.cuebr'));
   assert.ok(HF.hfBerechnen({ ...EXCEL_FALL, Tmin: 60, zlMin: 0 }).hinweise.includes('hf.w.t56'));
 });
+
+// 480 Fälle, mit LibreOffice in der SBB-Excel nachgerechnet (Blätter hfmin/hfmax):
+// N-FL / R-FL, alle Spannweiten, v, BÜ, EBV, Spannung, Schotter, LRP, Temperatur,
+// Eis, f/H, Fallprüfung P1.1–P1.3 mit c_übr. Verglichen werden hf_min, hf_max
+// und jeder einzelne Zuschlag.
+test('480 Excel-Vergleichsfälle hf_min / hf_max: identisch mit der Excel', () => {
+  const { faelle } = require('./hf_excel_referenz.json');
+  assert.equal(faelle.length, 480);
+  const abweichend = [];
+  for (const [i, { e, xl }] of faelle.entries()) {
+    const nfl = e.typ === 'nfl' ? HF.hfNflZugkraefte(kern, { flCombo: STCU50_CU107, Lm: 30, H_ub: 1700, T_montage: 10, H_Fd: 8500,
+      Tmin: e.Tmin, zlMin: e.zlMin, Tmax: e.Tmax, zlMax: e.zlMax }) : null;
+    const r = HF.hfBerechnen({ ...e, nfl });
+    if (r.fehler.length) { abweichend.push(`Fall ${i}: App verweigert (${r.fehler})`); continue; }
+    const pruefe = (name, app, excel) => { if (Math.abs(app - (excel ?? 0)) > 1e-6) abweichend.push(`Fall ${i} ${name}: App ${app}, Excel ${excel}`); };
+    pruefe('hf_min', r.min.wert, xl.min);
+    pruefe('hf_max', r.max.wert, xl.max);
+    r.min.zeilen.forEach(z => pruefe(z.sym, z.wert, xl.zMin[z.sym]));
+    r.max.zeilen.forEach(z => pruefe(z.sym, z.wert, xl.zMax[z.sym]));
+  }
+  assert.equal(abweichend.length, 0, abweichend.slice(0, 10).join('\n'));
+});

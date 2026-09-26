@@ -979,6 +979,10 @@ body {
 .probe-h-input:focus { outline: none; border-color: var(--h-clr); }
 .probe-h-unit { font-size: .65rem; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
 .probe-h-zeile { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; margin-top: .4rem; }
+.probe-h-rel { grid-column: 2; font-size: .62rem; color: var(--tertiary); min-height: .9em; padding-left: .2rem; font-variant-numeric: tabular-nums; }
+.probe-h-input:disabled { opacity: .55; cursor: not-allowed; }
+.probe-sok-link { margin-top: .35rem; background: none; border: none; padding: 0; font: inherit; font-size: .72rem; font-weight: 600;
+  color: var(--primary); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 .probe-h-input[readonly], .probe-mp-xinput[readonly] { opacity: .6; cursor: not-allowed; }
 /* Schloss je Messpunkt: gesperrt = nicht verschiebbar, nicht löschbar */
 .probe-lock { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 1.45rem; height: 1.45rem;
@@ -1361,6 +1365,9 @@ button.header-manual-link:hover {
 .abs-knopf:disabled { opacity: .45; cursor: default; }
 .abs-knopf.leise { color: var(--muted); }
 .abs-knopf.klein { font-size: .68rem; padding: .12rem .45rem; }
+/* Hauptaktion farblich abgesetzt (z. B. «Aus Durchhang übernehmen») */
+.abs-knopf.haupt { background: var(--primary); border-color: var(--primary); color: var(--on-acc); font-weight: 600; }
+.abs-knopf.haupt:hover:not(:disabled) { background: var(--primary); filter: brightness(1.1); }
 .abs-hinweis { font-size: .68rem; color: var(--tertiary); margin: .2rem 0 .6rem; line-height: 1.45; }
 .abs-leer { font-size: .8rem; color: var(--muted); padding: 1.2rem 0; text-align: center; }
 .abs-scroll { overflow-x: auto; margin-bottom: .6rem; }
@@ -2922,32 +2929,37 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
         <div class="probe-m-group">
           <span class="probe-h-badge">H1</span>
           <div class="probe-input-wrap">
-            <input type="number" id="probe-h1" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H1 [m ü. M.]" oninput="setProbeH(1,this.value)">
+            <input type="number" id="probe-h1" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H1 [m ü. M.]" aria-describedby="probe-h-rel-1" oninput="setProbeH(1,this.value)">
             <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
           </div>
+          <span class="probe-h-rel" id="probe-h-rel-1"></span>
         </div>
         <div class="probe-m-group">
           <span class="probe-h-badge">H2</span>
           <div class="probe-input-wrap">
-            <input type="number" id="probe-h2" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H2 [m ü. M.]" oninput="setProbeH(2,this.value)">
+            <input type="number" id="probe-h2" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H2 [m ü. M.]" aria-describedby="probe-h-rel-2" oninput="setProbeH(2,this.value)">
             <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
           </div>
+          <span class="probe-h-rel" id="probe-h-rel-2"></span>
         </div>
         <div class="probe-m-group">
           <span class="probe-h-badge">H3</span>
           <div class="probe-input-wrap">
-            <input type="number" id="probe-h3" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H3 [m ü. M.]" oninput="setProbeH(3,this.value)">
+            <input type="number" id="probe-h3" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H3 [m ü. M.]" aria-describedby="probe-h-rel-3" oninput="setProbeH(3,this.value)">
             <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
           </div>
+          <span class="probe-h-rel" id="probe-h-rel-3"></span>
         </div>
         <div class="probe-m-group">
           <span class="probe-h-badge">H4</span>
           <div class="probe-input-wrap">
-            <input type="number" id="probe-h4" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H4 [m ü. M.]" oninput="setProbeH(4,this.value)">
+            <input type="number" id="probe-h4" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H4 [m ü. M.]" aria-describedby="probe-h-rel-4" oninput="setProbeH(4,this.value)">
             <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
           </div>
+          <span class="probe-h-rel" id="probe-h-rel-4"></span>
         </div>
       </div>
+      <button type="button" class="probe-sok-link" id="probe-sok-link" onclick="sokEintragen()" style="display:none" data-i18n="probe.sok.link">SOK m ü. M. eintragen →</button>
     </div>
     <div class="obs-section" id="obs-section" style="display:none"></div>
     </div><!-- /canvas-scroll-area -->
@@ -3044,7 +3056,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.13.0';
+const APP_VERSION = 'v3.13.3';
 
 // Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
 function sysName(mode) {
@@ -9832,6 +9844,7 @@ function _mpAnzeigen() {
     const s = document.getElementById(`probe-lock-${i}`);
     if (s) { s.setAttribute('aria-pressed', zu ? 'true' : 'false'); s.title = t(zu ? 'probe.entsperren' : 'probe.sperren'); }
   }
+  _hZeileStatus();
 }
 function setProbeH(i, wert) {
   if (probeSperre[i - 1]) return;
@@ -9936,8 +9949,39 @@ function setMindestabstand(wert) {
   _triggerDrawingRebuild();
 }
 
+// H-Zeile an den SOK-Bezug anpassen: ohne SOK m ü. M. gesperrt (Link zu den
+// Mastangaben), mit SOK unter jedem Wert die Höhe über SOK.
+function _hZeileStatus() {
+  const sL = getSokMumLeft(), sR = getSokMumRight();
+  const hasSok = sL !== null || sR !== null;
+  const l = sL ?? sR, r = sR ?? sL, L = getActiveSpan();
+  const xs = _probeXs();
+  for (let i = 1; i <= 4; i++) {
+    const inp = document.getElementById(`probe-h${i}`);
+    if (inp) {
+      inp.disabled = !hasSok;
+      inp.placeholder = t(hasSok ? 'probe.h.placeholder' : 'probe.h.sokfehlt');
+    }
+    const rel = document.getElementById(`probe-h-rel-${i}`);
+    const x = xs[i - 1], h = probeHWerte[i - 1];
+    if (rel) rel.textContent = hasSok && x !== null && h !== null && L > 0
+      ? `≙ ${fN(h - (l + (r - l) * x / L), 2)} m ${t('dyn.ueber.sok')}` : '';
+  }
+  zeigeElement(document.getElementById('probe-sok-link'), !hasSok);
+}
+// Mastangaben öffnen und ins Feld SOK m ü. M. springen
+function sokEintragen() {
+  const det = document.getElementById('mastangaben');
+  if (det) det.open = true;
+  const el = document.getElementById('sok-mum-left');
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => el.focus({ preventScroll: true }), 300);
+}
+
 // Ergebnis der H-Punkte (ohne die Eingabefelder neu aufzubauen)
 function _hindernisErgebnisse() {
+  _hZeileStatus();
   const hasSok = getSokMumLeft() !== null || getSokMumRight() !== null;
   const liste = _hindernisseAngezeigt();
   const sokHw = document.getElementById('hind-sok-fehlt');
@@ -12957,7 +13001,7 @@ function renderHf() {
   box.innerHTML = `
   <p class="abs-hinweis" style="margin-top:0">${t('hf.einleitung')}</p>
   <div class="abs-leiste">
-    <button class="abs-knopf" onclick="hfAusDurchhang()">${t('hf.uebernehmen')}</button>
+    <button class="abs-knopf haupt" id="hf-uebernehmen" onclick="hfAusDurchhang()">${t('hf.uebernehmen')}</button>
     <button class="abs-knopf" onclick="hfZuruecksetzen()">${t('hf.vorgabe')}</button>
     <span class="abs-trenner"></span>
     <button class="abs-knopf" onclick="hfPdf()">${t('hf.pdf')}</button>
@@ -13964,6 +14008,8 @@ const LANG = {
     'hind.punkt.hinzu': '+ Punkt',
     'hind.punkt.weg': 'Punkt löschen',
     'hind.titel': 'H-Punkte: Hindernis oberhalb (z. B. Unterkante Brücke / Bauwerk)',
+    'probe.h.sokfehlt': 'SOK fehlt',
+    'probe.sok.link': 'SOK m ü. M. eintragen →',
     'probe.h.name': 'H-Punkte',
     'probe.h.einheit': 'm ü. M.',
     'probe.sperren': 'Messpunkt sperren (nicht verschieben oder löschen)',
@@ -14781,6 +14827,8 @@ const LANG = {
     'hind.punkt.hinzu': '+ Point',
     'hind.punkt.weg': 'Supprimer le point',
     'hind.titel': 'Points H : obstacle au-dessus (p. ex. sous-face pont / ouvrage)',
+    'probe.h.sokfehlt': 'DRS manquant',
+    'probe.sok.link': 'Saisir le DRS m s.n.m. →',
     'probe.h.name': 'Points H',
     'probe.h.einheit': 'm s.n.m.',
     'probe.sperren': 'Verrouiller le point de mesure (ni déplacer ni supprimer)',
@@ -15598,6 +15646,8 @@ const LANG = {
     'hind.punkt.hinzu': '+ Punto',
     'hind.punkt.weg': 'Elimina punto',
     'hind.titel': 'Punti H: ostacolo sopra (p. es. intradosso ponte / opera)',
+    'probe.h.sokfehlt': 'PRF mancante',
+    'probe.sok.link': 'Inserire il PRF m s.l.m. →',
     'probe.h.name': 'Punti H',
     'probe.h.einheit': 'm s.l.m.',
     'probe.sperren': 'Bloccare il punto di misura (né spostare né eliminare)',
@@ -15820,6 +15870,7 @@ function setLang(lang) {
     const el = document.getElementById('probe-h' + i);
     if (el) el.placeholder = t('probe.h.placeholder');
   });
+  if (typeof _hZeileStatus === 'function') _hZeileStatus();
   const sokPlaceholder = `— ${t('dyn.ueber.mum')}`;
   const sokL = document.getElementById('sok-mum-left');
   if (sokL) sokL.placeholder = sokPlaceholder;
@@ -17433,7 +17484,7 @@ renderObstacleList();
           <li><strong>R-FL</strong>: Eislast-Durchhang mit fest 12 kN + 10 kN, Fallprüfung P1.1–P1.3 und überdeckte Spannweite c<sub>übr</sub>; Vordurchhang 50 mm (c ≥ 42 m) bzw. 30 mm nur bis 140 km/h.</li>
           <li>Wie Excel: Spannweite c nur 60 … 26, 24, 20, 16, 12, 8 m; Temperaturen −20 … +80 °C in 5-K-Schritten; Zusatzlast 0 / 7 / 15 N/m nur bei −5 °C.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)"><em>Aus Durchhang übernehmen</em> holt FL-Typ, Kombination, Spannweite (auf den nächsten Tabellenwert aufgerundet), L<sub>m</sub> und Zugkräfte aus der aktuellen Berechnung. Die Tabelle zeigt jeden Zuschlag mit Quelle. Zwei Grafiken: die <em>Höhenleiter ab SOK</em> (links die Anteile bis hf<sub>min</sub>, rechts die Zuschläge ab 6.05 bzw. 6.20 m bis hf<sub>max</sub>, dazwischen der zulässige Bereich) und <em>hf<sub>min</sub> / hf<sub>max</sub> über die Spannweite</em> (alle Tabellenwerte von c, gewählte Spannweite markiert). <em>PDF-Protokoll</em> druckt Berechnung und Grafiken. In der Zeichnung lassen sich hf<sub>min</sub> / hf<sub>max</sub> als Band einblenden (6.13). Kontrolle: der in der Excel gespeicherte Fall (N-FL 50+107, c = 30 m, −5 °C mit 7 N/m) ergibt hf<sub>min</sub> = 4928 mm und hf<sub>max</sub> = 6104 mm wie in der Excel.</p>
+        <p style="font-size:.8rem;color:var(--muted)"><em>Aus Durchhang übernehmen</em> holt FL-Typ, Kombination, Spannweite (auf den nächsten Tabellenwert aufgerundet), L<sub>m</sub> und Zugkräfte aus der aktuellen Berechnung. Die Tabelle zeigt jeden Zuschlag mit Quelle. Zwei Grafiken: die <em>Höhenleiter ab SOK</em> (links die Anteile bis hf<sub>min</sub>, rechts die Zuschläge ab 6.05 bzw. 6.20 m bis hf<sub>max</sub>, dazwischen der zulässige Bereich) und <em>hf<sub>min</sub> / hf<sub>max</sub> über die Spannweite</em> (alle Tabellenwerte von c, gewählte Spannweite markiert). <em>PDF-Protokoll</em> druckt Berechnung und Grafiken. In der Zeichnung lassen sich hf<sub>min</sub> / hf<sub>max</sub> als Band einblenden (6.13). Kontrolle: der in der Excel gespeicherte Fall (N-FL 50+107, c = 30 m, −5 °C mit 7 N/m) ergibt hf<sub>min</sub> = 4928 mm und hf<sub>max</sub> = 6104 mm wie in der Excel. Zusätzlich wurden 480 Fälle (N-FL / R-FL, alle Spannweiten, Geschwindigkeiten, Bahnübergang, EBV 1–4, 15 / 25 kV, Schotter, LRP, Temperaturen, Eis, f / H, Fallprüfung P1.1–P1.3 mit c<sub>übr</sub>) in der Excel nachgerechnet: hf<sub>min</sub>, hf<sub>max</sub> und jeder Zuschlag stimmen mit der App überein; die Fälle laufen als automatischer Test mit.</p>
       </div><!-- /hb-de -->
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.14 &nbsp;Hauteur du fil de contact hf_min / hf_max</p>
@@ -17446,7 +17497,7 @@ renderObstacleList();
           <li><strong>LC R</strong> : flèche sous glace avec 12 kN + 10 kN fixes, essai de cas P1.1–P1.3 et portée couverte c<sub>übr</sub> ; pré-flèche 50 mm (c ≥ 42 m) resp. 30 mm seulement jusqu’à 140 km/h.</li>
           <li>Comme Excel : portée c seulement 60 … 26, 24, 20, 16, 12, 8 m ; températures −20 … +80 °C par pas de 5 K ; charge add. 0 / 7 / 15 N/m seulement à −5 °C.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)"><em>Reprendre du calcul de flèche</em> reprend type de LC, combinaison, portée (arrondie à la valeur de tableau supérieure), L<sub>m</sub> et tractions. Le tableau montre chaque supplément avec sa source. Deux graphiques : l’<em>échelle des hauteurs depuis le DRS</em> (à gauche les parts jusqu’à hf<sub>min</sub>, à droite les suppléments depuis 6.05 resp. 6.20 m jusqu’à hf<sub>max</sub>, entre les deux la plage admissible) et <em>hf<sub>min</sub> / hf<sub>max</sub> selon la portée</em> (toutes les valeurs de c du tableau, portée choisie marquée). <em>Protocole PDF</em> imprime calcul et graphiques. Dans le dessin, hf<sub>min</sub> / hf<sub>max</sub> peuvent être affichés comme bande (6.13). Contrôle : le cas enregistré dans l’Excel (LC N 50+107, c = 30 m, −5 °C avec 7 N/m) donne hf<sub>min</sub> = 4928 mm et hf<sub>max</sub> = 6104 mm comme l’Excel.</p>
+        <p style="font-size:.8rem;color:var(--muted)"><em>Reprendre du calcul de flèche</em> reprend type de LC, combinaison, portée (arrondie à la valeur de tableau supérieure), L<sub>m</sub> et tractions. Le tableau montre chaque supplément avec sa source. Deux graphiques : l’<em>échelle des hauteurs depuis le DRS</em> (à gauche les parts jusqu’à hf<sub>min</sub>, à droite les suppléments depuis 6.05 resp. 6.20 m jusqu’à hf<sub>max</sub>, entre les deux la plage admissible) et <em>hf<sub>min</sub> / hf<sub>max</sub> selon la portée</em> (toutes les valeurs de c du tableau, portée choisie marquée). <em>Protocole PDF</em> imprime calcul et graphiques. Dans le dessin, hf<sub>min</sub> / hf<sub>max</sub> peuvent être affichés comme bande (6.13). Contrôle : le cas enregistré dans l’Excel (LC N 50+107, c = 30 m, −5 °C avec 7 N/m) donne hf<sub>min</sub> = 4928 mm et hf<sub>max</sub> = 6104 mm comme l’Excel. En plus, 480 cas (LC N / LC R, toutes les portées, vitesses, passage à niveau, OCF 1–4, 15 / 25 kV, ballast, LRP, températures, glace, f / H, essai de cas P1.1–P1.3 avec c<sub>übr</sub>) ont été recalculés dans l’Excel : hf<sub>min</sub>, hf<sub>max</sub> et chaque supplément concordent avec l’application ; les cas font partie des tests automatiques.</p>
       </div><!-- /hb-fr -->
       <div class="hb-lang hb-it" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.14 &nbsp;Altezza del filo di contatto hf_min / hf_max</p>
@@ -17459,7 +17510,7 @@ renderObstacleList();
           <li><strong>LC R</strong>: freccia con ghiaccio con 12 kN + 10 kN fissi, verifica dei casi P1.1–P1.3 e campata coperta c<sub>übr</sub>; pre-freccia 50 mm (c ≥ 42 m) risp. 30 mm solo fino a 140 km/h.</li>
           <li>Come Excel: campata c solo 60 … 26, 24, 20, 16, 12, 8 m; temperature −20 … +80 °C a passi di 5 K; carico add. 0 / 7 / 15 N/m solo a −5 °C.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)"><em>Riprendi dal calcolo della freccia</em> riprende tipo di LC, combinazione, campata (arrotondata al valore di tabella superiore), L<sub>m</sub> e tiri. La tabella mostra ogni supplemento con la fonte. Due grafici: la <em>scala delle altezze dal PRF</em> (a sinistra le quote fino a hf<sub>min</sub>, a destra i supplementi da 6.05 risp. 6.20 m fino a hf<sub>max</sub>, in mezzo il campo ammissibile) e <em>hf<sub>min</sub> / hf<sub>max</sub> in funzione della campata</em> (tutti i valori di c della tabella, campata scelta evidenziata). <em>Protocollo PDF</em> stampa calcolo e grafici. Nel disegno hf<sub>min</sub> / hf<sub>max</sub> possono essere mostrati come banda (6.13). Controllo: il caso salvato nell’Excel (LC N 50+107, c = 30 m, −5 °C con 7 N/m) dà hf<sub>min</sub> = 4928 mm e hf<sub>max</sub> = 6104 mm come l’Excel.</p>
+        <p style="font-size:.8rem;color:var(--muted)"><em>Riprendi dal calcolo della freccia</em> riprende tipo di LC, combinazione, campata (arrotondata al valore di tabella superiore), L<sub>m</sub> e tiri. La tabella mostra ogni supplemento con la fonte. Due grafici: la <em>scala delle altezze dal PRF</em> (a sinistra le quote fino a hf<sub>min</sub>, a destra i supplementi da 6.05 risp. 6.20 m fino a hf<sub>max</sub>, in mezzo il campo ammissibile) e <em>hf<sub>min</sub> / hf<sub>max</sub> in funzione della campata</em> (tutti i valori di c della tabella, campata scelta evidenziata). <em>Protocollo PDF</em> stampa calcolo e grafici. Nel disegno hf<sub>min</sub> / hf<sub>max</sub> possono essere mostrati come banda (6.13). Controllo: il caso salvato nell’Excel (LC N 50+107, c = 30 m, −5 °C con 7 N/m) dà hf<sub>min</sub> = 4928 mm e hf<sub>max</sub> = 6104 mm come l’Excel. Inoltre 480 casi (LC N / LC R, tutte le campate, velocità, passaggio a livello, OFerr 1–4, 15 / 25 kV, ballast, LRP, temperature, ghiaccio, f / H, verifica dei casi P1.1–P1.3 con c<sub>übr</sub>) sono stati ricalcolati nell’Excel: hf<sub>min</sub>, hf<sub>max</sub> e ogni supplemento concordano con l’applicazione; i casi fanno parte dei test automatici.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 7 Beispielberechnung ══ -->
