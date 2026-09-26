@@ -20,10 +20,21 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Durchhang">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Schrift «Inter» wird mit der App ausgeliefert (fonts/, Lizenz: SIL OFL 1.1)
+     statt von Google geladen: funktioniert offline, blockiert den Start nicht
+     bei schlechtem Netz und sendet keine Daten an Dritte. -->
+<link rel="preload" href="fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+@font-face {
+  font-family: 'Inter'; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url(fonts/inter-latin-wght-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Inter'; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url(fonts/inter-latin-ext-wght-normal.woff2) format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -230,22 +241,22 @@ body {
   height: 20px;
 }
 #temp2-slider::-webkit-slider-runnable-track {
-  background: transparent; height: 0;
+  background: #d9d9d9; height: 3px; border-radius: 2px;
 }
 #temp2-slider::-moz-range-track {
-  background: transparent; height: 0; border: none;
+  background: #d9d9d9; height: 3px; border: none; border-radius: 2px;
 }
 #temp2-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 14px; height: 14px;
+  width: 16px; height: 16px;
   border-radius: 50%;
   background: var(--t2-clr, var(--primary));
   cursor: pointer;
-  margin-top: 0;
+  margin-top: -6.5px;
   box-shadow: 0 1px 4px rgba(0,0,0,.25);
 }
 #temp2-slider::-moz-range-thumb {
-  width: 14px; height: 14px;
+  width: 16px; height: 16px;
   border-radius: 50%;
   background: var(--t2-clr, var(--primary));
   border: none;
@@ -260,22 +271,22 @@ body {
   height: 20px;
 }
 #temp3-slider::-webkit-slider-runnable-track {
-  background: transparent; height: 0;
+  background: #d9d9d9; height: 3px; border-radius: 2px;
 }
 #temp3-slider::-moz-range-track {
-  background: transparent; height: 0; border: none;
+  background: #d9d9d9; height: 3px; border: none; border-radius: 2px;
 }
 #temp3-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 14px; height: 14px;
+  width: 16px; height: 16px;
   border-radius: 50%;
   background: var(--t3-clr, #6b7280);
   cursor: pointer;
-  margin-top: 0;
+  margin-top: -6.5px;
   box-shadow: 0 1px 4px rgba(0,0,0,.25);
 }
 #temp3-slider::-moz-range-thumb {
-  width: 14px; height: 14px;
+  width: 16px; height: 16px;
   border-radius: 50%;
   background: var(--t3-clr, #6b7280);
   border: none;
@@ -1385,7 +1396,7 @@ button.header-manual-link:hover {
   border-radius: 4px;
   border: none;
   background: none;
-  color: #b0b0b5;
+  color: var(--tertiary);
   font-size: .68rem;
   font-weight: 500;
   cursor: pointer;
@@ -1942,7 +1953,7 @@ button.header-manual-link:hover {
             <button class="seg-btn active" id="seg-lm-arith" data-i18n="lm.arith"  onclick="setLmFormula('arith')"  style="font-size:.68rem;white-space:nowrap">Arithmetisch</button>
             <button class="seg-btn"        id="seg-lm-ruling" data-i18n="lm.ruling" onclick="setLmFormula('ruling')" style="font-size:.68rem;white-space:nowrap">Ideelle Spannweite</button>
           </div>
-          <div id="lm-formula-hint" style="font-size:.6rem;color:var(--muted);opacity:.5;margin-top:.15rem;letter-spacing:.01em">Lm = &#x03A3;L / n</div>
+          <div id="lm-formula-hint" style="font-size:.65rem;color:var(--tertiary);margin-top:.15rem;letter-spacing:.01em">Lm = &#x03A3;L / n</div>
         </div>
         <!-- Lm-Feld: immer editierbar; sobald Wert getippt → Buttons ausgegraut -->
         <div style="display:flex;align-items:center;gap:.3rem;margin-top:.3rem">
@@ -1955,7 +1966,7 @@ button.header-manual-link:hover {
             <span class="input-unit">m</span>
           </div>
         </div>
-        <div style="font-size:.59rem;color:var(--muted);opacity:.5;margin-top:.12rem;padding-left:2.3rem" data-i18n="ui.lm.ueberschreibbar">Wert überschreibbar — Feld leeren zum Zurücksetzen</div>
+        <div style="font-size:.65rem;color:var(--tertiary);margin-top:.12rem;padding-left:2.3rem" data-i18n="ui.lm.ueberschreibbar">Wert überschreibbar — Feld leeren zum Zurücksetzen</div>
         <div class="field" style="margin-top:.5rem">
           <label id="span-display-label" data-i18n="span.display">Dargestelltes Feld</label>
           <div class="input-wrap">
@@ -2286,7 +2297,7 @@ button.header-manual-link:hover {
       </div>
       <div id="scale-data-strip" style="display:none"></div>
       <div id="scale-sok-note" style="display:none;padding:.3rem .7rem;font-size:.65rem;font-style:italic;border-top:1px solid #ececec;background:#fafafa;flex-direction:column;align-items:flex-start;gap:.2rem">
-        <span style="color:#b0b0b0" data-i18n="ui.sok.hinweis">ⓘ SOK zwischen den Eingabepunkten wird interpoliert und entspricht nicht der effektiven Höhenlage.</span>
+        <span style="color:var(--tertiary)" data-i18n="ui.sok.hinweis">ⓘ SOK zwischen den Eingabepunkten wird interpoliert und entspricht nicht der effektiven Höhenlage.</span>
         <span id="scale-min-clearance-note" style="display:none;color:#5a6a7a;font-weight:600;white-space:nowrap"></span>
       </div>
     </div>
@@ -2674,6 +2685,9 @@ button.header-manual-link:hover {
 // ═══════════════════════════════════════════════════════════════
 // GLOBALER ZUSTAND
 // ═══════════════════════════════════════════════════════════════
+// Schrift für Beschriftungen im Diagramm (Canvas). Früher nur «Segoe UI» —
+// die gibt es nur unter Windows, auf iPad/Mac erschien dann eine Serifenschrift.
+const DIAGRAMM_SCHRIFT = "Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
 let calcState = null; // Letztes Berechnungsergebnis (für PDF-Export und Messpunkte)
 
 // Canvas-Koordinatensystem — wird bei jedem Zeichnen aktualisiert
@@ -8323,13 +8337,13 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
 
   // Y-grid + labels
   const ySteps = 5;
-  ctx.font = '10px Segoe UI'; ctx.fillStyle = '#b7b7b7'; ctx.textAlign = 'right';
+  ctx.font = `10px ${DIAGRAMM_SCHRIFT}`; ctx.fillStyle = '#6e6e6e'; ctx.textAlign = 'right';
   for (let i = 0; i <= ySteps; i++) {
     const yVal = yLo + (i / ySteps) * (yHi - yLo);
     const gy = cy(yVal);
     ctx.strokeStyle = '#d2d2d2';
     ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(padL + plotW, gy); ctx.stroke();
-    ctx.fillStyle = '#b7b7b7';
+    ctx.fillStyle = '#6e6e6e';
     ctx.fillText(yVal.toFixed(1), padL - 5, gy + 3.5);
   }
   // Y-axis label
@@ -8337,17 +8351,17 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   ctx.translate(11, padT + plotH / 2);
   ctx.rotate(-Math.PI / 2);
   ctx.textAlign = 'center';
-  ctx.font = '9px Segoe UI';
+  ctx.font = `10px ${DIAGRAMM_SCHRIFT}`;
   ctx.fillText(hasSok ? t('canvas.y.mum') : t('canvas.y.sok'), 0, 0);
   ctx.restore();
 
   // X-axis labels
-  ctx.textAlign = 'center'; ctx.fillStyle = '#b7b7b7'; ctx.font = '10px Segoe UI';
+  ctx.textAlign = 'center'; ctx.fillStyle = '#6e6e6e'; ctx.font = `10px ${DIAGRAMM_SCHRIFT}`;
   [0, .25, .5, .75, 1].forEach(t => {
     const xv = t * L;
     ctx.fillText(xv.toFixed(1), cx(xv), padT + plotH + 18);
   });
-  ctx.fillStyle = '#b7b7b7'; ctx.font = '9px Segoe UI';
+  ctx.fillStyle = '#6e6e6e'; ctx.font = `10px ${DIAGRAMM_SCHRIFT}`;
   ctx.fillText(t('canvas.x.label'), padL + plotW / 2, CH - 4);
 
   // ── Support poles ──
@@ -8420,7 +8434,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     arrowHead(bx, ty + 1,  1);
     // Label
     const mid = (by + ty) / 2;
-    ctx.fillStyle = color; ctx.font = 'bold 10px Segoe UI';
+    ctx.fillStyle = color; ctx.font = `bold 10px ${DIAGRAMM_SCHRIFT}`;
     ctx.textAlign = side === 'left' ? 'right' : 'left';
     ctx.fillText(`f = ${c.sag.toFixed(2)} m`, bx + (side === 'left' ? -6 : 6), mid + 4);
   }
@@ -8487,7 +8501,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.fillStyle = 'white'; ctx.fill();
     // Drag indicator
     ctx.fillStyle = hovered ? '#eb0000' : '#686868';
-    ctx.font = 'bold 9px Segoe UI'; ctx.textAlign = 'center';
+    ctx.font = `bold 9px ${DIAGRAMM_SCHRIFT}`; ctx.textAlign = 'center';
     ctx.fillText('↕', px, py + 3.5);
 
     return { px, py };
@@ -8503,7 +8517,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     const txt  = hasSok
       ? `${hDraw.toFixed(2)} ${t('bp.mum.abbrev')}`
       : `h = ${hRaw.toFixed(2)} m`;
-    ctx.font = 'bold 9px Segoe UI';
+    ctx.font = `bold 9px ${DIAGRAMM_SCHRIFT}`;
     const boxW = ctx.measureText(txt).width + 16, boxH = 24, gap = 8;
     const onRight = align === 'left';
     const bx = onRight ? px + gap : px - boxW - gap;
@@ -8536,7 +8550,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
       if (parts.km)  rows.push({ text: 'KM ' + parts.km,  bold: false, size: 8 });
       let maxW = 0;
       rows.forEach(r => {
-        ctx.font = `${r.bold ? 'bold ' : ''}${r.size}px Segoe UI`;
+        ctx.font = `${r.bold ? 'bold ' : ''}${r.size}px ${DIAGRAMM_SCHRIFT}`;
         maxW = Math.max(maxW, ctx.measureText(r.text).width);
       });
       const boxH = rows.length * lineH + 4;
@@ -8552,7 +8566,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
       ctx.stroke();
       ctx.textAlign = 'center'; ctx.textBaseline = 'top';
       rows.forEach((r, i) => {
-        ctx.font = `${r.bold ? 'bold ' : ''}${r.size}px Segoe UI`;
+        ctx.font = `${r.bold ? 'bold ' : ''}${r.size}px ${DIAGRAMM_SCHRIFT}`;
         ctx.fillStyle = r.bold ? '#374151' : '#6b7280';
         ctx.fillText(r.text, txtX, nmY + 2 + i * lineH);
       });
@@ -8613,7 +8627,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
 
     // Callout-Box: Richtung alternieren bei geclusterten Proben
     const label = { probe1:'M1', probe2:'M2', probe3:'M3', probe4:'M4' }[which] ?? which;
-    ctx.font = 'bold 14px Segoe UI';
+    ctx.font = `bold 14px ${DIAGRAMM_SCHRIFT}`;
     const labelW = ctx.measureText(label).width;
     const boxW = labelW + 18;
     const boxH = 26, gap = 8;
@@ -8650,7 +8664,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.fillStyle = 'rgba(255,255,255,.93)'; ctx.closePath(); ctx.fill();
 
     ctx.textAlign = 'left';
-    ctx.font = 'bold 14px Segoe UI'; ctx.fillStyle = dotColor;
+    ctx.font = `bold 14px ${DIAGRAMM_SCHRIFT}`; ctx.fillStyle = dotColor;
     ctx.fillText(label, bx + 8, by + boxH / 2 + 5);
 
     // Δh-Annotation: Seite gegenüber Callout, vertikal versetzt bei Cluster
@@ -8668,7 +8682,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
       ctx.lineTo(px - 3.5, wireY + 6); ctx.lineTo(px + 3.5, wireY + 6); ctx.closePath(); ctx.fill();
       ctx.beginPath(); ctx.moveTo(px, refY + 1);
       ctx.lineTo(px - 3.5, refY - 6); ctx.lineTo(px + 3.5, refY - 6); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = dotColor; ctx.font = 'bold 10px Segoe UI';
+      ctx.fillStyle = dotColor; ctx.font = `bold 10px ${DIAGRAMM_SCHRIFT}`;
       ctx.textAlign = labelSide === 'left' ? 'right' : 'left';
       ctx.fillText(`Δh = ${distH1.toFixed(2)} m`, px + (labelSide === 'left' ? -6 : 6), vmid + 4);
     }
@@ -8702,7 +8716,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
       ctx.closePath();
       ctx.fillStyle   = t3Clr; ctx.fill();
       ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.stroke();
-      ctx.font = 'bold 10px Segoe UI'; ctx.fillStyle = t3Clr;
+      ctx.font = `bold 10px ${DIAGRAMM_SCHRIFT}`; ctx.fillStyle = t3Clr;
       const onRight = dpx + 36 < padL + plotW;
       ctx.textAlign = onRight ? 'left' : 'right';
       ctx.fillText(lbl, onRight ? dpx + 9 : dpx - 9, dpy + 4);
@@ -8729,7 +8743,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.globalAlpha = 1;
     // Label «C»
     const label = 'C';
-    ctx.font = 'bold 10px Segoe UI';
+    ctx.font = `bold 10px ${DIAGRAMM_SCHRIFT}`;
     const boxW = ctx.measureText(label).width + 14, boxH = 20, gap = 7;
     const onRight = (px + boxW + gap + 4) <= (padL + plotW);
     const bx = onRight ? px + gap : px - boxW - gap;
@@ -8940,9 +8954,9 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
       // Label
       ctx.textAlign = align;
       ctx.fillStyle = dotClr;
-      ctx.font = 'bold 10px Segoe UI';
+      ctx.font = `bold 10px ${DIAGRAMM_SCHRIFT}`;
       ctx.fillText(`${badge} (${lbl})`, lblX, lblY);
-      ctx.font = '9px Segoe UI';
+      ctx.font = `9px ${DIAGRAMM_SCHRIFT}`;
       ctx.fillStyle = vio ? '#eb0000' : '#6b7280';
       ctx.fillText(`${clear >= 0 ? '+' : ''}${clear.toFixed(2)} m${vio ? ' ⚠' : ''}`, lblX, lblY + 12);
       ctx.restore();
@@ -9105,7 +9119,7 @@ function updateHighlightCard() {
         </div>
         <div style="display:flex;align-items:center;gap:.5rem;margin:.35rem 0;width:100%">
           <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
-          <span class="sok-hinweis" style="font-size:.6rem;color:#c0c0c0;font-style:italic;white-space:nowrap">${t('ui.sok.hinweis')}</span>
+          <span class="sok-hinweis" style="font-size:.65rem;color:var(--tertiary);font-style:italic;white-space:nowrap">${t('ui.sok.hinweis')}</span>
           <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
         </div>
       </div>`;
@@ -9132,7 +9146,7 @@ function updateHighlightCard() {
         ${blocks}
         <div style="${compact ? 'grid-column:1/-1;' : ''}display:flex;align-items:center;gap:.5rem;margin:.35rem 0;width:100%">
           <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
-          <span class="sok-hinweis" style="font-size:.6rem;color:#c0c0c0;font-style:italic;white-space:nowrap">${t('ui.sok.hinweis')}</span>
+          <span class="sok-hinweis" style="font-size:.65rem;color:var(--tertiary);font-style:italic;white-space:nowrap">${t('ui.sok.hinweis')}</span>
           <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
         </div>
       </div>`;
@@ -13213,6 +13227,8 @@ berechnen();
   updateT2Float(v, false); }
 // Apply saved language (after first berechnen so all elements exist)
 if (currentLang !== 'de') setLang(currentLang);
+// Diagramm neu zeichnen, sobald die mitgelieferte Schrift geladen ist
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => berechnen());
 _mastangabenOeffnenFallsBelegt();
 
 // ── Service Worker: macht die Anwendung offline verfügbar ──────────────────

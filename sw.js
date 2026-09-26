@@ -7,12 +7,12 @@
  *           zwischengespeicherte. Verhindert, dass nach einer Aktualisierung
  *           eine veraltete Datei hängen bleibt — und dass eine neue Seite
  *           mit einem alten Rechenkern (rechenkern.js) zusammentrifft.
- *   Rest  → «cache first»: Icons und Schriften ändern sich praktisch nie.
+ *   Rest  → «cache first»: Icons und Schriften (fonts/) ändern sich praktisch nie.
  *
  * CACHE_VERSION bei jeder Veröffentlichung erhöhen — alte Zwischenspeicher
  * werden beim Aktivieren automatisch entfernt.
  */
-const CACHE_VERSION = 'durchhang-v3.1.1';
+const CACHE_VERSION = 'durchhang-v3.1.2';
 
 /* Bestandteile der Anwendung. Relative Pfade, damit es sowohl unter
    /Durchhang/ auf GitHub Pages als auch in einem Unterordner funktioniert. */
@@ -25,6 +25,8 @@ const APP_DATEIEN = [
   './icon-512.png',
   './icon-maskable-512.png',
   './favicon-32.png',
+  './fonts/inter-latin-wght-normal.woff2',
+  './fonts/inter-latin-ext-wght-normal.woff2',
 ];
 
 self.addEventListener('install', e => {
@@ -92,10 +94,8 @@ self.addEventListener('fetch', e => {
     if (treffer) return treffer;
     try {
       const antwort = await fetch(req);
-      // Nur Eigenes und die Google-Schriften dauerhaft ablegen
-      const ablegen = url.origin === self.location.origin ||
-                      url.hostname.endsWith('googleapis.com') ||
-                      url.hostname.endsWith('gstatic.com');
+      // Nur Eigenes dauerhaft ablegen (Schriften liegen seit v3.1 in fonts/)
+      const ablegen = url.origin === self.location.origin;
       if (ablegen && (antwort.ok || antwort.type === 'opaque')) {
         const cache = await caches.open(CACHE_VERSION);
         cache.put(req, antwort.clone());
