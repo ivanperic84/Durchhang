@@ -1361,6 +1361,8 @@ button.header-manual-link:hover {
 .lf-zeile { display: flex; align-items: center; gap: .5rem; margin: .5rem 0; font-size: .8rem; color: var(--text); }
 .lf-zeile input[type=text], .lf-zeile input[type=number] { border: 1px solid var(--border); border-radius: 6px; padding: .3rem .45rem;
   font-family: inherit; font-size: .8rem; color: var(--text); background: var(--card); }
+.seg-btn.seg-neben:not(.active) { color: var(--tertiary); font-weight: 400; font-style: italic; }
+.seg-btn.seg-neben:not(.active):hover { color: var(--muted); }
 .koord-block { margin-top: .8rem; padding-top: .6rem; border-top: 1px solid var(--border); }
 .schalter-zeile { display: flex; align-items: center; gap: .5rem; font-size: .75rem; color: var(--text2); cursor: pointer; user-select: none; }
 .schalter-zeile input { position: absolute; opacity: 0; width: 1px; height: 1px; }
@@ -2449,8 +2451,8 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
         <div class="seg-ctrl canvas-view-seg" style="flex-shrink:0">
           <button class="seg-btn active" id="view-seg-diagramm" data-i18n="canvas.title"  onclick="setCanvasView('diagramm')">Diagramm</button>
           <button class="seg-btn"        id="view-seg-zeichnung" data-i18n="btn.drawing" onclick="setCanvasView('zeichnung')">Zeichnung</button>
-          <button class="seg-btn"        id="view-seg-foto" data-i18n="btn.foto"      onclick="setCanvasView('foto')">Foto</button>
           <button class="seg-btn"        id="view-seg-abschnitt" data-i18n="abs.tab"  onclick="abschnittAnsicht()">Abschnitt</button>
+          <button class="seg-btn seg-neben" id="view-seg-foto" data-i18n="btn.foto" data-i18n-title="ui.foto.genau.kurz" title="Nur Abschätzung — keine präzise Berechnung" onclick="setCanvasView('foto')">Foto</button>
         </div>
         <!-- Status-Info (nur im Foto-Tab sichtbar) -->
         <span id="foto-status" style="display:none;font-size:.71rem;color:var(--primary);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" data-i18n="ui.foto.laden.hinweis">Foto laden, dann Punkte klicken</span>
@@ -2946,7 +2948,14 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
       <p style="margin:-.3rem 0 .4rem 9.5rem;font-size:.66rem;color:var(--tertiary)" data-i18n="lf.temps.hinweis">getrennt durch ; oder Leerzeichen (−50 … +120)</p>
       <div class="lf-zeile">
         <label style="display:flex;align-items:center;gap:.4rem;min-width:9rem"><input type="checkbox" id="lf-eis" onchange="_lastfallAusFormular();_lastfallFormular()"> <span data-i18n="lf.eis">Eislast bei −5 °C</span></label>
-        <label style="display:flex;align-items:center;gap:.35rem">Z<sub>L</sub> <input type="number" id="lf-zl" min="0" step="1" style="width:4.5rem" oninput="_lastfallAusFormular();_lastfallFormular()"> N/m</label>
+        <label style="display:flex;align-items:center;gap:.35rem">Z<sub>L</sub> <input type="number" id="lf-zl" min="0" step="1" style="width:4.5rem" oninput="_lastfallAusFormular(true);_lastfallFormular()"> N/m</label>
+      </div>
+      <div role="group" aria-labelledby="lf-hl-lbl" style="margin:.2rem 0 .5rem">
+        <div id="lf-hl-lbl" data-i18n="lf.hoehenlage" style="font-size:.8rem;margin-bottom:.3rem">Höhenlage der Strecke</div>
+        <div class="seg-ctrl" style="margin:0">
+          <button class="seg-btn" style="font-size:.74rem;white-space:nowrap;padding-left:.3rem;padding-right:.3rem" id="lf-hl-unter" onclick="lastfallHoehenlage('unter')" data-i18n="lf.hl.unter">unter 1000 m ü. M. · 7 N/m</button>
+          <button class="seg-btn" style="font-size:.74rem;white-space:nowrap;padding-left:.3rem;padding-right:.3rem" id="lf-hl-ueber" onclick="lastfallHoehenlage('ueber')" data-i18n="lf.hl.ueber">ab 1000 m ü. M. · 15 N/m</button>
+        </div>
       </div>
       <div class="lf-zeile" id="lf-abn-zeile">
         <label style="display:flex;align-items:center;gap:.4rem"><input type="checkbox" id="lf-abn" onchange="_lastfallAusFormular();_lastfallFormular()"> <span data-i18n="lf.abnutzung">Fahrdraht neu und abgenutzt prüfen</span></label>
@@ -2979,7 +2988,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 <script src="abschnitt.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.9';
+const APP_VERSION = 'v3.9.1';
 
 // Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
 function sysName(mode) {
@@ -9910,20 +9919,32 @@ function _lastfallFormular() {
   document.getElementById('lf-temps').value = e.temperaturen.join('; ');
   document.getElementById('lf-eis').checked = e.eis;
   document.getElementById('lf-zl').value = e.zl;
+  ['unter', 'ueber'].forEach(h => document.getElementById(`lf-hl-${h}`)?.classList.toggle('active', h === e.hoehenlage));
   document.getElementById('lf-abn').checked = e.abnutzung;
   zeigeElement(document.getElementById('lf-abn-zeile'), _lfSys !== 'el');
   document.getElementById('lf-anzahl').textContent = t('lf.anzahl').replace('{n}', lastfaelle(lastfallEinst, _lfSys).length);
 }
-function _lastfallAusFormular() {
+// zlVonHand: Z_L wurde im Feld geändert → Wert übernehmen; sonst gilt der
+// Wert der gewählten Höhenlage (bzw. ein früher von Hand gesetzter Wert).
+function _lastfallAusFormular(zlVonHand = false) {
   const einst = { ...(lastfallEinst || {}) };
+  const alt = lastfallEinstellung(lastfallEinst, _lfSys);
+  const vorher = (lastfallEinst && lastfallEinst[_lfSys]) || {};
   einst[_lfSys] = {
     temperaturen: temperaturenLesen(document.getElementById('lf-temps').value),
     eis: document.getElementById('lf-eis').checked,
-    zl: parseFloat(document.getElementById('lf-zl').value) || 0,
+    hoehenlage: alt.hoehenlage,
+    zl: zlVonHand ? (parseFloat(document.getElementById('lf-zl').value) || 0) : (vorher.zl ?? null),
     abnutzung: document.getElementById('lf-abn').checked,
   };
   lastfallEinst = einst;
   try { localStorage.setItem('dh_lastfaelle', JSON.stringify(lastfallEinst)); } catch (e) { /* privat */ }
+}
+function lastfallHoehenlage(h) {
+  _lastfallAusFormular();
+  lastfallEinst[_lfSys] = { ...lastfallEinst[_lfSys], hoehenlage: h, zl: EISLAST_HOEHENLAGE[h] };
+  try { localStorage.setItem('dh_lastfaelle', JSON.stringify(lastfallEinst)); } catch (e) { /* privat */ }
+  _lastfallFormular();
 }
 function lastfallSystem(sys) { _lastfallAusFormular(); _lfSys = sys; _lastfallFormular(); }
 function lastfallVorgabe() {
@@ -13296,6 +13317,9 @@ const LANG = {
     'lf.eis.kurz': 'Eis {zl} N/m',
     'lf.abgenutzt': 'abgenutzt',
     'lf.neu': 'neu',
+    'lf.hoehenlage': 'Höhenlage der Strecke',
+    'lf.hl.unter': 'unter 1000 m ü. M. · 7 N/m',
+    'lf.hl.ueber': 'ab 1000 m ü. M. · 15 N/m',
     'ui.foto.ablauf.modus': 'Ablauf (7-Klick Modus):',
     'ui.foto.ablauf.1': 'Mastspitze links → Mastfuss links',
     'ui.foto.ablauf.2': 'Mastspitze rechts → Mastfuss rechts',
@@ -13993,6 +14017,9 @@ const LANG = {
     'lf.eis.kurz': 'glace {zl} N/m',
     'lf.abgenutzt': 'usé',
     'lf.neu': 'neuf',
+    'lf.hoehenlage': 'Altitude de la ligne',
+    'lf.hl.unter': 'sous 1000 m s.n.m. · 7 N/m',
+    'lf.hl.ueber': 'dès 1000 m s.n.m. · 15 N/m',
     'ui.foto.ablauf.modus': 'Procédure (mode 7 clics) :',
     'ui.foto.ablauf.1': 'Sommet du mât gauche → pied du mât gauche',
     'ui.foto.ablauf.2': 'Sommet du mât droit → pied du mât droit',
@@ -14690,6 +14717,9 @@ const LANG = {
     'lf.eis.kurz': 'ghiaccio {zl} N/m',
     'lf.abgenutzt': 'usurato',
     'lf.neu': 'nuovo',
+    'lf.hoehenlage': 'Altitudine della linea',
+    'lf.hl.unter': 'sotto 1000 m s.l.m. · 7 N/m',
+    'lf.hl.ueber': 'da 1000 m s.l.m. · 15 N/m',
     'ui.foto.ablauf.modus': 'Procedura (modalità 7 clic):',
     'ui.foto.ablauf.1': 'Cima del palo sinistro → piede del palo sinistro',
     'ui.foto.ablauf.2': 'Cima del palo destro → piede del palo destro',
@@ -16239,7 +16269,7 @@ renderObstacleList();
         </ul>
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Abstandsprüfung zu Hindernissen oberhalb</p>
         <p>Unter dem Diagramm lassen sich <strong>Hindernisse oberhalb</strong> (z. B. Brücke, Decke) als Bereich <em>von–bis</em> mit Unterkante erfassen (m ü. M., wenn SOK bekannt, sonst über SOK). Die App prüft den obersten Leiter (Tragseil bzw. Einzelleiter) in allen <strong>Lastfällen</strong> und zeigt den ungünstigsten: kleinster Abstand, Lastfall und Stelle; mit Mindestabstand a grün ✓ oder rot ✗. Im Diagramm ist der massgebende Lastfall gestrichelt eingezeichnet.</p>
-        <p style="font-size:.8rem;color:var(--muted)">Lastfälle je Leitersystem unter «Lastfälle …»: Temperaturen (Vorgabe −20 °C und +80 °C), Eislast bei −5 °C (Z<sub>L</sub> einstellbar, Vorgabe 15 N/m) und Fahrdraht neu/abgenutzt. Bei R-FL wirkt die Temperatur nicht (Nachspannung).</p>
+        <p style="font-size:.8rem;color:var(--muted)">Lastfälle je Leitersystem unter «Lastfälle …»: Temperaturen (Vorgabe −20 °C und +80 °C), Eislast bei −5 °C nach Höhenlage der Strecke (unter 1000 m ü. M. 7 N/m, ab 1000 m ü. M. 15 N/m; Vorgabe 15 N/m, Wert überschreibbar) und Fahrdraht neu/abgenutzt. Bei R-FL wirkt die Temperatur nicht (Nachspannung).</p>
       </div><!-- /hb-de -->
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.11 &nbsp;Canton de pose (onglet «Canton»)</p>
@@ -16253,7 +16283,7 @@ renderObstacleList();
         </ul>
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Vérification des distances aux obstacles au-dessus</p>
         <p>Sous le diagramme, des <strong>obstacles au-dessus</strong> (p. ex. pont, plafond) peuvent être saisis comme zone <em>de–à</em> avec sous-face (m s.n.m. si le DRS est connu, sinon sur DRS). L’application vérifie le conducteur le plus haut (câble porteur resp. conducteur simple) dans tous les <strong>cas de charge</strong> et affiche le plus défavorable : distance minimale, cas de charge et position ; avec distance minimale a en vert ✓ ou rouge ✗. Le cas déterminant est tracé en pointillé dans le diagramme.</p>
-        <p style="font-size:.8rem;color:var(--muted)">Cas de charge par système sous «Cas de charge …» : températures (par défaut −20 °C et +80 °C), charge de glace à −5 °C (Z<sub>L</sub> réglable, par défaut 15 N/m) et fil de contact neuf/usé. En LC R, la température n’a pas d’effet (tension automatique).</p>
+        <p style="font-size:.8rem;color:var(--muted)">Cas de charge par système sous «Cas de charge …» : températures (par défaut −20 °C et +80 °C), charge de glace à −5 °C selon l’altitude de la ligne (sous 1000 m s.n.m. 7 N/m, dès 1000 m s.n.m. 15 N/m ; par défaut 15 N/m, valeur modifiable) et fil de contact neuf/usé. En LC R, la température n’a pas d’effet (tension automatique).</p>
       </div><!-- /hb-fr -->
       <div class="hb-lang hb-it" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.11 &nbsp;Tratta di regolazione (scheda «Tratta»)</p>
@@ -16267,7 +16297,7 @@ renderObstacleList();
         </ul>
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Verifica delle distanze da ostacoli sopra</p>
         <p>Sotto il diagramma si possono inserire <strong>ostacoli sopra</strong> (p. es. ponte, soffitto) come zona <em>da–a</em> con intradosso (m s.l.m. se il PRF è noto, altrimenti sul PRF). L’applicazione verifica il conduttore più alto (filo portante risp. conduttore singolo) in tutti i <strong>casi di carico</strong> e mostra il più sfavorevole: distanza minima, caso di carico e posizione; con distanza minima a in verde ✓ o rosso ✗. Il caso determinante è tratteggiato nel diagramma.</p>
-        <p style="font-size:.8rem;color:var(--muted)">Casi di carico per sistema in «Casi di carico …»: temperature (predefinite −20 °C e +80 °C), carico di ghiaccio a −5 °C (Z<sub>L</sub> regolabile, predefinito 15 N/m) e filo di contatto nuovo/usurato. Per LC R la temperatura non ha effetto (tensionamento automatico).</p>
+        <p style="font-size:.8rem;color:var(--muted)">Casi di carico per sistema in «Casi di carico …»: temperature (predefinite −20 °C e +80 °C), carico di ghiaccio a −5 °C secondo l’altitudine della linea (sotto 1000 m s.l.m. 7 N/m, da 1000 m s.l.m. 15 N/m; predefinito 15 N/m, valore modificabile) e filo di contatto nuovo/usurato. Per LC R la temperatura non ha effetto (tensionamento automatico).</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 7 Beispielberechnung ══ -->
@@ -16590,7 +16620,7 @@ renderObstacleList();
       </table>
 
       <p style="font-size:.75rem;color:var(--tertiary);margin-top:1rem;border-top:1px solid var(--border);padding-top:.75rem">
-        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; v3.9 &nbsp;·&nbsp; Statikteam, Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
+        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; v3.9.1 &nbsp;·&nbsp; Statikteam, Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
         Quelle Reglage: SBB 0161.1013.0001
       </p>
     </div>
@@ -16951,7 +16981,7 @@ renderObstacleList();
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
-  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span>v3.9</span>
+  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span>v3.9.1</span>
 </footer>
 
 </body>

@@ -26,6 +26,16 @@ test('Lastfälle frei je System: Temperaturen, Eis aus, sortiert und ohne Doppel
   assert.equal(A.lastfaelle({ el: { zl: 0 } }, 'el').some(f => f.zl > 0), false);
 });
 
+test('Eislast nach Höhenlage: unter 1000 m ü. M. 7 N/m, darüber 15 N/m', () => {
+  assert.equal(A.lastfallEinstellung(null, 'nfl').zl, 15);
+  assert.equal(A.lastfallEinstellung(null, 'nfl').hoehenlage, 'ueber');
+  assert.equal(A.lastfallEinstellung({ nfl: { hoehenlage: 'unter' } }, 'nfl').zl, 7);
+  assert.equal(A.lastfallEinstellung({ rfl: { hoehenlage: 'ueber' } }, 'rfl').zl, 15);
+  // ausdrücklich eingetragener Wert geht vor
+  assert.equal(A.lastfallEinstellung({ el: { hoehenlage: 'unter', zl: 10 } }, 'el').zl, 10);
+  assert.ok(A.lastfaelle({ nfl: { hoehenlage: 'unter' } }, 'nfl').some(f => f.T === -5 && f.zl === 7));
+});
+
 test('Temperaturliste aus Text', () => {
   assert.deepEqual(A.temperaturenLesen('−20; 80'), [-20, 80]);
   assert.deepEqual(A.temperaturenLesen('-20, 0 40,80'), [-20, 0, 40, 80]);

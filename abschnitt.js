@@ -19,10 +19,13 @@
 'use strict';
 
 // ── Lastfälle für die Abstandsprüfung (je Leitersystem frei einstellbar) ──
+// Eislast nach Höhenlage der Strecke (von Hand gewählt): unter 1000 m ü. M.
+// 7 N/m (SBB 0161.1013.0004), ab 1000 m ü. M. 15 N/m.
+const EISLAST_HOEHENLAGE = { unter: 7, ueber: 15 };
 const LASTFALL_VORGABE = {
-  nfl: { temperaturen: [-20, 80], eis: true, zl: 15, abnutzung: true },
-  rfl: { temperaturen: [-20, 80], eis: true, zl: 15, abnutzung: true },
-  el:  { temperaturen: [-20, 80], eis: true, zl: 15, abnutzung: false },
+  nfl: { temperaturen: [-20, 80], eis: true, hoehenlage: 'ueber', zl: 15, abnutzung: true },
+  rfl: { temperaturen: [-20, 80], eis: true, hoehenlage: 'ueber', zl: 15, abnutzung: true },
+  el:  { temperaturen: [-20, 80], eis: true, hoehenlage: 'ueber', zl: 15, abnutzung: false },
 };
 const EIS_TEMPERATUR = -5;
 
@@ -35,7 +38,10 @@ function lastfallEinstellung(einst, sys) {
   return {
     temperaturen: [...new Set(temps)].sort((a, b) => a - b),
     eis: typeof e.eis === 'boolean' ? e.eis : v.eis,
-    zl: Number.isFinite(+e.zl) && +e.zl >= 0 ? +e.zl : v.zl,
+    hoehenlage: e.hoehenlage in EISLAST_HOEHENLAGE ? e.hoehenlage : v.hoehenlage,
+    // Z_L: ausdrücklich eingetragener Wert, sonst der Wert der Höhenlage
+    zl: e.zl !== undefined && e.zl !== null && Number.isFinite(+e.zl) && +e.zl >= 0 ? +e.zl
+      : EISLAST_HOEHENLAGE[e.hoehenlage in EISLAST_HOEHENLAGE ? e.hoehenlage : v.hoehenlage],
     abnutzung: sys === 'el' ? false : (typeof e.abnutzung === 'boolean' ? e.abnutzung : v.abnutzung),
   };
 }
@@ -216,7 +222,7 @@ function csvVorlage() {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
-    LASTFALL_VORGABE, EIS_TEMPERATUR, lastfallEinstellung, lastfaelle, temperaturenLesen,
+    LASTFALL_VORGABE, EISLAST_HOEHENLAGE, EIS_TEMPERATUR, lastfallEinstellung, lastfaelle, temperaturenLesen,
     abstandOberhalb, kmInMeter, feldLaengen, mittelspannweite, mastSok,
     csvLesen, csvSchreiben, csvVorlage, CSV_KOPF,
   };
