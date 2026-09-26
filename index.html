@@ -983,7 +983,7 @@ body {
 .probe-h-input:disabled { opacity: .55; cursor: not-allowed; }
 .probe-sok-link { margin-top: .35rem; background: none; border: none; padding: 0; font: inherit; font-size: .72rem; font-weight: 600;
   color: var(--primary); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
-.probe-h-input[readonly], .probe-mp-xinput[readonly] { opacity: .6; cursor: not-allowed; }
+.probe-h-input[readonly], .probe-mp-xinput[readonly] { color: var(--text2); cursor: not-allowed; background-image: repeating-linear-gradient(135deg, transparent 0 6px, var(--border) 6px 7px); }
 /* Schloss je Messpunkt: gesperrt = nicht verschiebbar, nicht löschbar */
 .probe-lock { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 1.45rem; height: 1.45rem;
   border: 1px solid transparent; border-radius: 6px; background: none; color: var(--tertiary); cursor: pointer; padding: 0; }
@@ -1658,6 +1658,19 @@ input.aus-koord { background: var(--acc-s) !important; color: var(--text) !impor
 @media (max-width: 380px) {
   .lang-switcher { margin-left: .1rem; padding-left: .3rem; }
   .lang-btn { padding: .15rem .18rem; }
+}
+/* Telefon: Kopfzeile zweizeilig — oben Logo, Titel und Sprache, darunter die
+   Symbol-Knöpfe gleichmässig verteilt (seit dem Knopf «hf min/max» passte
+   eine Zeile nicht mehr auf 390 px). */
+@media (max-width: 600px) {
+  .header { flex-wrap: wrap; justify-content: space-between; row-gap: .4rem; }
+  .header-icon { order: 0; }
+  .header > div:nth-child(2) { order: 1; flex: 1 1 0; }
+  .header h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lang-switcher { order: 2; }
+  .header::after { content: ''; order: 3; flex-basis: 100%; height: 0; }
+  .header > button { order: 4; }
+  .header-manual-text { display: none; }
 }
 
 /* ── Projekte Modal ── */
@@ -2592,7 +2605,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
           <!-- Überhöhung -->
           <div style="display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--muted)">
             <span id="drawing-ueberhoeung-lbl" data-i18n="draw.ueberhoeung" style="white-space:nowrap">Überhöhung</span>
-            <select id="vex-select" onchange="setDrawingVEx(this.value)"
+            <select id="vex-select" aria-labelledby="drawing-ueberhoeung-lbl" onchange="setDrawingVEx(this.value)"
               style="font-size:.72rem;padding:.15rem .3rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer">
               <option value="1">1:1</option>
               <option value="2">2×</option>
@@ -3056,7 +3069,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.13.3';
+const APP_VERSION = 'v3.13.4';
 
 // Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
 function sysName(mode) {
@@ -9614,7 +9627,7 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = 'var(-
   const mainUnit  = hasSok ? t('dyn.ueber.mum') : 'm';
   const tsHoeheKey = isEl ? 'res.seil.hoehe' : 'res.ts.hoehe';
   const subLabel  = hasSok
-    ? `${t(tsHoeheKey)} &nbsp;<span style="opacity:.6">(${f3(y2)} m ${t('dyn.ueber.sok')})</span>`
+    ? `${t(tsHoeheKey)} &nbsp;<span>(${f3(y2)} m ${t('dyn.ueber.sok')})</span>`
     : `${t(tsHoeheKey)} ${t('dyn.ueber.sok')}`;
 
   // Für die Ergebnisleiste: Werte des ersten Messpunkts übernehmen
@@ -9629,7 +9642,7 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = 'var(-
     if (badge === 'M1' && _leiste) _leiste.f3 = sag3;
     const t3hKey  = isEl ? 'res.seil.hoehe' : 'res.ts.hoehe';
     const y3SubLbl = hasSok
-      ? `${t(t3hKey)} &nbsp;<span style="opacity:.6">(${f3(y3)} m ${t('dyn.ueber.sok')})</span>`
+      ? `${t(t3hKey)} &nbsp;<span>(${f3(y3)} m ${t('dyn.ueber.sok')})</span>`
       : `${t(t3hKey)} ${t('dyn.ueber.sok')}`;
     t3Row = `
       <div style="margin-top:.5rem;padding-top:.4rem;border-top:1px dashed var(--border2)">
@@ -9757,7 +9770,7 @@ function updateHighlightCard() {
           <div class="istzustand-label" style="color:${curveClr}">${t('res.tiefpunkt.label')} — x₀ = ${f3(x_ist)} m</div>
           <div class="istzustand-value" style="color:${curveClr}">${f3(sag)}<span class="istzustand-unit">m</span></div>
           <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${dhLabel}${tempLabel}</div>
-          <div style="font-size:.7rem;color:var(--muted);margin-top:.6rem">${seilLabel}${tempLabel}${hasSokH ? ` &nbsp;<span style="opacity:.6">(${f3(y2_raw)} m ${t('dyn.ueber.sok')})</span>` : ''}</div>
+          <div style="font-size:.7rem;color:var(--muted);margin-top:.6rem">${seilLabel}${tempLabel}${hasSokH ? ` &nbsp;<span>(${f3(y2_raw)} m ${t('dyn.ueber.sok')})</span>` : ''}</div>
           <div class="istzustand-value" style="font-size:1.35rem;color:${curveClr}">${f3(y2_disp)}<span class="istzustand-unit">${hasSokH ? t('dyn.ueber.mum') : 'm'}</span></div>
         </div>
         <div style="display:flex;align-items:center;gap:.5rem;margin:.35rem 0;width:100%">
@@ -11590,13 +11603,15 @@ function updateStripVisibility() {
     const isT2    = lbl.includes('T2');
     const isT3    = lbl.includes('T3');
     const isAbst  = lbl.startsWith('Abst.');
-    const color   = isT2 ? _drawingT2Clr : isT3 ? _drawingT3Clr : '#555';
-    const lblClr  = isT2 ? _drawingT2Clr : isT3 ? _drawingT3Clr : isAbst ? '#2563eb' : '#888';
+    const color   = isT2 ? _drawingT2Clr : isT3 ? _drawingT3Clr : 'var(--text2)';
+    const lblClr  = isT2 ? _drawingT2Clr : isT3 ? _drawingT3Clr : isAbst ? '#2563eb' : 'var(--muted)';
     const isBold  = r === 0 || isAbst;
     html += `<div class="strip-row">`;
     html += `<div class="strip-label" style="color:${lblClr}">${lbl}</div>`;
     visibleProbes.forEach(({ probe, frac }) => {
-      const cellClr = (probe.colors && probe.colors[r]) ? probe.colors[r] : color;
+      // Grautöne der Papier-Zeichnung im (hell/dunkel) Datenstreifen durch Themenfarben ersetzen
+      const grau = { '#555': 'var(--text2)', '#666': 'var(--text2)', '#888': 'var(--muted)' };
+      const cellClr = (probe.colors && probe.colors[r]) ? (grau[probe.colors[r]] || probe.colors[r]) : color;
       html += `<div class="strip-val${isBold ? ' bold' : ''}" style="left:${(frac*100).toFixed(2)}%;color:${cellClr}">${probe.cells[r] ?? ''}</div>`;
     });
     // Obstacle columns: show name in row 0, x in row 1, '—' for T2/T3 rows
@@ -16514,10 +16529,10 @@ renderObstacleList();
 </div>
 
 <!-- ── Modal: Handbuch ── -->
-<div class="modal-overlay" id="handbuch-modal" onclick="if(event.target===this)closeHandbuch()" style="align-items:flex-start;padding:2rem 1rem;overflow-y:auto">
+<div class="modal-overlay" id="handbuch-modal" role="dialog" aria-modal="true" aria-labelledby="handbuch-modal-title" onclick="if(event.target===this)closeHandbuch()" style="align-items:flex-start;padding:2rem 1rem;overflow-y:auto">
   <div class="modal-card" style="max-width:760px;width:100%;max-height:none">
     <div class="modal-header">
-      <div class="modal-title" id="handbuch-modal-title">Handbuch — Kettenwerk Rechner N-FL / R-FL</div>
+      <h2 class="modal-title" id="handbuch-modal-title" style="margin:0">Handbuch — Kettenwerk Rechner N-FL / R-FL</h2>
       <button class="modal-close" onclick="closeHandbuch()" title="Schliessen" data-i18n-title="ui.schliessen">✕</button>
     </div>
     <!-- Inhaltsverzeichnis -->
@@ -17161,7 +17176,7 @@ renderObstacleList();
 
 
       <!-- ══ 6.7 Mittelspannweite & Lm-Formel ══ -->
-      <h3 id="hb-spannweite" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.4rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem"></h3>
+      <div id="hb-spannweite" role="presentation" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.4rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem"></div>
 
       <!-- DE -->
       <div class="hb-lang hb-de">
@@ -17212,7 +17227,7 @@ renderObstacleList();
       </div><!-- /hb-it -->
 
       <!-- ══ 6.8 Einzelleiter Berechnungsart ══ -->
-      <h3 id="hb-berechnungsart" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.4rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem"></h3>
+      <div id="hb-berechnungsart" role="presentation" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.4rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem"></div>
 
       <!-- DE -->
       <div class="hb-lang hb-de">
@@ -17260,7 +17275,7 @@ renderObstacleList();
       </div><!-- /hb-it -->
 
       <!-- ══ 6.9 Projekte speichern & laden ══ -->
-      <h3 id="hb-projekte" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.4rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem"></h3>
+      <div id="hb-projekte" role="presentation" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.4rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem"></div>
 
       <!-- DE -->
       <div class="hb-lang hb-de">

@@ -365,3 +365,21 @@ test('H-Punkte ohne SOK gesperrt mit Link zu den Mastangaben; mit SOK Höhe übe
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Handy 390 px: keine seitliche Verschiebung, Kopfzeile vollständig sichtbar', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const r = await seite.evaluate(() => {
+    const W = document.documentElement.clientWidth;
+    const sichtbar = id => { const b = document.getElementById(id).getBoundingClientRect(); return b.width > 0 && b.left >= 0 && b.right <= W + 1; };
+    const vorher = { breite: document.documentElement.scrollWidth, knoepfe: ['lang-it', 'thema-btn', 'hf-btn', 'quick-save-btn'].every(sichtbar) };
+    openHf();
+    const hf = document.documentElement.scrollWidth;
+    closeHf();
+    return { W, ...vorher, hf };
+  });
+  assert.equal(r.breite, r.W, 'Seite breiter als der Bildschirm');
+  assert.equal(r.knoepfe, true, 'Knöpfe der Kopfzeile ausserhalb');
+  assert.equal(r.hf, r.W, 'hf-Ansicht breiter als der Bildschirm');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
