@@ -53,12 +53,12 @@ test('Feld öffnen: Einzelfeld rechnet exakt wie die Abschnittsübersicht', asyn
   await kontext.close();
 });
 
-test('Hindernis oberhalb: ungünstigster Lastfall, Grenzwert, Lastfall-Optionen', async () => {
+test('H-Punkte: ungünstigster Lastfall, Grenzwert, Lastfall-Optionen', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   await abschnittLaden(seite);
   const r = await seite.evaluate(() => {
     abschnittFeldOeffnen(1);
-    hindernisse = [{ id: _hindernisId++, name: 'Brücke', feld: 1, verbinden: true, punkte: [{ x: 20, h: 508.3 }, { x: 10, h: 508.3 }] }];
+    _mpSetzen({ x: [20, 10, null, null], h: [508.3, 508.3, null, null], verbinden: true });
     renderObstacleList();
     setMindestabstand('0.5'); berechnen();
     const vorgabe = _nachweis[0];
@@ -69,14 +69,37 @@ test('Hindernis oberhalb: ungünstigster Lastfall, Grenzwert, Lastfall-Optionen'
     berechnen();
     const warm = _nachweis[0].best;
     return { a: vorgabe.best.abstand, ok: vorgabe.ok, fall: vorgabe.best.fall, streng, warm: warm.abstand, warmT: warm.fall.T,
-             text: document.getElementById('hind-erg-' + hindernisse[0].id).textContent };
+             jePunkt: vorgabe.jePunkt.map(p => p.m), text: document.getElementById('hind-erg-H').textContent };
   });
   assert.equal(r.ok, true);
   assert.deepEqual(r.fall, { T: -20, zl: 0, abgenutzt: true }, 'kalt und abgenutzt = höchste Lage');
   assert.equal(r.streng, false, 'Mindestabstand 2 m nicht erfüllt');
   assert.ok(r.warm > r.a);
   assert.equal(r.warmT, 40);
-  assert.match(r.text, /a = \d\.\d\d m/);
+  assert.deepEqual(r.jePunkt, [2, 1], 'Abstand je H-Punkt, nach x sortiert');
+  assert.match(r.text, /a = \d\.\d\d m.*H1 \d\.\d\d m/);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Messpunkte und H-Punkte je Feld: Feldwechsel, Abschnittstabelle', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await abschnittLaden(seite);
+  const r = await seite.evaluate(() => {
+    abschnittFeldOeffnen(0);
+    _mpSetzen({ x: [12, null, null, null], h: [509, null, null, null], lock: [true, false, false, false] });
+    abschnittFeldOeffnen(1);
+    const feld1 = _mpLive();
+    abschnittFeldOeffnen(0);
+    const zurueck = _mpLive();
+    const tabelle = abschnittRechnen().felder.map(f => f.nachweis.length);
+    return { feld1, zurueck, tabelle };
+  });
+  assert.deepEqual(r.feld1.x, [null, null, null, null], 'neues Feld ohne Messpunkte');
+  assert.deepEqual(r.zurueck.x.slice(0, 1), [12]);
+  assert.deepEqual(r.zurueck.h.slice(0, 1), [509]);
+  assert.equal(r.zurueck.lock[0], true, 'Schloss bleibt je Feld erhalten');
+  assert.deepEqual(r.tabelle, [1, 0, 0], 'Abstandsprüfung nur im Feld mit H-Punkten');
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
@@ -95,54 +118,79 @@ test('Export ganzer Abschnitt (IFC, DXF) und Speichern/Laden', async () => {
   const dxf = await laden(() => abschnittExport('dxf'));
   assert.match(dxf, /\n11\n2600128\.0000\n21\n1200016\.0000\n/);   // letzter Mast erreicht (Linienende)
   const r = await seite.evaluate(() => {
-    hindernisse = [{ id: _hindernisId++, name: 'X', feld: 2, verbinden: false, punkte: [{ x: 1, h: 520 }] }];
+    abschnitt.mp[2] = _mpNormieren({ x: [1], h: [520], verbinden: false });
     const st = JSON.parse(JSON.stringify(getProjectState()));
-    abschnitt = { masten: [], offen: null }; hindernisse = [];
+    abschnitt = { masten: [], offen: null, mp: {} };
     setProjectState(st);
-    return { masten: abschnitt.masten.length, h: hindernisse.map(h => [h.feld, h.verbinden, h.punkte]) };
+    return { masten: abschnitt.masten.length, mp2: abschnitt.mp[2] };
   });
-  assert.deepEqual(r, { masten: 4, h: [[2, false, [{ x: 1, h: 520 }]]] });
+  assert.deepEqual(r, { masten: 4, mp2: { x: [1, null, null, null], h: [520, null, null, null], lock: [false, false, false, false], verbinden: false } });
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
 
-test('Hindernisliste ist unter dem Diagramm sichtbar und bedienbar', async () => {
+test('H-Punkte bei M1–M4 bedienbar, Schloss schützt vor Verschieben und Reset', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
-  await seite.click('text=' + await seite.evaluate(() => t('hind.hinzu')));
-  const sichtbar = await seite.isVisible('#obs-section .hind-block .hind-px');
-  assert.equal(sichtbar, true);
+  await seite.evaluate(() => { document.getElementById('sok-mum-left').value = 500; onSokMumLeftInput(); });
+  await seite.fill('#probe-x1', '10');
+  await seite.fill('#probe-h1', '509.5');
+  await seite.fill('#probe-x2', '30');
+  await seite.waitForTimeout(400);
+  const vorher = await seite.evaluate(() => ({ h: probeHWerte[0], text: document.getElementById('hind-erg-H').textContent }));
+  await seite.click('#probe-lock-1');
+  const r = await seite.evaluate(() => {
+    const gesperrt = document.getElementById('probe-x1').readOnly && document.getElementById('probe-h1').readOnly;
+    setProbeH(1, '400');          // gesperrt → ohne Wirkung
+    clearMesspunkte();            // Reset lässt gesperrte Punkte stehen
+    return { gesperrt, x: _probeXs(), h: probeHWerte[0], druck: document.getElementById('probe-lock-1').getAttribute('aria-pressed') };
+  });
+  assert.equal(vorher.h, 509.5);
+  assert.match(vorher.text, /a = /);
+  assert.equal(r.gesperrt, true);
+  assert.deepEqual(r.x, [10, null, null, null]);
+  assert.equal(r.h, 509.5);
+  assert.equal(r.druck, 'true');
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
 
-test('Hindernis mit Punkten: schräge Unterkante, Einzelpunkte, alte H-Punkte werden übernommen', async () => {
+test('H-Punkte verbunden / einzeln; ältere Projekte (H-Felder, Hindernisliste) werden übernommen', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   const r = await seite.evaluate(() => {
     document.getElementById('sok-mum-left').value = 500; onSokMumLeftInput();
     setMindestabstand('0.5');
     // schräg ansteigend, ungeordnet eingegeben
-    hindernisse = [{ id: _hindernisId++, name: 'Rampe', feld: 0, verbinden: true, punkte: [{ x: 30, h: 510 }, { x: 5, h: 507.3 }] }];
-    renderObstacleList(); berechnen();
+    _mpSetzen({ x: [30, 5, null, null], h: [510, 507.3, null, null], verbinden: true });
+    berechnen();
     const schraeg = _nachweis[0].best;
-    // gleiche Punkte einzeln → nur an x = 5 und 30 geprüft
-    hindernisse[0].verbinden = false; berechnen();
+    setHVerbinden(false);
     const einzeln = _nachweis[0].best;
     // Projekt mit alten H-Punkten (Stand vor v3.9.3) laden
     const st = JSON.parse(JSON.stringify(getProjectState()));
-    delete st.hindernisse;
+    delete st.messpunkte;
     st.fields['probe-x1'] = '22.5'; st.fields['probe-h1'] = '508.9';
     st.fields['min-clearance-input'] = '0.4'; delete st.fields['hind-min'];
     setProjectState(st);
-    return { schraeg, einzeln, uebernommen: hindernisse.map(h => ({ name: h.name, verbinden: h.verbinden, punkte: h.punkte })), a: minClearance,
-             zeichnung: (setCanvasView('zeichnung'), document.getElementById('scale-svg-container').innerHTML.includes('a = ')) };
+    const alteH = { x: probeX1, h: probeHWerte[0], a: minClearance };
+    // Projekt mit Hindernisliste (v3.9.3–v3.11): Punkte → M1…, mehr als 4 → die 4 tiefsten
+    const st2 = JSON.parse(JSON.stringify(getProjectState()));
+    delete st2.messpunkte;
+    st2.hindernisse = [{ name: 'Brücke', feld: 0, verbinden: true,
+      punkte: [{ x: 8, h: 509 }, { x: 3, h: 510 }, { x: 12, h: 508.5 }, { x: 16, h: 508.7 }, { x: 20, h: 511 }] }];
+    setProjectState(st2);
+    const liste = _mpLive();
+    const zeichnung = (setCanvasView('zeichnung'), document.getElementById('scale-svg-container').innerHTML.includes('a = '));
+    return { schraeg, einzeln, alteH, liste, zeichnung };
   });
   // Das Seil hängt durch, die Unterkante ist zwischen den Punkten gerade: der kleinste
   // Abstand liegt daher immer an einem Punkt (oder am Feldrand) — verbunden = einzeln.
   assert.ok([5, 30].includes(r.schraeg.x));
   assert.ok(Math.abs(r.schraeg.abstand - r.einzeln.abstand) < 1e-9);
-  assert.deepEqual(r.uebernommen, [{ name: 'H-Punkte', verbinden: false, punkte: [{ x: 22.5, h: 508.9 }] }]);
-  assert.equal(r.a, 0.4);
-  assert.equal(r.zeichnung, true, 'Hindernis in der Zeichnung beschriftet');
+  assert.deepEqual(r.alteH, { x: 22.5, h: 508.9, a: 0.4 });
+  assert.deepEqual(r.liste.x, [3, 8, 12, 16]);
+  assert.deepEqual(r.liste.h, [510, 509, 508.5, 508.7]);
+  assert.equal(r.liste.verbinden, true);
+  assert.equal(r.zeichnung, true, 'H-Punkte in der Zeichnung beschriftet');
   assert.deepEqual(fehler, []);
   await kontext.close();
 });

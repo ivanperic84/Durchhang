@@ -236,19 +236,19 @@ test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', asy
   await kontext.close();
 });
 
-test('Hindernisse nur in m ü. M.: ohne SOK Hinweis und keine Prüfung', async () => {
+test('H-Punkte nur in m ü. M.: ohne SOK Hinweis und keine Prüfung', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   const r = await seite.evaluate(() => {
     document.getElementById('sok-mum-left').value = ''; document.getElementById('sok-mum-right').value = '';
-    hindernisse = [{ id: 900, name: 'Brücke', feld: 0, verbinden: true, punkte: [{ x: 5, h: 9 }, { x: 15, h: 9 }] }];
+    _mpSetzen({ x: [5, 15, null, null], h: [9, 9, null, null], verbinden: true });
     renderObstacleList(); berechnen();
-    const ohne = { erg: document.getElementById('hind-erg-900').textContent, geprueft: _nachweis.some(n => n.best),
+    const ohne = { erg: document.getElementById('hind-erg-H').textContent, geprueft: _nachweis.some(n => n.best),
                    hinweis: document.getElementById('hind-sok-fehlt').style.display !== 'none' };
     document.getElementById('sok-mum-left').value = 500; onSokMumLeftInput();
-    hindernisse[0].punkte = [{ x: 5, h: 509 }, { x: 15, h: 509 }];
+    _mpSetzen({ x: [5, 15, null, null], h: [509, 509, null, null], verbinden: true });
     renderObstacleList(); berechnen();
     const mit = { geprueft: _nachweis.some(n => n.best), hinweis: document.getElementById('hind-sok-fehlt').style.display !== 'none',
-                  einheit: document.querySelector('.hind-uk-einheit').textContent };
+                  einheit: document.querySelector('.probe-h-unit').textContent };
     return { ohne, mit, deltaImKoord: !!document.querySelector('#koord-felder #mast-delta-sok-left') };
   });
   assert.equal(r.ohne.geprueft, false);
@@ -258,6 +258,26 @@ test('Hindernisse nur in m ü. M.: ohne SOK Hinweis und keine Prüfung', async (
   assert.equal(r.mit.hinweis, false);
   assert.match(r.mit.einheit, /ü\. M\./);
   assert.equal(r.deltaImKoord, true);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Alle Checkboxen erscheinen als Schalter', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    openLastfaelle();
+    const kaesten = [...document.querySelectorAll('input[type=checkbox]')].filter(el => el.offsetParent !== null);
+    const falsch = kaesten.filter(el => {
+      const st = getComputedStyle(el);
+      // Schalter: eigener Stil (appearance none, breiter als hoch) oder versteckt mit .schalter daneben
+      return el.getAttribute('role') === 'switch' ? !el.nextElementSibling?.classList.contains('schalter')
+        : !(st.appearance === 'none' && parseFloat(st.width) > parseFloat(st.height));
+    }).map(el => el.id || el.className);
+    closeLastfaelle();
+    return { anzahl: kaesten.length, falsch };
+  });
+  assert.ok(r.anzahl >= 3);
+  assert.deepEqual(r.falsch, []);
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
