@@ -978,6 +978,14 @@ body {
 }
 .probe-h-input:focus { outline: none; border-color: var(--h-clr); }
 .probe-h-unit { font-size: .65rem; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+.probe-h-zeile { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; margin-top: .4rem; }
+.probe-h-input[readonly], .probe-mp-xinput[readonly] { opacity: .6; cursor: not-allowed; }
+/* Schloss je Messpunkt: gesperrt = nicht verschiebbar, nicht löschbar */
+.probe-lock { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 1.45rem; height: 1.45rem;
+  border: 1px solid transparent; border-radius: 6px; background: none; color: var(--tertiary); cursor: pointer; padding: 0; }
+.probe-lock:hover { color: var(--text2); background: var(--s3); }
+.probe-lock[aria-pressed="true"] { color: var(--primary); background: var(--acc-s); border-color: var(--primary); }
+.probe-lock[aria-pressed="false"] .bügel { transform: translate(2.6px, -1px) rotate(18deg); transform-origin: 10.8px 7px; }
 .probe-h-input:focus { box-shadow: 0 0 0 2px var(--acc-s); }
 /* Mastangaben Name/Nr. und KM wie die übrigen Eingabefelder */
 #mast-num-left, #mast-num-right, #mast-km-left, #mast-km-right { background: var(--s4); border-color: transparent !important; border-radius: 8px !important; }
@@ -1415,6 +1423,20 @@ button.header-manual-link:hover {
 .seg-btn.seg-neben:not(.active) { color: var(--tertiary); font-weight: 400; font-style: italic; }
 .seg-btn.seg-neben:not(.active):hover { color: var(--muted); }
 .koord-block { margin-top: .8rem; padding-top: .6rem; border-top: 1px solid var(--border); }
+/* ── Alle Checkboxen als Schalter (wie .schalter), einheitlich in der ganzen App ── */
+input[type=checkbox]:not([role=switch]) {
+  -webkit-appearance: none; appearance: none; position: relative; flex-shrink: 0; vertical-align: middle;
+  width: 30px; height: 17px; margin: 0; border: none; border-radius: 9px; background: var(--s4);
+  cursor: pointer; transition: background .15s;
+}
+input[type=checkbox]:not([role=switch])::after {
+  content: ''; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: left .15s;
+}
+input[type=checkbox]:not([role=switch]):checked { background: var(--primary); }
+input[type=checkbox]:not([role=switch]):checked::after { left: 15px; }
+input[type=checkbox]:not([role=switch]):focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+input[type=checkbox]:not([role=switch]):disabled { opacity: .45; cursor: default; }
 .schalter-zeile { display: flex; align-items: center; gap: .5rem; font-size: .75rem; color: var(--text2); cursor: pointer; user-select: none; }
 .schalter-zeile input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .schalter { position: relative; width: 30px; height: 17px; border-radius: 9px; background: var(--s4); transition: background .15s; flex-shrink: 0; }
@@ -1699,7 +1721,7 @@ input.aus-koord { background: var(--acc-s) !important; color: var(--text) !impor
 .proj-group-children { padding:.3rem .35rem .35rem 1.35rem; display:flex; flex-direction:column; gap:.3rem; background:var(--card); }
 .proj-child-item { border:1px solid var(--border); border-radius:8px; background:var(--card); }
 .proj-child-item.active-proj { border-color:var(--primary); background:var(--acc-s); }
-.proj-check { accent-color:var(--primary); cursor:pointer; flex-shrink:0; width:14px; height:14px; margin-right:1px; }
+.proj-check { cursor:pointer; flex-shrink:0; margin-right:1px; }
 .proj-bulk-bar { background:var(--text2); color:var(--on-acc); border-radius:8px; padding:.4rem .7rem; display:flex; align-items:center; gap:.45rem; margin-bottom:.5rem; flex-wrap:wrap; }
 .proj-bulk-label { font-size:.75rem; flex:1; min-width:60px; }
 .proj-btn.bulk { background:color-mix(in srgb, var(--card) 10%, transparent); border-color:rgba(255,255,255,.25); color:var(--on-acc); }
@@ -1800,7 +1822,10 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
     min-height: 40px;
   }
   input[type=range] { height: 32px; }
-  input[type=checkbox] { width: 22px; height: 22px; }
+  /* Schalter (alle Checkboxen): grösser zum Antippen */
+  input[type=checkbox]:not([role=switch]) { width: 36px; height: 21px; border-radius: 11px; }
+  input[type=checkbox]:not([role=switch])::after { width: 17px; height: 17px; }
+  input[type=checkbox]:not([role=switch]):checked::after { left: 17px; }
   .mast-details > summary { min-height: 40px; }
   /* Kleine runde Info-Knöpfe: Tippfläche unsichtbar vergrössern statt aufblähen */
   [id$="-info-btn"] { position: relative; min-height: 0; }
@@ -2582,6 +2607,11 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
                 title="Nur Kettenwerk / Einzelleiter" data-i18n-title="ui.nur.kw.titel">Kettenwerk</button>
             </div>
           </div>
+          <!-- hf_min / hf_max als Band (nur Kettenwerk) -->
+          <span class="draw-hf-teil" style="width:1px;height:14px;background:var(--border);flex-shrink:0"></span>
+          <label class="schalter-zeile draw-hf-teil" style="font-size:.7rem;color:var(--muted)" title="hf_min / hf_max aus der hf-Ansicht einblenden" data-i18n-title="draw.hf.titel">
+            <input type="checkbox" role="switch" id="draw-hf" onchange="setDrawingHf(this.checked)"><span class="schalter" aria-hidden="true"></span><span>hf<sub>min</sub> / hf<sub>max</sub></span>
+          </label>
         </div>
       </div>
       <div id="drawing-viewport">
@@ -2859,6 +2889,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
           <div class="probe-input-wrap">
             <input type="number" id="probe-x1" class="probe-mp-xinput" placeholder="x₁" step="0.5" min="0">
             <span class="probe-mp-unit">m</span>
+            <button type="button" class="probe-lock" id="probe-lock-1" onclick="messpunktSperren(1)" aria-pressed="false" data-i18n-title="probe.sperren" title="Messpunkt sperren"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="7" width="10" height="7.5" rx="1.5"/><path class="bügel" d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0"/></svg></button>
           </div>
         </div>
         <div class="probe-m-group">
@@ -2866,6 +2897,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
           <div class="probe-input-wrap">
             <input type="number" id="probe-x2" class="probe-mp-xinput" placeholder="x₂" step="0.5" min="0">
             <span class="probe-mp-unit">m</span>
+            <button type="button" class="probe-lock" id="probe-lock-2" onclick="messpunktSperren(2)" aria-pressed="false" data-i18n-title="probe.sperren" title="Messpunkt sperren"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="7" width="10" height="7.5" rx="1.5"/><path class="bügel" d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0"/></svg></button>
           </div>
         </div>
         <div class="probe-m-group">
@@ -2873,6 +2905,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
           <div class="probe-input-wrap">
             <input type="number" id="probe-x3" class="probe-mp-xinput" placeholder="x₃" step="0.5" min="0">
             <span class="probe-mp-unit">m</span>
+            <button type="button" class="probe-lock" id="probe-lock-3" onclick="messpunktSperren(3)" aria-pressed="false" data-i18n-title="probe.sperren" title="Messpunkt sperren"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="7" width="10" height="7.5" rx="1.5"/><path class="bügel" d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0"/></svg></button>
           </div>
         </div>
         <div class="probe-m-group">
@@ -2880,6 +2913,38 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
           <div class="probe-input-wrap">
             <input type="number" id="probe-x4" class="probe-mp-xinput" placeholder="x₄" step="0.5" min="0">
             <span class="probe-mp-unit">m</span>
+            <button type="button" class="probe-lock" id="probe-lock-4" onclick="messpunktSperren(4)" aria-pressed="false" data-i18n-title="probe.sperren" title="Messpunkt sperren"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="7" width="10" height="7.5" rx="1.5"/><path class="bügel" d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <!-- H-Punkte: Hindernishöhe je Messpunkt (m ü. M.), z. B. Unterkante Brücke -->
+      <div class="probe-h-zeile" id="probe-h-section">
+        <div class="probe-m-group">
+          <span class="probe-h-badge">H1</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-h1" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H1 [m ü. M.]" oninput="setProbeH(1,this.value)">
+            <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
+          </div>
+        </div>
+        <div class="probe-m-group">
+          <span class="probe-h-badge">H2</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-h2" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H2 [m ü. M.]" oninput="setProbeH(2,this.value)">
+            <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
+          </div>
+        </div>
+        <div class="probe-m-group">
+          <span class="probe-h-badge">H3</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-h3" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H3 [m ü. M.]" oninput="setProbeH(3,this.value)">
+            <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
+          </div>
+        </div>
+        <div class="probe-m-group">
+          <span class="probe-h-badge">H4</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-h4" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H4 [m ü. M.]" oninput="setProbeH(4,this.value)">
+            <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
           </div>
         </div>
       </div>
@@ -2979,7 +3044,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.11.0';
+const APP_VERSION = 'v3.13.0';
 
 // Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
 function sysName(mode) {
@@ -3044,11 +3109,16 @@ let probeX1 = null; // M1: Realwelt-x-Position, null = nicht gesetzt
 let probeX2 = null; // M2: Realwelt-x-Position, null = nicht gesetzt
 let probeX3 = null; // M3
 let probeX4 = null; // M4
-let hindernisse = [];     // Hindernisse oberhalb: { id, name, feld, verbinden, punkte: [{x, h}] } — siehe abschnitt.js
-let _hindernisId = 1;
+// H-Punkte je Messpunkt (Hindernis oberhalb, m ü. M.) und Schloss je Messpunkt.
+// Im Abschnitt je Feld gespeichert (abschnitt.mp); geprüft wird wie ein
+// Hindernis aus Punkten (abschnitt.js) über alle Lastfälle.
+let probeHWerte = [null, null, null, null];
+let probeSperre = [false, false, false, false];
+let hVerbinden  = false;   // H-Punkte als Unterkante verbinden (sonst Einzelpunkte)
 let _nachweis    = [];     // Abstandsprüfung des angezeigten Felds: [{ h, best, ok }]
 let _drawingObstData = []; // [{xFrac, name, h, clearance}] für HTML-Strip
-// H-Punkte pro Messpunkt (absolute Höhe m ü.M., nur wenn hasSok)
+// Frühere Einzelwerte der H-Punkte: nicht mehr belegt (siehe probeHWerte);
+// die alte Darstellung in Diagramm/Zeichnung bleibt damit inaktiv.
 let probeH1 = null, probeH2 = null, probeH3 = null, probeH4 = null;
 let minClearance = null;      // Mindestabstand H-Punkt → Leiter [m]
 let _showMinClearance = true; // Mindestabstand-Zone ein-/ausblenden
@@ -6051,6 +6121,8 @@ function updateSysModeUI(mode) {
   const isNfl = mode === 'nfl';
   const isRfl = mode === 'rfl';
   const isEl  = mode === 'el';
+  // hf-Band in der Zeichnung nur bei Kettenwerk (Fahrdraht)
+  document.querySelectorAll('.draw-hf-teil').forEach(el => zeigeElement(el, !isEl));
 
   // 3-Punkte-Modus beim Moduswechsel zurücksetzen
   if (mode3pt) {
@@ -6693,7 +6765,7 @@ function getProjectState() {
   const fotoState = typeof window._fotoGetProjectState === 'function'
                     ? window._fotoGetProjectState() : null;
   return { schemaVersion: PROJEKT_SCHEMA_VERSION,
-           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, fotoState, elBerechnungsart, koordAktiv, abschnitt, hindernisse, lastfaelle: lastfallEinst, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: _elMatEdits, hf: hfEingabe };
+           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, drawingHf: Ansicht.zeichnungHf, fotoState, elBerechnungsart, koordAktiv, abschnitt, messpunkte: _mpLive(), lastfaelle: lastfallEinst, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: _elMatEdits, hf: hfEingabe };
 }
 
 // ── Projektzustand: Version, Pruefung, transaktionales Laden ──────────────
@@ -6864,12 +6936,7 @@ function _setProjectStateIntern(s) {
   // Messpunkte: globale JS-Variablen aus gespeicherten Feldwerten wiederherstellen
   const _pf = v => { const n = parseFloat(v); return isNaN(n) ? null : n; };
   [probeX1, probeX2, probeX3, probeX4] = [1,2,3,4].map(i => _pf(flds[`probe-x${i}`]));
-  probeH1 = probeH2 = probeH3 = probeH4 = null;   // H-Punkte → Hindernisse (_abschnittLaden)
-  // Restore H-Punkt DOM inputs
-  [1,2,3,4].forEach(i => {
-    const el = document.getElementById(`probe-h${i}`);
-    if (el) el.value = flds[`probe-h${i}`] ?? '';
-  });
+  _messpunkteLaden(s);
   minClearance = _pf(flds['hind-min'] ?? flds['min-clearance-input']);   // früherer Feldname
   { const mcInp = document.getElementById('hind-min');
     if (mcInp) mcInp.value = minClearance !== null ? minClearance : ''; }
@@ -6899,6 +6966,7 @@ function _setProjectStateIntern(s) {
   // Zeichnungs-Einstellungen — über die Modulschnittstelle, damit die
   // Bedienelemente in einer Hand bleiben.
   Ansicht.zeichnungsEinstellungenSetzen(s.drawingVEx || 1, s.drawingExtent || 'sok');
+  Ansicht.setDrawingHf(s.drawingHf === true);
 
   // T3-Vergleichskurve — NACH updateSysModeUI (das showT3 bei R-FL zurücksetzt)
   showT3 = (s.showT3 ?? false) && sysMode !== 'rfl';
@@ -9717,27 +9785,87 @@ function updateHighlightCard() {
   updateErgebnisleiste();
 }
 
+// Reset: löscht nur ungesperrte Messpunkte (x und H)
 function clearMesspunkte() {
-  probeX1 = probeX2 = probeX3 = probeX4 = null;
-  probeH1 = probeH2 = probeH3 = probeH4 = null;
-  minClearance = null;
-  ['probe-x1','probe-x2','probe-x3','probe-x4'].forEach(id => document.getElementById(id).value = '');
-  const mcInp = document.getElementById('hind-min');
-  if (mcInp) mcInp.value = '';
+  const xs = _probeXs();
+  for (let i = 0; i < 4; i++) {
+    if (probeSperre[i]) continue;
+    xs[i] = null; probeHWerte[i] = null;
+  }
+  _probeXsSetzen(xs);
+  if (!probeSperre.some(Boolean)) {
+    minClearance = null;
+    const mcInp = document.getElementById('hind-min');
+    if (mcInp) mcInp.value = '';
+  }
+  _mpAnzeigen();
   quickDraw();
   updateAllMesspunkte();
+  berechnen();
   _triggerDrawingRebuild();
+}
+
+// ── Messpunkte: x, H-Punkt und Schloss ──
+function _probeXs() { return [probeX1, probeX2, probeX3, probeX4]; }
+function _probeXsSetzen(xs) {
+  [probeX1, probeX2, probeX3, probeX4] = xs.map(v => (Number.isFinite(v) ? v : null));
+  _probeXs().forEach((v, i) => { const el = document.getElementById(`probe-x${i + 1}`); if (el) el.value = v === null ? '' : v.toFixed(2); });
+}
+function _mpLive() { return { x: _probeXs(), h: [...probeHWerte], lock: [...probeSperre], verbinden: hVerbinden }; }
+function _mpNormieren(mp) {
+  const z = a => [0, 1, 2, 3].map(i => (Number.isFinite(a?.[i]) ? a[i] : null));
+  return { x: z(mp?.x), h: z(mp?.h), lock: [0, 1, 2, 3].map(i => !!mp?.lock?.[i]), verbinden: !!mp?.verbinden };
+}
+function _mpSetzen(mp) {
+  const n = _mpNormieren(mp);
+  _probeXsSetzen(n.x);
+  probeHWerte = n.h; probeSperre = n.lock; hVerbinden = n.verbinden;
+  _mpAnzeigen();
+}
+// Eingabefelder und Schlösser an den Zustand angleichen
+function _mpAnzeigen() {
+  for (let i = 1; i <= 4; i++) {
+    const zu = probeSperre[i - 1];
+    const hx = document.getElementById(`probe-h${i}`);
+    if (hx && document.activeElement !== hx) hx.value = probeHWerte[i - 1] ?? '';
+    [hx, document.getElementById(`probe-x${i}`)].forEach(el => { if (el) el.readOnly = zu; });
+    const s = document.getElementById(`probe-lock-${i}`);
+    if (s) { s.setAttribute('aria-pressed', zu ? 'true' : 'false'); s.title = t(zu ? 'probe.entsperren' : 'probe.sperren'); }
+  }
+}
+function setProbeH(i, wert) {
+  if (probeSperre[i - 1]) return;
+  const v = parseFloat(String(wert).replace(',', '.'));
+  probeHWerte[i - 1] = Number.isFinite(v) ? v : null;
+  berechnenEntprellt();
+  _triggerDrawingRebuild();
+}
+function messpunktSperren(i) {
+  probeSperre[i - 1] = !probeSperre[i - 1];
+  _mpAnzeigen();
+}
+function setHVerbinden(an) {
+  hVerbinden = !!an;
+  berechnen();
+  _triggerDrawingRebuild();
+}
+// H-Punkte eines Messpunkt-Stands als Hindernis (Form wie abschnitt.js)
+function _hPunkteHindernis(mp) {
+  const n = _mpNormieren(mp);
+  const punkte = [0, 1, 2, 3].filter(i => n.x[i] !== null && n.h[i] !== null).map(i => ({ x: n.x[i], h: n.h[i], m: i + 1 }));
+  return punkte.length ? [{ id: 'H', name: t('probe.h.name'), verbinden: n.verbinden, punkte }] : [];
+}
+// Messpunkte eines Abschnittsfelds (geöffnetes Feld: aktuelle Eingaben)
+function _mpFeld(i) {
+  return i === abschnittOffenesFeld() ? _mpLive() : (abschnitt.mp?.[i] ?? null);
 }
 
 function updateAllMesspunkte() {
   updateHighlightCard();
 }
 
-// Frühere H-Punkte (H1–H4 je Messpunkt) sind in die Hindernisse überführt
-// (siehe _abschnittLaden); die Werte bleiben leer.
-function updateHInputVisibility() {
-  probeH1 = probeH2 = probeH3 = probeH4 = null;
-}
+// H-Punkte stehen immer zur Verfügung (Prüfung braucht SOK m ü. M., siehe _hindernisErgebnisse)
+function updateHInputVisibility() {}
 
 // ── Hindernisse oberhalb + Abstandsprüfung ──────────────────────────────────
 // Geprüft wird der oberste Leiter (Tragseil bzw. Einzelleiter) über alle
@@ -9752,11 +9880,8 @@ function _lastfallText(f) {
   return teile.join(', ');
 }
 
-// Hindernisse des angezeigten Felds (Abschnitt: nur das geöffnete Feld)
-function _hindernisseAngezeigt() {
-  const feld = (typeof abschnittOffenesFeld === 'function') ? abschnittOffenesFeld() : null;
-  return hindernisse.filter(h => feld === null || (h.feld ?? 0) === feld);
-}
+// Hindernis des angezeigten Felds = H-Punkte der Messpunkte
+function _hindernisseAngezeigt() { return _hPunkteHindernis(_mpLive()); }
 
 // Nachweis für eine Liste Hindernisse. ov: Feldwerte (L, Lm, h1, h2) für
 // rechneFall; sokFn: x → SOK m ü. M. (oder null, dann Höhen über SOK).
@@ -9775,13 +9900,20 @@ function abstandsNachweis(liste, ov = {}, sokFn = null) {
   }
   return liste.map(h => {
     let best = null;
+    const jePunkt = h.punkte.filter(p => Number.isFinite(p?.x) && Number.isFinite(p?.h))
+      .map(p => ({ ...p, abstand: null })).sort((a, b) => a.x - b.x);
     for (const k of kurven) {
       const hoehe = x => kettenY(k.c, x) + sokFn(x);
       const r = abstandHindernis(hoehe, h.punkte, h.verbinden, L);
       if (r && (!best || r.abstand < best.abstand)) best = { ...r, fall: k.f, c: k.c };
+      jePunkt.forEach(p => {
+        if (p.x < 0 || p.x > L) return;
+        const a = p.h - hoehe(p.x);
+        if (p.abstand === null || a < p.abstand) p.abstand = a;
+      });
     }
     const grenze = minClearance ?? 0;
-    return { h, best, ok: best ? best.abstand >= grenze : null };
+    return { h, best, ok: best ? best.abstand >= grenze : null, jePunkt };
   });
 }
 
@@ -9804,121 +9936,48 @@ function setMindestabstand(wert) {
   _triggerDrawingRebuild();
 }
 
-function addObstacle() {
-  const feld = (typeof abschnittOffenesFeld === 'function') ? abschnittOffenesFeld() : null;
-  hindernisse.push({ id: _hindernisId++, name: '', feld: feld ?? 0, verbinden: true,
-                     punkte: [{ x: null, h: null }, { x: null, h: null }] });
-  renderObstacleList();
-}
-function removeObstacle(id) {
-  hindernisse = hindernisse.filter(h => h.id !== id);
-  renderObstacleList(); berechnen();
-}
-function updateObstacle(id, feld, wert) {
-  const h = hindernisse.find(h => h.id === id);
-  if (!h) return;
-  if (feld === 'name') h.name = wert;
-  else if (feld === 'feld') h.feld = parseInt(wert) || 0;
-  else if (feld === 'verbinden') h.verbinden = !!wert;
-  berechnenEntprellt();
-}
-function hindernisPunktWert(id, i, k, wert) {
-  const h = hindernisse.find(h => h.id === id);
-  if (!h || !h.punkte[i]) return;
-  const v = parseFloat(String(wert).replace(',', '.'));
-  h.punkte[i][k] = Number.isFinite(v) ? v : null;
-  berechnenEntprellt();
-}
-function hindernisPunktHinzu(id) {
-  const h = hindernisse.find(h => h.id === id);
-  if (!h) return;
-  h.punkte.push({ x: null, h: null });
-  renderObstacleList();
-  const eingaben = document.querySelectorAll(`#hind-${id} .hind-px`);
-  eingaben[eingaben.length - 1]?.focus();
-}
-function hindernisPunktWeg(id, i) {
-  const h = hindernisse.find(h => h.id === id);
-  if (!h) return;
-  h.punkte.splice(i, 1);
-  renderObstacleList(); berechnen();
-}
-function clearObstacles() {
-  hindernisse = [];
-  renderObstacleList(); berechnen();
-}
-
-// Ergebnistext je Hindernis (ohne die Eingabefelder neu aufzubauen)
+// Ergebnis der H-Punkte (ohne die Eingabefelder neu aufzubauen)
 function _hindernisErgebnisse() {
   const hasSok = getSokMumLeft() !== null || getSokMumRight() !== null;
-  document.querySelectorAll('.hind-uk-einheit').forEach(el => el.textContent = t('hind.uk.mum'));
+  const liste = _hindernisseAngezeigt();
   const sokHw = document.getElementById('hind-sok-fehlt');
-  if (sokHw) zeigeElement(sokHw, !hasSok && hindernisse.length > 0);
-  const angezeigt = new Set(_hindernisseAngezeigt().map(h => h.id));
-  hindernisse.forEach(h => {
-    const el = document.getElementById(`hind-erg-${h.id}`);
-    if (!el) return;
-    const n = _nachweis.find(x => x.h.id === h.id);
-    el.className = 'hind-erg';
-    if (!angezeigt.has(h.id)) { el.textContent = t('hind.anderes.feld'); return; }
-    if (n?.ohneSok) { el.textContent = t('hind.sok.fehlt'); el.className = 'hind-erg abs-fehlt'; return; }
-    if (!n || !n.best) {
-      el.textContent = hindernisPunkte(h.punkte).length ? t('hind.ausserhalb') : t('hind.unvollstaendig');
-      return;
-    }
-    el.classList.add(n.ok ? 'ok' : 'nok');
-    el.textContent = `${n.ok ? '✓' : '✗'} a = ${fN(n.best.abstand, 2)} m${minClearance !== null ? ` (≥ ${fN(minClearance, 2)})` : ''} · ${_lastfallText(n.best.fall)} · x = ${fN(n.best.x, 1)} m`;
-  });
+  if (sokHw) zeigeElement(sokHw, !hasSok && liste.length > 0);
+  const el = document.getElementById('hind-erg-H');
+  if (!el) return;
+  el.className = 'hind-erg';
+  const n = _nachweis[0];
+  if (!liste.length) { el.textContent = t('hind.leer'); return; }
+  if (n?.ohneSok) { el.textContent = t('hind.sok.fehlt'); el.classList.add('abs-fehlt'); return; }
+  if (!n || !n.best) { el.textContent = t('hind.ausserhalb'); return; }
+  const je = (n.jePunkt || []).filter(p => p.abstand !== null)
+    .map(p => `H${p.m} ${fN(p.abstand, 2)} m`).join(' · ');
+  el.classList.add(n.ok ? 'ok' : 'nok');
+  el.textContent = `${n.ok ? '✓' : '✗'} ${t('hind.massgebend')}: a = ${fN(n.best.abstand, 2)} m${minClearance !== null ? ` (≥ ${fN(minClearance, 2)})` : ''} · ${_lastfallText(n.best.fall)} · x = ${fN(n.best.x, 1)} m${je ? `  |  ${je}` : ''}`;
 }
 
+// Kopfzeile der H-Punkte: Mindestabstand, Zone, Punkte verbinden, Lastfälle, Ergebnis
 function renderObstacleList() {
   const sec = document.getElementById('obs-section');
   if (!sec) return;
   sec.style.display = '';
-  const mitFeld = (typeof abschnittFelderAnzahl === 'function') && abschnittFelderAnzahl() > 1;
-  const nFelder = mitFeld ? abschnittFelderAnzahl() : 0;
   const knopf = 'font-size:.7rem;padding:.14rem .45rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer';
-  const hasAny = hindernisse.length > 0;
-  let html = `<div class="hind-kopf">
+  sec.innerHTML = `<div class="hind-kopf">
     <span class="hind-titel">${t('hind.titel')}</span>
-    <div style="display:flex;gap:.35rem;flex-wrap:wrap;align-items:center">
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center">
       <label class="hind-min-lbl" for="hind-min">${t('hind.mindest')}
         <input type="number" id="hind-min" class="hind-inp hind-num" step="0.01" min="0" placeholder="—"
           value="${minClearance ?? ''}" oninput="setMindestabstand(this.value)"> m</label>
-      <label class="hind-min-lbl" title="${escHtml(t('ui.minabstand.titel'))}"><input type="checkbox" ${_showMinClearance ? 'checked' : ''}
-        onchange="_showMinClearance=this.checked;quickDraw();_triggerDrawingRebuild()"> ${t('hind.zone')}</label>
+      <label class="schalter-zeile hind-verb" title="${escHtml(t('ui.minabstand.titel'))}"><input type="checkbox" role="switch" ${_showMinClearance ? 'checked' : ''}
+        onchange="_showMinClearance=this.checked;quickDraw();_triggerDrawingRebuild()"><span class="schalter" aria-hidden="true"></span><span>${t('hind.zone')}</span></label>
+      <label class="schalter-zeile hind-verb" title="${escHtml(t('hind.verbinden.titel'))}"><input type="checkbox" role="switch" id="h-verbinden" ${hVerbinden ? 'checked' : ''}
+        onchange="setHVerbinden(this.checked)"><span class="schalter" aria-hidden="true"></span><span>${t('hind.verbinden')}</span></label>
       <button onclick="openLastfaelle()" style="${knopf}">${t('lf.knopf')}</button>
-      <button onclick="addObstacle()" style="${knopf}">${t('hind.hinzu')}</button>
-      ${hasAny ? `<button onclick="clearObstacles()" style="${knopf}" aria-label="${escHtml(t('ui.alle'))}">${t('ui.alle')}</button>` : ''}
     </div>
   </div>
-  <p id="hind-sok-fehlt" class="hind-legende abs-fehlt" style="display:none">${t('hind.sok.hinweis')}</p>`;
-  hindernisse.forEach(h => {
-    const feldSel = mitFeld ? `<label class="hind-feld-lbl">${t('hind.feld')}
-        <select class="hind-inp" onchange="updateObstacle(${h.id},'feld',this.value);berechnen()">${
-        Array.from({ length: nFelder }, (_, i) => `<option value="${i}"${(h.feld ?? 0) === i ? ' selected' : ''}>${i + 1}</option>`).join('')}</select></label>` : '';
-    html += `<div class="hind-block" id="hind-${h.id}">
-      <div class="hind-zeile">
-        <input class="hind-inp hind-name" aria-label="${escHtml(t('hind.name'))}" placeholder="${escHtml(t('ui.obs.name.ph'))}" value="${escHtml(h.name)}" oninput="updateObstacle(${h.id},'name',this.value)">
-        ${feldSel}
-        <label class="schalter-zeile hind-verb" title="${escHtml(t('hind.verbinden.titel'))}">
-          <input type="checkbox" role="switch" ${h.verbinden ? 'checked' : ''} onchange="updateObstacle(${h.id},'verbinden',this.checked);berechnen()">
-          <span class="schalter" aria-hidden="true"></span><span>${t('hind.verbinden')}</span></label>
-        <button class="obs-rm-btn" onclick="removeObstacle(${h.id})" aria-label="${escHtml(t('ui.loeschen'))} ${escHtml(h.name)}">✕</button>
-      </div>
-      <div class="hind-punkte">
-        <span class="hind-th">x [m]</span><span class="hind-th">${t('hind.uk')} <span class="hind-uk-einheit"></span></span><span></span>
-        ${h.punkte.map((pt, i) => `
-        <input class="hind-inp hind-num hind-px" type="number" step="0.1" aria-label="x ${i + 1}" value="${pt.x ?? ''}" oninput="hindernisPunktWert(${h.id},${i},'x',this.value)">
-        <input class="hind-inp hind-num" type="number" step="0.01" aria-label="${escHtml(t('hind.uk'))} ${i + 1}" value="${pt.h ?? ''}" oninput="hindernisPunktWert(${h.id},${i},'h',this.value)">
-        <button class="obs-rm-btn" onclick="hindernisPunktWeg(${h.id},${i})" aria-label="${escHtml(t('hind.punkt.weg'))} ${i + 1}" ${h.punkte.length <= 1 ? 'disabled' : ''}>✕</button>`).join('')}
-      </div>
-      <button class="hind-punkt-hinzu" onclick="hindernisPunktHinzu(${h.id})">${t('hind.punkt.hinzu')}</button>
-      <span class="hind-erg" id="hind-erg-${h.id}" aria-live="polite"></span>
-    </div>`;
-  });
-  if (hasAny) html += `<p class="hind-legende">${t('hind.legende')}</p>`;
-  sec.innerHTML = html;
+  <p id="hind-sok-fehlt" class="hind-legende abs-fehlt" style="display:none">${t('hind.sok.hinweis')}</p>
+  <span class="hind-erg" id="hind-erg-H" aria-live="polite"></span>
+  <p class="hind-legende">${t('hind.legende')}</p>`;
+  _mpAnzeigen();
   _hindernisErgebnisse();
 }
 
@@ -10010,29 +10069,24 @@ function startDrag(e) {
     drag = { which, startCY: y, startVal };
     canvas.style.cursor = 'ns-resize';
   } else if (['probe1','probe2','probe3','probe4'].includes(which)) {
+    if (probeSperre[+which.slice(5) - 1]) { meldung(t('probe.gesperrt'), 'info', 2500); return; }
     drag = { which, startCX: x };
     canvas.style.cursor = 'ew-resize';
   } else if (inPlotArea(x, y)) {
     const rx = realX(x);
-    let whichProbe;
-    if (probeX1 === null) {
-      probeX1 = rx; document.getElementById('probe-x1').value = rx.toFixed(2);
-      whichProbe = 'probe1';
-    } else if (probeX2 === null) {
-      probeX2 = rx; document.getElementById('probe-x2').value = rx.toFixed(2);
-      whichProbe = 'probe2';
-    } else if (probeX3 === null) {
-      probeX3 = rx; document.getElementById('probe-x3').value = rx.toFixed(2);
-      whichProbe = 'probe3';
-    } else if (probeX4 === null) {
-      probeX4 = rx; document.getElementById('probe-x4').value = rx.toFixed(2);
-      whichProbe = 'probe4';
-    } else {
-      probeX1 = rx; document.getElementById('probe-x1').value = rx.toFixed(2);
-      probeX2 = probeX3 = probeX4 = null;
-      ['probe-x2','probe-x3','probe-x4'].forEach(id => document.getElementById(id).value = '');
-      whichProbe = 'probe1';
+    // Freien Messpunkt belegen; sind alle belegt, beginnt es beim ersten
+    // ungesperrten neu (übrige ungesperrte werden geleert). Gesperrte bleiben.
+    const xs = _probeXs();
+    let k = xs.findIndex((v, i) => v === null && !probeSperre[i]);
+    if (k < 0) {
+      k = probeSperre.findIndex(z => !z);
+      if (k < 0) { meldung(t('probe.gesperrt.alle'), 'info', 2500); return; }
+      xs.forEach((_, i) => { if (!probeSperre[i]) { xs[i] = null; probeHWerte[i] = null; } });
+      _mpAnzeigen();
     }
+    xs[k] = rx;
+    _probeXsSetzen(xs);
+    const whichProbe = 'probe' + (k + 1);
     drag = { which: whichProbe, startCX: x };
     canvas.style.cursor = 'ew-resize';
     quickDraw();
@@ -10112,6 +10166,7 @@ canvas.addEventListener('contextmenu', e => {
   const { x, y } = canvasPt(e);
   const which = hitTarget(x, y);
   const deleteMap = { probe1: ['probeX1','probe-x1'], probe2: ['probeX2','probe-x2'], probe3: ['probeX3','probe-x3'], probe4: ['probeX4','probe-x4'] };
+  if (deleteMap[which] && probeSperre[+which.slice(5) - 1]) { meldung(t('probe.gesperrt'), 'info', 2500); return; }
   if (deleteMap[which]) {
     const [varName, elId] = deleteMap[which];
     if (which === 'probe1') probeX1 = null;
@@ -10579,10 +10634,14 @@ function buildScaleDrawingPage(stripInSvg = false) {
 
   // Y display range (add headroom above anchors)
   // 'catenary': nur Kettenwerk/Leiter, SOK aus der Ausdehnung ausschliessen
+  // hf_min / hf_max (Werte aus der hf-Ansicht) als Band über SOK — nur Kettenwerk
+  const hfZ = (drawingHf && showFd) ? _hfFuerZeichnung() : null;
+  const hfOk = !!(hfZ && !hfZ.fehler);
+  if (hfOk) yCrvMin = Math.min(yCrvMin, absY(0, hfZ.min), absY(L, hfZ.min));
   const yMin   = drawingExtent === 'catenary'
     ? yCrvMin - 0.3
     : Math.min(sokYL, sokYR, yCrvMin) - 0.3;
-  const yMax   = Math.max(h1abs, h2abs) + 0.6;
+  const yMax   = Math.max(h1abs, h2abs, hfOk ? Math.max(absY(0, hfZ.max), absY(L, hfZ.max)) : -Infinity) + 0.6;
   const yRange = yMax - yMin;
 
   // Layout in SVG mm — viewBox = 267 × 180 mm (A4 landscape usable at 15mm margin)
@@ -10681,8 +10740,18 @@ function buildScaleDrawingPage(stripInSvg = false) {
 
   const yAxisLbl = hasSok ? 'Höhe [m ü.M.]' : 'Höhe [m ü.SOK]';
 
+  // Ausschnitt «Kettenwerk»: SOK liegt ausserhalb — Masten enden am unteren
+  // Rand des Ausschnitts (Bruchzeichen), die SOK-Linie entfällt.
+  const nurKw   = drawingExtent === 'catenary';
+  const mastUL  = nurKw ? Math.max(sokYL, yMin) : sokYL;
+  const mastUR  = nurKw ? Math.max(sokYR, yMin) : sokYR;
+  const bruch   = (x, y) => { const b = 1.2 * symSc; return `<path d="M${(x - b).toFixed(2)},${(y + b * .5).toFixed(2)} L${x.toFixed(2)},${(y - b * .3).toFixed(2)} L${x.toFixed(2)},${(y + b * .3).toFixed(2)} L${(x + b).toFixed(2)},${(y - b * .5).toFixed(2)}" fill="none" stroke="#999" stroke-width="${(0.28*symSc).toFixed(3)}"/>`; };
+
   // SOK line
-  const sokSvg = `
+  const sokSvg = nurKw ? `
+  ${bruch(sx(0), sy(mastUL))}${bruch(sx(L), sy(mastUR))}
+  <text x="${(sx(0)-1).toFixed(2)}" y="${(sy(mastUL)+0.9).toFixed(2)}" font-size="${fs(2.0)}" text-anchor="end" fill="#bbb">SOK ↓</text>
+  <text x="${(sx(L)+1).toFixed(2)}" y="${(sy(mastUR)+0.9).toFixed(2)}" font-size="${fs(2.0)}" text-anchor="start" fill="#bbb">SOK ↓</text>` : `
   <line x1="${sx(0).toFixed(2)}" y1="${sy(sokYL).toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${sy(sokYR).toFixed(2)}"
     stroke="#aaa" stroke-width="${(0.65*symSc).toFixed(3)}"/>
   <text x="${(sx(0)-1).toFixed(2)}" y="${(sy(sokYL)+0.9).toFixed(2)}" font-size="${fs(2.2)}" text-anchor="end" fill="#bbb">SOK</text>
@@ -10690,9 +10759,9 @@ function buildScaleDrawingPage(stripInSvg = false) {
 
   // Masts — solid thin lines, no circles
   const mastSvg = `
-  <line x1="${sx(0).toFixed(2)}" y1="${sy(sokYL).toFixed(2)}" x2="${sx(0).toFixed(2)}" y2="${sy(h1abs).toFixed(2)}"
+  <line x1="${sx(0).toFixed(2)}" y1="${sy(mastUL).toFixed(2)}" x2="${sx(0).toFixed(2)}" y2="${sy(h1abs).toFixed(2)}"
     stroke="#666" stroke-width="${(0.28*symSc).toFixed(3)}"/>
-  <line x1="${sx(L).toFixed(2)}" y1="${sy(sokYR).toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${sy(h2abs).toFixed(2)}"
+  <line x1="${sx(L).toFixed(2)}" y1="${sy(mastUR).toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${sy(h2abs).toFixed(2)}"
     stroke="#666" stroke-width="${(0.28*symSc).toFixed(3)}"/>`;
 
   // Anchor labels
@@ -10703,8 +10772,8 @@ function buildScaleDrawingPage(stripInSvg = false) {
   <text x="${(sx(0)+2).toFixed(2)}" y="${(sy(h1abs)-2).toFixed(2)}" font-size="${fs(2.3)}" fill="#555">${h1abs.toFixed(2)} m ü.M.</text>
   <text x="${(sx(L)-2).toFixed(2)}" y="${(sy(h2abs)-2).toFixed(2)}" font-size="${fs(2.3)}" text-anchor="end" fill="#555">${h2abs.toFixed(2)} m ü.M.</text>`;
     // Relative height h= at midpoint of each mast line
-    const mastMidYL = (sy(sokYL) + sy(h1abs)) / 2;
-    const mastMidYR = (sy(sokYR) + sy(h2abs)) / 2;
+    const mastMidYL = (sy(mastUL) + sy(h1abs)) / 2;
+    const mastMidYR = (sy(mastUR) + sy(h2abs)) / 2;
     anchLbl += `
   <text x="${(sx(0)+1.5).toFixed(2)}" y="${(mastMidYL+0.8).toFixed(2)}" font-size="${fs(2.0)}" fill="#888">h&#x2081; = ${h1.toFixed(2)} m</text>
   <text x="${(sx(L)-1.5).toFixed(2)}" y="${(mastMidYR+0.8).toFixed(2)}" font-size="${fs(2.0)}" text-anchor="end" fill="#888">h&#x2082; = ${h2.toFixed(2)} m</text>`;
@@ -11178,10 +11247,42 @@ function buildScaleDrawingPage(stripInSvg = false) {
     if (c3data && _t3v_foot !== null) {
       s += `<line x1="${lx.toFixed(1)}" y1="${lY.toFixed(1)}" x2="${(lx+lw).toFixed(1)}" y2="${lY.toFixed(1)}" stroke="${t3clr}" stroke-width="0.6" stroke-dasharray="3,2"/>`;
       s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="${t3clr}">Ts bei T&#x2083; = ${_t3v_foot}°C</text>`;
+      lx += 34;
+    }
+    if (hfOk) {
+      s += `<line x1="${lx.toFixed(1)}" y1="${lY.toFixed(1)}" x2="${(lx+lw).toFixed(1)}" y2="${lY.toFixed(1)}" stroke="#4a5cb8" stroke-width="0.5" stroke-dasharray="3,1.6"/>`;
+      s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="#555">hf<tspan font-size="1.6" dy="0.5">min</tspan><tspan dy="-0.5"> ${hfZ.min.toFixed(3)} / hf</tspan><tspan font-size="1.6" dy="0.5">max</tspan><tspan dy="-0.5"> ${hfZ.max.toFixed(3)} m</tspan></text>`;
     }
 
     return s;
   })();
+
+  // hf_min / hf_max: Band parallel zur SOK, Fahrdraht bei T₂ dagegen geprüft
+  let hfSvg = '';
+  if (hfOk) {
+    const cMin = '#4a5cb8', cMax = '#9a7b1a', cBand = 'rgba(47,158,84,.09)';
+    const yl = v => sy(absY(0, v)), yr = v => sy(absY(L, v));
+    hfSvg += `<polygon points="${sx(0).toFixed(2)},${yl(hfZ.max).toFixed(2)} ${sx(L).toFixed(2)},${yr(hfZ.max).toFixed(2)} ${sx(L).toFixed(2)},${yr(hfZ.min).toFixed(2)} ${sx(0).toFixed(2)},${yl(hfZ.min).toFixed(2)}" fill="${cBand}" stroke="none"/>`;
+    const dash = `${(3*symSc).toFixed(2)},${(1.6*symSc).toFixed(2)}`;
+    [[hfZ.min, cMin, 'min'], [hfZ.max, cMax, 'max']].forEach(([v, c, k]) => {
+      hfSvg += `<line x1="${sx(0).toFixed(2)}" y1="${yl(v).toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${yr(v).toFixed(2)}" stroke="${c}" stroke-width="${(0.4*symSc).toFixed(3)}" stroke-dasharray="${dash}"/>`;
+      hfSvg += `<text x="${(sx(L) - 1.5).toFixed(2)}" y="${(yr(v) + (k === 'min' ? -1.2 : 3.2) * symSc).toFixed(2)}" font-size="${fs(2.1)}" text-anchor="end" fill="${c}" font-weight="600">hf<tspan font-size="${fs(1.5)}" dy="0.6">${k}</tspan><tspan dy="-0.6"> = ${v.toFixed(3)} m</tspan></text>`;
+    });
+    // Fahrdraht bei T₂: tiefste und höchste Stelle über SOK
+    let tief = { h: Infinity }, hoch = { h: -Infinity };
+    for (let i = 0; i <= N; i++) {
+      const x = L * i / N, h = fdY(x) - absY(x, 0);
+      if (h < tief.h) tief = { x, h };
+      if (h > hoch.h) hoch = { x, h };
+    }
+    const unter = tief.h < hfZ.min - 1e-9, ueber = hoch.h > hfZ.max + 1e-9;
+    const marke = (p, txt) => `<circle cx="${sx(p.x).toFixed(2)}" cy="${sy(absY(p.x, p.h)).toFixed(2)}" r="${(1.1*symSc).toFixed(2)}" fill="#dc2626" stroke="white" stroke-width="${(0.3*symSc).toFixed(3)}"/>`
+      + `<text x="${(sx(p.x) + (p.x > L / 2 ? -1.8 : 1.8) * symSc).toFixed(2)}" y="${(sy(absY(p.x, p.h)) + 3.4*symSc).toFixed(2)}" font-size="${fs(2.0)}" fill="#dc2626" font-weight="600" text-anchor="${p.x > L / 2 ? 'end' : 'start'}">${txt}</text>`;
+    if (unter) hfSvg += marke(tief, `Fd ${tief.h.toFixed(2)} m < hf<tspan font-size="${fs(1.4)}" dy="0.6">min</tspan>`);
+    if (ueber) hfSvg += marke(hoch, `Fd ${hoch.h.toFixed(2)} m > hf<tspan font-size="${fs(1.4)}" dy="0.6">max</tspan>`);
+    const ok = !unter && !ueber;
+    hfSvg += `<text x="${(sx(0) + 1.5).toFixed(2)}" y="${(yl(hfZ.max) - 1.2*symSc).toFixed(2)}" font-size="${fs(2.0)}" fill="${ok ? '#2f7a3d' : '#dc2626'}" font-weight="600">${ok ? '✓' : '✗'} ${escHtml(t(ok ? 'draw.hf.ok' : 'draw.hf.nok'))} (Fd T<tspan font-size="${fs(1.4)}" dy="0.6">2</tspan><tspan dy="-0.6">: ${tief.h.toFixed(2)} … ${hoch.h.toFixed(2)} m)</tspan></text>`;
+  }
 
   // Legend — HTML overlay (nur bei interaktiver Ansicht; PDF bekommt eigene Legende im Titel)
   if (!stripInSvg) {
@@ -11195,6 +11296,8 @@ function buildScaleDrawingPage(stripInSvg = false) {
     legHtml += `<div class="dl-item">${_legLine(t2clr, '', true)} <span style="color:${t2clr};font-weight:600">Ts bei T<sub>2</sub> = ${T2}°C</span></div>`;
     if (showFd) legHtml += `<div class="dl-item">${_legLine(fdClr, '', false, true)} <span>Fd bei T<sub>2</sub></span></div>`;
     if (c3data) legHtml += `<div class="dl-item">${_legLine(t3clr, '4 2.5')} <span style="color:${t3clr}">Ts bei T<sub>3</sub> = ${t3v}°C</span></div>`;
+    if (hfOk) legHtml += `<div class="dl-item">${_legLine('#4a5cb8', '4 2')} <span style="color:#4a5cb8">hf<sub>min</sub></span> / <span style="color:#9a7b1a">hf<sub>max</sub></span> <span style="color:#999">(${escHtml(sysName(hfEingabe.typ))}, c = ${hfEingabe.c} m)</span></div>`;
+    else if (hfZ?.fehler) legHtml += `<div class="dl-item"><span style="color:#dc2626">${escHtml(t('draw.hf.fehler'))}</span></div>`;
     const legEl = document.getElementById('drawing-legend-overlay');
     if (legEl) { legEl.style.display = 'flex'; legEl.innerHTML = legHtml; }
   }
@@ -11248,6 +11351,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
   ${catPath(cDisp, '', (1.0*symSc).toFixed(3))} stroke="${t2clr}"/>
   ${showFd ? makePath(fdY, '', (0.32*symSc).toFixed(3)) + ` stroke="${fdClr}"/>` : ''}
   ${c3data ? catPath(c3data, `${(2.5*symSc).toFixed(2)},${(1.5*symSc).toFixed(2)}`, (0.65*symSc).toFixed(3)) + ` stroke="${t3clr}"/>` : ''}
+  ${hfSvg}
   ${minClearSvg}
   ${anchLbl}
   ${sagSvg}
@@ -11267,6 +11371,21 @@ let _lastDrawingScale = null;
 let drawingZoom       = 1.0;
 let drawingVEx        = 1;   // Überhöhungsfaktor (1 = keine Überhöhung)
 let drawingExtent     = 'sok'; // 'sok' = bis SOK | 'catenary' = nur Kettenwerk/Leiter
+var drawingHf         = false; // hf_min / hf_max als Band in der Zeichnung (Werte aus der hf-Ansicht)
+
+function setDrawingHf(an) {
+  drawingHf = !!an;
+  const cb = document.getElementById('draw-hf');
+  if (cb) cb.checked = drawingHf;
+  refreshScaleViewIfActive();
+}
+// hf-Werte für die Zeichnung in m über SOK (null = kein Kettenwerk)
+function _hfFuerZeichnung() {
+  if (sysMode === 'el' || typeof hfRechnen !== 'function') return null;
+  if (!hfEingabe) { hfEingabe = { ...HF_VORGABE }; hfAusDurchhang(true); }
+  const r = hfRechnen();
+  return r.fehler.length ? { fehler: true } : { min: r.min.wert / 1000, max: r.max.wert / 1000 };
+}
 
 function setDrawingExtent(val) {
   drawingExtent = val;
@@ -11866,6 +11985,8 @@ return {
     adjustDrawingZoom,
     setDrawingVEx,
     setDrawingExtent,
+    setDrawingHf,
+    _hfFuerZeichnung,
     pdfExportDrawing,
     toggleCanvasFullscreen,
     toggleShareMenu,
@@ -11877,6 +11998,7 @@ return {
     // Zeichnungs-Einstellungen für Speichern/Laden
     get zeichnungVEx()    { return drawingVEx; },
     get zeichnungExtent() { return drawingExtent; },
+    get zeichnungHf()     { return drawingHf; },
     // Setzt beide Einstellungen samt Bedienelementen, ohne Neuaufbau
     // (der Aufrufer baut nach dem Laden ohnehin komplett neu auf).
     zeichnungsEinstellungenSetzen(vEx, extent) {
@@ -11896,6 +12018,7 @@ return {
 window.adjustDrawingZoom = Ansicht.adjustDrawingZoom;
 window.setDrawingVEx = Ansicht.setDrawingVEx;
 window.setDrawingExtent = Ansicht.setDrawingExtent;
+window.setDrawingHf = Ansicht.setDrawingHf;
 window.pdfExportDrawing = Ansicht.pdfExportDrawing;
 window.toggleCanvasFullscreen = Ansicht.toggleCanvasFullscreen;
 window.toggleShareMenu = Ansicht.toggleShareMenu;
@@ -12015,7 +12138,7 @@ function _koordAnwenden() {
 // Eingaben (Mittelspannweite mit allen Feldern), sodass Diagramm, Zeichnung,
 // PDF und Export genau dieses Feld zeigen.
 // ═══════════════════════════════════════════════════════════════
-let abschnitt = { masten: [], offen: null };
+let abschnitt = { masten: [], offen: null, mp: {} };
 let _abschnittSichtbar = false;
 
 function abschnittFelderAnzahl() { return Math.max(0, abschnitt.masten.length - 1); }
@@ -12062,26 +12185,54 @@ function abschnittRechnen() {
     }
     res.tief = tief; res.tiefRel = tiefRel;
     res.fdTief = res.fdY ? fdTief : null; res.fdTiefRel = res.fdY ? fdTiefRel : null;
-    res.nachweis = abstandsNachweis(hindernisse.filter(h => (h.feld ?? 0) === i), res.ov, res.sokFn);
+    res.nachweis = abstandsNachweis(_hPunkteHindernis(_mpFeld(i)), res.ov, res.sokFn);
     return res;
   });
   return { felder, Lm, starr };
 }
 
-// Abschnitt, Hindernisse und Lastfälle aus einem Projektzustand übernehmen (tolerant)
+// Messpunkte (x aus den Feldern bereits gesetzt), H-Punkte und Schlösser laden.
+// Übernimmt frühere Formen: H1–H4 als Felder (bis v3.9.2) und die
+// Hindernisliste (v3.9.3–v3.11) — höchstens 4 Punkte je Feld.
+function _messpunkteLaden(s) {
+  if (s.messpunkte && typeof s.messpunkte === 'object') {
+    _mpSetzen({ ...s.messpunkte, x: _probeXs() });
+    return;
+  }
+  const f = s.fields || {};
+  const xs = _probeXs();
+  _mpSetzen({ x: xs, h: [1, 2, 3, 4].map(i => { const v = parseFloat(f[`probe-h${i}`]); return xs[i - 1] !== null && Number.isFinite(v) ? v : null; }) });
+  const alt = (Array.isArray(s.hindernisse) ? s.hindernisse : []).map(hindernisNormieren).filter(Boolean);
+  if (!alt.length) return;
+  const offen = abschnittOffenesFeld();
+  const jeFeld = new Map();
+  alt.forEach(h => {
+    const k = offen === null ? 'live' : ((h.feld ?? 0) === offen ? 'live' : (h.feld ?? 0));
+    const e = jeFeld.get(k) || { punkte: [], verbinden: false };
+    e.punkte.push(...hindernisPunkte(h.punkte)); e.verbinden = e.verbinden || !!h.verbinden;
+    jeFeld.set(k, e);
+  });
+  let gekuerzt = false;
+  jeFeld.forEach((e, k) => {
+    let pk = e.punkte;
+    if (pk.length > 4) { gekuerzt = true; pk = [...pk].sort((a, b) => a.h - b.h).slice(0, 4); }
+    pk = [...pk].sort((a, b) => a.x - b.x);
+    const mp = { x: [0, 1, 2, 3].map(i => pk[i]?.x ?? null), h: [0, 1, 2, 3].map(i => pk[i]?.h ?? null), verbinden: e.verbinden };
+    if (k === 'live') _mpSetzen(mp); else abschnitt.mp[k] = _mpNormieren(mp);
+  });
+  setTimeout(() => meldung(t(gekuerzt ? 'hind.uebernommen.gekuerzt' : 'hind.uebernommen'), gekuerzt ? 'warnung' : 'info'), 0);
+}
+
+// Abschnitt und Lastfälle aus einem Projektzustand übernehmen (tolerant)
 function _abschnittLaden(s) {
   const zahl = v => (typeof v === 'number' && Number.isFinite(v)) ? v : null;
   const text = v => (typeof v === 'string' || typeof v === 'number') ? String(v) : '';
   const masten = Array.isArray(s.abschnitt?.masten) ? s.abschnitt.masten.filter(x => x && typeof x === 'object')
     .map(x => ({ name: text(x.name), e: zahl(x.e), n: zahl(x.n), z: zahl(x.z), delta: zahl(x.delta), h: zahl(x.h), km: text(x.km), L: zahl(x.L) })) : [];
-  abschnitt = { masten, offen: Number.isInteger(s.abschnitt?.offen) ? s.abschnitt.offen : null };
-  hindernisse = (Array.isArray(s.hindernisse) ? s.hindernisse : []).map(hindernisNormieren).filter(Boolean)
-    .map(h => ({ id: _hindernisId++, ...h }));
-  // Frühere H-Punkte (H1–H4 bei M1–M4, m ü. M.) als ein Hindernis mit Einzelpunkten übernehmen
-  const f = s.fields || {};
-  const hp = [1, 2, 3, 4].map(i => ({ x: parseFloat(f[`probe-x${i}`]), h: parseFloat(f[`probe-h${i}`]) }))
-    .filter(p => Number.isFinite(p.x) && Number.isFinite(p.h));
-  if (hp.length) hindernisse.push({ id: _hindernisId++, name: 'H-Punkte', feld: abschnitt.offen ?? 0, verbinden: false, punkte: hp });
+  const mp = {};
+  if (s.abschnitt?.mp && typeof s.abschnitt.mp === 'object')
+    Object.entries(s.abschnitt.mp).forEach(([k, v]) => { if (/^\d+$/.test(k) && v && typeof v === 'object') mp[k] = _mpNormieren(v); });
+  abschnitt = { masten, offen: Number.isInteger(s.abschnitt?.offen) ? s.abschnitt.offen : null, mp };
   if (s.lastfaelle && typeof s.lastfaelle === 'object') lastfallEinst = s.lastfaelle;
   renderObstacleList();
   if (_abschnittSichtbar) renderAbschnitt();
@@ -12125,13 +12276,17 @@ function abschnittMastHinzu() {
 }
 function abschnittMastWeg(i) {
   abschnitt.masten.splice(i, 1);
+  // Messpunkte je Feld nachführen: Felder neben dem Mast entfallen, spätere rücken nach
+  const mp = {};
+  Object.entries(abschnitt.mp || {}).forEach(([k, v]) => { k = +k; if (k < i - 1) mp[k] = v; else if (k > i) mp[k - 1] = v; });
+  abschnitt.mp = mp;
   if (abschnitt.offen !== null && abschnitt.offen >= abschnittFelderAnzahl()) abschnitt.offen = null;
   renderAbschnitt(); renderObstacleList();
 }
 async function abschnittAlleLoeschen() {
   if (!abschnitt.masten.length) return;
   if (!await frageBestaetigung(t('abs.loeschen.frage').replace('{n}', abschnitt.masten.length), { ok: t('rf.loeschen') })) return;
-  abschnitt = { masten: [], offen: null };
+  abschnitt = { masten: [], offen: null, mp: {} };
   renderAbschnitt(); renderObstacleList(); berechnen();
 }
 
@@ -12156,7 +12311,7 @@ async function abschnittCsvGewaehlt(input) {
   if (!erg.masten.length) { meldung(t('abs.csv.fehler'), 'fehler'); return; }
   if (abschnitt.masten.length && !await frageBestaetigung(
       t('abs.csv.ersetzen').replace('{n}', abschnitt.masten.length).replace('{m}', erg.masten.length), { ok: t('abs.csv.import') })) return;
-  abschnitt = { masten: erg.masten, offen: null };
+  abschnitt = { masten: erg.masten, offen: null, mp: {} };
   const hinweise = [t('abs.csv.gelesen').replace('{n}', erg.masten.length)];
   const ohneH = erg.warnungen.filter(w => w.startsWith('h:')).length;
   if (ohneH) hinweise.push(t('abs.csv.warn.h').replace('{n}', ohneH));
@@ -12176,6 +12331,15 @@ function abschnittFeldOeffnen(i, { ansicht = true, koord = null } = {}) {
   const m = abschnitt.masten, a = m[i], b = m[i + 1];
   const fl = feldLaengen(m);
   if (!a || !b || !(fl[i]?.L > 0)) return false;
+  // Messpunkte je Feld: bisheriges Feld sichern, neues laden. Beim ersten
+  // Öffnen ohne gespeicherte Punkte gehen die aktuellen Messpunkte mit.
+  abschnitt.mp = abschnitt.mp || {};
+  const vorher = abschnittOffenesFeld();
+  if (vorher !== null) abschnitt.mp[vorher] = _mpLive();
+  if (vorher !== i) {
+    if (abschnitt.mp[i]) _mpSetzen(abschnitt.mp[i]);
+    else if (vorher !== null) _mpSetzen(null);
+  }
   abschnitt.offen = i;
   const setze = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ''; };
   const zahl = (v, s) => Number.isFinite(v) ? v.toFixed(s) : '';
@@ -12571,6 +12735,12 @@ function exportDxf() {
     linien.push({ layer: 'MAST', punkte: [P(L, 0), P(L, h2)] });
   }
   if (hasSok) linien.push({ layer: 'SOK', punkte: [P(0, 0), P(L, 0)] });
+  // hf_min / hf_max als Linien über SOK, wenn in der Zeichnung eingeblendet
+  const hfZ = Ansicht.zeichnungHf ? Ansicht._hfFuerZeichnung() : null;
+  if (hfZ && !hfZ.fehler) {
+    linien.push({ layer: 'HF_MIN', punkte: [P(0, hfZ.min), P(L, hfZ.min)] });
+    linien.push({ layer: 'HF_MAX', punkte: [P(0, hfZ.max), P(L, hfZ.max)] });
+  }
 
   const hw = Math.min(1.0, L * 0.03);
   [{ xv: probeX1, h: probeH1 }, { xv: probeX2, h: probeH2 },
@@ -13512,6 +13682,10 @@ const LANG = {
     'pwa.update.btn': 'Jetzt laden',
     'msg.mat.aktualisiert': '{n} Materialien aktualisiert.',
     // Zeichnung-Toolbar
+    'draw.hf.titel': 'hf_min / hf_max aus der hf-Ansicht einblenden und den Fahrdraht bei T₂ prüfen',
+    'draw.hf.ok': 'Fahrdraht im Bereich hf_min … hf_max',
+    'draw.hf.nok': 'Fahrdraht ausserhalb hf_min … hf_max',
+    'draw.hf.fehler': 'hf_min / hf_max: Eingaben in der hf-Ansicht prüfen',
     'draw.ueberhoeung':  'Überhöhung',
     'draw.darstellung':  'Darstellung',
     'draw.bis.sok':      'bis SOK',
@@ -13789,7 +13963,17 @@ const LANG = {
     'hind.verbinden.titel': 'Unterkante als Linie durch die Punkte (nach x sortiert); aus = Einzelpunkte',
     'hind.punkt.hinzu': '+ Punkt',
     'hind.punkt.weg': 'Punkt löschen',
-    'hind.titel': 'Hindernisse oberhalb (z. B. Brücke, Decke)',
+    'hind.titel': 'H-Punkte: Hindernis oberhalb (z. B. Unterkante Brücke / Bauwerk)',
+    'probe.h.name': 'H-Punkte',
+    'probe.h.einheit': 'm ü. M.',
+    'probe.sperren': 'Messpunkt sperren (nicht verschieben oder löschen)',
+    'probe.entsperren': 'Messpunkt entsperren',
+    'probe.gesperrt': 'Messpunkt gesperrt — zuerst mit dem Schloss entsperren.',
+    'probe.gesperrt.alle': 'Alle Messpunkte sind gesperrt.',
+    'hind.leer': 'H-Punkt eingeben: Höhe der Unterkante (m ü. M.) bei einem Messpunkt M1–M4.',
+    'hind.massgebend': 'massgebend',
+    'hind.uebernommen': 'Hindernisse aus der früheren Liste als H-Punkte bei M1–M4 übernommen.',
+    'hind.uebernommen.gekuerzt': 'Hindernisse als H-Punkte übernommen — je Feld höchstens 4 Punkte (die tiefsten); bitte prüfen.',
     'hind.hinzu': '+ Hindernis',
     'hind.mindest': 'Mindestabstand a',
     'hind.name': 'Bezeichnung',
@@ -13802,7 +13986,7 @@ const LANG = {
     'hind.unvollstaendig': 'Punkte mit x und Höhe eingeben',
     'hind.ausserhalb': 'Punkte liegen ausserhalb des Felds',
     'hind.anderes.feld': 'gehört zu einem anderen Feld des Abschnitts',
-    'hind.legende': 'Geprüft wird der oberste Leiter (Tragseil bzw. Einzelleiter) in allen Lastfällen. «Punkte verbinden»: Unterkante als Linie durch die nach x sortierten Punkte (Reihenfolge der Eingabe egal); aus: jeder Punkt einzeln. Im Diagramm gestrichelt: massgebender Lastfall.',
+    'hind.legende': 'Geprüft wird der oberste Leiter (Tragseil bzw. Einzelleiter) an den H-Punkten in allen Lastfällen. «Punkte verbinden»: Unterkante als Linie durch die H-Punkte (nach x sortiert); aus: jeder H-Punkt einzeln. Schloss: Messpunkt gegen Verschieben und Löschen sichern. Im Diagramm gestrichelt: massgebender Lastfall.',
     'lf.knopf': 'Lastfälle …',
     'hf.titel': 'Fahrdrahthöhe hf_min / hf_max',
     'ui.beta': 'BETA – nicht verifiziert',
@@ -14315,6 +14499,10 @@ const LANG = {
     'pwa.update.btn': 'Charger maintenant',
     'msg.mat.aktualisiert': '{n} matériaux mis à jour.',
     // Zeichnung-Toolbar
+    'draw.hf.titel': 'Afficher hf_min / hf_max de la vue hf et vérifier le fil de contact à T₂',
+    'draw.hf.ok': 'Fil de contact dans la plage hf_min … hf_max',
+    'draw.hf.nok': 'Fil de contact hors de la plage hf_min … hf_max',
+    'draw.hf.fehler': 'hf_min / hf_max : vérifier les données dans la vue hf',
     'draw.ueberhoeung':  'Surélévation',
     'draw.darstellung':  'Représentation',
     'draw.bis.sok':      "jusqu'à DRS",
@@ -14592,7 +14780,17 @@ const LANG = {
     'hind.verbinden.titel': 'Sous-face comme ligne passant par les points (triés selon x) ; désactivé = points isolés',
     'hind.punkt.hinzu': '+ Point',
     'hind.punkt.weg': 'Supprimer le point',
-    'hind.titel': 'Obstacles au-dessus (p. ex. pont, plafond)',
+    'hind.titel': 'Points H : obstacle au-dessus (p. ex. sous-face pont / ouvrage)',
+    'probe.h.name': 'Points H',
+    'probe.h.einheit': 'm s.n.m.',
+    'probe.sperren': 'Verrouiller le point de mesure (ni déplacer ni supprimer)',
+    'probe.entsperren': 'Déverrouiller le point de mesure',
+    'probe.gesperrt': 'Point de mesure verrouillé — le déverrouiller d’abord avec le cadenas.',
+    'probe.gesperrt.alle': 'Tous les points de mesure sont verrouillés.',
+    'hind.leer': 'Saisir un point H : hauteur de la sous-face (m s.n.m.) à un point de mesure M1–M4.',
+    'hind.massgebend': 'déterminant',
+    'hind.uebernommen': 'Obstacles de l’ancienne liste repris comme points H à M1–M4.',
+    'hind.uebernommen.gekuerzt': 'Obstacles repris comme points H — au plus 4 points par portée (les plus bas) ; à vérifier.',
     'hind.hinzu': '+ Obstacle',
     'hind.mindest': 'Distance minimale a',
     'hind.name': 'Désignation',
@@ -14605,7 +14803,7 @@ const LANG = {
     'hind.unvollstaendig': 'saisir des points avec x et hauteur',
     'hind.ausserhalb': 'les points sont hors de la portée',
     'hind.anderes.feld': 'appartient à une autre portée du canton',
-    'hind.legende': 'Le conducteur le plus haut (câble porteur resp. conducteur simple) est vérifié dans tous les cas de charge. «Relier les points» : sous-face comme ligne passant par les points triés selon x (ordre de saisie sans importance) ; désactivé : chaque point séparément. En pointillé dans le diagramme : cas de charge déterminant.',
+    'hind.legende': 'Le conducteur le plus haut (câble porteur resp. conducteur simple) est vérifié aux points H dans tous les cas de charge. «Relier les points» : sous-face comme ligne passant par les points H (triés selon x) ; désactivé : chaque point H séparément. Cadenas : protéger le point de mesure contre le déplacement et la suppression. En pointillé dans le diagramme : cas de charge déterminant.',
     'lf.knopf': 'Cas de charge …',
     'hf.titel': 'Hauteur du fil de contact hf_min / hf_max',
     'ui.beta': 'BÊTA – non vérifié',
@@ -15118,6 +15316,10 @@ const LANG = {
     'pwa.update.btn': 'Carica ora',
     'msg.mat.aktualisiert': '{n} materiali aggiornati.',
     // Zeichnung-Toolbar
+    'draw.hf.titel': 'Mostrare hf_min / hf_max della vista hf e verificare il filo di contatto a T₂',
+    'draw.hf.ok': 'Filo di contatto nel campo hf_min … hf_max',
+    'draw.hf.nok': 'Filo di contatto fuori dal campo hf_min … hf_max',
+    'draw.hf.fehler': 'hf_min / hf_max: controllare i dati nella vista hf',
     'draw.ueberhoeung':  'Sovralzo',
     'draw.darstellung':  'Rappresentazione',
     'draw.bis.sok':      'fino a PRF',
@@ -15395,7 +15597,17 @@ const LANG = {
     'hind.verbinden.titel': 'Intradosso come linea attraverso i punti (ordinati secondo x); disattivato = punti singoli',
     'hind.punkt.hinzu': '+ Punto',
     'hind.punkt.weg': 'Elimina punto',
-    'hind.titel': 'Ostacoli sopra (p. es. ponte, soffitto)',
+    'hind.titel': 'Punti H: ostacolo sopra (p. es. intradosso ponte / opera)',
+    'probe.h.name': 'Punti H',
+    'probe.h.einheit': 'm s.l.m.',
+    'probe.sperren': 'Bloccare il punto di misura (né spostare né eliminare)',
+    'probe.entsperren': 'Sbloccare il punto di misura',
+    'probe.gesperrt': 'Punto di misura bloccato — sbloccarlo prima con il lucchetto.',
+    'probe.gesperrt.alle': 'Tutti i punti di misura sono bloccati.',
+    'hind.leer': 'Inserire un punto H: altezza dell’intradosso (m s.l.m.) a un punto di misura M1–M4.',
+    'hind.massgebend': 'determinante',
+    'hind.uebernommen': 'Ostacoli della lista precedente ripresi come punti H a M1–M4.',
+    'hind.uebernommen.gekuerzt': 'Ostacoli ripresi come punti H — al massimo 4 punti per campata (i più bassi); da verificare.',
     'hind.hinzu': '+ Ostacolo',
     'hind.mindest': 'Distanza minima a',
     'hind.name': 'Denominazione',
@@ -15408,7 +15620,7 @@ const LANG = {
     'hind.unvollstaendig': 'inserire punti con x e altezza',
     'hind.ausserhalb': 'i punti sono fuori dalla campata',
     'hind.anderes.feld': 'appartiene a un’altra campata della tratta',
-    'hind.legende': 'Viene verificato il conduttore più alto (filo portante risp. conduttore singolo) in tutti i casi di carico. «Collega i punti»: intradosso come linea attraverso i punti ordinati secondo x (ordine di inserimento irrilevante); disattivato: ogni punto singolarmente. Tratteggiato nel diagramma: caso di carico determinante.',
+    'hind.legende': 'Il conduttore più alto (filo portante risp. conduttore singolo) viene verificato ai punti H in tutti i casi di carico. «Collega i punti»: intradosso come linea attraverso i punti H (ordinati secondo x); disattivato: ogni punto H singolarmente. Lucchetto: proteggere il punto di misura da spostamento ed eliminazione. Tratteggiato nel diagramma: caso di carico determinante.',
     'lf.knopf': 'Casi di carico …',
     'hf.titel': 'Altezza del filo di contatto hf_min / hf_max',
     'ui.beta': 'BETA – non verificato',
@@ -16290,7 +16502,7 @@ renderObstacleList();
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
           <li>Rechnung wie SBB <em>Durchhang 2026.xlsm</em>, geprüft an 27 verifizierten SBB-Beispielen (Kap. 3)</li>
           <li>Berechnungsart <em>ausgleichend</em> / <em>starr</em> für N-FL und Einzelleiter (6.8); Fahrdraht neu / abgenutzt; Eislast</li>
-          <li>Messpunkte, 3-Punkte-Messung, SOK-Bezug (6.1–6.3); Abstandsprüfung zu Hindernissen oberhalb (Punkte x/Höhe, verbunden oder einzeln) über alle Lastfälle (6.12)</li>
+          <li>Messpunkte, 3-Punkte-Messung, SOK-Bezug (6.1–6.3); H-Punkte H1–H4 bei den Messpunkten: Abstand zu Hindernissen oberhalb über alle Lastfälle, Schloss je Messpunkt (6.1, 6.12)</li>
           <li>Abspannabschnitt mit Masttabelle, CSV-Import und Längsprofil (6.11)</li>
           <li>Fahrdrahthöhe hf_min / hf_max nach AB-EBV wie SBB-Excel, eigene Ansicht (6.14)</li>
           <li>Koordinaten LV95, Export IFC4 und 3D-DXF (6.10); PDF-Berechnungsprotokoll und massstäbliche Zeichnung</li>
@@ -16310,7 +16522,7 @@ renderObstacleList();
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
           <li>Calcul comme SBB <em>Durchhang 2026.xlsm</em>, vérifié sur 27 exemples CFF validés (chap. 3)</li>
           <li>Mode de calcul <em>compensé</em> / <em>rigide</em> pour LC N et conducteur simple (6.8) ; fil de contact neuf / usé ; charge de glace</li>
-          <li>Points de mesure, mesure 3 points, référence DRS (6.1–6.3) ; vérification des distances aux obstacles au-dessus pour tous les cas de charge (6.12)</li>
+          <li>Points de mesure, mesure 3 points, référence DRS (6.1–6.3) ; points H H1–H4 aux points de mesure : distance aux obstacles au-dessus pour tous les cas de charge, cadenas par point de mesure (6.1, 6.12)</li>
           <li>Canton de pose avec tableau des mâts, import CSV et profil en long (6.11)</li>
           <li>Hauteur du fil de contact hf_min / hf_max selon DE-OCF comme l’Excel CFF, vue séparée (6.14)</li>
           <li>Coordonnées MN95, export IFC4 et DXF 3D (6.10) ; protocole de calcul PDF et dessin à l’échelle</li>
@@ -16330,7 +16542,7 @@ renderObstacleList();
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
           <li>Calcolo come FFS <em>Durchhang 2026.xlsm</em>, verificato su 27 esempi FFS convalidati (cap. 3)</li>
           <li>Modalità di calcolo <em>compensato</em> / <em>rigido</em> per LC N e conduttore singolo (6.8); filo di contatto nuovo / usurato; carico di ghiaccio</li>
-          <li>Punti di misura, misura 3 punti, riferimento PRF (6.1–6.3); verifica delle distanze da ostacoli sopra per tutti i casi di carico (6.12)</li>
+          <li>Punti di misura, misura 3 punti, riferimento PRF (6.1–6.3); punti H H1–H4 ai punti di misura: distanza da ostacoli sopra per tutti i casi di carico, lucchetto per punto di misura (6.1, 6.12)</li>
           <li>Tratta di regolazione con tabella dei pali, importazione CSV e profilo longitudinale (6.11)</li>
           <li>Altezza del filo di contatto hf_min / hf_max secondo DE-OFerr come l’Excel FFS, vista separata (6.14)</li>
           <li>Coordinate MN95, esportazione IFC4 e DXF 3D (6.10); protocollo di calcolo PDF e disegno in scala</li>
@@ -16695,6 +16907,7 @@ renderObstacleList();
           <li>Ts-Durchhang an diesem Punkt</li>
         </ul>
         <p style="font-size:.82rem;color:var(--muted)">Im Diagramm erscheinen die Messpunkte als farbige Markierungen mit einem Callout-Label. Wenn SOK m ü. M. gesetzt ist, zeigt das Callout die absolute Höhe in m ü. M. als Hauptwert.</p>
+        <p style="font-size:.82rem;color:var(--muted)"><strong>Schloss</strong> neben jedem Messpunkt: gesperrt lässt sich der Punkt weder im Diagramm verschieben noch löschen, x und H-Punkt sind schreibgeschützt, und «Reset» lässt ihn stehen. Im Abschnitt gehören Messpunkte, H-Punkte und Schlösser zum jeweiligen Feld.</p>
 
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.2 &nbsp;3-Punkte-Messung</p>
         <p>Die 3-Punkte-Messung erlaubt die Rückrechnung der Ts-Zugkraft H<sub>Ts</sub> aus einer Feldmessung. Eingaben:</p>
@@ -16763,6 +16976,7 @@ renderObstacleList();
           <li><strong>Courbe comparative T<sub>3</sub></strong> — via «Afficher courbe comparative T<sub>3</sub>» (sous le diagramme) une troisième courbe de température est affichée. Température librement sélectionnable (défaut 80 °C).</li>
           <li><strong>Distance minimale</strong> — la zone hachurée peut être affichée ou masquée avec le commutateur On/Off à côté du champ Distance minimale.</li>
         </ul>
+              <p style="font-size:.82rem;color:var(--muted)"><strong>Cadenas</strong> à côté de chaque point de mesure : verrouillé, le point ne peut ni être déplacé dans le diagramme ni supprimé, x et le point H sont protégés en écriture, et «Reset» le conserve. Dans le canton, points de mesure, points H et cadenas appartiennent à chaque portée.</p>
       </div><!-- /hb-fr -->
 
       <!-- IT -->
@@ -16803,6 +17017,7 @@ renderObstacleList();
           <li><strong>Curva comparativa T<sub>3</sub></strong> — tramite «Mostra curva comparativa T<sub>3</sub>» (sotto il diagramma) viene visualizzata una terza curva di temperatura. Temperatura liberamente selezionabile (predefinita 80 °C).</li>
           <li><strong>Distanza minima</strong> — la zona tratteggiata può essere mostrata o nascosta con il commutatore On/Off accanto al campo Distanza minima.</li>
         </ul>
+              <p style="font-size:.82rem;color:var(--muted)"><strong>Lucchetto</strong> accanto a ogni punto di misura: bloccato, il punto non può essere né spostato nel diagramma né eliminato, x e il punto H sono protetti da scrittura e «Reset» lo mantiene. Nella tratta, punti di misura, punti H e lucchetti appartengono a ciascuna campata.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 6.5 Einzelleiter — Reglagewerte ══ -->
@@ -17127,7 +17342,7 @@ renderObstacleList();
           <li><strong>IFC / 3D-DXF Abschnitt</strong> exportiert alle Felder in einer Datei (mit Koordinaten georeferenziert).</li>
         </ul>
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Abstandsprüfung zu Hindernissen oberhalb</p>
-        <p>Unter dem Diagramm lassen sich <strong>Hindernisse oberhalb</strong> (z. B. Brücke, Decke) mit beliebig vielen Punkten <em>x / Höhe</em> erfassen (Höhe immer in m ü. M.). Die Prüfung braucht die SOK m ü. M. unter <em>Mastangaben</em> — direkt oder aus den Koordinaten; fehlt sie, erscheint ein Hinweis und es wird nicht geprüft. Die Reihenfolge der Punkte spielt keine Rolle. Mit dem Schalter <strong>Punkte verbinden</strong> bilden sie die Unterkante — eine Linie durch die nach x sortierten Punkte, auch schräg, geknickt oder gewölbt; ausgeschaltet wird jeder Punkt einzeln geprüft (wie die früheren H-Punkte H1–H4, die in älteren Projekten automatisch übernommen werden). Die App prüft den obersten Leiter (Tragseil bzw. Einzelleiter) in allen <strong>Lastfällen</strong> und zeigt den ungünstigsten: kleinster Abstand, Lastfall und Stelle; mit Mindestabstand a grün ✓ oder rot ✗. Diagramm, Zeichnung/PDF, Längsprofil und DXF zeigen die Hindernisse; der massgebende Lastfall ist im Diagramm gestrichelt.</p>
+        <p>Unter den Messpunkten M1–M4 steht die Zeile <strong>H1–H4</strong>: je Messpunkt die Höhe eines Hindernisses oberhalb (z. B. Unterkante Brücke / Bauwerk) in <em>m ü. M.</em>. Die Prüfung braucht die SOK m ü. M. unter <em>Mastangaben</em> — direkt oder aus den Koordinaten; fehlt sie, erscheint ein Hinweis und es wird nicht geprüft. Mit dem Schalter <strong>Punkte verbinden</strong> bilden die H-Punkte eine Unterkante (Linie durch die nach x sortierten Punkte, auch schräg oder geknickt); ausgeschaltet wird jeder H-Punkt einzeln geprüft. Die App prüft den obersten Leiter (Tragseil bzw. Einzelleiter) in allen <strong>Lastfällen</strong> und zeigt den massgebenden Abstand mit Lastfall und Stelle sowie den kleinsten Abstand je H-Punkt; mit Mindestabstand a grün ✓ oder rot ✗. Diagramm, Zeichnung/PDF, Längsprofil und DXF zeigen die H-Punkte; der massgebende Lastfall ist im Diagramm gestrichelt. Projekte mit der früheren Hindernisliste werden beim Laden übernommen (höchstens 4 Punkte je Feld, die tiefsten).</p>
         <p style="font-size:.8rem;color:var(--muted)">Lastfälle je Leitersystem unter «Lastfälle …»: Temperaturen (Vorgabe −20 °C und +80 °C), Eislast bei −5 °C nach Höhenlage der Strecke (unter 1000 m ü. M. 7 N/m, ab 1000 m ü. M. 15 N/m; Vorgabe 15 N/m, Wert überschreibbar) und Fahrdraht neu/abgenutzt. Bei R-FL wirkt die Temperatur nicht (Nachspannung).</p>
       </div><!-- /hb-de -->
       <div class="hb-lang hb-fr" style="display:none">
@@ -17141,7 +17356,7 @@ renderObstacleList();
           <li><strong>IFC / DXF 3D canton</strong> exporte toutes les portées dans un fichier (géoréférencé avec coordonnées).</li>
         </ul>
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Vérification des distances aux obstacles au-dessus</p>
-        <p>Sous le diagramme, des <strong>obstacles au-dessus</strong> (p. ex. pont, plafond) peuvent être saisis avec autant de points <em>x / hauteur</em> que nécessaire (hauteur toujours en m s.n.m.). La vérification nécessite le DRS m s.n.m. sous <em>Données des mâts</em> — directement ou via les coordonnées ; s’il manque, une remarque apparaît et aucune vérification n’a lieu. L’ordre des points n’a pas d’importance. Avec l’interrupteur <strong>Relier les points</strong>, ils forment la sous-face — une ligne passant par les points triés selon x, aussi inclinée, brisée ou cintrée ; désactivé, chaque point est vérifié séparément (comme les anciens points H H1–H4, repris automatiquement dans les anciens projets). L’application vérifie le conducteur le plus haut (câble porteur resp. conducteur simple) dans tous les <strong>cas de charge</strong> et affiche le plus défavorable : distance minimale, cas de charge et position ; avec distance minimale a en vert ✓ ou rouge ✗. Diagramme, dessin/PDF, profil en long et DXF montrent les obstacles ; le cas déterminant est en pointillé dans le diagramme.</p>
+        <p>Sous les points de mesure M1–M4 se trouve la ligne <strong>H1–H4</strong> : pour chaque point de mesure, la hauteur d’un obstacle au-dessus (p. ex. sous-face pont / ouvrage) en <em>m s.n.m.</em>. La vérification nécessite le DRS m s.n.m. sous <em>Données des mâts</em> — directement ou via les coordonnées ; s’il manque, une remarque apparaît et aucune vérification n’a lieu. Avec l’interrupteur <strong>Relier les points</strong>, les points H forment une sous-face (ligne passant par les points triés selon x, aussi inclinée ou brisée) ; désactivé, chaque point H est vérifié séparément. L’application vérifie le conducteur le plus haut (câble porteur resp. conducteur simple) dans tous les <strong>cas de charge</strong> et affiche la distance déterminante avec cas de charge et position ainsi que la plus petite distance par point H ; avec distance minimale a en vert ✓ ou rouge ✗. Diagramme, dessin/PDF, profil en long et DXF montrent les points H ; le cas déterminant est en pointillé dans le diagramme. Les projets avec l’ancienne liste d’obstacles sont repris au chargement (au plus 4 points par portée, les plus bas).</p>
         <p style="font-size:.8rem;color:var(--muted)">Cas de charge par système sous «Cas de charge …» : températures (par défaut −20 °C et +80 °C), charge de glace à −5 °C selon l’altitude de la ligne (sous 1000 m s.n.m. 7 N/m, dès 1000 m s.n.m. 15 N/m ; par défaut 15 N/m, valeur modifiable) et fil de contact neuf/usé. En LC R, la température n’a pas d’effet (tension automatique).</p>
       </div><!-- /hb-fr -->
       <div class="hb-lang hb-it" style="display:none">
@@ -17155,7 +17370,7 @@ renderObstacleList();
           <li><strong>IFC / DXF 3D tratta</strong> esporta tutte le campate in un unico file (georeferenziato con coordinate).</li>
         </ul>
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Verifica delle distanze da ostacoli sopra</p>
-        <p>Sotto il diagramma si possono inserire <strong>ostacoli sopra</strong> (p. es. ponte, soffitto) con quanti punti <em>x / altezza</em> si vuole (altezza sempre in m s.l.m.). La verifica richiede il PRF m s.l.m. sotto <em>Dati dei pali</em> — direttamente o tramite le coordinate; se manca, appare un avviso e non viene eseguita alcuna verifica. L’ordine dei punti non ha importanza. Con l’interruttore <strong>Collega i punti</strong> formano l’intradosso — una linea attraverso i punti ordinati secondo x, anche inclinata, spezzata o ad arco; disattivato, ogni punto viene verificato singolarmente (come i precedenti punti H H1–H4, ripresi automaticamente nei progetti meno recenti). L’applicazione verifica il conduttore più alto (filo portante risp. conduttore singolo) in tutti i <strong>casi di carico</strong> e mostra il più sfavorevole: distanza minima, caso di carico e posizione; con distanza minima a in verde ✓ o rosso ✗. Diagramma, disegno/PDF, profilo longitudinale e DXF mostrano gli ostacoli; il caso determinante è tratteggiato nel diagramma.</p>
+        <p>Sotto i punti di misura M1–M4 si trova la riga <strong>H1–H4</strong>: per ogni punto di misura l’altezza di un ostacolo sopra (p. es. intradosso ponte / opera) in <em>m s.l.m.</em>. La verifica richiede il PRF m s.l.m. sotto <em>Dati dei pali</em> — direttamente o tramite le coordinate; se manca, appare un avviso e non viene eseguita alcuna verifica. Con l’interruttore <strong>Collega i punti</strong> i punti H formano un intradosso (linea attraverso i punti ordinati secondo x, anche inclinata o spezzata); disattivato, ogni punto H viene verificato singolarmente. L’applicazione verifica il conduttore più alto (filo portante risp. conduttore singolo) in tutti i <strong>casi di carico</strong> e mostra la distanza determinante con caso di carico e posizione nonché la distanza minima per punto H; con distanza minima a in verde ✓ o rosso ✗. Diagramma, disegno/PDF, profilo longitudinale e DXF mostrano i punti H; il caso determinante è tratteggiato nel diagramma. I progetti con la precedente lista degli ostacoli vengono ripresi al caricamento (al massimo 4 punti per campata, i più bassi).</p>
         <p style="font-size:.8rem;color:var(--muted)">Casi di carico per sistema in «Casi di carico …»: temperature (predefinite −20 °C e +80 °C), carico di ghiaccio a −5 °C secondo l’altitudine della linea (sotto 1000 m s.l.m. 7 N/m, da 1000 m s.l.m. 15 N/m; predefinito 15 N/m, valore modificabile) e filo di contatto nuovo/usurato. Per LC R la temperatura non ha effetto (tensionamento automatico).</p>
       </div><!-- /hb-it -->
 
@@ -17164,11 +17379,13 @@ renderObstacleList();
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.13 &nbsp;Bedienung: Ansichten, Darstellung, Tablet</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
           <li><strong>Reiter</strong> über dem Diagramm: <em>Diagramm</em> (Berechnung), <em>Zeichnung</em> (massstäblich, PDF), <em>Abschnitt</em> (6.11) und <em>Foto</em>.</li>
+          <li><strong>Zeichnung</strong>: Darstellung <em>bis SOK</em> oder nur <em>Kettenwerk</em> (Masten enden dann mit Bruchzeichen, SOK liegt darunter). Schalter <strong>hf<sub>min</sub> / hf<sub>max</sub></strong> (nur Kettenwerk): blendet die Werte aus der hf-Ansicht als Band über SOK ein und prüft den Fahrdraht bei T<sub>2</sub> — tiefste und höchste Stelle, ausserhalb rot markiert; auch im PDF und im DXF (Layer HF_MIN / HF_MAX).</li>
           <li><strong>Foto</strong> ist bewusst zurückhaltend dargestellt: Die Foto-Auswertung ist <em>keine präzise Berechnung</em> und eignet sich nur zur Abschätzung des Durchhangs. Beim ersten Öffnen je App-Start erscheint ein Hinweis; im Foto-Ergebnis steht eine Warnzeile.</li>
           <li><strong>Hell / Dunkel</strong>: Symbol im Kopf wechselt zwischen automatisch (wie das Gerät), hell und dunkel. PDF und Zeichnung werden immer hell ausgegeben.</li>
           <li><strong>Ergebnisleiste</strong> (Tablet hochkant): Sobald Diagramm und Ergebniskarte aus dem Bild scrollen, zeigt eine Leiste unten Durchhang, Zugkraft und Höhe bei T<sub>2</sub> (und den T<sub>3</sub>-Vergleich). Antippen springt zum Diagramm; bei ungültiger Eingabe steht «Eingabe prüfen».</li>
           <li><strong>Sprache</strong> DE / FR / IT oben rechts; Fachbegriffe wie im SBB-Excel (Glossar, Kap. 9).</li>
           <li><strong>Offline</strong>: Die App funktioniert nach dem ersten Laden ohne Internet und lässt sich installieren. Nach einer Aktualisierung erscheint «Eine neue Version ist verfügbar» — «Jetzt laden» wählen oder die Seite neu laden.</li>
+          <li><strong>Schalter</strong> statt Kästchen: Ein-/Aus-Optionen sind überall als Schalter dargestellt.</li>
           <li><strong>Wasserzeichen «BETA – nicht verifiziert»</strong>: Die App ist in der Beta-Phase, die Ergebnisse sind nicht verifiziert. Das Wasserzeichen liegt blass über dem Bildschirm und steht auch auf PDF-Protokollen und Zeichnung.</li>
           <li><strong>Escape</strong> schliesst offene Fenster; Pflichtfelder mit ungültigem Wert werden markiert, die Ergebnisse dann als veraltet angezeigt.</li>
         </ul>
@@ -17177,11 +17394,13 @@ renderObstacleList();
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.13 &nbsp;Utilisation : vues, affichage, tablette</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
           <li><strong>Onglets</strong> au-dessus du diagramme : <em>Diagramme</em> (calcul), <em>Dessin</em> (à l’échelle, PDF), <em>Canton</em> (6.11) et <em>Photo</em>.</li>
+          <li><strong>Dessin</strong> : représentation <em>jusqu’au DRS</em> ou seulement <em>Caténaire</em> (les mâts se terminent alors par un symbole de coupure, le DRS est en dessous). Interrupteur <strong>hf<sub>min</sub> / hf<sub>max</sub></strong> (caténaire seulement) : affiche les valeurs de la vue hf comme bande au-dessus du DRS et vérifie le fil de contact à T<sub>2</sub> — point le plus bas et le plus haut, hors plage en rouge ; aussi dans le PDF et le DXF (calques HF_MIN / HF_MAX).</li>
           <li><strong>Photo</strong> est volontairement discret : l’analyse photo n’est <em>pas un calcul précis</em> et ne convient qu’à estimer la flèche. Une remarque apparaît à la première ouverture après chaque démarrage ; le résultat photo porte une ligne d’avertissement.</li>
           <li><strong>Clair / sombre</strong> : le symbole dans l’en-tête alterne entre automatique (comme l’appareil), clair et sombre. PDF et dessin sont toujours clairs.</li>
           <li><strong>Barre de résultats</strong> (tablette en portrait) : dès que diagramme et carte de résultats sortent de l’écran, une barre en bas affiche flèche, force de traction et hauteur à T<sub>2</sub> (et la comparaison T<sub>3</sub>). Un appui ramène au diagramme ; en cas de saisie invalide : «Vérifier la saisie».</li>
           <li><strong>Langue</strong> DE / FR / IT en haut à droite ; termes techniques comme dans l’Excel CFF (glossaire, chap. 9).</li>
           <li><strong>Hors ligne</strong> : après le premier chargement, l’application fonctionne sans Internet et peut être installée. Après une mise à jour apparaît «Une nouvelle version est disponible» — choisir «Charger maintenant» ou recharger la page.</li>
+          <li><strong>Interrupteurs</strong> au lieu de cases à cocher : les options oui/non sont partout représentées par des interrupteurs.</li>
           <li><strong>Filigrane «BÊTA – non vérifié»</strong> : l’application est en phase bêta, les résultats ne sont pas vérifiés. Le filigrane apparaît en transparence sur l’écran ainsi que sur les protocoles PDF et le dessin.</li>
           <li><strong>Échap</strong> ferme les fenêtres ouvertes ; les champs invalides sont marqués et les résultats affichés comme obsolètes.</li>
         </ul>
@@ -17190,11 +17409,13 @@ renderObstacleList();
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.13 &nbsp;Utilizzo: viste, visualizzazione, tablet</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
           <li><strong>Schede</strong> sopra il diagramma: <em>Diagramma</em> (calcolo), <em>Disegno</em> (in scala, PDF), <em>Tratta</em> (6.11) e <em>Foto</em>.</li>
+          <li><strong>Disegno</strong>: rappresentazione <em>fino al PRF</em> o solo <em>Catenaria</em> (i pali terminano allora con un simbolo di interruzione, il PRF è sotto). Interruttore <strong>hf<sub>min</sub> / hf<sub>max</sub></strong> (solo catenaria): mostra i valori della vista hf come banda sopra il PRF e verifica il filo di contatto a T<sub>2</sub> — punto più basso e più alto, fuori campo in rosso; anche nel PDF e nel DXF (layer HF_MIN / HF_MAX).</li>
           <li><strong>Foto</strong> è volutamente discreta: l’analisi foto <em>non è un calcolo preciso</em> ed è adatta solo per stimare la freccia. Alla prima apertura dopo ogni avvio appare un avviso; il risultato foto riporta una riga di avvertimento.</li>
           <li><strong>Chiaro / scuro</strong>: il simbolo nell’intestazione alterna tra automatico (come il dispositivo), chiaro e scuro. PDF e disegno sono sempre chiari.</li>
           <li><strong>Barra dei risultati</strong> (tablet verticale): quando diagramma e scheda dei risultati escono dallo schermo, una barra in basso mostra freccia, forza di trazione e altezza a T<sub>2</sub> (e il confronto T<sub>3</sub>). Un tocco riporta al diagramma; con dati non validi: «Controllare i dati inseriti».</li>
           <li><strong>Lingua</strong> DE / FR / IT in alto a destra; termini tecnici come nell’Excel FFS (glossario, cap. 9).</li>
           <li><strong>Offline</strong>: dopo il primo caricamento l’applicazione funziona senza Internet e può essere installata. Dopo un aggiornamento appare «È disponibile una nuova versione» — scegliere «Carica ora» o ricaricare la pagina.</li>
+          <li><strong>Interruttori</strong> al posto delle caselle: le opzioni sì/no sono ovunque rappresentate da interruttori.</li>
           <li><strong>Filigrana «BETA – non verificato»</strong>: l’applicazione è in fase beta, i risultati non sono verificati. La filigrana appare in trasparenza sullo schermo e anche sui protocolli PDF e sul disegno.</li>
           <li><strong>Esc</strong> chiude le finestre aperte; i campi non validi vengono evidenziati e i risultati mostrati come non aggiornati.</li>
         </ul>
@@ -17212,7 +17433,7 @@ renderObstacleList();
           <li><strong>R-FL</strong>: Eislast-Durchhang mit fest 12 kN + 10 kN, Fallprüfung P1.1–P1.3 und überdeckte Spannweite c<sub>übr</sub>; Vordurchhang 50 mm (c ≥ 42 m) bzw. 30 mm nur bis 140 km/h.</li>
           <li>Wie Excel: Spannweite c nur 60 … 26, 24, 20, 16, 12, 8 m; Temperaturen −20 … +80 °C in 5-K-Schritten; Zusatzlast 0 / 7 / 15 N/m nur bei −5 °C.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)"><em>Aus Durchhang übernehmen</em> holt FL-Typ, Kombination, Spannweite (auf den nächsten Tabellenwert aufgerundet), L<sub>m</sub> und Zugkräfte aus der aktuellen Berechnung. Die Tabelle zeigt jeden Zuschlag mit Quelle. Zwei Grafiken: die <em>Höhenleiter ab SOK</em> (links die Anteile bis hf<sub>min</sub>, rechts die Zuschläge ab 6.05 bzw. 6.20 m bis hf<sub>max</sub>, dazwischen der zulässige Bereich) und <em>hf<sub>min</sub> / hf<sub>max</sub> über die Spannweite</em> (alle Tabellenwerte von c, gewählte Spannweite markiert). <em>PDF-Protokoll</em> druckt Berechnung und Grafiken. Kontrolle: der in der Excel gespeicherte Fall (N-FL 50+107, c = 30 m, −5 °C mit 7 N/m) ergibt hf<sub>min</sub> = 4928 mm und hf<sub>max</sub> = 6104 mm wie in der Excel.</p>
+        <p style="font-size:.8rem;color:var(--muted)"><em>Aus Durchhang übernehmen</em> holt FL-Typ, Kombination, Spannweite (auf den nächsten Tabellenwert aufgerundet), L<sub>m</sub> und Zugkräfte aus der aktuellen Berechnung. Die Tabelle zeigt jeden Zuschlag mit Quelle. Zwei Grafiken: die <em>Höhenleiter ab SOK</em> (links die Anteile bis hf<sub>min</sub>, rechts die Zuschläge ab 6.05 bzw. 6.20 m bis hf<sub>max</sub>, dazwischen der zulässige Bereich) und <em>hf<sub>min</sub> / hf<sub>max</sub> über die Spannweite</em> (alle Tabellenwerte von c, gewählte Spannweite markiert). <em>PDF-Protokoll</em> druckt Berechnung und Grafiken. In der Zeichnung lassen sich hf<sub>min</sub> / hf<sub>max</sub> als Band einblenden (6.13). Kontrolle: der in der Excel gespeicherte Fall (N-FL 50+107, c = 30 m, −5 °C mit 7 N/m) ergibt hf<sub>min</sub> = 4928 mm und hf<sub>max</sub> = 6104 mm wie in der Excel.</p>
       </div><!-- /hb-de -->
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.14 &nbsp;Hauteur du fil de contact hf_min / hf_max</p>
@@ -17225,7 +17446,7 @@ renderObstacleList();
           <li><strong>LC R</strong> : flèche sous glace avec 12 kN + 10 kN fixes, essai de cas P1.1–P1.3 et portée couverte c<sub>übr</sub> ; pré-flèche 50 mm (c ≥ 42 m) resp. 30 mm seulement jusqu’à 140 km/h.</li>
           <li>Comme Excel : portée c seulement 60 … 26, 24, 20, 16, 12, 8 m ; températures −20 … +80 °C par pas de 5 K ; charge add. 0 / 7 / 15 N/m seulement à −5 °C.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)"><em>Reprendre du calcul de flèche</em> reprend type de LC, combinaison, portée (arrondie à la valeur de tableau supérieure), L<sub>m</sub> et tractions. Le tableau montre chaque supplément avec sa source. Deux graphiques : l’<em>échelle des hauteurs depuis le DRS</em> (à gauche les parts jusqu’à hf<sub>min</sub>, à droite les suppléments depuis 6.05 resp. 6.20 m jusqu’à hf<sub>max</sub>, entre les deux la plage admissible) et <em>hf<sub>min</sub> / hf<sub>max</sub> selon la portée</em> (toutes les valeurs de c du tableau, portée choisie marquée). <em>Protocole PDF</em> imprime calcul et graphiques. Contrôle : le cas enregistré dans l’Excel (LC N 50+107, c = 30 m, −5 °C avec 7 N/m) donne hf<sub>min</sub> = 4928 mm et hf<sub>max</sub> = 6104 mm comme l’Excel.</p>
+        <p style="font-size:.8rem;color:var(--muted)"><em>Reprendre du calcul de flèche</em> reprend type de LC, combinaison, portée (arrondie à la valeur de tableau supérieure), L<sub>m</sub> et tractions. Le tableau montre chaque supplément avec sa source. Deux graphiques : l’<em>échelle des hauteurs depuis le DRS</em> (à gauche les parts jusqu’à hf<sub>min</sub>, à droite les suppléments depuis 6.05 resp. 6.20 m jusqu’à hf<sub>max</sub>, entre les deux la plage admissible) et <em>hf<sub>min</sub> / hf<sub>max</sub> selon la portée</em> (toutes les valeurs de c du tableau, portée choisie marquée). <em>Protocole PDF</em> imprime calcul et graphiques. Dans le dessin, hf<sub>min</sub> / hf<sub>max</sub> peuvent être affichés comme bande (6.13). Contrôle : le cas enregistré dans l’Excel (LC N 50+107, c = 30 m, −5 °C avec 7 N/m) donne hf<sub>min</sub> = 4928 mm et hf<sub>max</sub> = 6104 mm comme l’Excel.</p>
       </div><!-- /hb-fr -->
       <div class="hb-lang hb-it" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.14 &nbsp;Altezza del filo di contatto hf_min / hf_max</p>
@@ -17238,7 +17459,7 @@ renderObstacleList();
           <li><strong>LC R</strong>: freccia con ghiaccio con 12 kN + 10 kN fissi, verifica dei casi P1.1–P1.3 e campata coperta c<sub>übr</sub>; pre-freccia 50 mm (c ≥ 42 m) risp. 30 mm solo fino a 140 km/h.</li>
           <li>Come Excel: campata c solo 60 … 26, 24, 20, 16, 12, 8 m; temperature −20 … +80 °C a passi di 5 K; carico add. 0 / 7 / 15 N/m solo a −5 °C.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)"><em>Riprendi dal calcolo della freccia</em> riprende tipo di LC, combinazione, campata (arrotondata al valore di tabella superiore), L<sub>m</sub> e tiri. La tabella mostra ogni supplemento con la fonte. Due grafici: la <em>scala delle altezze dal PRF</em> (a sinistra le quote fino a hf<sub>min</sub>, a destra i supplementi da 6.05 risp. 6.20 m fino a hf<sub>max</sub>, in mezzo il campo ammissibile) e <em>hf<sub>min</sub> / hf<sub>max</sub> in funzione della campata</em> (tutti i valori di c della tabella, campata scelta evidenziata). <em>Protocollo PDF</em> stampa calcolo e grafici. Controllo: il caso salvato nell’Excel (LC N 50+107, c = 30 m, −5 °C con 7 N/m) dà hf<sub>min</sub> = 4928 mm e hf<sub>max</sub> = 6104 mm come l’Excel.</p>
+        <p style="font-size:.8rem;color:var(--muted)"><em>Riprendi dal calcolo della freccia</em> riprende tipo di LC, combinazione, campata (arrotondata al valore di tabella superiore), L<sub>m</sub> e tiri. La tabella mostra ogni supplemento con la fonte. Due grafici: la <em>scala delle altezze dal PRF</em> (a sinistra le quote fino a hf<sub>min</sub>, a destra i supplementi da 6.05 risp. 6.20 m fino a hf<sub>max</sub>, in mezzo il campo ammissibile) e <em>hf<sub>min</sub> / hf<sub>max</sub> in funzione della campata</em> (tutti i valori di c della tabella, campata scelta evidenziata). <em>Protocollo PDF</em> stampa calcolo e grafici. Nel disegno hf<sub>min</sub> / hf<sub>max</sub> possono essere mostrati come banda (6.13). Controllo: il caso salvato nell’Excel (LC N 50+107, c = 30 m, −5 °C con 7 N/m) dà hf<sub>min</sub> = 4928 mm e hf<sub>max</sub> = 6104 mm come l’Excel.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 7 Beispielberechnung ══ -->
