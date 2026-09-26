@@ -1584,6 +1584,29 @@ button.header-manual-link:hover {
 .proj-btn.bulk.danger:hover { background:color-mix(in srgb, var(--fail) 25%, transparent); border-color:var(--fail); }
 .proj-move-sel { border:1px solid var(--border); border-radius:5px; font-size:.68rem; padding:.15rem .3rem; background:var(--card); color:var(--muted); cursor:pointer; font-family:inherit; max-width:80px; }
 
+/* ── Mitlaufende Ergebnisleiste (≤ 860 px: Eingaben über dem Diagramm) ── */
+#ergebnisleiste { display: none; }
+@media (max-width: 860px) {
+  #ergebnisleiste {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    display: flex; align-items: center; gap: .6rem;
+    padding: .55rem 1rem calc(.55rem + env(safe-area-inset-bottom, 0px));
+    background: color-mix(in srgb, var(--card) 94%, transparent);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    border: none; border-top: 1px solid var(--border2);
+    box-shadow: var(--shadow-pop); color: var(--text); font: inherit; text-align: left; cursor: pointer;
+    transform: translateY(110%); transition: transform .2s cubic-bezier(.22,1,.3,1);
+  }
+  #ergebnisleiste.an { transform: translateY(0); }
+  body.leiste-an { padding-bottom: 64px; }
+}
+#ergebnisleiste .el-inhalt { flex: 1; display: flex; flex-wrap: wrap; align-items: baseline; gap: .15rem 1.1rem; font-size: .85rem; color: var(--muted); }
+#ergebnisleiste .el-inhalt b { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); font-size: .95rem; }
+#ergebnisleiste .el-kopf { font-weight: 600; color: var(--text2); }
+#ergebnisleiste .el-warn { color: var(--fail); font-weight: 600; }
+#ergebnisleiste .el-pfeil { flex-shrink: 0; color: var(--primary); }
+@media (prefers-reduced-motion: reduce) { #ergebnisleiste { transition: none; } }
+
 /* ── Tastatur-Fokus sichtbar (nur bei Tastaturbedienung, nicht bei Maus/Touch) ── */
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .input-wrap input:focus-visible, .input-wrap select:focus-visible,
@@ -2785,6 +2808,11 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 
 <!-- Meldungen (ersetzt alert) -->
 <div id="meldungen" aria-live="polite"></div>
+<!-- Mitlaufende Ergebnisleiste (nur schmale Bildschirme, siehe updateErgebnisleiste) -->
+<button id="ergebnisleiste" type="button" onclick="zumDiagramm()" data-i18n-title="ui.leiste.titel" title="Zum Diagramm">
+  <span class="el-inhalt" aria-live="polite"></span>
+  <svg class="el-pfeil" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10l4-4 4 4"/></svg>
+</button>
 
 <!-- Rückfrage (ersetzt confirm / prompt) -->
 <div class="modal-overlay" id="rueckfrage" role="dialog" aria-modal="true">
@@ -8218,6 +8246,7 @@ function _ergebnisVeraltet(ja, feldId = null) {
   let el = feldId ? document.getElementById(feldId) : null;
   if (feldId === 'span' && spanMode === 'ruling') el = document.getElementById('lm-display');
   if (ja && el) { el.classList.add('feld-fehler'); el.setAttribute('aria-invalid', 'true'); }
+  if (ja && typeof updateErgebnisleiste === 'function') updateErgebnisleiste();
 }
 
 function berechnen() {
@@ -9229,7 +9258,7 @@ function canvasPt(e) {
 }
 
 // ── Highlight-Karte: Schlüsselwerte für einen Messpunkt ──
-function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b7280', t2Clr = '#6b7280') {
+function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = 'var(--muted)', t2Clr = 'var(--muted)') {
   if (!calcState) return '';
   const { c1, c2, h1, h2, L, sh, flCombo, LT1_vem, q_vem_vem, c2_vem } = calcState;
   const catY    = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
@@ -9274,18 +9303,22 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b72
     ? `${t(tsHoeheKey)} &nbsp;<span style="opacity:.6">(${f3(y2)} m ${t('dyn.ueber.sok')})</span>`
     : `${t(tsHoeheKey)} ${t('dyn.ueber.sok')}`;
 
+  // Für die Ergebnisleiste: Werte des ersten Messpunkts übernehmen
+  if (badge === 'M1') _leiste = { art: 'M1', x: xv, f: dhValue, hoehe: hasSok ? y2_mum : y2,
+                                   mum: hasSok, f3: null, farbe: t2Clr, farbe3: t3Clr };
   // T3-Vergleichswerte — gleiche Struktur wie T2 (Δh groß, Ts-Höhe klein)
   let t3Row = '';
   if (c3Curve) {
     const y3      = catY(xv, c3Curve);
     const y3_disp = hasSok ? f3(y3 + sokAtX) : f3(y3);
     const sag3    = h1 - y3;
+    if (badge === 'M1' && _leiste) _leiste.f3 = sag3;
     const t3hKey  = isEl ? 'res.seil.hoehe' : 'res.ts.hoehe';
     const y3SubLbl = hasSok
       ? `${t(t3hKey)} &nbsp;<span style="opacity:.6">(${f3(y3)} m ${t('dyn.ueber.sok')})</span>`
       : `${t(t3hKey)} ${t('dyn.ueber.sok')}`;
     t3Row = `
-      <div style="margin-top:.5rem;padding-top:.4rem;border-top:1px dashed rgba(0,0,0,.12)">
+      <div style="margin-top:.5rem;padding-top:.4rem;border-top:1px dashed var(--border2)">
         <div style="font-size:.72rem;font-weight:600;color:${t3Clr};letter-spacing:.02em">${badge}' &nbsp;T<sub style="font-size:.8em">3</sub></div>
         <div style="font-size:${compact?'1.05rem':'1.35rem'};font-weight:700;color:${t3Clr}">${f3(sag3)}<span style="font-size:.72rem;margin-left:.2rem">m</span></div>
         <div style="font-size:.72rem;color:var(--muted);margin-top:.1rem">Δh T<sub style="font-size:.8em">3</sub></div>
@@ -9305,15 +9338,65 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = '#6b72
     </div>`;
 }
 
+// ── Mitlaufende Ergebnisleiste (schmale Bildschirme, v. a. Tablet hochkant) ──
+// Zeigt die Kernwerte, solange weder Diagramm noch Ergebniskarte sichtbar sind.
+// Die Werte stammen aus updateHighlightCard()/mpBlock() — dieselben Zahlen wie
+// in der Karte, keine zweite Rechnung.
+let _leiste = null;
+function updateErgebnisleiste() {
+  const bar = document.getElementById('ergebnisleiste');
+  if (!bar) return;
+  const inhalt = bar.querySelector('.el-inhalt');
+  if (document.body.classList.contains('ergebnis-veraltet') || !calcState || !_leiste) {
+    inhalt.innerHTML = `<span class="el-warn">⚠ ${t('ui.leiste.pruefen')}</span>`;
+    return;
+  }
+  const L = _leiste, T2 = calcState.T2, fmtT = v => `${v > 0 ? '+' : ''}${v} °C`;
+  const einheit = L.mum ? t('dyn.ueber.mum') : `m ${t('dyn.ueber.sok')}`;
+  const kopf = L.art === 'M1'
+    ? `M1 · x ${L.x.toFixed(2)} m`
+    : `${sysMode === 'rfl' ? 'T' : 'T<sub>2</sub>'} ${fmtT(T2)}`;
+  const fLbl = L.art === 'M1' ? 'Δh' : 'f';
+  const teile = [
+    `<span class="el-kopf">${kopf}</span>`,
+    `<span>${fLbl} <b style="color:${L.farbe}">${f3(L.f)}</b> m</span>`,
+    `<span>H <b>${fN(calcState.c2.H, 0)}</b> N</span>`,
+    `<span><b>${f3(L.hoehe)}</b> ${einheit}</span>`,
+  ];
+  if (L.f3 !== null && L.f3 !== undefined && showT3) {
+    const T3 = parseFloat(document.getElementById('temp3')?.value);
+    teile.push(`<span class="el-t3">T<sub>3</sub> ${isNaN(T3) ? '' : fmtT(T3)}: ${fLbl} <b style="color:${L.farbe3}">${f3(L.f3)}</b> m</span>`);
+  }
+  inhalt.innerHTML = teile.join('');
+}
+function zumDiagramm() {
+  document.querySelector('.canvas-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+// Sichtbarkeit: nur wenn Diagramm UND Ergebniskarte aus dem Bild sind
+(function () {
+  const bar = document.getElementById('ergebnisleiste');
+  const ziele = [document.querySelector('.canvas-card'), document.getElementById('highlight-card')].filter(Boolean);
+  if (!bar || !ziele.length || !('IntersectionObserver' in window)) return;
+  const sichtbar = new Map();
+  const obs = new IntersectionObserver(eintraege => {
+    eintraege.forEach(e => sichtbar.set(e.target, e.isIntersecting));
+    const zeigen = ![...sichtbar.values()].some(Boolean);
+    bar.classList.toggle('an', zeigen);
+    document.body.classList.toggle('leiste-an', zeigen);
+  }, { threshold: 0.08 });
+  ziele.forEach(z => obs.observe(z));
+})();
+
 function updateHighlightCard() {
   const el = document.getElementById('highlight-card');
-  if (!calcState) { if (el) el.innerHTML = ''; return; }
+  _leiste = null;
+  if (!calcState) { if (el) el.innerHTML = ''; updateErgebnisleiste(); return; }
   const { c1, c2, h1, h2, L, sh, flCombo, c2_vem, c3: _c3state } = calcState;
   const _c3curve = (showT3 && _c3state) ? _c3state : null;
   const _t3clr   = _c3curve ? t2TempColor((v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value))) : null;
   // Kurvenfarbe: R-FL = primary rot, sonst T2-Temperaturfarbe
   const _t2v = (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp2')?.value));
-  const curveClr = sysMode === 'rfl' ? '#eb0000' : t2TempColor(_t2v);
+  const curveClr = sysMode === 'rfl' ? 'var(--primary)' : t2TempColor(_t2v);
   const catY    = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
   const yFdSoll = x => (h1 - sh) + (h2 - h1) * x / L;
   const isNfl   = sysMode === 'nfl';
@@ -9350,6 +9433,8 @@ function updateHighlightCard() {
     const y2_raw  = cDisp.y_low;                  // Tiefpunkt des angezeigten Systems
     const y2_disp = dispH(x_ist, y2_raw);
     const sag     = cDisp.sag;                     // geometrischer Sehnen-Durchhang (identisch mit Diagramm-f)
+    _leiste = { art: 'tiefpunkt', x: x_ist, f: sag, hoehe: y2_disp, mum: hasSokH,
+                f3: _c3curve ? _c3curve.sag : null, farbe: curveClr, farbe3: _t3clr };
     const subInfo = hasSokH
       ? `<div class="istzustand-row" style="opacity:.6">${f3(y2_raw)} m ${t('dyn.ueber.sok')}</div>` : '';
     el.innerHTML = `
@@ -9362,9 +9447,9 @@ function updateHighlightCard() {
           <div class="istzustand-value" style="font-size:1.35rem;color:${curveClr}">${f3(y2_disp)}<span class="istzustand-unit">${hasSokH ? t('dyn.ueber.mum') : 'm'}</span></div>
         </div>
         <div style="display:flex;align-items:center;gap:.5rem;margin:.35rem 0;width:100%">
-          <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
+          <div style="flex:1;height:1px;background:var(--border)"></div>
           <span class="sok-hinweis" style="font-size:.65rem;color:var(--tertiary);font-style:italic;white-space:nowrap">${t('ui.sok.hinweis')}</span>
-          <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
+          <div style="flex:1;height:1px;background:var(--border)"></div>
         </div>
       </div>`;
   } else {
@@ -9389,12 +9474,13 @@ function updateHighlightCard() {
       <div class="istzustand-card${rflCls}" style="margin-bottom:.75rem;${cardStyle}">
         ${blocks}
         <div style="${compact ? 'grid-column:1/-1;' : ''}display:flex;align-items:center;gap:.5rem;margin:.35rem 0;width:100%">
-          <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
+          <div style="flex:1;height:1px;background:var(--border)"></div>
           <span class="sok-hinweis" style="font-size:.65rem;color:var(--tertiary);font-style:italic;white-space:nowrap">${t('ui.sok.hinweis')}</span>
-          <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
+          <div style="flex:1;height:1px;background:var(--border)"></div>
         </div>
       </div>`;
   }
+  updateErgebnisleiste();
 }
 
 function clearMesspunkte() {
@@ -12058,6 +12144,8 @@ const LANG = {
     'proj.import.btn':   'JSON importieren',
     'proj.local.note':   'Daten werden nur lokal im Browser gespeichert',
     // ── Oberfläche (v3.1) ──
+    'ui.leiste.titel': 'Zum Diagramm',
+    'ui.leiste.pruefen': 'Eingabe prüfen',
     'ui.thema.auto': 'Darstellung: automatisch wie Gerät (klicken für Hell)',
     'ui.thema.hell': 'Darstellung: hell (klicken für Dunkel)',
     'ui.thema.dunkel': 'Darstellung: dunkel (klicken für Automatisch)',
@@ -12624,6 +12712,8 @@ const LANG = {
     'proj.import.btn':   'Importer JSON',
     'proj.local.note':   'Données enregistrées uniquement en local',
     // ── Oberfläche (v3.1) ──
+    'ui.leiste.titel': 'Vers le diagramme',
+    'ui.leiste.pruefen': 'Vérifier la saisie',
     'ui.thema.auto': 'Affichage : automatique selon l’appareil (cliquer pour clair)',
     'ui.thema.hell': 'Affichage : clair (cliquer pour sombre)',
     'ui.thema.dunkel': 'Affichage : sombre (cliquer pour automatique)',
@@ -13190,6 +13280,8 @@ const LANG = {
     'proj.import.btn':   'Importa JSON',
     'proj.local.note':   'Dati salvati solo localmente',
     // ── Oberfläche (v3.1) ──
+    'ui.leiste.titel': 'Al diagramma',
+    'ui.leiste.pruefen': 'Controllare i dati inseriti',
     'ui.thema.auto': 'Visualizzazione: automatica come il dispositivo (clic per chiaro)',
     'ui.thema.hell': 'Visualizzazione: chiara (clic per scura)',
     'ui.thema.dunkel': 'Visualizzazione: scura (clic per automatica)',
@@ -15455,7 +15547,7 @@ renderObstacleList();
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
-  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span>v3.4</span>
+  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span>v3.5</span>
 </footer>
 
 </body>
