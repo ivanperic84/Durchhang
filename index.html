@@ -2615,6 +2615,7 @@ button.header-manual-link:hover {
   </div>
 </div>
 
+<script src="rechenkern.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════
 // GLOBALER ZUSTAND
@@ -5798,7 +5799,7 @@ function onT2Input(val) {
 // T2 optional übergeben, damit Aufrufer ihren bereits gelesenen Wert weiterreichen.
 function isEislastAktiv(T2) {
   const t2 = T2 ?? parseFloat(document.getElementById('temp2').value);
-  return (sysMode === 'nfl' || sysMode === 'rfl' || sysMode === 'el') && t2 === -5;
+  return (sysMode === 'nfl' || sysMode === 'rfl' || sysMode === 'el') && eislastWirksamBei(t2);
 }
 
 function updateEislastVisibility() {
@@ -7782,148 +7783,6 @@ function importMaterialsCSV(event) {
   reader.readAsText(file, 'UTF-8');
 }
 
-// ═══════════════════════════════════════════════════════════════
-// ZUSTANDSGLEICHUNG (SBB, parabolische Näherung)
-// Löst den Übergang unbelastet→belastet für N-FL (Stufe 1)
-// Zustandsgleichung mit q_Ts (Zustand 1) und q_ges (Zustand 2), selbe Temperatur
-// Nur EA_Ts relevant: beim Anhängen des Fd ist nur das Tragseil das elastische Glied
-// Kubisches Polynom: C·H_b³ + K·H_b² − G = 0
-//   G = (q_ges·Lm)²/24,  C = 1/EA_Ts,  K = (q_Ts·Lm)²/(24·H_ub²) − H_ub/EA_Ts
-function solveLoadingEq(H_ub, q_Ts, q_ges, Lm, EA_Ts) {
-  if (!EA_Ts || isNaN(EA_Ts) || isNaN(H_ub) || H_ub <= 0) return null;
-  const G = (q_ges * Lm) ** 2 / 24;
-  const C = 1 / EA_Ts;
-  const K = (q_Ts * Lm) ** 2 / (24 * H_ub * H_ub) - H_ub / EA_Ts;
-  let H = H_ub;
-  for (let i = 0; i < 200; i++) {
-    const f  = C * H ** 3 + K * H ** 2 - G;
-    const df = 3 * C * H ** 2 + 2 * K * H;
-    if (Math.abs(df) < 1e-20) break;
-    const dH = f / df;
-    H -= dH;
-    if (H < 1) H = 1;
-    if (Math.abs(dH) < 1e-9) break;
-  }
-  return H;
-}
-
-// Löst: q²·Lm²/(24·H2²) − H2/(EA) = q²·Lm²/(24·H1²) − H1/(EA) + α·ΔT
-// Umgeformt zu kubischem Polynom: C·H2³ + K·H2² − G = 0
-//   G = (q·Lm)²/24,  C = 1/EA,  K = G/H1² − C·H1 + α·ΔT
-// Gelöst mit Newton-Raphson (Startwert H2 = H1)
-// ═══════════════════════════════════════════════════════════════
-function solveStateEq(q, Lm, H1, EA, alpha, deltaT) {
-  const G = (q * Lm) ** 2 / 24;
-  const C = 1 / EA;
-  const K = G / (H1 * H1) - C * H1 + alpha * deltaT;
-  let H = H1;
-  // When K < 0 the cubic has a local minimum at H_crit = -2K/(3C).
-  // If H1 lies left of that minimum, Newton-Raphson diverges.
-  // Fix: start right of the minimum so the derivative is always positive.
-  if (K < 0) {
-    const H_crit = -2 * K / (3 * C);
-    if (H < H_crit) H = H_crit * 2;
-  }
-  for (let i = 0; i < 300; i++) {
-    const f  = C * H ** 3 + K * H ** 2 - G;
-    const df = 3 * C * H ** 2 + 2 * K * H;
-    if (Math.abs(df) < 1e-20) break;
-    const dH = f / df;
-    if (H - dH <= 0) { H = H / 2; continue; } // bisection fallback, never go negative
-    H -= dH;
-    if (Math.abs(dH) < 1e-9) break;
-  }
-  return H;
-}
-
-// ── NFL-Zustandsgleichung nach VBA Upro1 (Excel Durchhang 2026.xlsm) ───────────
-// Löst die VBA-konforme NFL-Zustandsgleichung (Upro1-Äquivalent) für die Temperaturänderung.
-// Gibt die TS-Zugkraft H_Ts bei der Zieltemperatur zurück.
-// Formel: ((MFL+ZL+MFL·HF/F0)/(HF+x))² - (MFL/F0)² - G·(α·ΔT + (x-F0)/(E·A)) = 0
-// Parameter: MFL [N/m], HF = H_Fd [N], F0 = H_Ts_ref [N], L = Lm [m],
-//            AL = α, E, AK, deltaT, ZL = Eislast [N/m] (Standard = 0)
-function solveNFLStateEq(MFL, HF, F0, L, AL, E, AK, deltaT, ZL = 0, MFL_init = null) {
-  // gk0 = Ausgangskrümmung im Einbauzustand (neuer Draht = MFL_init falls angegeben)
-  // VEM S.445: gk0 = gk_neu/Ht0; A = gkx + gk_neu·H_Fd/Ht0
-  const q0  = MFL_init !== null ? MFL_init : MFL;
-  const gk0 = q0 / F0;
-  const C   = 1 / (E * AK);
-  const G   = 24 / (L * L) + gk0 * gk0;
-  // A: Zielzustand-Last (MFL=gkx abgenutzt), aber Fahrdraht-Verhältnis mit q0 (neu)
-  const A   = (MFL + ZL) + q0 * HF / F0;
-  let x = F0;
-  for (let i = 0; i < 300; i++) {
-    const gkx = A / (HF + x);
-    const f   = gkx * gkx - gk0 * gk0 - G * (AL * deltaT + (x - F0) * C);
-    const df  = -2 * A * A / Math.pow(HF + x, 3) - G * C;
-    if (Math.abs(df) < 1e-30) break;
-    const dx = f / df;
-    x -= dx;
-    if (x < 1) x = 1;
-    if (Math.abs(dx) < 1e-6) break;
-  }
-  return x;
-}
-
-// ── 3-Punkte-Solver ─────────────────────────────────────────────────────────
-// Berechnet Durchhang der Kettenlinie unter der Sehne bei Position xC.
-// c = Spannweite, h = Höhendiff. A−B (A links, h>0 wenn A höher), M = Linienlast,
-// xC = Abstand von Mast A, FH = Horizontalzugkraft.
-function catSagAt(FH, M, c, h, xC) {
-  const a = FH / M;
-  // Verschiebung des tiefsten Punktes bei asymmetrischer Spannweite
-  const sinhArg = -h / (2 * a * Math.sinh(c / (2 * a)));
-  if (Math.abs(sinhArg) >= 1e9) return NaN;
-  const x0 = c / 2 - a * Math.asinh(sinhArg);
-  // Absenkung der Kettenlinie gegenüber Mast A an der Stelle xC
-  const yCat   = a * (Math.cosh((xC - x0) / a) - Math.cosh(x0 / a));
-  // Sehnenhöhe an xC (Sehne von A nach B, A = Referenz 0)
-  const yChord = -h * xC / c;
-  return yChord - yCat;   // positiv = Leiter unter Sehne
-}
-
-// Findet FH sodass catSagAt(FH,...) = yC_sag (Durchhang unter Sehne).
-// Rückgabe: FH in N, oder null bei ungültiger Eingabe.
-function solve3point(c, h, M, xC, yC_sag) {
-  if (yC_sag <= 0 || xC <= 0 || xC >= c || M <= 0 || c <= 0) return null;
-  let FH = M * c * c / (8 * yC_sag);   // Parabel-Startwert
-  if (!isFinite(FH) || FH < 1) FH = 1000;
-  for (let i = 0; i < 300; i++) {
-    const y  = catSagAt(FH, M, c, h, xC);
-    const y2 = catSagAt(FH * (1 + 1e-5), M, c, h, xC);
-    if (!isFinite(y) || !isFinite(y2)) break;
-    const dy = (y2 - y) / (FH * 1e-5);
-    if (Math.abs(dy) < 1e-30) break;
-    let step = (y - yC_sag) / dy;
-    if (Math.abs(step) > FH * 0.5) step = Math.sign(step) * FH * 0.5;
-    FH -= step;
-    if (FH < 1) FH = 1;
-    if (Math.abs(step) < 1e-4) break;
-  }
-  return isFinite(FH) && FH > 0 ? FH : null;
-}
-
-// Rückrechnung H_ub aus FH_belastet (Inverse von solveLoadingEq).
-// Nutzt dasselbe kubische Polynom mit G_ts statt G.
-function solveLoadingInverse(FH, q_Ts, q_ges, Lm, EA) {
-  if (!EA || FH <= 0) return null;
-  const G    = (q_ges * Lm) ** 2 / 24;
-  const C    = 1 / EA;
-  const K    = G / (FH * FH) - C * FH;
-  const G_ts = (q_Ts * Lm) ** 2 / 24;
-  let H = FH * 0.85;
-  for (let i = 0; i < 300; i++) {
-    const f  = C * H ** 3 + K * H ** 2 - G_ts;
-    const df = 3 * C * H ** 2 + 2 * K * H;
-    if (Math.abs(df) < 1e-20) break;
-    const dH = f / df;
-    H -= dH;
-    if (H < 1) H = 1;
-    if (Math.abs(dH) < 1e-9) break;
-  }
-  return isFinite(H) && H > 0 ? H : null;
-}
-
 // ── Formatierungshilfsfunktionen ──
 function sign(v) { return v >= 0 ? '+' : ''; }         // Vorzeichen als String
 const f3 = v => v.toFixed(2);
@@ -7935,75 +7794,7 @@ function fN(v, dp = 1) {
   return dp > 0 ? parts.join('.') : parts[0];
 }
 
-// ═══════════════════════════════════════════════════════════════
-// KETTENLINIENMATHEMATIK
-// y(x) = a·cosh((x−x₀)/a) + C₀  mit  a = H/q
-// Tiefpunkt: x₀ = a·(u−n),  u = L/(2a),  n = arcsinh(Δh/(2a·sinh(u)))
-// Seillänge: s = 2a·sinh(u)·cosh(n)
-// ═══════════════════════════════════════════════════════════════
-
-// Kettenlinienparameter m aus bekannter Seillänge s lösen (Newton-Raphson)
-// Wird beim Thermik-Fallback verwendet (kein E·A angegeben)
-function solveM_fromS(L, s, dh) {
-  if (Math.abs(dh) >= s) throw new Error(t('err.dh.groesser'));
-  const n = Math.atanh(dh / s);
-  const k = s / (L * Math.cosh(n));
-  if (k <= 1) throw new Error(t('err.seil.kurz'));
-  let m = Math.max(Math.sqrt(6 * (k - 1)), 0.1);
-  for (let i = 0; i < 300; i++) {
-    const fm  = Math.sinh(m) - m * k;
-    const dfm = Math.cosh(m) - k;
-    if (Math.abs(dfm) < 1e-15) break;
-    const dm = fm / dfm;
-    m -= dm;
-    if (m <= 0) m = 1e-9;
-    if (Math.abs(dm) < 1e-13) break;
-  }
-  return { m, n, k };
-}
-
-// Geometrie der Kettenlinie aus bekanntem a, u, n berechnen
-function buildCatenary(a, u, n, h1, L, dh) {
-  const p       = u - n;
-  const x_low   = a * p;                          // Tiefpunkt x₀
-  const C       = h1 - a * Math.cosh(p);          // Integrationskonstante C₀
-  const s       = 2 * a * Math.sinh(u) * Math.cosh(n); // Seillänge (exakt)
-  const y_low   = a + C;                          // Tiefpunkthöhe
-  const y_chord = h1 + dh * x_low / L;           // Sehnenhöhe bei x₀
-  const sag     = y_chord - y_low;               // Durchhang
-  return { a, p, x_low, C, s, sag, y_low, y_chord };
-}
-
-// Grösste Seilkraft: an der Aufhängung, die weiter vom Tiefpunkt entfernt ist
-// (= höherer Mast). T(x) = H·cosh((x − x₀)/a). Bei gleich hohen Masten
-// identisch mit √(H² + (W/2)²), bei ungleich hohen Masten grösser.
-function maxSeilkraft(H, a, x_low, L) {
-  return H * Math.cosh(Math.max(Math.abs(x_low), Math.abs(L - x_low)) / a);
-}
-
-// Ausgangszustand: a = H/q direkt (keine Iteration nötig)
-function computeBase(L, q, H, h1, h2) {
-  const dh     = h2 - h1;
-  const a      = H / q;
-  const u      = L / (2 * a);
-  const sinh_u = Math.sinh(u);
-  const n      = Math.asinh(dh / (2 * a * sinh_u));
-  const cat    = buildCatenary(a, u, n, h1, L, dh);
-  const W      = q * cat.s;                       // Gesamtgewichtskraft
-  const T_max  = maxSeilkraft(H, a, cat.x_low, L);
-  return { ...cat, q, W, H, T_max, u, n, sinh_u, dh };
-}
-
-// Thermischer Zielzustand: Seillänge s2 bekannt, W bleibt konstant, q ändert sich
-function computeThermal(L, W, s2, h1, h2) {
-  const dh          = h2 - h1;
-  const { m, n, k } = solveM_fromS(L, s2, dh);
-  const a           = L / (2 * m);
-  const cat         = buildCatenary(a, m, n, h1, L, dh);
-  const H2          = W * a / s2;
-  const q2          = W / s2;
-  return { ...cat, q: q2, W, H: H2, T_max: maxSeilkraft(H2, a, cat.x_low, L), m, n, k };
-}
+// Zustandsgleichungen, Kettenlinie und berechneZustaende() → rechenkern.js
 
 // ═══════════════════════════════════════════════════════════════
 // HAUPTBERECHNUNG
@@ -8025,8 +7816,7 @@ function readInputs() {
   const q_Fd_base  = parseFloat(document.getElementById('weight-fd').value);
   const q_Fd       = q_Fd_base * (1 - wearPct / 100);
   const sh         = parseFloat(document.getElementById('sh').value);
-  const q_Haenger  = 0.02 * 9.81;   // Hänger: 0.020 kg/m × 9.81 m/s² = 0.196 N/m
-  const q_ges      = q_Ts + q_Fd + q_Haenger;
+  const q_ges      = q_Ts + q_Fd + Q_HAENGER;   // Hänger: siehe rechenkern.js
 
   // Materialsteifigkeiten
   const alpha_Ts = getAlphaTs();
@@ -8163,68 +7953,23 @@ function berechnen() {
     }
   }
 
-  let c1, c2;
-  let _LT1_vem = null, _q_vem_vem = null, _c2_vem = null;
-  try { c1 = computeBase(L, q_ges, H_Ts, h1, h2); }
-  catch (e) { errorBox.textContent = t('err.ausgangszustand') + ': ' + e.message; errorBox.classList.remove('hidden'); return; }
+  // T3 einmal lesen und für Rechnung UND Anzeige verwenden. Nicht «|| 80»:
+  // das würde 0 °C als «leer» werten und als 80 °C anzeigen.
+  const _t3Raw = parseFloat(document.getElementById('temp3')?.value);
+  const _T3 = showT3 ? (isNaN(_t3Raw) ? 80 : _t3Raw) : null;
 
-  if (sysMode === 'nfl') {
-    try {
-      let H2;
-      if (flCombo) {
-        // Bekannte FL-Kombination: VBA-konforme Zustandsgleichung (Upro1-Äquivalent)
-        // MFL_init = flCombo.MFL (neuer Draht) für gk0 und A-Verhältnis
-        const MFL_init = wearPct > 0 ? flCombo.MFL : null;
-        H2 = solveNFLStateEq(q_ges, H_Fd, H_Ts, Lm,
-                             flCombo.AL, flCombo.E, flCombo.AK, deltaT, ZL, MFL_init);
-      } else if (EA !== null) {
-        H2 = solveStateEq(q_ges + ZL, Lm, H_Ts, EA, alpha, deltaT);
-      } else {
-        const s2 = c1.s * (1 + alpha * deltaT);
-        c2 = computeThermal(L, c1.W, s2, h1, h2);
-        H2 = null;
-      }
-      if (H2 !== null) c2 = computeBase(L, q_ges + ZL, H2, h1, h2);
-      // VEM Handbuch Formel 7.66 + 7.82: Fahrdraht-Durchhang mit effektiver Spannweite
-      // LT1 = c_proj + 2·Δh·(H<sub>2</sub>+H_Fd) / (c_proj·q_vem)   [VEM 7.82, Δh-Korrektur]
-      // f   = LT1² / 8 · q_vem / (H<sub>2</sub>+H_Fd)                [VEM 7.66 mit LT1]
-      // q_vem = gkx + gk0_neu × H_Fd / Ht0   [VEM S.445: gk0 = neuer Draht, gkx = abgenutzt]
-      if (flCombo && H2 !== null && c2) {
-        const gk0_vem = wearPct > 0 ? flCombo.MFL : q_ges;  // neues MFL für H_Fd-Ratio
-        const q_vem  = q_ges + gk0_vem * H_Fd / H_Ts + ZL;  // gkx + gk0·H_Fd/Ht0
-        const absDH  = Math.abs(h2 - h1);                 // |Δh| — symmetrisch (VEM 7.82)
-        const LT1    = absDH > 1e-9
-          ? L + 2 * absDH * (H2 + H_Fd) / (L * q_vem)    // VEM 7.82: immer LT1 ≥ L
-          : L;
-        c2.sag   = LT1 * LT1 / 8 * q_vem / (H2 + H_Fd);
-        _LT1_vem   = LT1;
-        _q_vem_vem = q_vem;
-        // Kombinierte Katenarie (Ts+Fd): exakte Kurve mit q_vem und H<sub>2</sub>+H_Fd
-        // Entspricht der VEM-Parabel, aber als echte Kettenlinie berechnet
-        _c2_vem = computeBase(L, q_vem, H2 + H_Fd, h1, h2);
-      }
-    } catch (e) { errorBox.textContent = t('err.zielzustand.ts') + ': ' + e.message; errorBox.classList.remove('hidden'); return; }
-  } else if (isEl) {
-    // Einzelleiter: direkte Zustandsgleichung (einfaches Seil mit Temperatureinfluss)
-    try {
-      let H2 = null;
-      if (EA !== null) {
-        H2 = solveStateEq(q_ges + ZL, Lm, H_Ts, EA, alpha, deltaT);
-      } else {
-        const s2 = c1.s * (1 + alpha * deltaT);
-        c2 = computeThermal(L, c1.W, s2, h1, h2);
-      }
-      if (H2 !== null) c2 = computeBase(L, q_ges + ZL, H2, h1, h2);
-    } catch (e) { errorBox.textContent = t('err.zielzustand') + ': ' + e.message; errorBox.classList.remove('hidden'); return; }
-  } else {
-    // R-FL: konstante Zugkraft; ZL (Eislast) teilt sich auf Ts+Fd auf: f_ZL = ZL·c²/(8·(H_Ts+H_Fd))
-    if (ZL > 0 && !isNaN(H_Fd) && H_Fd > 0) {
-      const q_rfl_eff = q_ges + ZL * H_Ts / (H_Ts + H_Fd);
-      c2 = computeBase(L, q_rfl_eff, H_Ts, h1, h2);
-    } else {
-      c2 = c1;
-    }
+  let z;
+  try {
+    z = berechneZustaende({ sysMode, L, Lm, H_Ts, H_Fd, h1, h2, T1, q_ges, EA,
+                            alpha, deltaT, flCombo, ZL, wearPct, T3: _T3 });
+  } catch (e) {
+    const titel = e.phase === 'c1' ? 'err.ausgangszustand'
+                : sysMode === 'nfl' ? 'err.zielzustand.ts' : 'err.zielzustand';
+    errorBox.textContent = t(titel) + ': ' + e.message;
+    errorBox.classList.remove('hidden'); return;
   }
+  if (z.t3Fehler) _spur('T3-Vergleichskurve', z.t3Fehler, 'debug');
+  const { c1, c2 } = z;
 
   const warns = [];
   if (spanMode === 'ruling') warns.push(`Lm = ${Lm.toFixed(2)} m · Dargestelltes Feld: ${L.toFixed(1)} m`);
@@ -8233,117 +7978,35 @@ function berechnen() {
     warns.push(t('warn.tiefpunkt.t2'));
   if (warns.length) { warnBox.innerHTML = warns.join('<br>'); warnBox.classList.remove('hidden'); }
 
-  // T3 — Vergleichskurve (optional)
-  // T3 einmal lesen und für Rechnung UND Anzeige verwenden. Nicht «|| 80»:
-  // das würde 0 °C als «leer» werten und als 80 °C anzeigen.
-  let _c3 = null, _c3_canvas = null;
-  const _t3Raw = parseFloat(document.getElementById('temp3')?.value);
-  const _T3 = showT3 ? (isNaN(_t3Raw) ? 80 : _t3Raw) : null;
-  // Eislast gilt nur bei T2 = −5 °C — für die T3-Vergleichskurve nur,
-  // wenn T3 selbst die Eislast-Temperatur ist.
-  const ZL3 = (showT3 && isEislastAktiv(_T3)) ? ZL : 0;
-  if (showT3) {
-    const T3 = _T3;
-    const deltaT3 = T3 - T1;
-    try {
-      if (sysMode === 'nfl') {
-        if (flCombo) {
-          const MFL_init3 = wearPct > 0 ? flCombo.MFL : null;
-          const H3 = solveNFLStateEq(q_ges, H_Fd, H_Ts, Lm, flCombo.AL, flCombo.E, flCombo.AK, deltaT3, ZL3, MFL_init3);
-          // Ts-only (konsistent mit c2, für Ergebnistabelle)
-          _c3 = computeBase(L, q_ges + ZL3, H3, h1, h2);
-          // VEM-Sag-Korrektur (wie bei c2)
-          const gk0_v3 = wearPct > 0 ? flCombo.MFL : q_ges;
-          const q_vem3 = q_ges + gk0_v3 * H_Fd / H_Ts + ZL3;
-          const absDH3 = Math.abs(h2 - h1);
-          const LT1_3  = absDH3 > 1e-9 ? L + 2 * absDH3 * (H3 + H_Fd) / (L * q_vem3) : L;
-          _c3.sag = LT1_3 * LT1_3 / 8 * q_vem3 / (H3 + H_Fd);
-          // VEM-kombiniert für Canvas (gleiche Methode wie _c2_vem)
-          _c3_canvas = computeBase(L, q_vem3, H3 + H_Fd, h1, h2);
-        } else if (EA !== null) {
-          _c3 = computeBase(L, q_ges + ZL3, solveStateEq(q_ges + ZL3, Lm, H_Ts, EA, alpha, deltaT3), h1, h2);
-        } else {
-          const s3 = c1.s * (1 + alpha * deltaT3);
-          _c3 = computeThermal(L, c1.W, s3, h1, h2);
-        }
-      } else if (isEl) {
-        if (EA !== null) {
-          _c3 = computeBase(L, q_ges + ZL3, solveStateEq(q_ges + ZL3, Lm, H_Ts, EA, alpha, deltaT3), h1, h2);
-        } else {
-          const s3 = c1.s * (1 + alpha * deltaT3);
-          _c3 = computeThermal(L, c1.W, s3, h1, h2);
-        }
-      }
-    } catch (e) { _spur('T3-Vergleichskurve', e, 'debug'); }
-  }
-
-  renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, _c2_vem, ZL, _c3, _T3);
-  drawCanvas(c1, c2, L, h1, h2, sh, false, _c2_vem, _c3_canvas ?? _c3);
+  renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, z.c2_vem, ZL, z.c3, _T3);
+  drawCanvas(c1, c2, L, h1, h2, sh, false, z.c2_vem, z.c3_zeichnung);
 
   calcState = { L, Lm, spanMode, q_Ts, q_Fd, q_ges, H_Ts, H_Ts_ub, H_Fd, sh, h1, h2, T1, T2,
                 alpha, EA, EA_Ts, deltaT, c1, c2, flCombo, ZL,
-                LT1_vem: _LT1_vem, q_vem_vem: _q_vem_vem, c2_vem: _c2_vem, c3: _c3,
+                LT1_vem: z.LT1_vem, q_vem_vem: z.q_vem_vem, c2_vem: z.c2_vem, c3: z.c3,
                 matTs: getMaterialNameTs(), matFd: getMaterialNameFd() };
   updateAllMesspunkte();
   updateHInputVisibility();
   refreshScaleViewIfActive();
 }
 
-// Schnellzeichnung während Drag — keine DOM-Updates, nur Canvas neu zeichnen
+// Schnellzeichnung während Drag — keine DOM-Updates, nur Canvas neu zeichnen.
+// Rechnet über dieselbe Funktion wie berechnen(); dadurch stimmt die Kurve
+// beim Ziehen und im Vollbild immer mit der Ergebnistabelle überein.
 function quickDraw() {
-  const { L, Lm, H_Ts, H_Fd, h1, h2, T1, T2, q_Ts, q_Fd_base, sh, q_ges, EA, alpha, flCombo, ZL } = readInputs();
-  const isEl = sysMode === 'el';
-  // Validierung: Einzelleiter ohne Fd/sh-Prüfung
-  if (isEl) {
+  const e = readInputs();
+  const { L, H_Ts, H_Fd, h1, h2, q_Ts, q_Fd_base, sh } = e;
+  if (sysMode === 'el') {
     if ([L, q_Ts, H_Ts, h1, h2].some(v => isNaN(v)) || L <= 0) return;
   } else {
     if ([L, q_Ts, q_Fd_base, H_Ts, H_Fd, h1, h2, sh].some(v => isNaN(v)) || L <= 0) return;
   }
+  const _t3Raw = parseFloat(document.getElementById('temp3')?.value);
+  const T3 = showT3 ? (isNaN(_t3Raw) ? 80 : _t3Raw) : null;
   try {
-    const c1 = computeBase(L, q_ges, H_Ts, h1, h2);
-    let c2;
-    let _qc3 = null;
-    if (showT3) {
-      const _t3v = parseFloat(document.getElementById('temp3')?.value);
-      const _dT3 = (isNaN(_t3v) ? 80 : _t3v) - T1;
-      try {
-        if (sysMode === 'nfl' && EA !== null) _qc3 = computeBase(L, q_ges + ZL, solveStateEq(q_ges + ZL, Lm, H_Ts, EA, alpha, _dT3), h1, h2);
-        else if (isEl && EA !== null) _qc3 = computeBase(L, q_ges, solveStateEq(q_ges, Lm, H_Ts, EA, alpha, _dT3), h1, h2);
-      } catch (e) { _spur('quickDraw/T3', e, 'debug'); }
-    }
-    if (sysMode === 'nfl') {
-      if (flCombo) {
-        const H2 = solveNFLStateEq(flCombo.MFL, H_Fd, H_Ts, Lm,
-                                   flCombo.AL, flCombo.E, flCombo.AK, T2 - T1, ZL);
-        c2 = computeBase(L, q_ges + ZL, H2, h1, h2);
-        const q_vem   = flCombo.MFL * (1 + H_Fd / H_Ts) + ZL;   // F₀ = H_Ts bei T<sub>1</sub> (VEM 7.82)
-        const absDH_qd = Math.abs(h2 - h1);                     // |Δh| — symmetrisch
-        const LT1_qd   = absDH_qd > 1e-9
-          ? L + 2 * absDH_qd * (H2 + H_Fd) / (L * q_vem)       // VEM 7.82: immer LT1 ≥ L
-          : L;
-        c2.sag = LT1_qd * LT1_qd / 8 * q_vem / (H2 + H_Fd);
-        const c2_vem_qd = computeBase(L, q_vem, H2 + H_Fd, h1, h2);
-        drawCanvas(c1, c2, L, h1, h2, sh, true, c2_vem_qd, _qc3);
-      } else {
-        c2 = EA !== null
-          ? computeBase(L, q_ges + ZL, solveStateEq(q_ges + ZL, Lm, H_Ts, EA, alpha, T2 - T1), h1, h2)
-          : computeThermal(L, c1.W, c1.s * (1 + alpha * (T2 - T1)), h1, h2);
-        drawCanvas(c1, c2, L, h1, h2, sh, true, null, _qc3);
-      }
-    } else if (isEl) {
-      // Einzelleiter: einfache Zustandsgleichung
-      c2 = EA !== null
-        ? computeBase(L, q_ges + ZL, solveStateEq(q_ges + ZL, Lm, H_Ts, EA, alpha, T2 - T1), h1, h2)
-        : computeThermal(L, c1.W, c1.s * (1 + alpha * (T2 - T1)), h1, h2);
-      drawCanvas(c1, c2, L, h1, h2, sh, true, null, _qc3);
-    } else {
-    // R-FL: ZL anteilig auf Ts+Fd aufteilen
-    c2 = (ZL > 0 && !isNaN(H_Fd) && H_Fd > 0)
-      ? computeBase(L, q_ges + ZL * H_Ts / (H_Ts + H_Fd), H_Ts, h1, h2)
-      : c1;
-    drawCanvas(c1, c2, L, h1, h2, sh, true, null, _qc3);
-  }
-  } catch (e) { _spur('quickDraw', e, 'debug'); }
+    const z = berechneZustaende({ ...e, sysMode, wearPct, T3 });
+    drawCanvas(z.c1, z.c2, L, h1, h2, sh, true, z.c2_vem, z.c3_zeichnung);
+  } catch (err) { _spur('quickDraw', err, 'debug'); }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -9672,7 +9335,7 @@ function buildPdfSectionHtml(projName, canvasImg) {
   if (!calcState) return '';
   const { L, Lm, spanMode, q_Ts, q_Fd, q_ges, H_Ts, H_Ts_ub, H_Fd, sh,
           h1, h2, T1, T2, alpha, EA, EA_Ts, deltaT, c1, c2, matTs, matFd, flCombo, ZL = 0 } = calcState;
-  const q_H   = 0.02 * 9.81;
+  const q_H   = Q_HAENGER;
   const dh    = h2 - h1;
   const isNFL = sysMode === 'nfl';
   const isEl  = sysMode === 'el';
@@ -15013,7 +14676,7 @@ renderObstacleList();
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
-  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span style="opacity:.6">v3.0</span>
+  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span style="opacity:.6">v3.1</span>
 </footer>
 
 </body>

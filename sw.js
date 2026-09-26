@@ -2,21 +2,24 @@
  *
  * Die App ist eine einzige HTML-Datei; der Zwischenspeicher ist entsprechend
  * klein. Strategie:
- *   HTML  → «network first»: online immer die neueste Fassung, offline die
+ *   HTML und eigene Skripte (.js)
+ *         → «network first»: online immer die neueste Fassung, offline die
  *           zwischengespeicherte. Verhindert, dass nach einer Aktualisierung
- *           eine veraltete Datei hängen bleibt.
+ *           eine veraltete Datei hängen bleibt — und dass eine neue Seite
+ *           mit einem alten Rechenkern (rechenkern.js) zusammentrifft.
  *   Rest  → «cache first»: Icons und Schriften ändern sich praktisch nie.
  *
  * CACHE_VERSION bei jeder Veröffentlichung erhöhen — alte Zwischenspeicher
  * werden beim Aktivieren automatisch entfernt.
  */
-const CACHE_VERSION = 'durchhang-v3.0.1';
+const CACHE_VERSION = 'durchhang-v3.1.0';
 
 /* Bestandteile der Anwendung. Relative Pfade, damit es sowohl unter
    /Durchhang/ auf GitHub Pages als auch in einem Unterordner funktioniert. */
 const APP_DATEIEN = [
   './',
   './index.html',
+  './rechenkern.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
@@ -55,8 +58,10 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   const istHtml = req.mode === 'navigate' ||
                   (req.headers.get('accept') || '').includes('text/html');
+  const istEigenesSkript = url.origin === self.location.origin &&
+                           url.pathname.endsWith('.js');
 
-  if (istHtml) {
+  if (istHtml || istEigenesSkript) {
     // Netz zuerst, Zwischenspeicher als Rückfall
     e.respondWith((async () => {
       try {
@@ -69,6 +74,8 @@ self.addEventListener('fetch', e => {
         }
         return antwort;
       } catch (err) {
+        if (istEigenesSkript) return (await caches.match(req)) ||
+               new Response('', { status: 504 });
         return (await caches.match(req)) ||
                (await caches.match('./index.html')) ||
                (await caches.match('./')) ||

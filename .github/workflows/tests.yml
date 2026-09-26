@@ -1,0 +1,15 @@
+# Führt bei jedem Hochladen die Testrechnungen aus (tests/).
+# Ein rotes Kreuz auf GitHub heisst: eine Änderung hat Rechenergebnisse verändert.
+name: Testrechnungen
+on:
+  push:
+  pull_request:
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test

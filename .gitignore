@@ -29,3 +29,6 @@ sbb-tool.md
 *:Zone.Identifier
 Thumbs.db
 desktop.ini
+
+# ── Node ──
+node_modules/
