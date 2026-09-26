@@ -1496,6 +1496,40 @@ button.header-manual-link:hover {
 .proj-btn.bulk:hover { background:rgba(255,255,255,.2); border-color:rgba(255,255,255,.5); color:#fff; }
 .proj-btn.bulk.danger:hover { background:rgba(239,68,68,.25); border-color:#ef4444; }
 .proj-move-sel { border:1px solid var(--border); border-radius:5px; font-size:.68rem; padding:.15rem .3rem; background:#fff; color:var(--muted); cursor:pointer; font-family:inherit; max-width:80px; }
+
+/* ── v3.1: Beschriftete Knöpfe in der Kopfzeile ── */
+.header-label { margin-left: .3rem; }
+.header-reset { margin-left: .9rem; }
+@media (max-width: 1000px) {
+  .header-label { display: none; }
+  .header-reset { margin-left: .3rem; }
+}
+
+/* ── v3.1: Einklappbare optionale Mastangaben ── */
+.mast-details { margin-top: .65rem; border-top: 1px solid var(--border); padding-top: .35rem; }
+.mast-details > summary {
+  cursor: pointer; list-style: none; display: flex; align-items: center; gap: .35rem;
+  padding: .3rem 0; font-size: .72rem; font-weight: 500; color: var(--muted);
+}
+.mast-details > summary::-webkit-details-marker { display: none; }
+.mast-details > summary::before { content: '\25B8'; font-size: .8rem; transition: transform .15s; }
+.mast-details[open] > summary::before { transform: rotate(90deg); }
+.mast-details > summary:hover { color: var(--text); }
+
+/* ── v3.1: Touch-Bedienung (Tablet, Touch-Bildschirm) — grössere Tipp-Flächen ──
+   Empfohlen sind rund 44 px; 40 px hält die Oberfläche noch kompakt. */
+@media (any-pointer: coarse) {
+  button, select,
+  input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=file]) {
+    min-height: 40px;
+  }
+  input[type=range] { height: 32px; }
+  input[type=checkbox] { width: 22px; height: 22px; }
+  .mast-details > summary { min-height: 40px; }
+  /* Kleine runde Info-Knöpfe: Tippfläche unsichtbar vergrössern statt aufblähen */
+  [id$="-info-btn"] { position: relative; min-height: 0; }
+  [id$="-info-btn"]::after { content: ''; position: absolute; inset: -13px; }
+}
 </style>
 </head>
 <body>
@@ -1514,21 +1548,14 @@ button.header-manual-link:hover {
     <h1 id="app-title">Durchhang N-FL</h1>
     <p id="app-subtitle" style="display:none">Kettenwerk — Seillinie mit Temperatureinfluss</p>
     <p id="proj-name-badge" style="display:none;margin:0;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">
-      <span style="color:var(--muted);font-weight:500">Projekt: </span><span id="proj-name-group" style="color:#eb0000;font-weight:700"></span><span id="proj-name-sep" style="color:var(--muted);font-weight:400"> / </span><span id="proj-name-text" style="color:#eb0000;font-weight:700"></span>
+      <span style="color:var(--muted);font-weight:500" data-i18n="ui.projekt.label">Projekt: </span><span id="proj-name-group" style="color:#eb0000;font-weight:700"></span><span id="proj-name-sep" style="color:var(--muted);font-weight:400"> / </span><span id="proj-name-text" style="color:#eb0000;font-weight:700"></span>
     </p>
   </div>
-  <button onclick="openProjectsModal()" class="header-manual-link" title="Datei" style="background:none;border:none;cursor:pointer;">
+  <button onclick="openProjectsModal()" class="header-manual-link" title="Datei" data-i18n-title="ui.datei" style="background:none;border:none;cursor:pointer;">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-    <span class="header-manual-text">Datei</span>
+    <span class="header-manual-text" data-i18n="ui.datei">Datei</span>
   </button>
-  <button onclick="totalReset()" class="header-manual-link" title="Zurücksetzen auf Standardwerte"
-    style="background:none;border:none;cursor:pointer;color:#444">
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-      <path d="M2.5 8a5.5 5.5 0 1 1 1.1 3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      <polyline points="2.5,4.5 2.5,8 6,8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </button>
-  <button id="quick-save-btn" onclick="quickSave()" title="Speichern"
+  <button id="quick-save-btn" onclick="quickSave()" title="Speichern" data-i18n-title="ui.speichern"
     style="display:flex;align-items:center;gap:.3rem;padding:.28rem .45rem;border-radius:7px;
            border:none;background:none;color:#333;font-size:.78rem;font-weight:500;
            cursor:pointer;transition:all .15s;white-space:nowrap"
@@ -1540,12 +1567,23 @@ button.header-manual-link:hover {
       <rect x="4" y="8.5" width="8" height="4" rx=".5" stroke="currentColor" stroke-width="1.2"/>
     </svg>
     <span id="quick-save-label" style="display:none"></span>
+    <span class="header-manual-text header-label" data-i18n="ui.speichern">Speichern</span>
   </button>
-  <button onclick="openReglageModal()" class="header-manual-link" title="Reglagetabelle" style="background:none;border:none;cursor:pointer;color:#444">
+  <button onclick="openReglageModal()" class="header-manual-link" title="Reglagetabelle" data-i18n-title="ui.reglage" style="background:none;border:none;cursor:pointer;color:#444">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="2" rx="1" fill="#444"/><rect x="2" y="7" width="12" height="2" rx="1" fill="#444"/><rect x="2" y="11" width="8" height="2" rx="1" fill="#444"/></svg>
+    <span class="header-manual-text header-label" data-i18n="ui.reglage.kurz">Reglage</span>
   </button>
-  <button onclick="openHandbuch()" class="header-manual-link" title="Handbuch" style="background:none;border:none;cursor:pointer;color:#444">
+  <button onclick="openHandbuch()" class="header-manual-link" title="Handbuch" data-i18n-title="ui.handbuch" style="background:none;border:none;cursor:pointer;color:#444">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2a6 6 0 100 12A6 6 0 008 2zm0 9V7m0-2v.01" stroke="#444" stroke-width="1.7" stroke-linecap="round"/></svg>
+    <span class="header-manual-text header-label" data-i18n="ui.handbuch">Handbuch</span>
+  </button>
+  <button onclick="totalReset()" class="header-manual-link header-reset" title="Zurücksetzen auf Standardwerte" data-i18n-title="ui.reset.titel"
+    style="background:none;border:none;cursor:pointer;color:#444">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <path d="M2.5 8a5.5 5.5 0 1 1 1.1 3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <polyline points="2.5,4.5 2.5,8 6,8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="header-manual-text header-label" data-i18n="ui.reset">Zurücksetzen</span>
   </button>
   <div class="lang-switcher">
     <button class="lang-btn active" id="lang-de" onclick="setLang('de')">DE</button>
@@ -1579,7 +1617,7 @@ button.header-manual-link:hover {
             <div class="input-wrap" style="flex:1">
               <select id="preset-select" onchange="applyPreset()" style="padding-right:.75rem"></select>
             </div>
-            <button onclick="openCustomModal()" title="Eigenes Kettenwerk definieren" style="flex-shrink:0;background:none;border:1px solid var(--border);border-radius:8px;padding:.2rem .45rem;font-size:.72rem;color:var(--muted);cursor:pointer;line-height:1;transition:border-color .15s,color .15s" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--primary)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">＋</button>
+            <button onclick="openCustomModal()" title="Eigenes Kettenwerk definieren" data-i18n-title="ui.kw.eigen" style="flex-shrink:0;background:none;border:1px solid var(--border);border-radius:8px;padding:.2rem .45rem;font-size:.72rem;color:var(--muted);cursor:pointer;line-height:1;transition:border-color .15s,color .15s" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--primary)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">＋</button>
           </div>
         </div>
         <div id="combo-info" class="reglage-info-box" style="display:none;margin-top:.5rem">
@@ -1611,7 +1649,7 @@ button.header-manual-link:hover {
                 <option value="alum191">Alumin. 191 mm²</option>
               </select>
             </div>
-            <button onclick="openElMaterialModal()" title="Eigenes Material definieren" style="flex-shrink:0;background:none;border:1px solid var(--border);border-radius:8px;padding:.2rem .45rem;font-size:.72rem;color:var(--muted);cursor:pointer;line-height:1;transition:border-color .15s,color .15s" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--primary)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">＋</button>
+            <button onclick="openElMaterialModal()" title="Eigenes Material definieren" data-i18n-title="ui.mat.eigen" style="flex-shrink:0;background:none;border:1px solid var(--border);border-radius:8px;padding:.2rem .45rem;font-size:.72rem;color:var(--muted);cursor:pointer;line-height:1;transition:border-color .15s,color .15s" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--primary)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">＋</button>
           </div>
         </div>
       </div>
@@ -1636,7 +1674,7 @@ button.header-manual-link:hover {
           <div class="info-title" id="el-reglage-title"></div>
           <button id="el-reglage-info-btn" onclick="toggleReglageEdit()"
             style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.2);background:none;color:var(--muted);font-size:.6rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"
-            title="Reglagetabelle anzeigen">i</button>
+            title="Reglagetabelle anzeigen" data-i18n-title="ui.reglage.zeigen">i</button>
         </div>
         <div class="info-note" id="el-reglage-note"></div>
         <div id="el-reglage-edit-panel" style="display:none"></div>
@@ -1665,282 +1703,11 @@ button.header-manual-link:hover {
     <span  id="material-ts-info"  style="display:none"></span>
     <span  id="material-fd-info"  style="display:none"></span>
 
-    <!-- 2. Spannweite -->
-    <div class="card">
-      <div class="card-title" style="display:flex;align-items:center;gap:.4rem">
-        <span id="card-title-span" data-i18n="card.spannweite">Spannweite</span>
-        <span style="position:relative;display:inline-flex">
-          <button id="span-info-btn" onclick="toggleSpanInfo(event)"
-            style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.2);background:none;color:var(--muted);font-size:.6rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"
-            title="Hinweis zur Spannweite">i</button>
-          <div id="span-info-popup" style="display:none;position:fixed;z-index:200;width:270px;background:#fff;border:1px solid rgba(235,0,0,.2);border-radius:10px;padding:.65rem .8rem;box-shadow:0 4px 20px rgba(0,0,0,.11);font-size:.72rem;color:var(--text);text-transform:none;font-weight:400;letter-spacing:0">
-            <div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.45rem">
-              <span style="width:18px;height:18px;border-radius:50%;background:#eb0000;color:#fff;font-size:.65rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">i</span>
-              <span id="span-popup-title" data-i18n="span.info.title" style="font-weight:600;color:#c60000;font-size:.73rem">Zu beachten</span>
-            </div>
-            <p id="span-popup-text" data-i18n-html="span.info.text" style="margin:0;line-height:1.55;color:var(--text)">Bei der Eingabe von c<sub>proj</sub> oder c<sub>m</sub> ist gemäss dem Dokument <strong>0161.1013.0005.1</strong> vorzugehen.</p>
-          </div>
-        </span>
-      </div>
-      <div class="seg-ctrl">
-        <button class="seg-btn active" id="seg-single" data-i18n="span.einzel" onclick="setSpanMode('single')">Einzelspannweite</button>
-        <button class="seg-btn"        id="seg-ruling" data-i18n="span.mittel" onclick="setSpanMode('ruling')">Mittelspannweite</button>
-      </div>
-
-      <!-- Einzelspannweite -->
-      <div id="panel-single">
-        <div class="field">
-          <label id="span-L-label" data-i18n="span.L.label">Spannweite L</label>
-          <div class="input-wrap">
-            <input type="number" id="span" value="45" min="0.1" step="0.1" oninput="berechnenEntprellt()" onchange="berechnen()">
-            <span class="input-unit">m</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Mittelspannweite -->
-      <div id="panel-ruling" style="display:none">
-        <div class="stepper-row" style="margin-bottom:.5rem">
-          <label id="span-count-label" data-i18n="span.count">Anzahl Felder</label>
-          <div class="stepper">
-            <button onclick="changeSpanCount(-1)">−</button>
-            <span class="stepper-val" id="span-count-val">3</span>
-            <button onclick="changeSpanCount(+1)">+</button>
-          </div>
-        </div>
-        <div class="span-list" id="spans-list"></div>
-        <!-- Formel-Toggle + Formelhinweis -->
-        <div style="margin-top:.4rem;margin-bottom:.05rem">
-          <span id="lm-formel-label" data-i18n="lm.formel" style="font-size:.62rem;color:var(--muted);display:block;margin-bottom:.2rem">Formel</span>
-          <div class="seg-ctrl" id="lm-formula-btns" style="margin-bottom:0">
-            <button class="seg-btn active" id="seg-lm-arith" data-i18n="lm.arith"  onclick="setLmFormula('arith')"  style="font-size:.68rem;white-space:nowrap">Arithmetisch</button>
-            <button class="seg-btn"        id="seg-lm-ruling" data-i18n="lm.ruling" onclick="setLmFormula('ruling')" style="font-size:.68rem;white-space:nowrap">Ideelle Spannweite</button>
-          </div>
-          <div id="lm-formula-hint" style="font-size:.6rem;color:var(--muted);opacity:.5;margin-top:.15rem;letter-spacing:.01em">Lm = &#x03A3;L / n</div>
-        </div>
-        <!-- Lm-Feld: immer editierbar; sobald Wert getippt → Buttons ausgegraut -->
-        <div style="display:flex;align-items:center;gap:.3rem;margin-top:.3rem">
-          <label style="font-size:.72rem;font-weight:500;color:var(--muted);white-space:nowrap;min-width:2rem">Lm</label>
-          <div class="input-wrap" style="flex:1">
-            <input type="number" id="lm-display" step="0.1" min="1"
-              oninput="onLmInput(this.value)"
-              onblur="if(lmOvr!==null&&this.value.trim())this.value=parseFloat(this.value).toFixed(2);else if(lmOvr===null){this.value='';updateLm();}"
-              onfocus="this.select()">
-            <span class="input-unit">m</span>
-          </div>
-        </div>
-        <div style="font-size:.59rem;color:var(--muted);opacity:.5;margin-top:.12rem;padding-left:2.3rem">Wert überschreibbar — Feld leeren zum Zurücksetzen</div>
-        <div class="field" style="margin-top:.5rem">
-          <label id="span-display-label" data-i18n="span.display">Dargestelltes Feld</label>
-          <div class="input-wrap">
-            <select id="display-span" onchange="highlightActiveSpan();berechnen()" style="padding-right:.75rem"></select>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. Befestigungspunkte + Mastangaben (zusammengeführt) -->
-    <div class="card" id="foto-sidebar-card">
-      <div class="card-title"><span id="card-title-bp" data-i18n="card.befestigung">Höheneingabe</span> <span id="bp-card-sub" data-i18n="card.befestigung.sub" style="font-weight:400;color:var(--tertiary)"></span></div>
-
-      <!-- Masthöhe h1 / h2 -->
-      <div class="field-row">
-        <div class="field">
-          <label id="h1-label">Höhe Leiter h&#x2081; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über Mastfuss</span></label>
-          <div class="input-wrap">
-            <input type="text" inputmode="decimal" id="h1" value="7.00" oninput="onSokMumInput();berechnenEntprellt()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
-            <span class="input-unit">m</span>
-          </div>
-        </div>
-        <div class="field">
-          <label id="h2-label">Höhe Leiter h&#x2082; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über Mastfuss</span></label>
-          <div class="input-wrap">
-            <input type="text" inputmode="decimal" id="h2" value="7.00" oninput="onSokMumInput();berechnenEntprellt()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
-            <span class="input-unit">m</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Mastlänge (für Foto-Kalibrierung) — nur im Foto-Tab sichtbar -->
-      <div id="mastlaenge-row" class="field-row" style="display:none;margin-top:.5rem">
-        <div class="field">
-          <label id="foto-mastlaenge-li-lbl" data-i18n="foto.mast.li">Mastlänge links</label>
-          <div class="input-wrap">
-            <input type="text" inputmode="decimal" id="foto-hmast-L" placeholder="m"
-              onblur="const v=parseFloat(this.value);if(!isNaN(v)&&v>0)this.value=v;const r=document.getElementById('foto-hmast-R');if(r&&!r.value)r.value=this.value;fotoRecalcIfReady();"
-              onchange="fotoRecalcIfReady()">
-            <span class="input-unit">m</span>
-          </div>
-        </div>
-        <div class="field">
-          <label id="foto-mastlaenge-re-lbl">Mastlänge rechts <span id="foto-mastlaenge-re-sub" style="font-weight:400;color:var(--tertiary);font-size:.8em">leer = links</span></label>
-          <div class="input-wrap">
-            <input type="text" inputmode="decimal" id="foto-hmast-R" data-i18n-ph="foto.mast.re.placeholder" placeholder="= links" data-placeholder-key="foto.mast.re.placeholder"
-              onblur="const v=parseFloat(this.value);if(!isNaN(v)&&v>0)this.value=v;fotoRecalcIfReady();"
-              onchange="fotoRecalcIfReady()">
-            <span class="input-unit">m</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Δ Mastfuss-SOK -->
-      <div class="field-row" style="margin-top:.5rem">
-        <div class="field">
-          <label id="bp-delta-sok-li-lbl" data-i18n="bp.delta.sok.li" style="white-space:nowrap">&#x394; Mastfuss-SOK li</label>
-          <div class="input-wrap">
-            <input type="number" id="mast-delta-sok-left" step="0.01" placeholder="0.00"
-              oninput="berechnenEntprellt()" onchange="berechnen()"
-              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
-            <span class="input-unit">m</span>
-          </div>
-        </div>
-        <div class="field">
-          <label id="bp-delta-sok-re-lbl" data-i18n="bp.delta.sok.re" style="white-space:nowrap">&#x394; Mastfuss-SOK re</label>
-          <div class="input-wrap">
-            <input type="number" id="mast-delta-sok-right" step="0.01" placeholder="0.00"
-              oninput="berechnenEntprellt()" onchange="berechnen()"
-              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
-            <span class="input-unit">m</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- SOK m ü. M. (optional) -->
-      <div style="margin-top:.65rem">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem">
-          <label id="sok-optional-label" data-i18n="bp.sok.label" style="font-size:.72rem;color:var(--muted)">SOK m ü. M. (optional)</label>
-          <button id="sok-clear-btn" data-i18n="bp.sok.clear" onclick="clearSokMum()" title="SOK-Referenz löschen"
-            style="padding:.15rem .4rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:.7rem;cursor:pointer;line-height:1">&#x2715; löschen</button>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem">
-          <div class="input-wrap">
-            <input type="number" id="sok-mum-left" placeholder="— m ü.M." step="0.001"
-              style="font-size:.78rem"
-              oninput="onSokMumLeftInput()" onchange="onSokMumLeftInput()">
-            <span class="input-unit" style="font-size:.7rem">m</span>
-          </div>
-          <div class="input-wrap">
-            <input type="number" id="sok-mum-right" placeholder="— m ü.M." step="0.001"
-              style="font-size:.78rem"
-              oninput="this.dataset.userEdited='1';onSokMumRightInput()" onchange="this.dataset.userEdited='1';onSokMumRightInput()">
-            <span class="input-unit" style="font-size:.7rem">m</span>
-          </div>
-        </div>
-      </div>
-      <div id="sok-mum-info" style="display:none;margin-top:.35rem;font-size:.7rem;color:var(--muted)"></div>
-
-      <!-- Mastbezeichnung: Name/Nr. + KM -->
-      <div style="margin-top:.6rem">
-        <label id="bp-bez-label" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.28rem">Bezeichnung <span id="bp-bez-optional" style="font-weight:400;color:var(--tertiary)">(optional)</span></label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.25rem .4rem">
-          <span id="bp-name-li-lbl" data-i18n="bp.name.li" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem">Name / Nr. links</span>
-          <span id="bp-name-re-lbl" data-i18n="bp.name.re" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem">Name / Nr. rechts</span>
-          <input type="text" id="mast-num-left" placeholder="Nr."
-            oninput="_syncMastNames();berechnenEntprellt()"
-            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%">
-          <input type="text" id="mast-num-right" placeholder="Nr."
-            oninput="_syncMastNames();berechnenEntprellt()"
-            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%">
-          <span id="bp-km-li-lbl" data-i18n="bp.km.li" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM links</span>
-          <span id="bp-km-re-lbl" data-i18n="bp.km.re" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM rechts</span>
-          <input type="text" id="mast-km-left" placeholder="000.000"
-            oninput="_triggerDrawingRebuild()" onchange="_triggerDrawingRebuild()"
-            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%;letter-spacing:.03em">
-          <input type="text" id="mast-km-right" placeholder="000.000"
-            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%;letter-spacing:.03em">
-        </div>
-      </div>
-
-      <p id="bp-drag-hint" data-i18n="bp.drag.hint" style="display:none;font-size:.72rem;color:var(--tertiary);margin-top:.5rem;font-style:italic"></p>
-    </div>
-
-    <!-- 4. Parameter -->
-    <div class="card">
-      <div class="card-title" id="card-title-par" data-i18n="card.parameter">Parameter</div>
+    <!-- 2. Temperatur — direkt unter «System», weil sie am häufigsten geändert
+         wird und so auch auf dem PC ohne Scrollen der Seitenleiste sichtbar ist -->
+    <div class="card" id="temp-card">
+      <div class="card-title" id="card-title-temp" data-i18n="card.temperatur">Temperatur</div>
       <div class="field-group">
-        <div class="field-row">
-          <div class="field" id="sh-field">
-            <label id="sh-label" data-i18n="par.sh">Systemhöhe sh</label>
-            <div class="input-wrap">
-              <input type="number" id="sh" value="2.4" min="0.1" step="0.1" oninput="berechnenEntprellt()" onchange="berechnen()">
-              <span class="input-unit">m</span>
-            </div>
-          </div>
-          <div class="field">
-            <label id="tension-label" style="display:flex;justify-content:space-between;align-items:center;gap:.3rem">
-              <span>H Ts unbelastet</span>
-              <button id="tension-reset-btn" onclick="resetHToReglage()" title="H auf Reglagetabellenwert zurücksetzen"
-                style="display:none;padding:.1rem .35rem;border-radius:5px;border:1px solid #d97706;background:none;color:#d97706;font-size:.65rem;cursor:pointer;font-family:inherit;line-height:1.4;white-space:nowrap;flex-shrink:0">&#x21BA; Reglage</button>
-            </label>
-            <div class="input-wrap" id="tension-wrap">
-              <input type="number" id="tension" value="2100" min="0.1" step="1" oninput="if(!_tensionAutoFilling){activePresetRef=null;_updateTensionFotoState(false);} berechnenEntprellt()" onchange="berechnen()">
-              <span class="input-unit">N</span>
-            </div>
-            <!-- Delta + Info: unter dem Feld, nur bei Foto-Override -->
-            <div id="tension-foto-note" style="display:none;margin-top:.25rem;font-size:.67rem;color:#92400e;background:#fef3c7;border:1px solid #fcd34d;border-radius:4px;padding:.28rem .5rem;line-height:1.4">
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:.4rem;white-space:nowrap">
-                <span style="font-weight:600">Foto-Feldaufnahme</span>
-                <button onclick="resetHToReglage()" title="H auf Reglagetabellenwert zurücksetzen"
-                  style="background:none;border:none;padding:0;font-size:.67rem;color:#92400e;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;text-decoration:underline;line-height:1">&#x21BA; Reglage</button>
-              </div>
-              <div style="display:flex;align-items:baseline;gap:.3rem;margin-top:.15rem">
-                <span id="tension-delta" style="display:none;font-size:.82rem;font-weight:700;line-height:1"></span>
-                <span style="font-size:.63rem;color:#b45309">vs. Reglagewert bei T&#x2081;</span>
-              </div>
-            </div>
-            <!-- N-FL: berechnete Belastet-Zugkraft (passiv) -->
-            <div id="h-belastet-display" style="margin-top:.4rem">
-              <label id="h-belastet-lbl" style="font-size:.72rem;font-weight:500;color:var(--muted)">H Ts belastet <span style="font-weight:400;color:var(--tertiary)">(berechnet)</span></label>
-              <div class="input-wrap" style="margin-top:.18rem">
-                <input type="number" id="tension-belastet" readonly tabindex="-1"
-                  style="background:var(--bg);color:var(--muted);cursor:default;pointer-events:none">
-                <span class="input-unit">N</span>
-              </div>
-            </div>
-            <!-- 3-Punkte-Toggle -->
-            <button id="three-pt-btn" onclick="toggle3pt()"
-              style="margin-top:.5rem;padding:.18rem .5rem .18rem .35rem;border-radius:6px;border:1px solid #c4cad1;background:none;color:#4e5965;font-size:.68rem;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:.3rem;line-height:1.3">
-              <span style="font-size:.72rem;opacity:.7">⊕</span> <span id="three-pt-btn-label" data-i18n="par.3pt">3-Punkte-Messung</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 3-Punkte-Eingabe (ausgeklappt) -->
-        <div id="three-pt-panel" style="display:none;margin-top:.6rem;padding:.7rem .75rem .65rem;background:var(--bg);border:1px solid var(--border);border-radius:10px">
-          <!-- Header: Titel + Untertitel untereinander -->
-          <div style="margin-bottom:.55rem">
-            <div style="font-size:.72rem;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:.3rem">
-              <span>⊕</span> <span id="three-pt-hdr" data-i18n="par.3pt.hdr">3-Punkte-Messung</span>
-            </div>
-            <div id="three-pt-subtitle" data-i18n="par.3pt.sub" style="font-size:.67rem;font-weight:400;color:var(--tertiary);margin-top:.15rem">Punkt C zwischen den Masten</div>
-          </div>
-          <!-- Felder untereinander -->
-          <div class="field">
-            <label>Position x<sub>C</sub> <span id="xC-from-label" data-i18n="par.3pt.xC" style="font-weight:400;color:var(--tertiary)">ab Mast A</span></label>
-            <div class="input-wrap">
-              <input type="number" id="xC" value="" placeholder="—" step="0.5" min="0"
-                oninput="on3ptInput()" onchange="on3ptInput()">
-              <span class="input-unit">m</span>
-            </div>
-          </div>
-          <div class="field" style="margin-top:.45rem">
-            <label id="yC-label">Durchhang y<sub>C</sub> <span style="font-weight:400;color:var(--tertiary)">unter Sehne</span></label>
-            <div style="display:flex;gap:.3rem;margin-bottom:.3rem">
-              <button id="yc-btn-sag" onclick="setYCMode('sag')"
-                style="flex:1;padding:.22rem .3rem;font-size:.68rem;border-radius:6px;border:1px solid var(--border);background:#ebebeb;color:var(--text);cursor:pointer;font-weight:600"><span id="yc-btn-sag-text" data-i18n="par.3pt.btn.sag">Durchhang</span></button>
-              <button id="yc-btn-sok" onclick="setYCMode('sok')"
-                style="flex:1;padding:.22rem .3rem;font-size:.68rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer"><span id="yc-btn-sok-text" data-i18n="par.3pt.btn.sok">Höhe ab SOK</span></button>
-              <button id="yc-btn-mum" onclick="setYCMode('mum')"
-                style="flex:1;padding:.22rem .3rem;font-size:.68rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;display:none"><span id="yc-btn-mum-text" data-i18n="par.3pt.btn.mum">m ü. M.</span></button>
-            </div>
-            <div class="input-wrap">
-              <input type="number" id="yC" value="" placeholder="—" step="0.01"
-                oninput="on3ptInput()" onchange="on3ptInput()">
-              <span class="input-unit">m</span>
-            </div>
-          </div>
-          <div id="three-pt-result" style="margin-top:.45rem;font-size:.72rem;color:var(--text);min-height:1.4em"></div>
-        </div>
         <div class="field-row">
           <div class="field" id="t1-field">
             <label id="t1-label">Temperatur T<sub>1</sub> <span style="font-weight:400;color:var(--tertiary);font-size:.75em">(Montage)</span></label>
@@ -2017,7 +1784,7 @@ button.header-manual-link:hover {
             <span style="position:relative;display:inline-flex">
               <button id="eis-info-btn" onclick="toggleEislastInfo(event)"
                 style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.2);background:none;color:var(--muted);font-size:.6rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"
-                title="Hinweis zur Eislast / Schneelast">i</button>
+                title="Hinweis zur Eislast / Schneelast" data-i18n-title="ui.eis.hinweis.titel">i</button>
               <div id="eis-info-popup" style="display:none;position:fixed;z-index:200;width:270px;background:#fff;border:1px solid rgba(235,0,0,.2);border-radius:10px;padding:.65rem .8rem;box-shadow:0 4px 20px rgba(0,0,0,.11);font-size:.72rem;color:var(--text);text-transform:none;font-weight:400;letter-spacing:0">
                 <div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.45rem">
                   <span style="width:18px;height:18px;border-radius:50%;background:#eb0000;color:#fff;font-size:.65rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">i</span>
@@ -2066,7 +1833,7 @@ button.header-manual-link:hover {
       </button>
       <div id="t3-section" style="display:none;margin-top:.55rem">
         <div class="field">
-          <label>Temperatur T<sub>3</sub></label>
+          <label data-i18n-html="ui.temp.t3">Temperatur T<sub>3</sub></label>
           <div class="input-wrap">
             <input type="number" id="temp3" value="80" min="-20" max="80" step="1"
                    oninput="onT3Input(this.value)"
@@ -2124,6 +1891,293 @@ button.header-manual-link:hover {
     </div>
     </div><!-- /card T3 -->
 
+    <!-- 3. Spannweite -->
+    <div class="card">
+      <div class="card-title" style="display:flex;align-items:center;gap:.4rem">
+        <span id="card-title-span" data-i18n="card.spannweite">Spannweite</span>
+        <span style="position:relative;display:inline-flex">
+          <button id="span-info-btn" onclick="toggleSpanInfo(event)"
+            style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.2);background:none;color:var(--muted);font-size:.6rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"
+            title="Hinweis zur Spannweite" data-i18n-title="ui.hinweis.spannweite">i</button>
+          <div id="span-info-popup" style="display:none;position:fixed;z-index:200;width:270px;background:#fff;border:1px solid rgba(235,0,0,.2);border-radius:10px;padding:.65rem .8rem;box-shadow:0 4px 20px rgba(0,0,0,.11);font-size:.72rem;color:var(--text);text-transform:none;font-weight:400;letter-spacing:0">
+            <div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.45rem">
+              <span style="width:18px;height:18px;border-radius:50%;background:#eb0000;color:#fff;font-size:.65rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">i</span>
+              <span id="span-popup-title" data-i18n="span.info.title" style="font-weight:600;color:#c60000;font-size:.73rem">Zu beachten</span>
+            </div>
+            <p id="span-popup-text" data-i18n-html="span.info.text" style="margin:0;line-height:1.55;color:var(--text)">Bei der Eingabe von c<sub>proj</sub> oder c<sub>m</sub> ist gemäss dem Dokument <strong>0161.1013.0005.1</strong> vorzugehen.</p>
+          </div>
+        </span>
+      </div>
+      <div class="seg-ctrl">
+        <button class="seg-btn active" id="seg-single" data-i18n="span.einzel" onclick="setSpanMode('single')">Einzelspannweite</button>
+        <button class="seg-btn"        id="seg-ruling" data-i18n="span.mittel" onclick="setSpanMode('ruling')">Mittelspannweite</button>
+      </div>
+
+      <!-- Einzelspannweite -->
+      <div id="panel-single">
+        <div class="field">
+          <label id="span-L-label" data-i18n="span.L.label">Spannweite L</label>
+          <div class="input-wrap">
+            <input type="number" id="span" value="45" min="0.1" step="0.1" oninput="berechnenEntprellt()" onchange="berechnen()">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mittelspannweite -->
+      <div id="panel-ruling" style="display:none">
+        <div class="stepper-row" style="margin-bottom:.5rem">
+          <label id="span-count-label" data-i18n="span.count">Anzahl Felder</label>
+          <div class="stepper">
+            <button onclick="changeSpanCount(-1)">−</button>
+            <span class="stepper-val" id="span-count-val">3</span>
+            <button onclick="changeSpanCount(+1)">+</button>
+          </div>
+        </div>
+        <div class="span-list" id="spans-list"></div>
+        <!-- Formel-Toggle + Formelhinweis -->
+        <div style="margin-top:.4rem;margin-bottom:.05rem">
+          <span id="lm-formel-label" data-i18n="lm.formel" style="font-size:.62rem;color:var(--muted);display:block;margin-bottom:.2rem">Formel</span>
+          <div class="seg-ctrl" id="lm-formula-btns" style="margin-bottom:0">
+            <button class="seg-btn active" id="seg-lm-arith" data-i18n="lm.arith"  onclick="setLmFormula('arith')"  style="font-size:.68rem;white-space:nowrap">Arithmetisch</button>
+            <button class="seg-btn"        id="seg-lm-ruling" data-i18n="lm.ruling" onclick="setLmFormula('ruling')" style="font-size:.68rem;white-space:nowrap">Ideelle Spannweite</button>
+          </div>
+          <div id="lm-formula-hint" style="font-size:.6rem;color:var(--muted);opacity:.5;margin-top:.15rem;letter-spacing:.01em">Lm = &#x03A3;L / n</div>
+        </div>
+        <!-- Lm-Feld: immer editierbar; sobald Wert getippt → Buttons ausgegraut -->
+        <div style="display:flex;align-items:center;gap:.3rem;margin-top:.3rem">
+          <label style="font-size:.72rem;font-weight:500;color:var(--muted);white-space:nowrap;min-width:2rem">Lm</label>
+          <div class="input-wrap" style="flex:1">
+            <input type="number" id="lm-display" step="0.1" min="1"
+              oninput="onLmInput(this.value)"
+              onblur="if(lmOvr!==null&&this.value.trim())this.value=parseFloat(this.value).toFixed(2);else if(lmOvr===null){this.value='';updateLm();}"
+              onfocus="this.select()">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+        <div style="font-size:.59rem;color:var(--muted);opacity:.5;margin-top:.12rem;padding-left:2.3rem" data-i18n="ui.lm.ueberschreibbar">Wert überschreibbar — Feld leeren zum Zurücksetzen</div>
+        <div class="field" style="margin-top:.5rem">
+          <label id="span-display-label" data-i18n="span.display">Dargestelltes Feld</label>
+          <div class="input-wrap">
+            <select id="display-span" onchange="highlightActiveSpan();berechnen()" style="padding-right:.75rem"></select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Befestigungspunkte + Mastangaben (zusammengeführt) -->
+    <div class="card" id="foto-sidebar-card">
+      <div class="card-title"><span id="card-title-bp" data-i18n="card.befestigung">Höheneingabe</span> <span id="bp-card-sub" data-i18n="card.befestigung.sub" style="font-weight:400;color:var(--tertiary)"></span></div>
+
+      <!-- Masthöhe h1 / h2 -->
+      <div class="field-row">
+        <div class="field">
+          <label id="h1-label">Höhe Leiter h&#x2081; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über Mastfuss</span></label>
+          <div class="input-wrap">
+            <input type="text" inputmode="decimal" id="h1" value="7.00" oninput="onSokMumInput();berechnenEntprellt()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+        <div class="field">
+          <label id="h2-label">Höhe Leiter h&#x2082; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über Mastfuss</span></label>
+          <div class="input-wrap">
+            <input type="text" inputmode="decimal" id="h2" value="7.00" oninput="onSokMumInput();berechnenEntprellt()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mastlänge (für Foto-Kalibrierung) — nur im Foto-Tab sichtbar -->
+      <div id="mastlaenge-row" class="field-row" style="display:none;margin-top:.5rem">
+        <div class="field">
+          <label id="foto-mastlaenge-li-lbl" data-i18n="foto.mast.li">Mastlänge links</label>
+          <div class="input-wrap">
+            <input type="text" inputmode="decimal" id="foto-hmast-L" placeholder="m"
+              onblur="const v=parseFloat(this.value);if(!isNaN(v)&&v>0)this.value=v;const r=document.getElementById('foto-hmast-R');if(r&&!r.value)r.value=this.value;fotoRecalcIfReady();"
+              onchange="fotoRecalcIfReady()">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+        <div class="field">
+          <label id="foto-mastlaenge-re-lbl">Mastlänge rechts <span id="foto-mastlaenge-re-sub" style="font-weight:400;color:var(--tertiary);font-size:.8em">leer = links</span></label>
+          <div class="input-wrap">
+            <input type="text" inputmode="decimal" id="foto-hmast-R" data-i18n-ph="foto.mast.re.placeholder" placeholder="= links" data-placeholder-key="foto.mast.re.placeholder"
+              onblur="const v=parseFloat(this.value);if(!isNaN(v)&&v>0)this.value=v;fotoRecalcIfReady();"
+              onchange="fotoRecalcIfReady()">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Δ Mastfuss-SOK -->
+      <div class="field-row" style="margin-top:.5rem">
+        <div class="field">
+          <label id="bp-delta-sok-li-lbl" data-i18n="bp.delta.sok.li" style="white-space:nowrap">&#x394; Mastfuss-SOK li</label>
+          <div class="input-wrap">
+            <input type="number" id="mast-delta-sok-left" step="0.01" placeholder="0.00"
+              oninput="berechnenEntprellt()" onchange="berechnen()"
+              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+        <div class="field">
+          <label id="bp-delta-sok-re-lbl" data-i18n="bp.delta.sok.re" style="white-space:nowrap">&#x394; Mastfuss-SOK re</label>
+          <div class="input-wrap">
+            <input type="number" id="mast-delta-sok-right" step="0.01" placeholder="0.00"
+              oninput="berechnenEntprellt()" onchange="berechnen()"
+              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Optionale Mastangaben: eingeklappt, öffnen sich automatisch, sobald
+           ein Wert vorhanden ist (siehe _mastangabenOeffnenFallsBelegt) -->
+      <details id="mastangaben" class="mast-details">
+        <summary data-i18n="ui.mastangaben">Mastangaben: SOK m ü. M., Name, KM</summary>
+      <!-- SOK m ü. M. (optional) -->
+      <div style="margin-top:.65rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem">
+          <label id="sok-optional-label" data-i18n="bp.sok.label" style="font-size:.72rem;color:var(--muted)">SOK m ü. M. (optional)</label>
+          <button id="sok-clear-btn" data-i18n="bp.sok.clear" onclick="clearSokMum()" title="SOK-Referenz löschen" data-i18n-title="ui.sok.loeschen.titel"
+            style="padding:.15rem .4rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:.7rem;cursor:pointer;line-height:1">&#x2715; löschen</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem">
+          <div class="input-wrap">
+            <input type="number" id="sok-mum-left" placeholder="— m ü.M." step="0.001"
+              style="font-size:.78rem"
+              oninput="onSokMumLeftInput()" onchange="onSokMumLeftInput()">
+            <span class="input-unit" style="font-size:.7rem">m</span>
+          </div>
+          <div class="input-wrap">
+            <input type="number" id="sok-mum-right" placeholder="— m ü.M." step="0.001"
+              style="font-size:.78rem"
+              oninput="this.dataset.userEdited='1';onSokMumRightInput()" onchange="this.dataset.userEdited='1';onSokMumRightInput()">
+            <span class="input-unit" style="font-size:.7rem">m</span>
+          </div>
+        </div>
+      </div>
+      <div id="sok-mum-info" style="display:none;margin-top:.35rem;font-size:.7rem;color:var(--muted)"></div>
+
+      <!-- Mastbezeichnung: Name/Nr. + KM -->
+      <div style="margin-top:.6rem">
+        <label id="bp-bez-label" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.28rem">Bezeichnung <span id="bp-bez-optional" style="font-weight:400;color:var(--tertiary)">(optional)</span></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.25rem .4rem">
+          <span id="bp-name-li-lbl" data-i18n="bp.name.li" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem">Name / Nr. links</span>
+          <span id="bp-name-re-lbl" data-i18n="bp.name.re" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem">Name / Nr. rechts</span>
+          <input type="text" id="mast-num-left" placeholder="Nr."
+            oninput="_syncMastNames();berechnenEntprellt()"
+            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%">
+          <input type="text" id="mast-num-right" placeholder="Nr."
+            oninput="_syncMastNames();berechnenEntprellt()"
+            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%">
+          <span id="bp-km-li-lbl" data-i18n="bp.km.li" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM links</span>
+          <span id="bp-km-re-lbl" data-i18n="bp.km.re" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM rechts</span>
+          <input type="text" id="mast-km-left" placeholder="000.000"
+            oninput="_triggerDrawingRebuild()" onchange="_triggerDrawingRebuild()"
+            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%;letter-spacing:.03em">
+          <input type="text" id="mast-km-right" placeholder="000.000"
+            oninput="_triggerDrawingRebuild()" onchange="_triggerDrawingRebuild()"
+            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%;letter-spacing:.03em">
+        </div>
+      </div>
+
+      </details>
+
+      <p id="bp-drag-hint" data-i18n="bp.drag.hint" style="display:none;font-size:.72rem;color:var(--tertiary);margin-top:.5rem;font-style:italic"></p>
+    </div>
+
+    <!-- 5. Parameter -->
+    <div class="card">
+      <div class="card-title" id="card-title-par" data-i18n="card.parameter">Parameter</div>
+      <div class="field-group">
+        <div class="field-row">
+          <div class="field" id="sh-field">
+            <label id="sh-label" data-i18n="par.sh">Systemhöhe sh</label>
+            <div class="input-wrap">
+              <input type="number" id="sh" value="2.4" min="0.1" step="0.1" oninput="berechnenEntprellt()" onchange="berechnen()">
+              <span class="input-unit">m</span>
+            </div>
+          </div>
+          <div class="field">
+            <label id="tension-label" style="display:flex;justify-content:space-between;align-items:center;gap:.3rem">
+              <span>H Ts unbelastet</span>
+              <button id="tension-reset-btn" onclick="resetHToReglage()" title="H auf Reglagetabellenwert zurücksetzen" data-i18n-title="ui.reglage.reset.titel"
+                style="display:none;padding:.1rem .35rem;border-radius:5px;border:1px solid #d97706;background:none;color:#d97706;font-size:.65rem;cursor:pointer;font-family:inherit;line-height:1.4;white-space:nowrap;flex-shrink:0" data-i18n="ui.reglage.reset">&#x21BA; Reglage</button>
+            </label>
+            <div class="input-wrap" id="tension-wrap">
+              <input type="number" id="tension" value="2100" min="0.1" step="1" oninput="if(!_tensionAutoFilling){activePresetRef=null;_updateTensionFotoState(false);} berechnenEntprellt()" onchange="berechnen()">
+              <span class="input-unit">N</span>
+            </div>
+            <!-- Delta + Info: unter dem Feld, nur bei Foto-Override -->
+            <div id="tension-foto-note" style="display:none;margin-top:.25rem;font-size:.67rem;color:#92400e;background:#fef3c7;border:1px solid #fcd34d;border-radius:4px;padding:.28rem .5rem;line-height:1.4">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:.4rem;white-space:nowrap">
+                <span style="font-weight:600" data-i18n="ui.foto.feldaufnahme">Foto-Feldaufnahme</span>
+                <button onclick="resetHToReglage()" title="H auf Reglagetabellenwert zurücksetzen" data-i18n-title="ui.reglage.reset.titel"
+                  style="background:none;border:none;padding:0;font-size:.67rem;color:#92400e;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;text-decoration:underline;line-height:1" data-i18n="ui.reglage.reset">&#x21BA; Reglage</button>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:.3rem;margin-top:.15rem">
+                <span id="tension-delta" style="display:none;font-size:.82rem;font-weight:700;line-height:1"></span>
+                <span style="font-size:.63rem;color:#b45309" data-i18n="ui.vs.reglage">vs. Reglagewert bei T&#x2081;</span>
+              </div>
+            </div>
+            <!-- N-FL: berechnete Belastet-Zugkraft (passiv) -->
+            <div id="h-belastet-display" style="margin-top:.4rem">
+              <label id="h-belastet-lbl" style="font-size:.72rem;font-weight:500;color:var(--muted)">H Ts belastet <span style="font-weight:400;color:var(--tertiary)">(berechnet)</span></label>
+              <div class="input-wrap" style="margin-top:.18rem">
+                <input type="number" id="tension-belastet" readonly tabindex="-1"
+                  style="background:var(--bg);color:var(--muted);cursor:default;pointer-events:none">
+                <span class="input-unit">N</span>
+              </div>
+            </div>
+            <!-- 3-Punkte-Toggle -->
+            <button id="three-pt-btn" onclick="toggle3pt()"
+              style="margin-top:.5rem;padding:.18rem .5rem .18rem .35rem;border-radius:6px;border:1px solid #c4cad1;background:none;color:#4e5965;font-size:.68rem;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:.3rem;line-height:1.3">
+              <span style="font-size:.72rem;opacity:.7">⊕</span> <span id="three-pt-btn-label" data-i18n="par.3pt">3-Punkte-Messung</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3-Punkte-Eingabe (ausgeklappt) -->
+        <div id="three-pt-panel" style="display:none;margin-top:.6rem;padding:.7rem .75rem .65rem;background:var(--bg);border:1px solid var(--border);border-radius:10px">
+          <!-- Header: Titel + Untertitel untereinander -->
+          <div style="margin-bottom:.55rem">
+            <div style="font-size:.72rem;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:.3rem">
+              <span>⊕</span> <span id="three-pt-hdr" data-i18n="par.3pt.hdr">3-Punkte-Messung</span>
+            </div>
+            <div id="three-pt-subtitle" data-i18n="par.3pt.sub" style="font-size:.67rem;font-weight:400;color:var(--tertiary);margin-top:.15rem">Punkt C zwischen den Masten</div>
+          </div>
+          <!-- Felder untereinander -->
+          <div class="field">
+            <label><span data-i18n-html="ui.position.xc">Position x<sub>C</sub></span> <span id="xC-from-label" data-i18n="par.3pt.xC" style="font-weight:400;color:var(--tertiary)">ab Mast A</span></label>
+            <div class="input-wrap">
+              <input type="number" id="xC" value="" placeholder="—" step="0.5" min="0"
+                oninput="on3ptInput()" onchange="on3ptInput()">
+              <span class="input-unit">m</span>
+            </div>
+          </div>
+          <div class="field" style="margin-top:.45rem">
+            <label id="yC-label">Durchhang y<sub>C</sub> <span style="font-weight:400;color:var(--tertiary)">unter Sehne</span></label>
+            <div style="display:flex;gap:.3rem;margin-bottom:.3rem">
+              <button id="yc-btn-sag" onclick="setYCMode('sag')"
+                style="flex:1;padding:.22rem .3rem;font-size:.68rem;border-radius:6px;border:1px solid var(--border);background:#ebebeb;color:var(--text);cursor:pointer;font-weight:600"><span id="yc-btn-sag-text" data-i18n="par.3pt.btn.sag">Durchhang</span></button>
+              <button id="yc-btn-sok" onclick="setYCMode('sok')"
+                style="flex:1;padding:.22rem .3rem;font-size:.68rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer"><span id="yc-btn-sok-text" data-i18n="par.3pt.btn.sok">Höhe ab SOK</span></button>
+              <button id="yc-btn-mum" onclick="setYCMode('mum')"
+                style="flex:1;padding:.22rem .3rem;font-size:.68rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;display:none"><span id="yc-btn-mum-text" data-i18n="par.3pt.btn.mum">m ü. M.</span></button>
+            </div>
+            <div class="input-wrap">
+              <input type="number" id="yC" value="" placeholder="—" step="0.01"
+                oninput="on3ptInput()" onchange="on3ptInput()">
+              <span class="input-unit">m</span>
+            </div>
+          </div>
+          <div id="three-pt-result" style="margin-top:.45rem;font-size:.72rem;color:var(--text);min-height:1.4em"></div>
+        </div>
+      </div>
+    </div>
+
+
     </div><!-- /sidebar-scroll -->
   </aside>
 
@@ -2137,13 +2191,13 @@ button.header-manual-link:hover {
           <button class="seg-btn"        id="view-seg-foto" data-i18n="btn.foto"      onclick="setCanvasView('foto')">Foto</button>
         </div>
         <!-- Status-Info (nur im Foto-Tab sichtbar) -->
-        <span id="foto-status" style="display:none;font-size:.71rem;color:#2563eb;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">Foto laden, dann Punkte klicken</span>
+        <span id="foto-status" style="display:none;font-size:.71rem;color:#2563eb;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" data-i18n="ui.foto.laden.hinweis">Foto laden, dann Punkte klicken</span>
       </div>
       <div style="display:flex;align-items:center;gap:.5rem">
         <span class="drag-hint" id="canvas-drag-hint" data-i18n="canvas.drag" style="display:none"></span>
         <!-- Teilen / Export -->
         <div style="position:relative">
-          <button id="share-btn" onclick="toggleShareMenu(event)" title="Export / Teilen"
+          <button id="share-btn" onclick="toggleShareMenu(event)" title="Export / Teilen" data-i18n-title="ui.export.teilen"
             style="padding:.25rem .5rem;border-radius:6px;border:none;background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:.3rem;font-size:.72rem;font-family:inherit;transition:background .15s,color .15s"
             onmouseover="this.style.background='#f1f5f9';this.style.color='var(--text)'"
             onmouseout="this.style.background='none';this.style.color='var(--muted)'">
@@ -2174,7 +2228,7 @@ button.header-manual-link:hover {
           </div>
         </div>
         <button id="fullscreen-btn" onclick="toggleCanvasFullscreen()"
-          title="Vollbild"
+          title="Vollbild" data-i18n-title="ui.vollbild"
           style="padding:.25rem .4rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s"
           onmouseover="this.style.background='#f1f5f9';this.style.color='var(--text)'"
           onmouseout="this.style.background='none';this.style.color='var(--muted)'">
@@ -2191,10 +2245,10 @@ button.header-manual-link:hover {
     <div id="scale-view">
       <div id="scale-toolbar">
         <div class="zoom-controls">
-          <button class="zoom-btn" onclick="adjustDrawingZoom(drawingZoom - 0.25)" title="Verkleinern">−</button>
-          <button class="zoom-btn" onclick="adjustDrawingZoom(drawingZoom + 0.25)" title="Vergrössern">+</button>
+          <button class="zoom-btn" onclick="adjustDrawingZoom(drawingZoom - 0.25)" title="Verkleinern" data-i18n-title="ui.verkleinern">−</button>
+          <button class="zoom-btn" onclick="adjustDrawingZoom(drawingZoom + 0.25)" title="Vergrössern" data-i18n-title="ui.vergroessern">+</button>
           <span class="zoom-level-lbl" id="drawing-zoom-label">100%</span>
-          <button class="zoom-reset-btn" onclick="adjustDrawingZoom(1)" title="Zoom zurücksetzen">↺</button>
+          <button class="zoom-reset-btn" onclick="adjustDrawingZoom(1)" title="Zoom zurücksetzen" data-i18n-title="ui.zoom.reset">↺</button>
         </div>
         <div style="display:flex;align-items:center;gap:.6rem">
           <!-- Überhöhung -->
@@ -2216,10 +2270,10 @@ button.header-manual-link:hover {
             <div style="display:flex;gap:.2rem">
               <button id="seg-ext-sok" data-i18n="draw.bis.sok" onclick="setDrawingExtent('sok')"
                 class="zoom-btn active" style="width:auto;padding:0 .45rem;font-size:.65rem"
-                title="Vollständige Darstellung bis SOK">bis SOK</button>
+                title="Vollständige Darstellung bis SOK" data-i18n-title="ui.bis.sok.titel">bis SOK</button>
               <button id="seg-ext-cat" data-i18n="draw.kettenwerk" onclick="setDrawingExtent('catenary')"
                 class="zoom-btn" style="width:auto;padding:0 .45rem;font-size:.65rem"
-                title="Nur Kettenwerk / Einzelleiter">Kettenwerk</button>
+                title="Nur Kettenwerk / Einzelleiter" data-i18n-title="ui.nur.kw.titel">Kettenwerk</button>
             </div>
           </div>
         </div>
@@ -2232,7 +2286,7 @@ button.header-manual-link:hover {
       </div>
       <div id="scale-data-strip" style="display:none"></div>
       <div id="scale-sok-note" style="display:none;padding:.3rem .7rem;font-size:.65rem;font-style:italic;border-top:1px solid #ececec;background:#fafafa;flex-direction:column;align-items:flex-start;gap:.2rem">
-        <span style="color:#b0b0b0">ⓘ SOK zwischen den Eingabepunkten wird interpoliert<br>und entspricht nicht der effektiven Höhenlage.</span>
+        <span style="color:#b0b0b0" data-i18n="ui.sok.hinweis">ⓘ SOK zwischen den Eingabepunkten wird interpoliert und entspricht nicht der effektiven Höhenlage.</span>
         <span id="scale-min-clearance-note" style="display:none;color:#5a6a7a;font-weight:600;white-space:nowrap"></span>
       </div>
     </div>
@@ -2281,29 +2335,29 @@ button.header-manual-link:hover {
         <button id="foto-btn-curve"  onclick="fotoSetRole('curve')"  class="foto-role-btn" style="display:none">+ Kurve</button>
         <span id="foto-status-fs" style="font-size:.7rem;color:var(--muted);display:none;margin-left:.3rem"></span>
         <span class="foto-trenner" style="color:#d1d5db;font-size:.65rem;margin-left:.15rem">|</span>
-        <button id="foto-reset-btn" data-i18n="foto.reset.btn" onclick="fotoReset()" title="Alle Klick-Eingaben zurücksetzen"
+        <button id="foto-reset-btn" data-i18n="foto.reset.btn" onclick="fotoReset()" title="Alle Klick-Eingaben zurücksetzen" data-i18n-title="ui.foto.reset.titel"
           style="background:none;border:1px solid var(--border);border-radius:6px;padding:.18rem .45rem;font-size:.69rem;color:var(--muted);cursor:pointer;font-family:inherit;white-space:nowrap">Reset</button>
-        <button id="foto-refresh-btn" data-i18n="foto.refresh.btn" onclick="fotoRefresh()" title="Darstellung aktualisieren"
+        <button id="foto-refresh-btn" data-i18n="foto.refresh.btn" onclick="fotoRefresh()" title="Darstellung aktualisieren" data-i18n-title="ui.foto.refresh.titel"
           style="background:none;border:1px solid var(--border);border-radius:6px;padding:.18rem .45rem;font-size:.69rem;color:var(--muted);cursor:pointer;font-family:inherit;white-space:nowrap">Refresh</button>
       </div>
 
       <!-- Zoom-Steuerung -->
       <div class="zoom-controls">
-        <button class="zoom-btn" onclick="fotoZoomOut()" title="Verkleinern">−</button>
-        <button class="zoom-btn" onclick="fotoZoomIn()" title="Vergrössern">+</button>
+        <button class="zoom-btn" onclick="fotoZoomOut()" title="Verkleinern" data-i18n-title="ui.verkleinern">−</button>
+        <button class="zoom-btn" onclick="fotoZoomIn()" title="Vergrössern" data-i18n-title="ui.vergroessern">+</button>
         <span id="foto-zoom-lbl" class="zoom-level-lbl">100%</span>
-        <button class="zoom-reset-btn" onclick="fotoZoomReset()" title="Zoom zurücksetzen">↺</button>
-        <button id="foto-pan-lock-btn" onclick="fotoPanLockToggle()" class="zoom-btn" title="Bildausschnitt einfrieren" style="margin-left:.15rem">
+        <button class="zoom-reset-btn" onclick="fotoZoomReset()" title="Zoom zurücksetzen" data-i18n-title="ui.zoom.reset">↺</button>
+        <button id="foto-pan-lock-btn" onclick="fotoPanLockToggle()" class="zoom-btn" title="Bildausschnitt einfrieren" data-i18n-title="ui.foto.pan.titel" style="margin-left:.15rem">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
             <rect x="3" y="7.5" width="10" height="7.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
             <path d="M5.5 7.5V5a2.5 2.5 0 015 0v2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </button>
         <span style="width:1px;height:14px;background:var(--border);margin:0 .2rem;flex-shrink:0"></span>
-        <button id="foto-opacity-btn" onclick="fotoOpacityCycle()" class="zoom-btn" title="Foto-Transparenz" style="width:auto;padding:0 .38rem;font-size:.65rem;letter-spacing:.01em;flex-shrink:0">100%</button>
+        <button id="foto-opacity-btn" onclick="fotoOpacityCycle()" class="zoom-btn" title="Foto-Transparenz" data-i18n-title="ui.foto.opacity.titel" style="width:auto;padding:0 .38rem;font-size:.65rem;letter-spacing:.01em;flex-shrink:0">100%</button>
         <span style="width:1px;height:14px;background:var(--border);margin:0 .2rem;flex-shrink:0"></span>
         <a id="foto-geoadmin-btn" href="#" target="_blank" rel="noopener"
-          title="Fotostandort auf map.geo.admin.ch"
+          title="Fotostandort auf map.geo.admin.ch" data-i18n-title="ui.foto.geo.titel"
           style="display:flex;align-items:center;gap:.28rem;padding:.18rem .42rem;border-radius:5px;border:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:.68rem;font-family:inherit;pointer-events:none;opacity:.35;white-space:nowrap">
           <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
             <circle cx="8" cy="6.5" r="2.5" stroke="currentColor" stroke-width="1.5"/>
@@ -2485,7 +2539,7 @@ button.header-manual-link:hover {
     <div class="probe-readout">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.4rem">
         <div class="probe-hint-small" id="probe-hint" data-i18n="canvas.probe.hint">Messpunkte: ins Diagramm klicken / ziehen oder x-Wert eingeben</div>
-        <button id="probe-reset-btn" data-i18n="canvas.probe.reset" onclick="clearMesspunkte()" title="Messpunkte löschen"
+        <button id="probe-reset-btn" data-i18n="canvas.probe.reset" onclick="clearMesspunkte()" title="Messpunkte löschen" data-i18n-title="ui.mp.loeschen.titel"
           style="font-size:.72rem;padding:.22rem .65rem;border-radius:7px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;line-height:1.4">
           ✕ Reset
         </button>
@@ -2570,7 +2624,7 @@ button.header-manual-link:hover {
               <span class="probe-mp-unit">m</span>
             </div>
           </div>
-          <label style="display:inline-flex;align-items:center;cursor:pointer;flex-shrink:0" title="Mindestabstand anzeigen">
+          <label style="display:inline-flex;align-items:center;cursor:pointer;flex-shrink:0" title="Mindestabstand anzeigen" data-i18n-title="ui.minabstand.titel">
             <input type="checkbox" id="min-clearance-show" checked
               style="position:absolute;opacity:0;width:0;height:0"
               onchange="_showMinClearance=this.checked;document.getElementById('mc-tog-knob').style.left=this.checked?'13px':'2px';document.getElementById('mc-tog-bg').style.background=this.checked?'#6b7280':'#d1d5db';_triggerDrawingRebuild()">
@@ -3221,7 +3275,7 @@ function _extractExifGps(buf) {
     btn.style.pointerEvents = '';
     btn.style.opacity = '1';
     btn.style.color = 'var(--text)';
-    btn.title = `Fotostandort auf map.geo.admin.ch (${lat6}, ${lon6})`;
+    btn.title = `${t('ui.foto.geo.titel')} (${lat6}, ${lon6})`;
   }
 
   const _FOTO_MAX_PX = 3_000_000;  // maximale Auflösung beim Bildladen (Pixel total ~3 MP)
@@ -3450,7 +3504,7 @@ function _extractExifGps(buf) {
     if (btn) {
       btn.style.background = _fotoPanLocked ? 'var(--text)' : '';
       btn.style.color      = _fotoPanLocked ? '#fff' : '';
-      btn.title = _fotoPanLocked ? 'Bildausschnitt freigeben' : 'Bildausschnitt einfrieren';
+      btn.title = t(_fotoPanLocked ? 'ui.foto.pan.frei' : 'ui.foto.pan.titel');
     }
   };
 
@@ -5324,6 +5378,18 @@ function updateSokMumUI() {
 // Alias (wird von h1/h2 oninput aufgerufen)
 function onSokMumInput() { updateSokMumUI(); }
 
+// Optionale Mastangaben (SOK m ü. M., Name, KM) sind eingeklappt. Sobald eines
+// der Felder einen Wert hat — etwa nach dem Laden eines Projekts — aufklappen,
+// damit keine Eingabe unbemerkt versteckt bleibt.
+function _mastangabenOeffnenFallsBelegt() {
+  const det = document.getElementById('mastangaben');
+  if (!det) return;
+  const belegt = ['sok-mum-left', 'sok-mum-right', 'mast-num-left', 'mast-num-right',
+                  'mast-km-left', 'mast-km-right']
+    .some(id => (document.getElementById(id)?.value ?? '').trim() !== '');
+  if (belegt) det.open = true;
+}
+
 // ── Mastbezeichnung: Name/Nr. + KM kombiniert ────────────────────────────────
 function _buildMastLabel(side) {
   const num = document.getElementById(side === 'left' ? 'mast-num-left' : 'mast-num-right')?.value?.trim();
@@ -5405,6 +5471,7 @@ function clearSokMum() {
 
 function setYCMode(mode) {
   yCInputMode = mode;
+  if (mode === 'mum') { const d = document.getElementById('mastangaben'); if (d) d.open = true; }
   const btns  = { sag: 'yc-btn-sag', sok: 'yc-btn-sok', mum: 'yc-btn-mum' };
   const active = 'border:1px solid rgba(235,0,0,.3);background:#fff5f5;color:#eb0000;font-weight:600';
   const idle   = 'border:1px solid var(--border);background:none;color:var(--muted);font-weight:400';
@@ -5418,10 +5485,10 @@ function setYCMode(mode) {
   const labelEl = document.getElementById('yC-label');
   const inputEl = document.getElementById('yC');
   if (mode === 'sag') {
-    labelEl.innerHTML = `Durchhang y<sub>C</sub> <span style="font-weight:400;color:var(--tertiary)">${t('par.3pt.yC.sag')}</span>`;
+    labelEl.innerHTML = `${t('ui.durchhang.yc')} <span style="font-weight:400;color:var(--tertiary)">${t('par.3pt.yC.sag')}</span>`;
     inputEl.placeholder = '—'; inputEl.step = '0.01'; inputEl.min = '0';
   } else if (mode === 'sok') {
-    labelEl.innerHTML = `Höhe y<sub>C</sub> <span style="font-weight:400;color:var(--tertiary)">${t('par.3pt.yC.sok')}</span>`;
+    labelEl.innerHTML = `${t('ui.hoehe.yc')} <span style="font-weight:400;color:var(--tertiary)">${t('par.3pt.yC.sok')}</span>`;
     inputEl.placeholder = '—'; inputEl.step = '0.01'; inputEl.min = '0';
   } else {
     const sokL = getSokMumLeft();
@@ -5430,7 +5497,7 @@ function setYCMode(mode) {
     if (sokL !== null && sokR !== null && Math.abs(sokL - sokR) > 0.0005) ref = ` (SOK li=${sokL.toFixed(2)} / re=${sokR.toFixed(2)} m)`;
     else if (sokL !== null) ref = ` (SOK = ${sokL.toFixed(2)} m)`;
     else if (sokR !== null) ref = ` (SOK = ${sokR.toFixed(2)} m)`;
-    labelEl.innerHTML = `Höhe y<sub>C</sub> <span style="font-weight:400;color:var(--tertiary)">${t('par.3pt.yC.mum')}${ref}</span>`;
+    labelEl.innerHTML = `${t('ui.hoehe.yc')} <span style="font-weight:400;color:var(--tertiary)">${t('par.3pt.yC.mum')}${ref}</span>`;
     inputEl.placeholder = '—'; inputEl.step = '0.001';
   }
   on3ptInput();
@@ -5652,8 +5719,8 @@ function updateSysModeUI(mode) {
   // T2-Label: bei R-FL Hinweis
   const t2Lbl = document.getElementById('t2-label');
   if (t2Lbl) t2Lbl.innerHTML = isRfl
-    ? `Temperatur T<sub>2</sub> <span style="font-weight:400;color:var(--muted);font-size:.78em">(fixiert −5 °C für Eislast)</span>`
-    : `Temperatur T<sub>2</sub>`;
+    ? `${t('par.T2')} <span style="font-weight:400;color:var(--muted);font-size:.78em">${t('ui.t2.fix.eis')}</span>`
+    : t('par.T2');
 
   // T3-Vergleichskurve: bei R-FL ausblenden (keine Temperaturabhängigkeit)
   const t3wrap = document.getElementById('t3-wrapper');
@@ -6316,6 +6383,7 @@ function setProjectState(s) {
   }
   if (pruefung.warnungen.length)
     meldung(t('msg.projekt.repariert') + '\n\u2022 ' + pruefung.warnungen.join('\n\u2022 '), 'warnung');
+  _mastangabenOeffnenFallsBelegt();
   return true;
 }
 
@@ -6583,7 +6651,7 @@ function populateSaveGroupSel() {
     sel.appendChild(sep);
   }
   const newOpt = document.createElement('option');
-  newOpt.value = '__new__'; newOpt.textContent = '+ Neues Projekt anlegen';
+  newOpt.value = '__new__'; newOpt.textContent = t('ui.proj.neu');
   sel.appendChild(newOpt);
   // Vorauswahl: letzter Ort oder "__new__" wenn noch kein Projekt
   sel.value = (lastId && sorted.some(g => g.id === lastId)) ? lastId : (sorted.length ? sorted[0].id : '__new__');
@@ -6724,7 +6792,7 @@ function updateProjectBadge() {
 function fmtDate(iso) {
   if (!iso) return '';
   const d = new Date(iso);
-  return d.toLocaleDateString('de-CH') + ' ' + d.toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString(_sprachTag()) + ' ' + d.toLocaleTimeString(_sprachTag(), {hour:'2-digit',minute:'2-digit'});
 }
 
 // ── CRUD ──
@@ -6789,7 +6857,7 @@ function quickSave() {
       btn.title = t('msg.gespeichert');
       setTimeout(() => {
         btn.style.color = '';
-        btn.title = 'Speichern';
+        btn.title = t('ui.speichern');
       }, 1800);
     }
   } else {
@@ -7120,11 +7188,11 @@ function renderProjectList() {
 
   // Sort bar
   const sortBar = `<div class="proj-sort-bar">
-    <span class="proj-sort-lbl">Sortierung:</span>
-    <button class="proj-sort-btn${projSortMode==='date_desc'?' active':''}" onclick="setProjSort('date_desc')">Datum ↓</button>
-    <button class="proj-sort-btn${projSortMode==='date_asc'?' active':''}" onclick="setProjSort('date_asc')">Datum ↑</button>
-    <button class="proj-sort-btn${projSortMode==='name_asc'?' active':''}" onclick="setProjSort('name_asc')">Name A–Z</button>
-    <button class="proj-sort-btn${projSortMode==='name_desc'?' active':''}" onclick="setProjSort('name_desc')">Name Z–A</button>
+    <span class="proj-sort-lbl">${t('ui.sortierung')}</span>
+    <button class="proj-sort-btn${projSortMode==='date_desc'?' active':''}" onclick="setProjSort('date_desc')">${t('ui.datum.ab')}</button>
+    <button class="proj-sort-btn${projSortMode==='date_asc'?' active':''}" onclick="setProjSort('date_asc')">${t('ui.datum.auf')}</button>
+    <button class="proj-sort-btn${projSortMode==='name_asc'?' active':''}" onclick="setProjSort('name_asc')">${t('ui.name.az')}</button>
+    <button class="proj-sort-btn${projSortMode==='name_desc'?' active':''}" onclick="setProjSort('name_desc')">${t('ui.name.za')}</button>
   </div>`;
 
   // Helper: render a calc item row (child or ungrouped)
@@ -7133,10 +7201,10 @@ function renderProjectList() {
     const checked = selectedIds.has(m.id);
     const childCls = isChild ? 'proj-child-item' : '';
     const moveOptions = groups.length > 0
-      ? `<select class="proj-move-sel" title="Zu Projekt verschieben"
+      ? `<select class="proj-move-sel" title="${t('ui.zu.projekt.titel')}"
            onchange="moveToGroup('${m.id}',this.value);this.value=''"
            onclick="event.stopPropagation()">
-           <option value="">→ Projekt</option>
+           <option value="">${t('ui.zu.projekt')}</option>
            ${groups.filter(g => g.id !== m.parentId).map(g => `<option value="${escHtml(g.id)}">${escHtml(g.name)}</option>`).join('')}
          </select>` : '';
     return `<div class="proj-item ${childCls}${isActive ? ' active-proj' : ''}">
@@ -7145,16 +7213,16 @@ function renderProjectList() {
           onclick="event.stopPropagation();toggleSelectCalc('${m.id}')">
         <div class="proj-item-info">
           <div class="proj-item-name" title="${escHtml(m.name)}">${escHtml(m.name)}${isActive ? ' ✓' : ''}</div>
-          <button class="proj-rename-btn" onclick="renameEntry('${m.id}')" title="Umbenennen">${_penSvg}</button>
+          <button class="proj-rename-btn" onclick="renameEntry('${m.id}')" title="${t('ui.umbenennen')}">${_penSvg}</button>
         </div>
       </div>
       <div class="proj-item-bottom">
-        <div class="proj-item-date">Gespeichert: ${fmtDate(m.updatedAt)}</div>
+        <div class="proj-item-date">${t('ui.gespeichert.am')} ${fmtDate(m.updatedAt)}</div>
         <div class="proj-item-actions">
-          <button class="proj-btn pri" onclick="loadProjectById('${m.id}')">Laden</button>
-          <button class="proj-btn" onclick="exportProjectById('${m.id}')">Export</button>
+          <button class="proj-btn pri" onclick="loadProjectById('${m.id}')">${t('ui.laden')}</button>
+          <button class="proj-btn" onclick="exportProjectById('${m.id}')">${t('ui.export')}</button>
           ${moveOptions}
-          <button class="proj-btn danger icon-only" onclick="deleteProjectById('${m.id}')" title="Löschen"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="proj-btn danger icon-only" onclick="deleteProjectById('${m.id}')" title="${t('ui.loeschen')}"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </div>
       </div>
     </div>`;
@@ -7180,11 +7248,11 @@ function renderProjectList() {
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;color:#6b7280"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
         <span class="proj-group-name">${escHtml(g.name)}</span>
         <span class="proj-group-date">${fmtDate(g.updatedAt)}</span>
-        <span class="proj-group-count">${children.length} Berechnung${children.length !== 1 ? 'en' : ''}</span>
+        <span class="proj-group-count">${children.length} ${t(children.length === 1 ? 'ui.berechnung.1' : 'ui.berechnung.n')}</span>
         <div class="proj-item-actions" style="flex-wrap:nowrap" onclick="event.stopPropagation()">
-          <button class="proj-rename-btn" onclick="renameEntry('${g.id}')" title="Projekt umbenennen">${_penSvg}</button>
-          <button class="proj-btn" onclick="exportWholeProject('${g.id}')" title="Gesamtes Projekt als JSON exportieren">Export</button>
-          <button class="proj-btn danger icon-only" onclick="deleteProjectById('${g.id}')" title="Löschen"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="proj-rename-btn" onclick="renameEntry('${g.id}')" title="${t('ui.projekt.umbenennen')}">${_penSvg}</button>
+          <button class="proj-btn" onclick="exportWholeProject('${g.id}')" title="${t('ui.projekt.export.titel')}">${t('ui.export')}</button>
+          <button class="proj-btn danger icon-only" onclick="deleteProjectById('${g.id}')" title="${t('ui.loeschen')}"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </div>
       </div>
       ${!collapsed && children.length > 0 ? `<div class="proj-group-children">${childrenHtml}</div>` : ''}
@@ -7199,13 +7267,13 @@ function renderProjectList() {
   // Bulk bar
   const bulkBar = selectedIds.size > 0 ? `
     <div class="proj-bulk-bar">
-      <span class="proj-bulk-label">${selectedIds.size} ausgewählt</span>
+      <span class="proj-bulk-label">${selectedIds.size} ${t('ui.ausgewaehlt')}</span>
       <button class="proj-btn bulk" onclick="batchPdfExport()">
         <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style="vertical-align:-.1em;margin-right:.2rem"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        PDF Serienbericht
+        ${t('ui.pdf.serie')}
       </button>
-      <button class="proj-btn bulk" onclick="batchJsonExport()">JSON Export</button>
-      <button class="proj-btn bulk danger" onclick="batchDelete()">Löschen</button>
+      <button class="proj-btn bulk" onclick="batchJsonExport()">${t('ui.json.export')}</button>
+      <button class="proj-btn bulk danger" onclick="batchDelete()">${t('ui.loeschen')}</button>
     </div>` : '';
 
   container.innerHTML = sortBar + bulkBar +
@@ -7392,7 +7460,7 @@ function _renderReglageTitle() {
   const H10  = (L_ref !== matLref) ? _reglageH(mat, H_max, L_ref, 10) : variant.H_reglage;
   const Htxt = (H10 != null && isFinite(H10)) ? Math.round(H10).toLocaleString('de-CH') : '—';
   el.innerHTML =
-    `H = ${Htxt} N  (Reglage bei T<sub>1</sub> = 10 °C, Lm = ${L_ref} m)`;
+    `H = ${Htxt} N  (${t('ui.reglage.bei')} T<sub>1</sub> = 10 °C, Lm = ${L_ref} m)`;
 }
 
 // Berechnet H bei Temperatur T, ausgehend von H_max bei −20 °C
@@ -7538,7 +7606,7 @@ function renderReglageElTable() {
   }
 
   const colNote = em ? '' : '<col style="width:28%">';
-  const thNote  = em ? '' : '<th class="c-left">Anmerkung</th>';
+  const thNote  = em ? '' : `<th class="c-left">${t('ui.anmerkung')}</th>`;
 
   let tBody = '';
   for (const r of rows) {
@@ -7548,7 +7616,7 @@ function renderReglageElTable() {
     const nameCell = r.label
       ? `${escHtml(r.name)} <span style="color:var(--tertiary);font-size:.7rem">· ${escHtml(r.label)}</span>`
       : escHtml(r.name);
-    const preset = r.hasPreset ? '' : ' <span style="color:var(--tertiary);font-size:.65rem">(Voreinst.)</span>';
+    const preset = r.hasPreset ? '' : ` <span style="color:var(--tertiary);font-size:.65rem">${t('ui.voreinst')}</span>`;
 
     if (em) {
       tBody += `<tr>
@@ -7577,7 +7645,7 @@ function renderReglageElTable() {
     wrap.innerHTML = `<table class="rgl-tbl" style="min-width:460px">
       <colgroup><col style="width:30%"><col style="width:22%"><col style="width:16%"><col style="width:20%"></colgroup>
       <thead><tr>
-        <th class="c-left">Material</th>
+        <th class="c-left">${t('ui.material')}</th>
         <th class="c-right">H (−20 °C)</th>
         <th class="c-right">L ref</th>
         <th class="c-right">H (+10 °C) <span style="font-weight:400;font-size:.65rem">berechnet</span></th>
@@ -7592,7 +7660,7 @@ function renderReglageElTable() {
     wrap.innerHTML = `<table class="rgl-tbl" style="min-width:460px">
       <colgroup><col style="width:28%"><col style="width:16%"><col style="width:16%"><col style="width:12%">${colNote}</colgroup>
       <thead><tr>
-        <th class="c-left">Material</th>
+        <th class="c-left">${t('ui.material')}</th>
         <th class="c-right">H (−20 °C)</th>
         <th class="c-right">H (+10 °C)</th>
         <th class="c-ctr">L ref</th>
@@ -7618,7 +7686,7 @@ function _reglageHAt10(mat, variant, H_max, L_ref) {
 function toggleReglageElEdit() {
   _rglElEditMode = !_rglElEditMode;
   const btn = document.getElementById('rgl-el-edit-btn');
-  if (btn) btn.textContent = _rglElEditMode ? 'Schliessen' : 'Bearbeiten';
+  if (btn) btn.textContent = t(_rglElEditMode ? 'ui.schliessen' : 'ui.bearbeiten');
   renderReglageElTable();
 }
 
@@ -7662,7 +7730,7 @@ function _applyElMatEdits() {
   if (sysMode === 'el') { const s=document.getElementById('el-material-select'); if(s) { elReglageHmaxOvr=null; elReglageLrefOvr=null; applyElVariant(elBasiskraftIdx); } }
   _rglElEditMode = false;
   const btn = document.getElementById('rgl-el-edit-btn');
-  if (btn) btn.textContent = 'Bearbeiten';
+  if (btn) btn.textContent = t('ui.bearbeiten');
   renderReglageElTable();
 }
 
@@ -9029,7 +9097,7 @@ function updateHighlightCard() {
     el.innerHTML = `
       <div class="istzustand-card${rflCls}" style="margin-bottom:.75rem">
         <div class="istzustand-main">
-          <div class="istzustand-label" style="color:${curveClr}">${t('res.tiefpunkt.label')} — ${t('res.tiefpunkt.x0')}: ${f3(x_ist)} m</div>
+          <div class="istzustand-label" style="color:${curveClr}">${t('res.tiefpunkt.label')} — x₀ = ${f3(x_ist)} m</div>
           <div class="istzustand-value" style="color:${curveClr}">${f3(sag)}<span class="istzustand-unit">m</span></div>
           <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${dhLabel}${tempLabel}</div>
           <div style="font-size:.7rem;color:var(--muted);opacity:.8;margin-top:.6rem">${seilLabel}${tempLabel}${hasSokH ? ` &nbsp;<span style="opacity:.6">(${f3(y2_raw)} m ${t('dyn.ueber.sok')})</span>` : ` ${t('dyn.ueber.sok')}`}</div>
@@ -9037,7 +9105,7 @@ function updateHighlightCard() {
         </div>
         <div style="display:flex;align-items:center;gap:.5rem;margin:.35rem 0;width:100%">
           <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
-          <span class="sok-hinweis" style="font-size:.6rem;color:#c0c0c0;font-style:italic;white-space:nowrap">ⓘ SOK zwischen den Eingabepunkten wird interpoliert und entspricht nicht der effektiven Höhenlage.</span>
+          <span class="sok-hinweis" style="font-size:.6rem;color:#c0c0c0;font-style:italic;white-space:nowrap">${t('ui.sok.hinweis')}</span>
           <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
         </div>
       </div>`;
@@ -9064,7 +9132,7 @@ function updateHighlightCard() {
         ${blocks}
         <div style="${compact ? 'grid-column:1/-1;' : ''}display:flex;align-items:center;gap:.5rem;margin:.35rem 0;width:100%">
           <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
-          <span class="sok-hinweis" style="font-size:.6rem;color:#c0c0c0;font-style:italic;white-space:nowrap">ⓘ SOK zwischen den Eingabepunkten wird interpoliert und entspricht nicht der effektiven Höhenlage.</span>
+          <span class="sok-hinweis" style="font-size:.6rem;color:#c0c0c0;font-style:italic;white-space:nowrap">${t('ui.sok.hinweis')}</span>
           <div style="flex:1;height:1px;background:rgba(0,0,0,.08)"></div>
         </div>
       </div>`;
@@ -9145,10 +9213,10 @@ function renderObstacleList() {
   if (!sec) return;
   const hasAny = obstaclePoints.length > 0;
   let html = `<div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:${hasAny ? '.4rem' : '0'}">
-    <span style="font-size:.72rem;font-weight:600;color:var(--muted)">Hindernispunkte</span>
+    <span style="font-size:.72rem;font-weight:600;color:var(--muted)">${t('ui.hindernis')}</span>
     <div style="display:flex;gap:.35rem">
-      <button onclick="addObstacle()" style="font-size:.7rem;padding:.14rem .45rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer">+ Hinzufügen</button>
-      ${hasAny ? `<button onclick="clearObstacles()" style="font-size:.7rem;padding:.14rem .45rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer">✕ Alle</button>` : ''}
+      <button onclick="addObstacle()" style="font-size:.7rem;padding:.14rem .45rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer">${t('ui.hinzufuegen')}</button>
+      ${hasAny ? `<button onclick="clearObstacles()" style="font-size:.7rem;padding:.14rem .45rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer">${t('ui.alle')}</button>` : ''}
     </div>
   </div>`;
   obstaclePoints.forEach((o, i) => {
@@ -11713,6 +11781,116 @@ const LANG = {
     'proj.save.btn':     'Speichern',
     'proj.import.btn':   'JSON importieren',
     'proj.local.note':   'Daten werden nur lokal im Browser gespeichert',
+    // ── Oberfläche (v3.1) ──
+    'ui.t2.fix.eis': '(fixiert −5 °C für Eislast)',
+    'ui.datei': 'Datei',
+    'ui.reset.titel': 'Zurücksetzen auf Standardwerte',
+    'ui.reset': 'Zurücksetzen',
+    'ui.speichern': 'Speichern',
+    'ui.reglage': 'Reglagetabelle',
+    'ui.reglage.kurz': 'Reglage',
+    'ui.handbuch': 'Handbuch',
+    'ui.kw.eigen': 'Eigenes Kettenwerk definieren',
+    'ui.mat.eigen': 'Eigenes Material definieren',
+    'ui.reglage.zeigen': 'Reglagetabelle anzeigen',
+    'ui.hinweis.spannweite': 'Hinweis zur Spannweite',
+    'ui.lm.ueberschreibbar': 'Wert überschreibbar — Feld leeren zum Zurücksetzen',
+    'ui.sok.loeschen.titel': 'SOK-Referenz löschen',
+    'ui.reglage.reset.titel': 'H auf Reglagetabellenwert zurücksetzen',
+    'ui.reglage.reset': '↺ Reglage',
+    'ui.foto.feldaufnahme': 'Foto-Feldaufnahme',
+    'ui.vs.reglage': 'vs. Reglagewert bei T₁',
+    'ui.eis.hinweis.titel': 'Hinweis zur Eislast / Schneelast',
+    'ui.foto.laden.hinweis': 'Foto laden, dann Punkte klicken',
+    'ui.export.teilen': 'Export / Teilen',
+    'ui.vollbild': 'Vollbild',
+    'ui.verkleinern': 'Verkleinern',
+    'ui.vergroessern': 'Vergrössern',
+    'ui.zoom.reset': 'Zoom zurücksetzen',
+    'ui.bis.sok.titel': 'Vollständige Darstellung bis SOK',
+    'ui.nur.kw.titel': 'Nur Kettenwerk / Einzelleiter',
+    'ui.foto.reset.titel': 'Alle Klick-Eingaben zurücksetzen',
+    'ui.foto.refresh.titel': 'Darstellung aktualisieren',
+    'ui.foto.pan.titel': 'Bildausschnitt einfrieren',
+    'ui.foto.pan.frei': 'Bildausschnitt freigeben',
+    'ui.foto.opacity.titel': 'Foto-Transparenz',
+    'ui.foto.geo.titel': 'Fotostandort auf map.geo.admin.ch',
+    'ui.mp.loeschen.titel': 'Messpunkte löschen',
+    'ui.minabstand.titel': 'Mindestabstand anzeigen',
+    'ui.schliessen': 'Schliessen',
+    'ui.projekt.label': 'Projekt: ',
+    'ui.proj.neu': '+ Neues Projekt anlegen',
+    'ui.proj.platzhalter': 'Projekt A',
+    'ui.sortierung': 'Sortierung:',
+    'ui.datum.ab': 'Datum ↓',
+    'ui.datum.auf': 'Datum ↑',
+    'ui.name.az': 'Name A–Z',
+    'ui.name.za': 'Name Z–A',
+    'ui.zu.projekt.titel': 'Zu Projekt verschieben',
+    'ui.zu.projekt': '→ Projekt',
+    'ui.umbenennen': 'Umbenennen',
+    'ui.projekt.umbenennen': 'Projekt umbenennen',
+    'ui.gespeichert.am': 'Gespeichert:',
+    'ui.laden': 'Laden',
+    'ui.export': 'Export',
+    'ui.loeschen': 'Löschen',
+    'ui.projekt.export.titel': 'Gesamtes Projekt als JSON exportieren',
+    'ui.berechnung.1': 'Berechnung',
+    'ui.berechnung.n': 'Berechnungen',
+    'ui.ausgewaehlt': 'ausgewählt',
+    'ui.pdf.serie': 'PDF Serienbericht',
+    'ui.json.export': 'JSON Export',
+    'ui.voreinst': '(Voreinst.)',
+    'ui.anmerkung': 'Anmerkung',
+    'ui.bearbeiten': 'Bearbeiten',
+    'ui.material': 'Material',
+    'ui.kombination': 'Kombination',
+    'ui.abnutzung': 'Abnutzung',
+    'ui.rgl.quelle': 'Quelle: SBB 0161.1013.0001 &nbsp;·&nbsp; Berechnungsart: Ausgleichend &nbsp;·&nbsp; Lm = 45 m &nbsp;·&nbsp; T = +10 °C',
+    'ui.rgl.nfl.titel': 'N-FL — Normale Fahrleitung',
+    'ui.rgl.rfl.titel': 'R-FL — Regelfahrleitung',
+    'ui.rgl.el.titel': 'Einzelleiter — Reglagezugkraft',
+    'ui.rgl.hts.bel': 'H<sub>Ts</sub> belastet',
+    'ui.rgl.hts.ub': 'H<sub>Ts</sub> unbelastet',
+    'ui.rgl.hts.konst': 'H<sub>Ts</sub> konstant',
+    'ui.rgl.nfl.note': 'H<sub>Ts</sub> belastet = mit Fahrdraht &nbsp;·&nbsp; H<sub>Ts</sub> unbelastet = ohne Fahrdraht &nbsp;·&nbsp; bei +10 °C &nbsp;·&nbsp; (SBB 0161.1013.0001)',
+    'ui.rgl.rfl.note': 'H<sub>Ts</sub> konstant via Nachspannvorrichtung &nbsp;·&nbsp; temperaturunabhängig &nbsp;·&nbsp; (SBB 0161.1013.0001)',
+    'ui.rgl.el.note': 'Reglagezugkraft bei +10 °C, Lm = 45 m, Berechnungsart «Ausgleichend» &nbsp;·&nbsp; (SBB «Durchhang 2026.xlsm»)',
+    'ui.reglage.bei': 'Reglage bei',
+    'ui.export.csv': 'Export CSV',
+    'ui.import.csv': 'Import CSV',
+    'ui.waermedehnzahl': 'Wärmedehnzahl α',
+    'ui.steifigkeit': 'Steifigkeit E·A',
+    'ui.eigengewicht': 'Eigengewicht q',
+    'ui.leiterkennwerte': 'Leiterkennwerte',
+    'ui.bezeichnung': 'Bezeichnung',
+    'ui.elm.titel': 'Eigenes Leitermaterial',
+    'ui.elm.platzhalter': 'z. B. Al 240 mm²',
+    'ui.elm.alle.loeschen': 'Alle eigenen löschen',
+    'ui.abbrechen': 'Abbrechen',
+    'ui.optional': '(optional)',
+    'ui.position.xc': 'Position x<sub>C</sub>',
+    'ui.durchhang.yc': 'Durchhang y<sub>C</sub>',
+    'ui.hoehe.yc': 'Höhe y<sub>C</sub>',
+    'ui.temp.t3': 'Temperatur T<sub>3</sub>',
+    'ui.sok.hinweis': 'ⓘ SOK zwischen den Eingabepunkten wird interpoliert und entspricht nicht der effektiven Höhenlage.',
+    'ui.hindernis': 'Hindernispunkte',
+    'ui.hinzufuegen': '+ Hinzufügen',
+    'ui.alle': '✕ Alle',
+    'ui.foto.ablauf.titel': 'Foto-Auswertung — Ablauf',
+    'ui.foto.ablauf.modus': 'Ablauf (7-Klick Modus):',
+    'ui.foto.ablauf.1': 'Mastspitze links → Mastfuss links',
+    'ui.foto.ablauf.2': 'Mastspitze rechts → Mastfuss rechts',
+    'ui.foto.ablauf.3': 'Ankerpunkt links (P1) → Ankerpunkt rechts (P2)',
+    'ui.foto.ablauf.4': 'Führungslinie bei L/2 erscheint — Leiter dort anklicken',
+    'ui.foto.hinweise': 'Hinweise:',
+    'ui.foto.hinweis.1': 'Mastlänge in der Sidebar unter «Foto — Mastangaben» eintragen',
+    'ui.foto.hinweis.2': 'L, Material und Temperatur werden aus der Sidebar übernommen',
+    'ui.foto.hinweis.3': 'Kamera waagrecht halten — horizontaler Winkel irrelevant',
+    'ui.foto.hinweis.4': 'Punkte können nach dem Setzen verschoben werden',
+    'card.temperatur': 'Temperatur',
+    'ui.mastangaben': 'Mastangaben: SOK m ü. M., Name, KM',
+    'ui.mastangaben.sub': '(optional)',
   },
   fr: {
     'app.subtitle':         'Caténaire — courbe du câble avec influence de la température',
@@ -12159,6 +12337,116 @@ const LANG = {
     'proj.save.btn':     'Enregistrer',
     'proj.import.btn':   'Importer JSON',
     'proj.local.note':   'Données enregistrées uniquement en local',
+    // ── Oberfläche (v3.1) ──
+    'ui.t2.fix.eis': '(fixé à −5 °C pour la charge de glace)',
+    'ui.datei': 'Fichier',
+    'ui.reset.titel': 'Réinitialiser aux valeurs par défaut',
+    'ui.reset': 'Réinitialiser',
+    'ui.speichern': 'Enregistrer',
+    'ui.reglage': 'Tableau de réglage',
+    'ui.reglage.kurz': 'Réglage',
+    'ui.handbuch': 'Manuel',
+    'ui.kw.eigen': 'Définir une caténaire personnalisée',
+    'ui.mat.eigen': 'Définir un matériau personnalisé',
+    'ui.reglage.zeigen': 'Afficher le tableau de réglage',
+    'ui.hinweis.spannweite': 'Remarque sur la portée',
+    'ui.lm.ueberschreibbar': 'Valeur modifiable — vider le champ pour réinitialiser',
+    'ui.sok.loeschen.titel': 'Effacer la référence DRS',
+    'ui.reglage.reset.titel': 'Remettre H à la valeur du tableau de réglage',
+    'ui.reglage.reset': '↺ Réglage',
+    'ui.foto.feldaufnahme': 'Relevé photo',
+    'ui.vs.reglage': 'vs. valeur de réglage à T₁',
+    'ui.eis.hinweis.titel': 'Remarque sur la charge de glace / neige',
+    'ui.foto.laden.hinweis': 'Charger une photo, puis cliquer les points',
+    'ui.export.teilen': 'Exporter / Partager',
+    'ui.vollbild': 'Plein écran',
+    'ui.verkleinern': 'Réduire',
+    'ui.vergroessern': 'Agrandir',
+    'ui.zoom.reset': 'Réinitialiser le zoom',
+    'ui.bis.sok.titel': 'Représentation complète jusqu\'au DRS',
+    'ui.nur.kw.titel': 'Caténaire / conducteur seul uniquement',
+    'ui.foto.reset.titel': 'Réinitialiser tous les points cliqués',
+    'ui.foto.refresh.titel': 'Actualiser l\'affichage',
+    'ui.foto.pan.titel': 'Figer le cadrage',
+    'ui.foto.pan.frei': 'Libérer le cadrage',
+    'ui.foto.opacity.titel': 'Transparence de la photo',
+    'ui.foto.geo.titel': 'Emplacement de la photo sur map.geo.admin.ch',
+    'ui.mp.loeschen.titel': 'Effacer les points de mesure',
+    'ui.minabstand.titel': 'Afficher la distance minimale',
+    'ui.schliessen': 'Fermer',
+    'ui.projekt.label': 'Projet : ',
+    'ui.proj.neu': '+ Créer un nouveau projet',
+    'ui.proj.platzhalter': 'Projet A',
+    'ui.sortierung': 'Tri :',
+    'ui.datum.ab': 'Date ↓',
+    'ui.datum.auf': 'Date ↑',
+    'ui.name.az': 'Nom A–Z',
+    'ui.name.za': 'Nom Z–A',
+    'ui.zu.projekt.titel': 'Déplacer vers un projet',
+    'ui.zu.projekt': '→ Projet',
+    'ui.umbenennen': 'Renommer',
+    'ui.projekt.umbenennen': 'Renommer le projet',
+    'ui.gespeichert.am': 'Enregistré :',
+    'ui.laden': 'Charger',
+    'ui.export': 'Exporter',
+    'ui.loeschen': 'Supprimer',
+    'ui.projekt.export.titel': 'Exporter tout le projet en JSON',
+    'ui.berechnung.1': 'calcul',
+    'ui.berechnung.n': 'calculs',
+    'ui.ausgewaehlt': 'sélectionné(s)',
+    'ui.pdf.serie': 'Rapport PDF groupé',
+    'ui.json.export': 'Export JSON',
+    'ui.voreinst': '(préréglé)',
+    'ui.anmerkung': 'Remarque',
+    'ui.bearbeiten': 'Modifier',
+    'ui.material': 'Matériau',
+    'ui.kombination': 'Combinaison',
+    'ui.abnutzung': 'Usure',
+    'ui.rgl.quelle': 'Source : SBB 0161.1013.0001 &nbsp;·&nbsp; Mode de calcul : compensé &nbsp;·&nbsp; Lm = 45 m &nbsp;·&nbsp; T = +10 °C',
+    'ui.rgl.nfl.titel': 'N-FL — Ligne de contact normale',
+    'ui.rgl.rfl.titel': 'R-FL — Ligne de contact régulée',
+    'ui.rgl.el.titel': 'Conducteur seul — Force de réglage',
+    'ui.rgl.hts.bel': 'H<sub>CP</sub> chargé',
+    'ui.rgl.hts.ub': 'H<sub>CP</sub> non chargé',
+    'ui.rgl.hts.konst': 'H<sub>CP</sub> constant',
+    'ui.rgl.nfl.note': 'H<sub>CP</sub> chargé = avec fil de contact &nbsp;·&nbsp; H<sub>CP</sub> non chargé = sans fil de contact &nbsp;·&nbsp; à +10 °C &nbsp;·&nbsp; (SBB 0161.1013.0001)',
+    'ui.rgl.rfl.note': 'H<sub>CP</sub> constant grâce au dispositif de tension &nbsp;·&nbsp; indépendant de la température &nbsp;·&nbsp; (SBB 0161.1013.0001)',
+    'ui.rgl.el.note': 'Force de réglage à +10 °C, Lm = 45 m, mode de calcul «compensé» &nbsp;·&nbsp; (SBB «Durchhang 2026.xlsm»)',
+    'ui.reglage.bei': 'Réglage à',
+    'ui.export.csv': 'Exporter CSV',
+    'ui.import.csv': 'Importer CSV',
+    'ui.waermedehnzahl': 'Coefficient de dilatation α',
+    'ui.steifigkeit': 'Rigidité E·A',
+    'ui.eigengewicht': 'Poids propre q',
+    'ui.leiterkennwerte': 'Caractéristiques du conducteur',
+    'ui.bezeichnung': 'Désignation',
+    'ui.elm.titel': 'Matériau de conducteur personnalisé',
+    'ui.elm.platzhalter': 'p. ex. Al 240 mm²',
+    'ui.elm.alle.loeschen': 'Supprimer tous les personnalisés',
+    'ui.abbrechen': 'Annuler',
+    'ui.optional': '(optionnel)',
+    'ui.position.xc': 'Position x<sub>C</sub>',
+    'ui.durchhang.yc': 'Flèche y<sub>C</sub>',
+    'ui.hoehe.yc': 'Hauteur y<sub>C</sub>',
+    'ui.temp.t3': 'Température T<sub>3</sub>',
+    'ui.sok.hinweis': 'ⓘ Le DRS entre les points saisis est interpolé et ne correspond pas à l\'altitude effective.',
+    'ui.hindernis': 'Points d’obstacle',
+    'ui.hinzufuegen': '+ Ajouter',
+    'ui.alle': '✕ Tous',
+    'ui.foto.ablauf.titel': 'Analyse photo — Procédure',
+    'ui.foto.ablauf.modus': 'Procédure (mode 7 clics) :',
+    'ui.foto.ablauf.1': 'Sommet du poteau gauche → pied du poteau gauche',
+    'ui.foto.ablauf.2': 'Sommet du poteau droit → pied du poteau droit',
+    'ui.foto.ablauf.3': 'Point d\'ancrage gauche (P1) → point d\'ancrage droit (P2)',
+    'ui.foto.ablauf.4': 'Une ligne de guidage apparaît à L/2 — y cliquer sur le conducteur',
+    'ui.foto.hinweise': 'Remarques :',
+    'ui.foto.hinweis.1': 'Saisir la longueur du poteau dans la barre latérale sous «Photo — données des poteaux»',
+    'ui.foto.hinweis.2': 'L, le matériau et la température sont repris de la barre latérale',
+    'ui.foto.hinweis.3': 'Tenir l\'appareil à l\'horizontale — l\'angle horizontal n\'a pas d\'importance',
+    'ui.foto.hinweis.4': 'Les points peuvent être déplacés après leur placement',
+    'card.temperatur': 'Température',
+    'ui.mastangaben': 'Données des poteaux : DRS m s.n.m., nom, km',
+    'ui.mastangaben.sub': '(optionnel)',
   },
   it: {
     'app.subtitle':         'Catenaria — curva del cavo con influenza della temperatura',
@@ -12605,6 +12893,116 @@ const LANG = {
     'proj.save.btn':     'Salva',
     'proj.import.btn':   'Importa JSON',
     'proj.local.note':   'Dati salvati solo localmente',
+    // ── Oberfläche (v3.1) ──
+    'ui.t2.fix.eis': '(fissato a −5 °C per il carico di ghiaccio)',
+    'ui.datei': 'File',
+    'ui.reset.titel': 'Ripristina i valori predefiniti',
+    'ui.reset': 'Ripristina',
+    'ui.speichern': 'Salva',
+    'ui.reglage': 'Tabella di regolazione',
+    'ui.reglage.kurz': 'Regolazione',
+    'ui.handbuch': 'Manuale',
+    'ui.kw.eigen': 'Definisci una catenaria personalizzata',
+    'ui.mat.eigen': 'Definisci un materiale personalizzato',
+    'ui.reglage.zeigen': 'Mostra la tabella di regolazione',
+    'ui.hinweis.spannweite': 'Nota sulla campata',
+    'ui.lm.ueberschreibbar': 'Valore modificabile — svuotare il campo per ripristinare',
+    'ui.sok.loeschen.titel': 'Cancella il riferimento PRF',
+    'ui.reglage.reset.titel': 'Riporta H al valore della tabella di regolazione',
+    'ui.reglage.reset': '↺ Regolazione',
+    'ui.foto.feldaufnahme': 'Rilievo fotografico',
+    'ui.vs.reglage': 'vs. valore di regolazione a T₁',
+    'ui.eis.hinweis.titel': 'Nota sul carico di ghiaccio / neve',
+    'ui.foto.laden.hinweis': 'Carica una foto, poi clicca i punti',
+    'ui.export.teilen': 'Esporta / Condividi',
+    'ui.vollbild': 'Schermo intero',
+    'ui.verkleinern': 'Riduci',
+    'ui.vergroessern': 'Ingrandisci',
+    'ui.zoom.reset': 'Ripristina lo zoom',
+    'ui.bis.sok.titel': 'Rappresentazione completa fino al PRF',
+    'ui.nur.kw.titel': 'Solo catenaria / conduttore singolo',
+    'ui.foto.reset.titel': 'Ripristina tutti i punti cliccati',
+    'ui.foto.refresh.titel': 'Aggiorna la visualizzazione',
+    'ui.foto.pan.titel': 'Blocca l\'inquadratura',
+    'ui.foto.pan.frei': 'Sblocca l\'inquadratura',
+    'ui.foto.opacity.titel': 'Trasparenza della foto',
+    'ui.foto.geo.titel': 'Posizione della foto su map.geo.admin.ch',
+    'ui.mp.loeschen.titel': 'Cancella i punti di misura',
+    'ui.minabstand.titel': 'Mostra la distanza minima',
+    'ui.schliessen': 'Chiudi',
+    'ui.projekt.label': 'Progetto: ',
+    'ui.proj.neu': '+ Crea un nuovo progetto',
+    'ui.proj.platzhalter': 'Progetto A',
+    'ui.sortierung': 'Ordina:',
+    'ui.datum.ab': 'Data ↓',
+    'ui.datum.auf': 'Data ↑',
+    'ui.name.az': 'Nome A–Z',
+    'ui.name.za': 'Nome Z–A',
+    'ui.zu.projekt.titel': 'Sposta nel progetto',
+    'ui.zu.projekt': '→ Progetto',
+    'ui.umbenennen': 'Rinomina',
+    'ui.projekt.umbenennen': 'Rinomina il progetto',
+    'ui.gespeichert.am': 'Salvato:',
+    'ui.laden': 'Carica',
+    'ui.export': 'Esporta',
+    'ui.loeschen': 'Elimina',
+    'ui.projekt.export.titel': 'Esporta l\'intero progetto come JSON',
+    'ui.berechnung.1': 'calcolo',
+    'ui.berechnung.n': 'calcoli',
+    'ui.ausgewaehlt': 'selezionati',
+    'ui.pdf.serie': 'Rapporto PDF cumulativo',
+    'ui.json.export': 'Esporta JSON',
+    'ui.voreinst': '(predef.)',
+    'ui.anmerkung': 'Nota',
+    'ui.bearbeiten': 'Modifica',
+    'ui.material': 'Materiale',
+    'ui.kombination': 'Combinazione',
+    'ui.abnutzung': 'Usura',
+    'ui.rgl.quelle': 'Fonte: SBB 0161.1013.0001 &nbsp;·&nbsp; Metodo di calcolo: compensato &nbsp;·&nbsp; Lm = 45 m &nbsp;·&nbsp; T = +10 °C',
+    'ui.rgl.nfl.titel': 'N-FL — Linea di contatto normale',
+    'ui.rgl.rfl.titel': 'R-FL — Linea di contatto regolata',
+    'ui.rgl.el.titel': 'Conduttore singolo — Forza di regolazione',
+    'ui.rgl.hts.bel': 'H<sub>FP</sub> carico',
+    'ui.rgl.hts.ub': 'H<sub>FP</sub> scarico',
+    'ui.rgl.hts.konst': 'H<sub>FP</sub> costante',
+    'ui.rgl.nfl.note': 'H<sub>FP</sub> carico = con filo di contatto &nbsp;·&nbsp; H<sub>FP</sub> scarico = senza filo di contatto &nbsp;·&nbsp; a +10 °C &nbsp;·&nbsp; (SBB 0161.1013.0001)',
+    'ui.rgl.rfl.note': 'H<sub>FP</sub> costante tramite dispositivo di tensionamento &nbsp;·&nbsp; indipendente dalla temperatura &nbsp;·&nbsp; (SBB 0161.1013.0001)',
+    'ui.rgl.el.note': 'Forza di regolazione a +10 °C, Lm = 45 m, metodo di calcolo «compensato» &nbsp;·&nbsp; (SBB «Durchhang 2026.xlsm»)',
+    'ui.reglage.bei': 'Regolazione a',
+    'ui.export.csv': 'Esporta CSV',
+    'ui.import.csv': 'Importa CSV',
+    'ui.waermedehnzahl': 'Coefficiente di dilatazione α',
+    'ui.steifigkeit': 'Rigidezza E·A',
+    'ui.eigengewicht': 'Peso proprio q',
+    'ui.leiterkennwerte': 'Caratteristiche del conduttore',
+    'ui.bezeichnung': 'Denominazione',
+    'ui.elm.titel': 'Materiale conduttore personalizzato',
+    'ui.elm.platzhalter': 'p. es. Al 240 mm²',
+    'ui.elm.alle.loeschen': 'Elimina tutti i personalizzati',
+    'ui.abbrechen': 'Annulla',
+    'ui.optional': '(opzionale)',
+    'ui.position.xc': 'Posizione x<sub>C</sub>',
+    'ui.durchhang.yc': 'Freccia y<sub>C</sub>',
+    'ui.hoehe.yc': 'Altezza y<sub>C</sub>',
+    'ui.temp.t3': 'Temperatura T<sub>3</sub>',
+    'ui.sok.hinweis': 'ⓘ Il PRF tra i punti inseriti è interpolato e non corrisponde all\'altezza effettiva.',
+    'ui.hindernis': 'Punti di ostacolo',
+    'ui.hinzufuegen': '+ Aggiungi',
+    'ui.alle': '✕ Tutti',
+    'ui.foto.ablauf.titel': 'Analisi foto — Procedura',
+    'ui.foto.ablauf.modus': 'Procedura (modalità 7 clic):',
+    'ui.foto.ablauf.1': 'Cima del palo sinistro → piede del palo sinistro',
+    'ui.foto.ablauf.2': 'Cima del palo destro → piede del palo destro',
+    'ui.foto.ablauf.3': 'Punto di ancoraggio sinistro (P1) → punto di ancoraggio destro (P2)',
+    'ui.foto.ablauf.4': 'Appare una linea guida a L/2 — cliccare lì sul conduttore',
+    'ui.foto.hinweise': 'Note:',
+    'ui.foto.hinweis.1': 'Inserire la lunghezza del palo nella barra laterale sotto «Foto — dati dei pali»',
+    'ui.foto.hinweis.2': 'L, materiale e temperatura vengono ripresi dalla barra laterale',
+    'ui.foto.hinweis.3': 'Tenere la fotocamera orizzontale — l’angolo orizzontale è irrilevante',
+    'ui.foto.hinweis.4': 'I punti possono essere spostati dopo averli posizionati',
+    'card.temperatur': 'Temperatura',
+    'ui.mastangaben': 'Dati dei pali: PRF m s.l.m., nome, km',
+    'ui.mastangaben.sub': '(opzionale)',
   },
 };
 
@@ -12636,6 +13034,19 @@ function setLang(lang) {
   document.querySelectorAll('[data-i18n]').forEach(el      => { el.textContent = t(el.dataset.i18n); });
   document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML   = t(el.dataset.i18nHtml); });
   document.querySelectorAll('[data-i18n-ph]').forEach(el   => { el.placeholder = t(el.dataset.i18nPh); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
+
+  // Dynamisch erzeugte Inhalte neu aufbauen, damit sie die neue Sprache zeigen
+  const _presetErste = document.querySelector('#preset-select option[value=""]');
+  if (_presetErste) _presetErste.textContent = t('msg.kettenwerk.waehlen');
+  const _neuOpt = document.querySelector('#proj-group-sel option[value="__new__"]');
+  if (_neuOpt) _neuOpt.textContent = t('ui.proj.neu');
+  if (document.getElementById('projects-modal')?.classList.contains('open')) Projekte.renderProjectList();
+  if (document.getElementById('reglage-modal')?.classList.contains('open')) renderReglageElTable();
+  const _rglBtn = document.getElementById('rgl-el-edit-btn');
+  if (_rglBtn) _rglBtn.textContent = t(_rglElEditMode ? 'ui.schliessen' : 'ui.bearbeiten');
+  if (typeof setYCMode === 'function') setYCMode(yCInputMode);
+  if (typeof renderObstacleList === 'function') renderObstacleList();
 
   // Hinweis: Der Handbuch-Knopf im Header ist reines Symbol ohne Textlabel.
   // Die frühere Zuweisung an 'header-manual-text' lief ins Leere (die ID gibt
@@ -12802,16 +13213,21 @@ berechnen();
   updateT2Float(v, false); }
 // Apply saved language (after first berechnen so all elements exist)
 if (currentLang !== 'de') setLang(currentLang);
+_mastangabenOeffnenFallsBelegt();
 
 // ── Service Worker: macht die Anwendung offline verfügbar ──────────────────
 // Nur über http/https — bei einer lokal geöffneten Datei (file://) gibt es
 // keinen Service Worker, und der Aufruf würde eine Ausnahme werfen.
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
 
-  // Nach dem Wechsel auf die neue Fassung genau einmal neu laden.
+  // Nach dem Wechsel auf die neue Fassung genau einmal neu laden — aber nur,
+  // wenn vorher schon eine Fassung aktiv war. Beim allerersten Besuch übernimmt
+  // der Service Worker die Seite ebenfalls (clients.claim), dort wäre ein
+  // Neuladen überflüssig und würde bereits getippte Eingaben verwerfen.
+  const _hatteFassung = !!navigator.serviceWorker.controller;
   let _neuLaden = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (_neuLaden) return;
+    if (!_hatteFassung || _neuLaden) return;
     _neuLaden = true;
     location.reload();
   });
@@ -13164,7 +13580,7 @@ renderObstacleList();
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-.15em;margin-right:.4rem"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
         <span id="proj-modal-title-txt" data-i18n="proj.modal.title">Datei</span>
       </div>
-      <button class="modal-close" onclick="closeProjectsModal()" title="Schliessen">✕</button>
+      <button class="modal-close" onclick="closeProjectsModal()" title="Schliessen" data-i18n-title="ui.schliessen">✕</button>
     </div>
 
     <div class="proj-warning">
@@ -13183,7 +13599,7 @@ renderObstacleList();
       <!-- Neues Projekt — nur bei "__new__" sichtbar -->
       <div id="proj-new-grp-row" style="display:none;margin-bottom:.38rem">
         <div class="proj-save-label" id="proj-name-lbl" data-i18n="proj.projektname">Projektname</div>
-        <input type="text" id="proj-new-grp-name" class="proj-save-inp" placeholder="Projekt A"
+        <input type="text" id="proj-new-grp-name" class="proj-save-inp" placeholder="Projekt A" data-i18n-ph="ui.proj.platzhalter"
                onkeydown="if(event.key==='Enter')saveCurrentCalc()">
       </div>
       <!-- Bezeichnung -->
@@ -13217,28 +13633,26 @@ renderObstacleList();
 <div class="modal-overlay" id="foto-modal" onclick="if(event.target===this)closeFotoModal()" style="align-items:center;padding:1.5rem 1rem">
   <div class="modal-card" style="max-width:480px;width:100%">
     <div class="modal-header">
-      <div class="modal-title">Foto-Auswertung — Ablauf</div>
-      <button class="modal-close" onclick="closeFotoModal()" title="Schliessen">✕</button>
+      <div class="modal-title" data-i18n="ui.foto.ablauf.titel">Foto-Auswertung — Ablauf</div>
+      <button class="modal-close" onclick="closeFotoModal()" title="Schliessen" data-i18n-title="ui.schliessen">✕</button>
     </div>
     <div style="padding:.75rem 1.25rem 1.25rem;font-size:.82rem;line-height:1.65;color:#374151">
-      <p style="margin-bottom:.5rem"><strong>Ablauf (7-Klick Modus):</strong></p>
+      <p style="margin-bottom:.5rem"><strong data-i18n="ui.foto.ablauf.modus">Ablauf (7-Klick Modus):</strong></p>
       <ol style="margin:.3rem 0 .65rem 1.3rem;line-height:1.8">
-        <li>Mastspitze links → Mastfuss links</li>
-        <li>Mastspitze rechts → Mastfuss rechts</li>
-        <li>Ankerpunkt links (P1) → Ankerpunkt rechts (P2)</li>
-        <li>Führungslinie bei L/2 erscheint — Leiter dort anklicken</li>
+        <li data-i18n="ui.foto.ablauf.1">Mastspitze links → Mastfuss links</li>
+        <li data-i18n="ui.foto.ablauf.2">Mastspitze rechts → Mastfuss rechts</li>
+        <li data-i18n="ui.foto.ablauf.3">Ankerpunkt links (P1) → Ankerpunkt rechts (P2)</li>
+        <li data-i18n="ui.foto.ablauf.4">Führungslinie bei L/2 erscheint — Leiter dort anklicken</li>
       </ol>
-      <p style="margin-bottom:.35rem"><strong>Hinweise:</strong></p>
+      <p style="margin-bottom:.35rem"><strong data-i18n="ui.foto.hinweise">Hinweise:</strong></p>
       <ul style="margin:.3rem 0 .6rem 1.3rem;line-height:1.7">
-        <li>Mastlänge in der Sidebar unter «Foto — Mastangaben» eintragen</li>
-        <li>L, Material und Temperatur werden aus der Sidebar übernommen</li>
-        <li>Kamera waagrecht halten — horizontaler Winkel irrelevant</li>
-        <li>Punkte können nach dem Setzen verschoben werden</li>
+        <li data-i18n="ui.foto.hinweis.1">Mastlänge in der Sidebar unter «Foto — Mastangaben» eintragen</li>
+        <li data-i18n="ui.foto.hinweis.2">L, Material und Temperatur werden aus der Sidebar übernommen</li>
+        <li data-i18n="ui.foto.hinweis.3">Kamera waagrecht halten — horizontaler Winkel irrelevant</li>
+        <li data-i18n="ui.foto.hinweis.4">Punkte können nach dem Setzen verschoben werden</li>
       </ul>
       <button onclick="closeFotoModal()"
-        style="margin-top:.35rem;background:#eb0000;color:#fff;border:none;border-radius:6px;padding:.3rem 1rem;font-size:.78rem;cursor:pointer;font-family:inherit">
-        Schliessen
-      </button>
+        style="margin-top:.35rem;background:#eb0000;color:#fff;border:none;border-radius:6px;padding:.3rem 1rem;font-size:.78rem;cursor:pointer;font-family:inherit" data-i18n="ui.schliessen">Schliessen</button>
     </div>
   </div>
 </div>
@@ -13248,7 +13662,7 @@ renderObstacleList();
   <div class="modal-card" style="max-width:760px;width:100%;max-height:none">
     <div class="modal-header">
       <div class="modal-title" id="handbuch-modal-title">Handbuch — Kettenwerk Rechner N-FL / R-FL</div>
-      <button class="modal-close" onclick="closeHandbuch()" title="Schliessen">✕</button>
+      <button class="modal-close" onclick="closeHandbuch()" title="Schliessen" data-i18n-title="ui.schliessen">✕</button>
     </div>
     <!-- Inhaltsverzeichnis -->
     <div style="background:#f6f6f6;border:1px solid #e5e5e5;border-radius:6px;padding:.6rem 1rem;margin:.75rem 1.25rem .25rem;font-size:.78rem;color:#444444">
@@ -14325,7 +14739,7 @@ renderObstacleList();
   <div class="modal-card">
     <div class="modal-header">
       <div class="modal-title" id="cm-modal-title" data-i18n="cm.title">Eigenes Kettenwerk</div>
-      <button class="modal-close" onclick="closeCustomModal()" title="Schliessen">✕</button>
+      <button class="modal-close" onclick="closeCustomModal()" title="Schliessen" data-i18n-title="ui.schliessen">✕</button>
     </div>
 
     <div class="field">
@@ -14388,14 +14802,14 @@ renderObstacleList();
     <div id="cm-fd-nfl-fields">
       <div class="field-row">
         <div class="field">
-          <label id="cm-alpha-fd-label">Wärmedehnzahl α <span style="font-size:.7em;color:var(--tertiary)">(N-FL)</span></label>
+          <label id="cm-alpha-fd-label"><span data-i18n="cm.waerme">Wärmedehnzahl α</span> <span style="font-size:.7em;color:var(--tertiary)">(N-FL)</span></label>
           <div class="input-wrap">
             <input type="number" id="cm-alpha-fd" step="0.1" min="0" placeholder="17.0">
             <span class="input-unit">×10⁻⁶/K</span>
           </div>
         </div>
         <div class="field">
-          <label id="cm-ea-fd-label">Steifigkeit E·A <span style="font-size:.7em;color:var(--tertiary)">(N-FL)</span></label>
+          <label id="cm-ea-fd-label"><span data-i18n="cm.steif">Steifigkeit E·A</span> <span style="font-size:.7em;color:var(--tertiary)">(N-FL)</span></label>
           <div class="input-wrap">
             <input type="number" id="cm-ea-fd" step="0.01" min="0" placeholder="11.56">
             <span class="input-unit">MN</span>
@@ -14443,28 +14857,28 @@ renderObstacleList();
 <div class="modal-overlay" id="el-material-modal" onclick="if(event.target===this)closeElMaterialModal()">
   <div class="modal-card">
     <div class="modal-header">
-      <div class="modal-title" id="elm-modal-title">Eigenes Leitermaterial</div>
-      <button class="modal-close" onclick="closeElMaterialModal()" title="Schliessen">✕</button>
+      <div class="modal-title" id="elm-modal-title" data-i18n="ui.elm.titel">Eigenes Leitermaterial</div>
+      <button class="modal-close" onclick="closeElMaterialModal()" title="Schliessen" data-i18n-title="ui.schliessen">✕</button>
     </div>
 
     <div class="field">
-      <label>Bezeichnung</label>
+      <label data-i18n="cm.bezeichnung">Bezeichnung</label>
       <div class="input-wrap">
-        <input type="text" id="elm-label" placeholder="z. B. Al 240 mm²" style="font-size:.82rem">
+        <input type="text" id="elm-label" placeholder="z. B. Al 240 mm²" data-i18n-ph="ui.elm.platzhalter" style="font-size:.82rem">
       </div>
     </div>
 
-    <div class="modal-section-label">Leiterkennwerte</div>
+    <div class="modal-section-label" data-i18n="ui.leiterkennwerte">Leiterkennwerte</div>
     <div class="field-row">
       <div class="field">
-        <label>Eigengewicht q</label>
+        <label data-i18n="cm.eigengewicht">Eigengewicht q</label>
         <div class="input-wrap">
           <input type="number" id="elm-q" step="0.001" min="0" placeholder="8.424">
           <span class="input-unit">N/m</span>
         </div>
       </div>
       <div class="field">
-        <label>Wärmedehnzahl α</label>
+        <label data-i18n="cm.waerme">Wärmedehnzahl α</label>
         <div class="input-wrap">
           <input type="number" id="elm-alpha" step="0.1" min="0" placeholder="17.0">
           <span class="input-unit">×10⁻⁶/K</span>
@@ -14472,7 +14886,7 @@ renderObstacleList();
       </div>
     </div>
     <div class="field">
-      <label>Steifigkeit E·A <span style="font-size:.7em;color:var(--tertiary)">(optional)</span></label>
+      <label><span data-i18n="cm.steif">Steifigkeit E·A</span> <span style="font-size:.7em;color:var(--tertiary)" data-i18n="ui.optional">(optional)</span></label>
       <div class="input-wrap">
         <input type="number" id="elm-ea" step="0.01" min="0" placeholder="10.24">
         <span class="input-unit">MN</span>
@@ -14480,10 +14894,10 @@ renderObstacleList();
     </div>
 
     <div class="modal-footer">
-      <button class="btn-danger-text" id="elm-reset-btn" onclick="resetCustomElMaterials()" style="display:none">Alle eigenen löschen</button>
+      <button class="btn-danger-text" id="elm-reset-btn" onclick="resetCustomElMaterials()" style="display:none" data-i18n="ui.elm.alle.loeschen">Alle eigenen löschen</button>
       <div class="modal-footer-actions">
-        <button class="btn btn-secondary" onclick="closeElMaterialModal()">Abbrechen</button>
-        <button class="btn btn-primary" onclick="saveCustomElMaterial()">Speichern</button>
+        <button class="btn btn-secondary" onclick="closeElMaterialModal()" data-i18n="ui.abbrechen">Abbrechen</button>
+        <button class="btn btn-primary" onclick="saveCustomElMaterial()" data-i18n="ui.speichern">Speichern</button>
       </div>
     </div>
   </div>
@@ -14494,14 +14908,12 @@ renderObstacleList();
   <div class="modal-card" style="max-width:720px;width:100%;max-height:none">
     <div class="modal-header">
       <div class="modal-title" id="reglage-modal-title" data-i18n="reglage.modal.title">Reglagewerte — Übersicht</div>
-      <button class="modal-close" onclick="closeReglageModal()" title="Schliessen">✕</button>
+      <button class="modal-close" onclick="closeReglageModal()" title="Schliessen" data-i18n-title="ui.schliessen">✕</button>
     </div>
     <div style="padding:.5rem 1.25rem 1.25rem">
 
       <!-- Quelle -->
-      <p style="font-size:.72rem;color:var(--tertiary);margin-bottom:1.1rem">
-        Quelle: SBB 0161.1013.0001 &nbsp;·&nbsp; Berechnungsart: Ausgleichend &nbsp;·&nbsp; Lm = 45 m &nbsp;·&nbsp; T = +10 °C
-      </p>
+      <p style="font-size:.72rem;color:var(--tertiary);margin-bottom:1.1rem" data-i18n-html="ui.rgl.quelle">Quelle: SBB 0161.1013.0001 &nbsp;·&nbsp; Berechnungsart: Ausgleichend &nbsp;·&nbsp; Lm = 45 m &nbsp;·&nbsp; T = +10 °C</p>
 
       <!-- Gemeinsame Tabellenstile -->
       <style>
@@ -14518,7 +14930,7 @@ renderObstacleList();
 
       <!-- N-FL -->
       <div style="margin-bottom:1.3rem">
-        <div class="rgl-section">N-FL — Normale Fahrleitung</div>
+        <div class="rgl-section" data-i18n="ui.rgl.nfl.titel">N-FL — Normale Fahrleitung</div>
         <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
         <table class="rgl-tbl" style="min-width:580px">
           <colgroup>
@@ -14530,12 +14942,12 @@ renderObstacleList();
             <col style="width:12%">
           </colgroup>
           <thead><tr>
-            <th class="c-left">Kombination</th>
+            <th class="c-left" data-i18n="ui.kombination">Kombination</th>
             <th class="c-ctr">sh</th>
-            <th class="c-right">H<sub>Ts</sub> belastet</th>
-            <th class="c-right">H<sub>Ts</sub> unbelastet</th>
+            <th class="c-right" data-i18n-html="ui.rgl.hts.bel">H<sub>Ts</sub> belastet</th>
+            <th class="c-right" data-i18n-html="ui.rgl.hts.ub">H<sub>Ts</sub> unbelastet</th>
             <th class="c-right">H<sub>Fd</sub></th>
-            <th class="c-right">Abnutzung</th>
+            <th class="c-right" data-i18n="ui.abnutzung">Abnutzung</th>
           </tr></thead>
           <tbody>
             <tr>
@@ -14581,14 +14993,14 @@ renderObstacleList();
           </tbody>
         </table>
         </div>
-        <p class="rgl-note">H<sub>Ts</sub> belastet = mit Fahrdraht &nbsp;·&nbsp; H<sub>Ts</sub> unbelastet = ohne Fahrdraht &nbsp;·&nbsp; bei +10 °C &nbsp;·&nbsp; (SBB 0161.1013.0001)</p>
+        <p class="rgl-note" data-i18n-html="ui.rgl.nfl.note">H<sub>Ts</sub> belastet = mit Fahrdraht &nbsp;·&nbsp; H<sub>Ts</sub> unbelastet = ohne Fahrdraht &nbsp;·&nbsp; bei +10 °C &nbsp;·&nbsp; (SBB 0161.1013.0001)</p>
       </div>
 
       <hr style="border:none;border-top:1px solid #d2d2d2;margin:0 0 1.1rem">
 
       <!-- R-FL -->
       <div style="margin-bottom:1.3rem">
-        <div class="rgl-section">R-FL — Regelfahrleitung</div>
+        <div class="rgl-section" data-i18n="ui.rgl.rfl.titel">R-FL — Regelfahrleitung</div>
         <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
         <table class="rgl-tbl" style="min-width:580px">
           <colgroup>
@@ -14600,11 +15012,11 @@ renderObstacleList();
             <col style="width:12%">
           </colgroup>
           <thead><tr>
-            <th class="c-left">Kombination</th>
+            <th class="c-left" data-i18n="ui.kombination">Kombination</th>
             <th class="c-ctr">sh</th>
-            <th class="c-right" colspan="2">H<sub>Ts</sub> konstant</th>
+            <th class="c-right" colspan="2" data-i18n-html="ui.rgl.hts.konst">H<sub>Ts</sub> konstant</th>
             <th class="c-right">H<sub>Fd</sub></th>
-            <th class="c-right">Abnutzung</th>
+            <th class="c-right" data-i18n="ui.abnutzung">Abnutzung</th>
           </tr></thead>
           <tbody>
             <tr>
@@ -14624,7 +15036,7 @@ renderObstacleList();
           </tbody>
         </table>
         </div>
-        <p class="rgl-note">H<sub>Ts</sub> konstant via Nachspannvorrichtung &nbsp;·&nbsp; temperaturunabhängig &nbsp;·&nbsp; (SBB 0161.1013.0001)</p>
+        <p class="rgl-note" data-i18n-html="ui.rgl.rfl.note">H<sub>Ts</sub> konstant via Nachspannvorrichtung &nbsp;·&nbsp; temperaturunabhängig &nbsp;·&nbsp; (SBB 0161.1013.0001)</p>
       </div>
 
       <hr style="border:none;border-top:1px solid #d2d2d2;margin:0 0 1.1rem">
@@ -14632,15 +15044,15 @@ renderObstacleList();
       <!-- Einzelleiter -->
       <div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.45rem">
-          <div class="rgl-section" style="margin-bottom:0">Einzelleiter — Reglagezugkraft</div>
+          <div class="rgl-section" style="margin-bottom:0" data-i18n="ui.rgl.el.titel">Einzelleiter — Reglagezugkraft</div>
           <div style="display:flex;gap:.5rem;align-items:center">
-            <button id="rgl-el-edit-btn" onclick="toggleReglageElEdit()" style="font-size:.68rem;padding:.18rem .5rem;border:1px solid #c8c8c8;border-radius:6px;background:none;cursor:pointer;color:var(--muted);font-family:inherit">Bearbeiten</button>
-            <button onclick="exportMaterialsCSV()" style="font-size:.68rem;padding:.18rem .5rem;border:1px solid #c8c8c8;border-radius:6px;background:none;cursor:pointer;color:var(--muted);font-family:inherit">Export CSV</button>
-            <label style="font-size:.68rem;padding:.18rem .5rem;border:1px solid #c8c8c8;border-radius:6px;background:none;cursor:pointer;color:var(--muted);display:inline-block">Import CSV<input type="file" accept=".csv,.txt" onchange="importMaterialsCSV(event)" style="display:none"></label>
+            <button id="rgl-el-edit-btn" onclick="toggleReglageElEdit()" style="font-size:.68rem;padding:.18rem .5rem;border:1px solid #c8c8c8;border-radius:6px;background:none;cursor:pointer;color:var(--muted);font-family:inherit" data-i18n="ui.bearbeiten">Bearbeiten</button>
+            <button onclick="exportMaterialsCSV()" style="font-size:.68rem;padding:.18rem .5rem;border:1px solid #c8c8c8;border-radius:6px;background:none;cursor:pointer;color:var(--muted);font-family:inherit" data-i18n="ui.export.csv">Export CSV</button>
+            <label style="font-size:.68rem;padding:.18rem .5rem;border:1px solid #c8c8c8;border-radius:6px;background:none;cursor:pointer;color:var(--muted);display:inline-block"><span data-i18n="ui.import.csv">Import CSV</span><input type="file" accept=".csv,.txt" onchange="importMaterialsCSV(event)" style="display:none"></label>
           </div>
         </div>
         <div id="rgl-el-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
-        <p class="rgl-note" id="rgl-el-note">Reglagezugkraft bei +10 °C, Lm = 45 m, Berechnungsart «Ausgleichend» &nbsp;·&nbsp; (SBB «Durchhang 2026.xlsm»)</p>
+        <p class="rgl-note" id="rgl-el-note" data-i18n-html="ui.rgl.el.note">Reglagezugkraft bei +10 °C, Lm = 45 m, Berechnungsart «Ausgleichend» &nbsp;·&nbsp; (SBB «Durchhang 2026.xlsm»)</p>
       </div>
 
     </div>
