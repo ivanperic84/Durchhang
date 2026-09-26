@@ -188,3 +188,72 @@ test('Dunkelmodus: keine hellen Eingabefelder (H-Punkte, Mindestabstand, Mastang
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await fensterAbfangen(seite);
+  const r = await seite.evaluate(() => {
+    document.getElementById('hf-btn').click();
+    const offen = document.getElementById('hf-modal').classList.contains('open');
+    // In der Excel gespeicherter Fall (hfmin_v11_D / hfmax_v11_D)
+    Object.assign(hfEingabe, { typ: 'nfl', c: 30, v: 141, bue: false, kombi: 'stcu50_cu107', Lm: 30, H_ub: 1700,
+      T_montage: 10, H_Fd: 8500, un: 15, schotter: false, ebv: 2, f: 0, H: 0, Tmin: -5, zlMin: 7, lrp: false, Tmax: -5, zlMax: 7 });
+    renderHf();
+    const werte = () => [document.getElementById('hf-wert-min').innerText, document.getElementById('hf-wert-max').innerText];
+    const excel = werte();
+    // Zusatzlast nur bei −5 °C: Temperatur ändern setzt sie auf 0 und sperrt das Feld
+    hfWert('Tmax', '-20');
+    const zlGesperrt = document.getElementById('hf-zlMax').disabled && hfEingabe.zlMax === 0;
+    // R-FL: Fallprüfung sichtbar, Ergebnis vorhanden
+    hfWert('typ', 'rfl');
+    const rfl = !!document.getElementById('hf-p11') && werte()[0].includes('mm');
+    const texte = {};
+    for (const l of ['fr', 'it', 'de']) { setLang(l); texte[l] = document.getElementById('hf-modal').innerText; }
+    window.__fenster.length = 0; hfPdf();
+    const pdf = window.__fenster.map(f => f.html);
+    const zustand = JSON.parse(JSON.stringify(getProjectState()));
+    hfEingabe = null; setProjectState(zustand);
+    const geladen = hfEingabe && hfEingabe.typ === 'rfl' && hfEingabe.Tmax === -20;
+    closeHf();
+    return { offen, excel, zlGesperrt, rfl, texte, pdf, geladen };
+  });
+  assert.equal(r.offen, true);
+  assert.deepEqual(r.excel.map(s => s.split(' mm')[0]), ["4'928", "6'104"]);
+  assert.equal(r.zlGesperrt, true);
+  assert.equal(r.rfl, true);
+  for (const [l, text] of Object.entries(r.texte)) {
+    const treffer = text.match(/\bhf\.[a-z0-9.]+\b/);
+    assert.equal(treffer, null, `${l}: roher Schlüssel «${treffer?.[0]}»`);
+  }
+  assert.equal(r.pdf.length, 1);
+  assert.match(r.pdf[0], /<h1/);
+  assert.equal(r.geladen, true);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Hindernisse nur in m ü. M.: ohne SOK Hinweis und keine Prüfung', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    document.getElementById('sok-mum-left').value = ''; document.getElementById('sok-mum-right').value = '';
+    hindernisse = [{ id: 900, name: 'Brücke', feld: 0, verbinden: true, punkte: [{ x: 5, h: 9 }, { x: 15, h: 9 }] }];
+    renderObstacleList(); berechnen();
+    const ohne = { erg: document.getElementById('hind-erg-900').textContent, geprueft: _nachweis.some(n => n.best),
+                   hinweis: document.getElementById('hind-sok-fehlt').style.display !== 'none' };
+    document.getElementById('sok-mum-left').value = 500; onSokMumLeftInput();
+    hindernisse[0].punkte = [{ x: 5, h: 509 }, { x: 15, h: 509 }];
+    renderObstacleList(); berechnen();
+    const mit = { geprueft: _nachweis.some(n => n.best), hinweis: document.getElementById('hind-sok-fehlt').style.display !== 'none',
+                  einheit: document.querySelector('.hind-uk-einheit').textContent };
+    return { ohne, mit, deltaImKoord: !!document.querySelector('#koord-felder #mast-delta-sok-left') };
+  });
+  assert.equal(r.ohne.geprueft, false);
+  assert.equal(r.ohne.hinweis, true);
+  assert.match(r.ohne.erg, /SOK/);
+  assert.equal(r.mit.geprueft, true);
+  assert.equal(r.mit.hinweis, false);
+  assert.match(r.mit.einheit, /ü\. M\./);
+  assert.equal(r.deltaImKoord, true);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});

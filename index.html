@@ -2291,28 +2291,6 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
         </div>
       </div>
 
-      <!-- Δ Mastfuss-SOK -->
-      <div class="field-row" style="margin-top:.5rem">
-        <div class="field">
-          <label id="bp-delta-sok-li-lbl" data-i18n="bp.delta.sok.li" style="white-space:nowrap">&#x394; Mastfuss-SOK li</label>
-          <div class="input-wrap">
-            <input type="number" id="mast-delta-sok-left" step="0.01" placeholder="0.00"
-              oninput="berechnenEntprellt()" onchange="berechnen()"
-              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
-            <span class="input-unit">m</span>
-          </div>
-        </div>
-        <div class="field">
-          <label id="bp-delta-sok-re-lbl" data-i18n="bp.delta.sok.re" style="white-space:nowrap">&#x394; Mastfuss-SOK re</label>
-          <div class="input-wrap">
-            <input type="number" id="mast-delta-sok-right" step="0.01" placeholder="0.00"
-              oninput="berechnenEntprellt()" onchange="berechnen()"
-              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
-            <span class="input-unit">m</span>
-          </div>
-        </div>
-      </div>
-
       <!-- Optionale Mastangaben: eingeklappt, öffnen sich automatisch, sobald
            ein Wert vorhanden ist (siehe _mastangabenOeffnenFallsBelegt) -->
       <details id="mastangaben" class="mast-details">
@@ -2373,7 +2351,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
           <span data-i18n="koord.schalter">Koordinaten LV95</span>
         </label>
         <div id="koord-felder" style="display:none">
-          <p class="koord-hinweis" data-i18n-html="koord.hinweis">E/N [m] = Aufhängepunkt des Leiters (Ausleger/Joch), Z [m ü. M.] = Mastfuss. Spannweite L und SOK (= Z − Δ Mastfuss-SOK) werden daraus berechnet.</p>
+          <p class="koord-hinweis" data-i18n-html="koord.hinweis">E/N [m] = Aufhängepunkt des Leiters (Ausleger/Joch), Z [m ü. M.] = Mastfuss. Δ [m] = Mastfuss über SOK (positiv = Mastfuss höher). Spannweite L und SOK (= Z − Δ) werden daraus berechnet.</p>
           <div class="koord-grid">
             <span></span>
             <span id="koord-lbl-li" class="koord-kopf" data-i18n="koord.links">links</span>
@@ -2387,6 +2365,9 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
             <span id="koord-lbl-z" data-i18n="koord.z">Z</span>
             <input type="number" id="koord-z-left"  class="koord-inp" step="0.001" autocomplete="off" placeholder="—" aria-labelledby="koord-lbl-z koord-lbl-li" oninput="berechnenEntprellt()" onchange="berechnen()">
             <input type="number" id="koord-z-right" class="koord-inp" step="0.001" autocomplete="off" placeholder="—" aria-labelledby="koord-lbl-z koord-lbl-re" oninput="berechnenEntprellt()" onchange="berechnen()">
+            <span id="koord-lbl-d" data-i18n="koord.delta" title="Δ positiv = Mastfuss liegt höher als SOK" data-i18n-title="koord.delta.titel">Δ</span>
+            <input type="number" id="mast-delta-sok-left"  class="koord-inp" step="0.01" autocomplete="off" placeholder="0.00" aria-labelledby="koord-lbl-d koord-lbl-li" oninput="berechnenEntprellt()" onchange="berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
+            <input type="number" id="mast-delta-sok-right" class="koord-inp" step="0.01" autocomplete="off" placeholder="0.00" aria-labelledby="koord-lbl-d koord-lbl-re" oninput="berechnenEntprellt()" onchange="berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
           </div>
           <p id="koord-info" class="koord-info" aria-live="polite"></p>
         </div>
@@ -2988,7 +2969,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.9.3';
+const APP_VERSION = 'v3.10.0';
 
 // Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
 function sysName(mode) {
@@ -9768,8 +9749,11 @@ function _hindernisseAngezeigt() {
 
 // Nachweis für eine Liste Hindernisse. ov: Feldwerte (L, Lm, h1, h2) für
 // rechneFall; sokFn: x → SOK m ü. M. (oder null, dann Höhen über SOK).
+// Hindernishöhen gelten immer in m ü. M. — ohne SOK m ü. M. (direkt oder aus
+// Koordinaten) ist kein Vergleich möglich: keine Prüfung, nur Hinweis.
 function abstandsNachweis(liste, ov = {}, sokFn = null) {
   if (!liste.length) return [];
+  if (!sokFn) return liste.map(h => ({ h, best: null, ok: null, ohneSok: true }));
   const L = ov.L ?? getActiveSpan();
   const kurven = [];
   for (const f of lastfaelle(lastfallEinst, sysMode)) {
@@ -9781,7 +9765,7 @@ function abstandsNachweis(liste, ov = {}, sokFn = null) {
   return liste.map(h => {
     let best = null;
     for (const k of kurven) {
-      const hoehe = x => kettenY(k.c, x) + (sokFn ? sokFn(x) : 0);
+      const hoehe = x => kettenY(k.c, x) + sokFn(x);
       const r = abstandHindernis(hoehe, h.punkte, h.verbinden, L);
       if (r && (!best || r.abstand < best.abstand)) best = { ...r, fall: k.f, c: k.c };
     }
@@ -9856,7 +9840,9 @@ function clearObstacles() {
 // Ergebnistext je Hindernis (ohne die Eingabefelder neu aufzubauen)
 function _hindernisErgebnisse() {
   const hasSok = getSokMumLeft() !== null || getSokMumRight() !== null;
-  document.querySelectorAll('.hind-uk-einheit').forEach(el => el.textContent = hasSok ? t('hind.uk.mum') : t('hind.uk.sok'));
+  document.querySelectorAll('.hind-uk-einheit').forEach(el => el.textContent = t('hind.uk.mum'));
+  const sokHw = document.getElementById('hind-sok-fehlt');
+  if (sokHw) zeigeElement(sokHw, !hasSok && hindernisse.length > 0);
   const angezeigt = new Set(_hindernisseAngezeigt().map(h => h.id));
   hindernisse.forEach(h => {
     const el = document.getElementById(`hind-erg-${h.id}`);
@@ -9864,6 +9850,7 @@ function _hindernisErgebnisse() {
     const n = _nachweis.find(x => x.h.id === h.id);
     el.className = 'hind-erg';
     if (!angezeigt.has(h.id)) { el.textContent = t('hind.anderes.feld'); return; }
+    if (n?.ohneSok) { el.textContent = t('hind.sok.fehlt'); el.className = 'hind-erg abs-fehlt'; return; }
     if (!n || !n.best) {
       el.textContent = hindernisPunkte(h.punkte).length ? t('hind.ausserhalb') : t('hind.unvollstaendig');
       return;
@@ -9893,7 +9880,8 @@ function renderObstacleList() {
       <button onclick="addObstacle()" style="${knopf}">${t('hind.hinzu')}</button>
       ${hasAny ? `<button onclick="clearObstacles()" style="${knopf}" aria-label="${escHtml(t('ui.alle'))}">${t('ui.alle')}</button>` : ''}
     </div>
-  </div>`;
+  </div>
+  <p id="hind-sok-fehlt" class="hind-legende abs-fehlt" style="display:none">${t('hind.sok.hinweis')}</p>`;
   hindernisse.forEach(h => {
     const feldSel = mitFeld ? `<label class="hind-feld-lbl">${t('hind.feld')}
         <select class="hind-inp" onchange="updateObstacle(${h.id},'feld',this.value);berechnen()">${
@@ -12304,6 +12292,7 @@ function abschnittAktualisieren() {
     const n = f.nachweis.filter(x => x.best);
     const schlecht = n.reduce((a, x) => (!a || x.best.abstand < a.best.abstand) ? x : a, null);
     const hind = !f.nachweis.length ? '—'
+      : f.nachweis.some(x => x.ohneSok) ? `<span class="abs-fehlt">${t('hind.sok.fehlt.kurz')}</span>`
       : !schlecht ? `<span class="abs-fehlt">${t('hind.unvollstaendig')}</span>`
       : `<span class="${schlecht.ok ? 'abs-ok' : 'abs-nok'}">${schlecht.ok ? '✓' : '✗'} ${fN(schlecht.best.abstand, 2)} m</span>`;
     html += `<tr${offen ? ' class="offen"' : ''}><td>${name}</td>
@@ -12582,8 +12571,9 @@ function exportDxf() {
       linien.push({ layer: 'MESSPUNKT', punkte: [P(xv, y - hw), P(xv, y + hw)] });
     });
   // Hindernisse oberhalb: Unterkante (verbunden) bzw. Einzelpunkte, Mindestabstand darunter
-  _nachweis.forEach(({ h }) => {
-    const rel = (x, hv) => hasSok ? hv - absY(x, 0) : hv;     // Hindernis absolut → über SOK
+  _nachweis.forEach(({ h, ohneSok }) => {
+    if (ohneSok) return;                                        // Höhen m ü. M. ohne SOK nicht einzuordnen
+    const rel = (x, hv) => hv - absY(x, 0);                     // Hindernis absolut → über SOK
     const Pk = hindernisPunkte(h.punkte).filter(p => h.verbinden || (p.x >= 0 && p.x <= L));
     const linie = (pts, versatz = 0) => pts.map(p => P(p.x, rel(p.x, p.h) - versatz));
     if (h.verbinden && Pk.length > 1) {
@@ -13551,12 +13541,14 @@ const LANG = {
     'pdf.maximum': 'Maximum',
     'pdf.minimum': 'Minimum',
     'koord.schalter': 'Koordinaten LV95',
-    'koord.hinweis': 'E/N [m] = Aufhängepunkt des Leiters (Ausleger/Joch), Z [m ü. M.] = Mastfuss. Spannweite L und SOK (= Z − Δ Mastfuss-SOK) werden daraus berechnet.',
+    'koord.hinweis': 'E/N [m] = Aufhängepunkt des Leiters (Ausleger/Joch), Z [m ü. M.] = Mastfuss. Δ [m] = Mastfuss über SOK (positiv = Mastfuss höher). Spannweite L und SOK (= Z − Δ) werden daraus berechnet.',
     'koord.links': 'links',
     'koord.rechts': 'rechts',
     'koord.e': 'E',
     'koord.n': 'N',
     'koord.z': 'Z',
+    'koord.delta': 'Δ',
+    'koord.delta.titel': 'Δ positiv = Mastfuss liegt höher als SOK',
     'koord.info.L': 'L = {L} m aus Koordinaten',
     'koord.info.sok': 'SOK links / rechts = {l} / {r} m ü. M.',
     'koord.fehlt': 'E und N links und rechts eingeben',
@@ -13643,7 +13635,9 @@ const LANG = {
     'hind.feld': 'Feld',
     'hind.uk': 'Höhe',
     'hind.uk.mum': '[m ü. M.]',
-    'hind.uk.sok': '[m ü. SOK]',
+    'hind.sok.fehlt': 'SOK m ü. M. fehlt — keine Prüfung',
+    'hind.sok.fehlt.kurz': 'SOK fehlt',
+    'hind.sok.hinweis': 'Höhen der Hindernisse in m ü. M. Für die Prüfung die SOK m ü. M. unter «Mastangaben» eintragen (direkt oder über die Koordinaten).',
     'hind.unvollstaendig': 'Punkte mit x und Höhe eingeben',
     'hind.ausserhalb': 'Punkte liegen ausserhalb des Felds',
     'hind.anderes.feld': 'gehört zu einem anderen Feld des Abschnitts',
@@ -14339,12 +14333,14 @@ const LANG = {
     'pdf.maximum': 'maximum',
     'pdf.minimum': 'minimum',
     'koord.schalter': 'Coordonnées MN95',
-    'koord.hinweis': 'E/N [m] = point d’appui du conducteur (console/portique), Z [m s.n.m.] = pied de mât. La portée L et le DRS (= Z − Δ pied de mât-DRS) en sont calculés.',
+    'koord.hinweis': 'E/N [m] = point d’appui du conducteur (console/portique), Z [m s.n.m.] = pied de mât. Δ [m] = pied de mât au-dessus du DRS (positif = pied de mât plus haut). La portée L et le DRS (= Z − Δ) en sont calculés.',
     'koord.links': 'gauche',
     'koord.rechts': 'droite',
     'koord.e': 'E',
     'koord.n': 'N',
     'koord.z': 'Z',
+    'koord.delta': 'Δ',
+    'koord.delta.titel': 'Δ positif = le pied du mât est plus haut que le DRS',
     'koord.info.L': 'L = {L} m selon coordonnées',
     'koord.info.sok': 'DRS gauche / droite = {l} / {r} m s.n.m.',
     'koord.fehlt': 'Saisir E et N à gauche et à droite',
@@ -14431,7 +14427,9 @@ const LANG = {
     'hind.feld': 'Portée',
     'hind.uk': 'Hauteur',
     'hind.uk.mum': '[m s.n.m.]',
-    'hind.uk.sok': '[m s. DRS]',
+    'hind.sok.fehlt': 'DRS m s.n.m. manquant — pas de vérification',
+    'hind.sok.fehlt.kurz': 'DRS manquant',
+    'hind.sok.hinweis': 'Hauteurs des obstacles en m s.n.m. Pour la vérification, saisir le DRS m s.n.m. sous « Données des mâts » (directement ou via les coordonnées).',
     'hind.unvollstaendig': 'saisir des points avec x et hauteur',
     'hind.ausserhalb': 'les points sont hors de la portée',
     'hind.anderes.feld': 'appartient à une autre portée du canton',
@@ -15127,12 +15125,14 @@ const LANG = {
     'pdf.maximum': 'massimo',
     'pdf.minimum': 'minimo',
     'koord.schalter': 'Coordinate MN95',
-    'koord.hinweis': 'E/N [m] = punto d’aggancio del conduttore (mensola/portale), Z [m s.l.m.] = piede del palo. La campata L e il PRF (= Z − Δ piede palo-PRF) vengono calcolati da questi valori.',
+    'koord.hinweis': 'E/N [m] = punto d’aggancio del conduttore (mensola/portale), Z [m s.l.m.] = piede del palo. Δ [m] = piede del palo sopra il PRF (positivo = piede più alto). La campata L e il PRF (= Z − Δ) vengono calcolati da questi valori.',
     'koord.links': 'sinistra',
     'koord.rechts': 'destra',
     'koord.e': 'E',
     'koord.n': 'N',
     'koord.z': 'Z',
+    'koord.delta': 'Δ',
+    'koord.delta.titel': 'Δ positivo = il piede del palo è più alto del PRF',
     'koord.info.L': 'L = {L} m dalle coordinate',
     'koord.info.sok': 'PRF sinistra / destra = {l} / {r} m s.l.m.',
     'koord.fehlt': 'Inserire E e N a sinistra e a destra',
@@ -15219,7 +15219,9 @@ const LANG = {
     'hind.feld': 'Campata',
     'hind.uk': 'Altezza',
     'hind.uk.mum': '[m s.l.m.]',
-    'hind.uk.sok': '[m s. PRF]',
+    'hind.sok.fehlt': 'PRF m s.l.m. mancante — nessuna verifica',
+    'hind.sok.fehlt.kurz': 'PRF mancante',
+    'hind.sok.hinweis': 'Altezze degli ostacoli in m s.l.m. Per la verifica inserire il PRF m s.l.m. sotto «Dati dei pali» (direttamente o tramite le coordinate).',
     'hind.unvollstaendig': 'inserire punti con x e altezza',
     'hind.ausserhalb': 'i punti sono fuori dalla campata',
     'hind.anderes.feld': 'appartiene a un’altra campata della tratta',
@@ -16096,6 +16098,7 @@ renderObstacleList();
           <li>Berechnungsart <em>ausgleichend</em> / <em>starr</em> für N-FL und Einzelleiter (6.8); Fahrdraht neu / abgenutzt; Eislast</li>
           <li>Messpunkte, 3-Punkte-Messung, SOK-Bezug (6.1–6.3); Abstandsprüfung zu Hindernissen oberhalb (Punkte x/Höhe, verbunden oder einzeln) über alle Lastfälle (6.12)</li>
           <li>Abspannabschnitt mit Masttabelle, CSV-Import und Längsprofil (6.11)</li>
+          <li>Fahrdrahthöhe hf_min / hf_max nach AB-EBV wie SBB-Excel, eigene Ansicht (6.14)</li>
           <li>Koordinaten LV95, Export IFC4 und 3D-DXF (6.10); PDF-Berechnungsprotokoll und massstäbliche Zeichnung</li>
           <li>Hell-/Dunkelmodus, Ergebnisleiste auf dem Tablet, DE / FR / IT, offline nutzbar (6.13)</li>
           <li>Foto-Auswertung — nur zur Abschätzung, keine präzise Berechnung (6.13)</li>
@@ -16115,6 +16118,7 @@ renderObstacleList();
           <li>Mode de calcul <em>compensé</em> / <em>rigide</em> pour LC N et conducteur simple (6.8) ; fil de contact neuf / usé ; charge de glace</li>
           <li>Points de mesure, mesure 3 points, référence DRS (6.1–6.3) ; vérification des distances aux obstacles au-dessus pour tous les cas de charge (6.12)</li>
           <li>Canton de pose avec tableau des mâts, import CSV et profil en long (6.11)</li>
+          <li>Hauteur du fil de contact hf_min / hf_max selon DE-OCF comme l’Excel CFF, vue séparée (6.14)</li>
           <li>Coordonnées MN95, export IFC4 et DXF 3D (6.10) ; protocole de calcul PDF et dessin à l’échelle</li>
           <li>Mode clair / sombre, barre de résultats sur tablette, DE / FR / IT, utilisable hors ligne (6.13)</li>
           <li>Analyse photo — estimation seulement, pas de calcul précis (6.13)</li>
@@ -16134,6 +16138,7 @@ renderObstacleList();
           <li>Modalità di calcolo <em>compensato</em> / <em>rigido</em> per LC N e conduttore singolo (6.8); filo di contatto nuovo / usurato; carico di ghiaccio</li>
           <li>Punti di misura, misura 3 punti, riferimento PRF (6.1–6.3); verifica delle distanze da ostacoli sopra per tutti i casi di carico (6.12)</li>
           <li>Tratta di regolazione con tabella dei pali, importazione CSV e profilo longitudinale (6.11)</li>
+          <li>Altezza del filo di contatto hf_min / hf_max secondo DE-OFerr come l’Excel FFS, vista separata (6.14)</li>
           <li>Coordinate MN95, esportazione IFC4 e DXF 3D (6.10); protocollo di calcolo PDF e disegno in scala</li>
           <li>Modalità chiara / scura, barra dei risultati su tablet, DE / FR / IT, utilizzabile offline (6.13)</li>
           <li>Analisi foto — solo stima, nessun calcolo preciso (6.13)</li>
@@ -16877,7 +16882,7 @@ renderObstacleList();
           <li><strong>E / N</strong> — Lage des <em>Aufhängepunkts des Leiters</em> (Rückleiter meist am Mast, Kettenwerk meist am Ausleger oder Joch).</li>
           <li><strong>Z</strong> — Höhe des <em>Mastfusses</em> in m ü. M. (LN02).</li>
         </ul>
-        <p>Daraus berechnet die App: Spannweite L = waagrechter Abstand der beiden Aufhängepunkte, SOK = Z − «Δ Mastfuss-SOK» (Δ positiv, wenn der Mastfuss höher liegt als SOK), Aufhängehöhe = SOK + h<sub>1</sub> bzw. h<sub>2</sub>. Diese Felder sind gesperrt, solange der Schalter eingeschaltet ist.</p>
+        <p>Daraus berechnet die App: Spannweite L = waagrechter Abstand der beiden Aufhängepunkte, SOK = Z − Δ (Feld «Δ» im Koordinaten-Bereich = Mastfuss über SOK, positiv, wenn der Mastfuss höher liegt als SOK; nur hier wirksam), Aufhängehöhe = SOK + h<sub>1</sub> bzw. h<sub>2</sub>. Diese Felder sind gesperrt, solange der Schalter eingeschaltet ist.</p>
         <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Exporte (Menü «Teilen»)</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>3D-DXF</strong> — Linien in Metern (AC1009/R12): Tragseil bzw. Leiter bei T<sub>2</sub>, Fahrdraht, Hänger, Tragseil bei T<sub>1</sub>, SOK und Messpunkte. Mit Koordinaten in E / N / H (LV95/LN02), sonst lokal (x längs Feld, z Höhe).</li>
@@ -16892,7 +16897,7 @@ renderObstacleList();
           <li><strong>E / N</strong> — position du <em>point d’appui du conducteur</em> (conducteur de retour généralement au mât, caténaire généralement à la console ou au portique).</li>
           <li><strong>Z</strong> — altitude du <em>pied de mât</em> en m s.n.m. (NF02).</li>
         </ul>
-        <p>L’application en déduit : portée L = distance horizontale des deux points d’appui, DRS = Z − «Δ pied de mât-DRS» (Δ positif si le pied de mât est plus haut que le DRS), hauteur d’appui = DRS + h<sub>1</sub> resp. h<sub>2</sub>. Ces champs sont verrouillés tant que l’interrupteur est activé.</p>
+        <p>L’application en déduit : portée L = distance horizontale des deux points d’appui, DRS = Z − Δ (champ «Δ» dans la zone des coordonnées = pied de mât au-dessus du DRS, positif si le pied de mât est plus haut ; effectif seulement ici), hauteur d’appui = DRS + h<sub>1</sub> resp. h<sub>2</sub>. Ces champs sont verrouillés tant que l’interrupteur est activé.</p>
         <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Exports (menu «Exporter»)</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>DXF 3D</strong> — lignes en mètres (AC1009/R12) : câble porteur resp. conducteur à T<sub>2</sub>, fil de contact, suspensions, câble porteur à T<sub>1</sub>, DRS et points de mesure. Avec coordonnées en E / N / H (MN95/NF02), sinon en local (x le long de la portée, z hauteur).</li>
@@ -16907,7 +16912,7 @@ renderObstacleList();
           <li><strong>E / N</strong> — posizione del <em>punto d’aggancio del conduttore</em> (conduttore di ritorno di solito al palo, catenaria di solito alla mensola o al portale).</li>
           <li><strong>Z</strong> — quota del <em>piede del palo</em> in m s.l.m. (RN02).</li>
         </ul>
-        <p>L’applicazione ne ricava: campata L = distanza orizzontale dei due punti d’aggancio, PRF = Z − «Δ piede palo-PRF» (Δ positivo se il piede del palo è più alto del PRF), altezza d’aggancio = PRF + h<sub>1</sub> risp. h<sub>2</sub>. Questi campi sono bloccati finché l’interruttore è attivo.</p>
+        <p>L’applicazione ne ricava: campata L = distanza orizzontale dei due punti d’aggancio, PRF = Z − Δ (campo «Δ» nella zona delle coordinate = piede del palo sopra il PRF, positivo se il piede è più alto; efficace solo qui), altezza d’aggancio = PRF + h<sub>1</sub> risp. h<sub>2</sub>. Questi campi sono bloccati finché l’interruttore è attivo.</p>
         <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Esportazioni (menu «Esporta»)</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>DXF 3D</strong> — linee in metri (AC1009/R12): filo portante risp. conduttore a T<sub>2</sub>, filo di contatto, ballerine, filo portante a T<sub>1</sub>, PRF e punti di misura. Con coordinate in E / N / H (MN95/RN02), altrimenti in locale (x lungo la campata, z altezza).</li>
@@ -16928,7 +16933,7 @@ renderObstacleList();
           <li><strong>IFC / 3D-DXF Abschnitt</strong> exportiert alle Felder in einer Datei (mit Koordinaten georeferenziert).</li>
         </ul>
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Abstandsprüfung zu Hindernissen oberhalb</p>
-        <p>Unter dem Diagramm lassen sich <strong>Hindernisse oberhalb</strong> (z. B. Brücke, Decke) mit beliebig vielen Punkten <em>x / Höhe</em> erfassen (Höhe in m ü. M., wenn SOK bekannt, sonst über SOK). Die Reihenfolge der Punkte spielt keine Rolle. Mit dem Schalter <strong>Punkte verbinden</strong> bilden sie die Unterkante — eine Linie durch die nach x sortierten Punkte, auch schräg, geknickt oder gewölbt; ausgeschaltet wird jeder Punkt einzeln geprüft (wie die früheren H-Punkte H1–H4, die in älteren Projekten automatisch übernommen werden). Die App prüft den obersten Leiter (Tragseil bzw. Einzelleiter) in allen <strong>Lastfällen</strong> und zeigt den ungünstigsten: kleinster Abstand, Lastfall und Stelle; mit Mindestabstand a grün ✓ oder rot ✗. Diagramm, Zeichnung/PDF, Längsprofil und DXF zeigen die Hindernisse; der massgebende Lastfall ist im Diagramm gestrichelt.</p>
+        <p>Unter dem Diagramm lassen sich <strong>Hindernisse oberhalb</strong> (z. B. Brücke, Decke) mit beliebig vielen Punkten <em>x / Höhe</em> erfassen (Höhe immer in m ü. M.). Die Prüfung braucht die SOK m ü. M. unter <em>Mastangaben</em> — direkt oder aus den Koordinaten; fehlt sie, erscheint ein Hinweis und es wird nicht geprüft. Die Reihenfolge der Punkte spielt keine Rolle. Mit dem Schalter <strong>Punkte verbinden</strong> bilden sie die Unterkante — eine Linie durch die nach x sortierten Punkte, auch schräg, geknickt oder gewölbt; ausgeschaltet wird jeder Punkt einzeln geprüft (wie die früheren H-Punkte H1–H4, die in älteren Projekten automatisch übernommen werden). Die App prüft den obersten Leiter (Tragseil bzw. Einzelleiter) in allen <strong>Lastfällen</strong> und zeigt den ungünstigsten: kleinster Abstand, Lastfall und Stelle; mit Mindestabstand a grün ✓ oder rot ✗. Diagramm, Zeichnung/PDF, Längsprofil und DXF zeigen die Hindernisse; der massgebende Lastfall ist im Diagramm gestrichelt.</p>
         <p style="font-size:.8rem;color:var(--muted)">Lastfälle je Leitersystem unter «Lastfälle …»: Temperaturen (Vorgabe −20 °C und +80 °C), Eislast bei −5 °C nach Höhenlage der Strecke (unter 1000 m ü. M. 7 N/m, ab 1000 m ü. M. 15 N/m; Vorgabe 15 N/m, Wert überschreibbar) und Fahrdraht neu/abgenutzt. Bei R-FL wirkt die Temperatur nicht (Nachspannung).</p>
       </div><!-- /hb-de -->
       <div class="hb-lang hb-fr" style="display:none">
@@ -16942,7 +16947,7 @@ renderObstacleList();
           <li><strong>IFC / DXF 3D canton</strong> exporte toutes les portées dans un fichier (géoréférencé avec coordonnées).</li>
         </ul>
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Vérification des distances aux obstacles au-dessus</p>
-        <p>Sous le diagramme, des <strong>obstacles au-dessus</strong> (p. ex. pont, plafond) peuvent être saisis avec autant de points <em>x / hauteur</em> que nécessaire (hauteur en m s.n.m. si le DRS est connu, sinon sur DRS). L’ordre des points n’a pas d’importance. Avec l’interrupteur <strong>Relier les points</strong>, ils forment la sous-face — une ligne passant par les points triés selon x, aussi inclinée, brisée ou cintrée ; désactivé, chaque point est vérifié séparément (comme les anciens points H H1–H4, repris automatiquement dans les anciens projets). L’application vérifie le conducteur le plus haut (câble porteur resp. conducteur simple) dans tous les <strong>cas de charge</strong> et affiche le plus défavorable : distance minimale, cas de charge et position ; avec distance minimale a en vert ✓ ou rouge ✗. Diagramme, dessin/PDF, profil en long et DXF montrent les obstacles ; le cas déterminant est en pointillé dans le diagramme.</p>
+        <p>Sous le diagramme, des <strong>obstacles au-dessus</strong> (p. ex. pont, plafond) peuvent être saisis avec autant de points <em>x / hauteur</em> que nécessaire (hauteur toujours en m s.n.m.). La vérification nécessite le DRS m s.n.m. sous <em>Données des mâts</em> — directement ou via les coordonnées ; s’il manque, une remarque apparaît et aucune vérification n’a lieu. L’ordre des points n’a pas d’importance. Avec l’interrupteur <strong>Relier les points</strong>, ils forment la sous-face — une ligne passant par les points triés selon x, aussi inclinée, brisée ou cintrée ; désactivé, chaque point est vérifié séparément (comme les anciens points H H1–H4, repris automatiquement dans les anciens projets). L’application vérifie le conducteur le plus haut (câble porteur resp. conducteur simple) dans tous les <strong>cas de charge</strong> et affiche le plus défavorable : distance minimale, cas de charge et position ; avec distance minimale a en vert ✓ ou rouge ✗. Diagramme, dessin/PDF, profil en long et DXF montrent les obstacles ; le cas déterminant est en pointillé dans le diagramme.</p>
         <p style="font-size:.8rem;color:var(--muted)">Cas de charge par système sous «Cas de charge …» : températures (par défaut −20 °C et +80 °C), charge de glace à −5 °C selon l’altitude de la ligne (sous 1000 m s.n.m. 7 N/m, dès 1000 m s.n.m. 15 N/m ; par défaut 15 N/m, valeur modifiable) et fil de contact neuf/usé. En LC R, la température n’a pas d’effet (tension automatique).</p>
       </div><!-- /hb-fr -->
       <div class="hb-lang hb-it" style="display:none">
@@ -16956,7 +16961,7 @@ renderObstacleList();
           <li><strong>IFC / DXF 3D tratta</strong> esporta tutte le campate in un unico file (georeferenziato con coordinate).</li>
         </ul>
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Verifica delle distanze da ostacoli sopra</p>
-        <p>Sotto il diagramma si possono inserire <strong>ostacoli sopra</strong> (p. es. ponte, soffitto) con quanti punti <em>x / altezza</em> si vuole (altezza in m s.l.m. se il PRF è noto, altrimenti sul PRF). L’ordine dei punti non ha importanza. Con l’interruttore <strong>Collega i punti</strong> formano l’intradosso — una linea attraverso i punti ordinati secondo x, anche inclinata, spezzata o ad arco; disattivato, ogni punto viene verificato singolarmente (come i precedenti punti H H1–H4, ripresi automaticamente nei progetti meno recenti). L’applicazione verifica il conduttore più alto (filo portante risp. conduttore singolo) in tutti i <strong>casi di carico</strong> e mostra il più sfavorevole: distanza minima, caso di carico e posizione; con distanza minima a in verde ✓ o rosso ✗. Diagramma, disegno/PDF, profilo longitudinale e DXF mostrano gli ostacoli; il caso determinante è tratteggiato nel diagramma.</p>
+        <p>Sotto il diagramma si possono inserire <strong>ostacoli sopra</strong> (p. es. ponte, soffitto) con quanti punti <em>x / altezza</em> si vuole (altezza sempre in m s.l.m.). La verifica richiede il PRF m s.l.m. sotto <em>Dati dei pali</em> — direttamente o tramite le coordinate; se manca, appare un avviso e non viene eseguita alcuna verifica. L’ordine dei punti non ha importanza. Con l’interruttore <strong>Collega i punti</strong> formano l’intradosso — una linea attraverso i punti ordinati secondo x, anche inclinata, spezzata o ad arco; disattivato, ogni punto viene verificato singolarmente (come i precedenti punti H H1–H4, ripresi automaticamente nei progetti meno recenti). L’applicazione verifica il conduttore più alto (filo portante risp. conduttore singolo) in tutti i <strong>casi di carico</strong> e mostra il più sfavorevole: distanza minima, caso di carico e posizione; con distanza minima a in verde ✓ o rosso ✗. Diagramma, disegno/PDF, profilo longitudinale e DXF mostrano gli ostacoli; il caso determinante è tratteggiato nel diagramma.</p>
         <p style="font-size:.8rem;color:var(--muted)">Casi di carico per sistema in «Casi di carico …»: temperature (predefinite −20 °C e +80 °C), carico di ghiaccio a −5 °C secondo l’altitudine della linea (sotto 1000 m s.l.m. 7 N/m, da 1000 m s.l.m. 15 N/m; predefinito 15 N/m, valore modificabile) e filo di contatto nuovo/usurato. Per LC R la temperatura non ha effetto (tensionamento automatico).</p>
       </div><!-- /hb-it -->
 
@@ -16996,6 +17001,47 @@ renderObstacleList();
           <li><strong>Offline</strong>: dopo il primo caricamento l’applicazione funziona senza Internet e può essere installata. Dopo un aggiornamento appare «È disponibile una nuova versione» — scegliere «Carica ora» o ricaricare la pagina.</li>
           <li><strong>Esc</strong> chiude le finestre aperte; i campi non validi vengono evidenziati e i risultati mostrati come non aggiornati.</li>
         </ul>
+      </div><!-- /hb-it -->
+
+      <!-- ══ 6.14 Fahrdrahthöhe hf_min / hf_max ══ -->
+      <div class="hb-lang hb-de">
+        <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.14 &nbsp;Fahrdrahthöhe hf_min / hf_max</p>
+        <p>Eigene Berechnung, getrennt vom Durchhang: Knopf <strong>«hf min/max»</strong> im Kopf. Nachbildung der SBB-Excel (Blätter hfmin_v11_D / hfmax_v11_D, AB-EBV 2024, Art. 5.2.1 und 5.2.2), alle Werte in mm:</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>hf<sub>min</sub></strong> = GfA + k + b<sub>e</sub> + f + H + Z<sub>hf,min</sub> mit Z<sub>hf,min</sub> = f<sub>g</sub> + t<sub>hu</sub> + f<sub>ud</sub> + f<sub>uv</sub> + f<sub>FD,max,ZL</sub> + f<sub>FD,max</sub>.</li>
+          <li><strong>hf<sub>max</sub></strong> = 6050 (LRP J) bzw. 6200 (EBV C) − Z<sub>hf,max</sub> mit Z<sub>hf,max</sub> = t<sub>ho</sub> + f<sub>udo</sub> − f<sub>uv</sub> + f<sub>h</sub> − f<sub>FD,min</sub>.</li>
+          <li><strong>Bahnübergang</strong>: 5510 + Zuschläge (ohne Gleishebung und Schwingung), mit Hinweisen; bei hf<sub>max</sub> wie Excel — fachlich prüfen.</li>
+          <li><strong>N-FL</strong>: Fahrdraht-Durchhang f = c²/8 · (g'k + Z<sub>L</sub> − g'k · H<sub>Tx</sub>/H<sub>t0</sub>) / (H<sub>Fd</sub> + H<sub>Tx</sub>) (VEM Gl. 7.67). H<sub>t0</sub> (10 °C) und H<sub>Tx</sub> rechnet die App aus Kombination, L<sub>m</sub> und Montagezugkraft — gleiche Werte wie Excel «NFL-Tab»; neuer Fahrdraht.</li>
+          <li><strong>R-FL</strong>: Eislast-Durchhang mit fest 12 kN + 10 kN, Fallprüfung P1.1–P1.3 und überdeckte Spannweite c<sub>übr</sub>; Vordurchhang 50 mm (c ≥ 42 m) bzw. 30 mm nur bis 140 km/h.</li>
+          <li>Wie Excel: Spannweite c nur 60 … 26, 24, 20, 16, 12, 8 m; Temperaturen −20 … +80 °C in 5-K-Schritten; Zusatzlast 0 / 7 / 15 N/m nur bei −5 °C.</li>
+        </ul>
+        <p style="font-size:.8rem;color:var(--muted)"><em>Aus Durchhang übernehmen</em> holt FL-Typ, Kombination, Spannweite (auf den nächsten Tabellenwert aufgerundet), L<sub>m</sub> und Zugkräfte aus der aktuellen Berechnung. Die Tabelle zeigt jeden Zuschlag mit Quelle; <em>PDF-Protokoll</em> druckt die Berechnung. Kontrolle: der in der Excel gespeicherte Fall (N-FL 50+107, c = 30 m, −5 °C mit 7 N/m) ergibt hf<sub>min</sub> = 4928 mm und hf<sub>max</sub> = 6104 mm wie in der Excel.</p>
+      </div><!-- /hb-de -->
+      <div class="hb-lang hb-fr" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.14 &nbsp;Hauteur du fil de contact hf_min / hf_max</p>
+        <p>Calcul séparé de la flèche : bouton <strong>«hf min/max»</strong> dans l’en-tête. Reproduction de l’Excel CFF (feuilles hfmin_v11_D / hfmax_v11_D, DE-OCF 2024, art. 5.2.1 et 5.2.2), toutes les valeurs en mm :</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>hf<sub>min</sub></strong> = GfA + k + b<sub>e</sub> + f + H + Z<sub>hf,min</sub> avec Z<sub>hf,min</sub> = f<sub>g</sub> + t<sub>hu</sub> + f<sub>ud</sub> + f<sub>uv</sub> + f<sub>FD,max,ZL</sub> + f<sub>FD,max</sub>.</li>
+          <li><strong>hf<sub>max</sub></strong> = 6050 (LRP J) resp. 6200 (OCF C) − Z<sub>hf,max</sub> avec Z<sub>hf,max</sub> = t<sub>ho</sub> + f<sub>udo</sub> − f<sub>uv</sub> + f<sub>h</sub> − f<sub>FD,min</sub>.</li>
+          <li><strong>Passage à niveau</strong> : 5510 + suppléments (sans relèvement de voie ni oscillation), avec remarques ; pour hf<sub>max</sub> comme Excel — à vérifier.</li>
+          <li><strong>LC N</strong> : flèche du fil de contact f = c²/8 · (g'k + Z<sub>L</sub> − g'k · H<sub>Tx</sub>/H<sub>t0</sub>) / (H<sub>FC</sub> + H<sub>Tx</sub>) (VEM éq. 7.67). H<sub>t0</sub> (10 °C) et H<sub>Tx</sub> sont calculés à partir de la combinaison, de L<sub>m</sub> et de la traction de montage — mêmes valeurs que l’Excel « NFL-Tab » ; fil de contact neuf.</li>
+          <li><strong>LC R</strong> : flèche sous glace avec 12 kN + 10 kN fixes, essai de cas P1.1–P1.3 et portée couverte c<sub>übr</sub> ; pré-flèche 50 mm (c ≥ 42 m) resp. 30 mm seulement jusqu’à 140 km/h.</li>
+          <li>Comme Excel : portée c seulement 60 … 26, 24, 20, 16, 12, 8 m ; températures −20 … +80 °C par pas de 5 K ; charge add. 0 / 7 / 15 N/m seulement à −5 °C.</li>
+        </ul>
+        <p style="font-size:.8rem;color:var(--muted)"><em>Reprendre du calcul de flèche</em> reprend type de LC, combinaison, portée (arrondie à la valeur de tableau supérieure), L<sub>m</sub> et tractions. Le tableau montre chaque supplément avec sa source ; <em>Protocole PDF</em> imprime le calcul. Contrôle : le cas enregistré dans l’Excel (LC N 50+107, c = 30 m, −5 °C avec 7 N/m) donne hf<sub>min</sub> = 4928 mm et hf<sub>max</sub> = 6104 mm comme l’Excel.</p>
+      </div><!-- /hb-fr -->
+      <div class="hb-lang hb-it" style="display:none">
+        <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.14 &nbsp;Altezza del filo di contatto hf_min / hf_max</p>
+        <p>Calcolo separato dalla freccia: pulsante <strong>«hf min/max»</strong> nell’intestazione. Riproduzione dell’Excel FFS (fogli hfmin_v11_D / hfmax_v11_D, DE-OFerr 2024, art. 5.2.1 e 5.2.2), tutti i valori in mm:</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>hf<sub>min</sub></strong> = GfA + k + b<sub>e</sub> + f + H + Z<sub>hf,min</sub> con Z<sub>hf,min</sub> = f<sub>g</sub> + t<sub>hu</sub> + f<sub>ud</sub> + f<sub>uv</sub> + f<sub>FD,max,ZL</sub> + f<sub>FD,max</sub>.</li>
+          <li><strong>hf<sub>max</sub></strong> = 6050 (LRP J) risp. 6200 (OFerr C) − Z<sub>hf,max</sub> con Z<sub>hf,max</sub> = t<sub>ho</sub> + f<sub>udo</sub> − f<sub>uv</sub> + f<sub>h</sub> − f<sub>FD,min</sub>.</li>
+          <li><strong>Passaggio a livello</strong>: 5510 + supplementi (senza sollevamento del binario né oscillazione), con avvisi; per hf<sub>max</sub> come Excel — da verificare.</li>
+          <li><strong>LC N</strong>: freccia del filo di contatto f = c²/8 · (g'k + Z<sub>L</sub> − g'k · H<sub>Tx</sub>/H<sub>t0</sub>) / (H<sub>FC</sub> + H<sub>Tx</sub>) (VEM eq. 7.67). H<sub>t0</sub> (10 °C) e H<sub>Tx</sub> sono calcolati da combinazione, L<sub>m</sub> e tiro di montaggio — stessi valori dell’Excel «NFL-Tab»; filo di contatto nuovo.</li>
+          <li><strong>LC R</strong>: freccia con ghiaccio con 12 kN + 10 kN fissi, verifica dei casi P1.1–P1.3 e campata coperta c<sub>übr</sub>; pre-freccia 50 mm (c ≥ 42 m) risp. 30 mm solo fino a 140 km/h.</li>
+          <li>Come Excel: campata c solo 60 … 26, 24, 20, 16, 12, 8 m; temperature −20 … +80 °C a passi di 5 K; carico add. 0 / 7 / 15 N/m solo a −5 °C.</li>
+        </ul>
+        <p style="font-size:.8rem;color:var(--muted)"><em>Riprendi dal calcolo della freccia</em> riprende tipo di LC, combinazione, campata (arrotondata al valore di tabella superiore), L<sub>m</sub> e tiri. La tabella mostra ogni supplemento con la fonte; <em>Protocollo PDF</em> stampa il calcolo. Controllo: il caso salvato nell’Excel (LC N 50+107, c = 30 m, −5 °C con 7 N/m) dà hf<sub>min</sub> = 4928 mm e hf<sub>max</sub> = 6104 mm come l’Excel.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 7 Beispielberechnung ══ -->
