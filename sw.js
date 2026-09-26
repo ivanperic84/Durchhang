@@ -12,7 +12,7 @@
  * CACHE_VERSION bei jeder Veröffentlichung erhöhen — alte Zwischenspeicher
  * werden beim Aktivieren automatisch entfernt.
  */
-const CACHE_VERSION = 'durchhang-v3.3.0';
+const CACHE_VERSION = 'durchhang-v3.4.0';
 
 /* Bestandteile der Anwendung. Relative Pfade, damit es sowohl unter
    /Durchhang/ auf GitHub Pages als auch in einem Unterordner funktioniert. */
