@@ -1236,6 +1236,11 @@ button.header-manual-link:hover {
   .card { padding: .8rem .85rem; }
 }
 
+/* ── Wasserzeichen «BETA – nicht verifiziert»: sichtbar, aber nicht störend ── */
+#beta-wz { position: fixed; inset: 0; z-index: 905; pointer-events: none; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+#beta-wz span { transform: rotate(-24deg); font-size: clamp(1.6rem, 5.4vw, 6rem); font-weight: 800; letter-spacing: .06em; white-space: nowrap;
+  color: var(--text); opacity: .055; user-select: none; -webkit-user-select: none; }
+@media print { #beta-wz { display: none; } }
 /* ── Modal: Benutzerdefiniertes Kettenwerk ── */
 .modal-overlay {
   display: none; position: fixed; inset: 0; z-index: 900;
@@ -1335,6 +1340,9 @@ button.header-manual-link:hover {
 .hf-tab tr.hf-zw td { font-weight: 700; background: var(--s2); }
 .hf-liste { margin: .5rem 0 .3rem 1.1rem; font-size: .74rem; line-height: 1.5; }
 .hf-hinweise { color: var(--warn); }
+.hf-grafiken { margin-top: .7rem; }
+.hf-grafiken figure { margin: 0; }
+.hf-grafiken figcaption { margin-bottom: .35rem; }
 .hf-fehler { border: 1px solid var(--primary); border-radius: 8px; padding: .3rem .6rem; color: var(--text); background: var(--acc-s); }
 .abs-leiste { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; margin-bottom: .4rem; }
 .abs-titel { font-size: .82rem; margin-right: .4rem; color: var(--text); }
@@ -1801,6 +1809,8 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 </style>
 </head>
 <body>
+<!-- Wasserzeichen: App in Beta-Phase, Ergebnisse nicht verifiziert (auch auf PDFs, siehe _pdfWasserzeichen) -->
+<div id="beta-wz" aria-hidden="true"><span data-i18n="ui.beta">BETA – nicht verifiziert</span></div>
 
 
 <div class="header" role="banner">
@@ -2969,7 +2979,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.10.0';
+const APP_VERSION = 'v3.11.0';
 
 // Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
 function sysName(mode) {
@@ -7438,6 +7448,7 @@ async function batchPdfExport() {
   footer{margin-top:12px;font-size:7pt;color:#aaa;border-top:1px solid #eee;padding-top:4px}
   @media print{body{margin:0}@page{margin:0}}
 </style></head><body>
+${_pdfWasserzeichen()}
 ${sections.map(s => `<div class="pdf-section">${s}</div>`).join('\n')}
 </body></html>`;
 
@@ -11512,7 +11523,7 @@ function pdfExportDrawing() {
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #fff; }
 svg { display: block; width: 267mm; height: 180mm; }
-</style></head><body>${svg}</body></html>`;
+</style></head><body>${_pdfWasserzeichen()}${svg}</body></html>`;
   const w = window.open('', '_blank');
   if (!w) return;
   w.document.write(html);
@@ -12609,6 +12620,11 @@ function pdfExport() {
   _pdfDrucken(t('pdf.title'), bodyContent);
 }
 
+// Wasserzeichen für Druckfenster (PDF-Protokolle, Zeichnung, Serienbericht)
+function _pdfWasserzeichen() {
+  return `<div aria-hidden="true" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-28deg);font:800 44pt Arial,sans-serif;letter-spacing:.06em;color:rgba(0,0,0,.07);white-space:nowrap;pointer-events:none;z-index:9999">${escHtml(t('ui.beta'))}</div>`;
+}
+
 // Druckfenster für PDF-Protokolle (Berechnung, Fahrdrahthöhe)
 function _pdfDrucken(titel, bodyContent) {
   const html = `<!DOCTYPE html><html lang="${currentLang}"><head><meta charset="UTF-8">
@@ -12650,7 +12666,7 @@ table.cmp tr:nth-child(even) td { background: #f8fafc; }
 footer { margin-top: 16px; font-size: 7.5pt; color: #b7b7b7;
          border-top: 1px solid #d2d2d2; padding-top: 5px; text-align: right; }
 </style></head><body>
-${bodyContent}
+${_pdfWasserzeichen()}${bodyContent}
 </body></html>`;
 
   const win = window.open('', '_blank');
@@ -12892,7 +12908,147 @@ function hfAktualisieren() {
   }
   erg.innerHTML = `<div class="hf-zwei">${_hfTabelle(r.min, 'min', e)}${_hfTabelle(r.max, 'max', e)}</div>
     ${liste(r.hinweise, 'hf-hinweise')}
+    ${_hfGrafiken(r, e, HF_FARBEN_BILDSCHIRM)}
     <p class="abs-hinweis">${t('hf.quelle')}</p>`;
+}
+
+// ── Grafiken: Höhenleiter und hf über die Spannweite (Bildschirm: Themenfarben, PDF: fest hell) ──
+const HF_FARBEN_BILDSCHIRM = {
+  text: 'var(--text2)', leise: 'var(--muted)', raster: 'var(--border)', basis: 'var(--s3)', basisRand: 'var(--border2)',
+  unten: 'var(--primary)', oben: 'var(--warn)', ok: 'var(--ok)', okFlaeche: 'var(--ok-s)', nok: 'var(--fail)', hinter: 'transparent',
+};
+const HF_FARBEN_PDF = {
+  text: '#334155', leise: '#64748b', raster: '#e2e8f0', basis: '#e5e7eb', basisRand: '#cbd5e1',
+  unten: '#4a5cb8', oben: '#9a7b1a', ok: '#2f9e54', okFlaeche: 'rgba(47,158,84,.12)', nok: '#dc2626', hinter: '#ffffff',
+};
+const _hfM = mm => (mm / 1000).toFixed(3);
+
+// Höhenleiter: links von unten die Anteile bis hf_min, rechts von oben die
+// Zuschläge bis hf_max, dazwischen der zulässige Bereich der Fahrdrahthöhe.
+function _hfSvgLeiter(r, e, F) {
+  const W = 460, H = 380, oben = 22, unten = 30, xa = 58;
+  const min = r.min, max = r.max;
+  const basisMin = min.bue ? [{ sym: 'BÜ', wert: min.absolut }] : min.basis.filter(z => z.wert !== 0);
+  const y0 = Math.min(basisMin[0].wert, min.wert, max.wert) - 180;
+  const y1 = Math.max(max.absolut, min.wert, max.wert) + 80;
+  const sy = mm => oben + (H - oben - unten) * (1 - (mm - y0) / (y1 - y0));
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="hf-svg" role="img" aria-label="${escHtml(t('hf.gr.leiter'))}" style="background:${F.hinter};width:100%;height:auto;display:block" font-family="Inter, Arial, sans-serif">`;
+  // Raster alle 100 mm, Beschriftung alle 200 mm
+  for (let v = Math.ceil(y0 / 100) * 100; v <= y1; v += 100) {
+    s += `<line x1="${xa}" x2="${W - 10}" y1="${sy(v).toFixed(1)}" y2="${sy(v).toFixed(1)}" stroke="${F.raster}" stroke-width="${v % 200 ? .5 : 1}"/>`;
+    if (v % 200 === 0) s += `<text x="${xa - 6}" y="${(sy(v) + 3.5).toFixed(1)}" text-anchor="end" font-size="10" fill="${F.leise}">${_hfM(v)}</text>`;
+  }
+  s += `<text x="12" y="${H / 2}" transform="rotate(-90 12 ${H / 2})" text-anchor="middle" font-size="10" fill="${F.leise}">${escHtml(t('hf.gr.achse'))}</text>`;
+  // Spalte hf_min (links)
+  const xl = xa + 14, bl = 96;
+  const segment = (x, b, von, bis, farbe, deckkraft, sym, gestrichelt = false) => {
+    const ya = sy(Math.max(von, bis)), yb = sy(Math.min(von, bis)), h = yb - ya;
+    let t_ = `<rect x="${x}" y="${ya.toFixed(1)}" width="${b}" height="${Math.max(h, .6).toFixed(1)}" fill="${farbe}" fill-opacity="${deckkraft}" stroke="${farbe}" stroke-width=".8"${gestrichelt ? ' stroke-dasharray="3 2"' : ''}/>`;
+    if (h >= 12 && sym) t_ += `<text x="${x + b / 2}" y="${(ya + h / 2 + 3.5).toFixed(1)}" text-anchor="middle" font-size="10" fill="${F.text}">${sym}</text>`;
+    return t_;
+  };
+  const SYM = { GfA: 'GfA', k: 'k', be: 'b', f: 'f', H: 'H', 'BÜ': 'BÜ 5.51' };
+  let c = y0;
+  basisMin.forEach((z, i) => {
+    const von = i === 0 ? y0 : c, bis = i === 0 ? z.wert : c + z.wert;
+    s += `<rect x="${xl}" y="${sy(bis).toFixed(1)}" width="${bl}" height="${(sy(von) - sy(bis)).toFixed(1)}" fill="${F.basis}" stroke="${F.basisRand}" stroke-width=".8"/>`;
+    if (sy(von) - sy(bis) >= 12) s += `<text x="${xl + bl / 2}" y="${((sy(von) + sy(bis)) / 2 + 3.5).toFixed(1)}" text-anchor="middle" font-size="10" fill="${F.text}">${SYM[z.sym] || z.sym}</text>`;
+    c = bis;
+  });
+  // Bruchstelle unten (Achse beginnt nicht bei SOK)
+  const yb = sy(y0) - 6;
+  s += `<path d="M${xl - 4} ${yb + 4} l8 -6 M${xl + bl - 4} ${yb + 4} l8 -6" stroke="${F.leise}" stroke-width="1"/>`;
+  const zMin = min.zeilen.filter(z => z.wert !== 0);
+  zMin.forEach(z => { s += segment(xl, bl, c, c + z.wert, F.unten, .28, ''); c += z.wert; });
+  // Klammer Z_hf,min
+  const zA = sy(min.wert), zB = sy(min.absolut);
+  if (zB - zA > 3) s += `<path d="M${xl - 4} ${zA.toFixed(1)} h-4 V${zB.toFixed(1)} h4" fill="none" stroke="${F.unten}" stroke-width="1"/>`;
+  // Spalte hf_max (rechts), von oben nach unten
+  const br = 96, xr = W - 10 - br;
+  s += `<line x1="${xr - 6}" x2="${xr + br + 6}" y1="${sy(max.absolut).toFixed(1)}" y2="${sy(max.absolut).toFixed(1)}" stroke="${F.oben}" stroke-width="1.6"/>`;
+  s += `<text x="${xr + br}" y="${(sy(max.absolut) - 5).toFixed(1)}" text-anchor="end" font-size="10" fill="${F.oben}">${max.bue ? 'BÜ' : 'hf<tspan font-size="7" dy="2">max,abs</tspan>'} ${max.bue ? '' : _hfM(max.absolut)}</text>`;
+  if (!max.bue) {
+    let k = max.absolut;
+    const pos = max.zeilen.filter(z => z.wert > 0), neg = max.zeilen.filter(z => z.wert < 0);
+    pos.forEach(z => { s += segment(xr, br, k, k - z.wert, F.oben, .25, ''); k -= z.wert; });
+    neg.forEach(z => { s += segment(xr, br, k, k - z.wert, F.oben, .08, '', true); k -= z.wert; });
+  } else {
+    // Bahnübergang: 5510 + Z nach oben (wie Excel)
+    let k = max.absolut;
+    max.zeilen.filter(z => z.wert !== 0).forEach(z => { s += segment(xr, br, k, k + z.wert, F.oben, .25, '', z.wert < 0); k += z.wert; });
+  }
+  // Zulässiger Bereich zwischen hf_min und hf_max
+  const ok = max.wert >= min.wert;
+  const ya = sy(Math.max(min.wert, max.wert)), yz = sy(Math.min(min.wert, max.wert));
+  s += `<rect x="${xl + bl + 8}" y="${ya.toFixed(1)}" width="${xr - xl - bl - 16}" height="${Math.max(yz - ya, 1).toFixed(1)}" fill="${ok ? F.okFlaeche : F.nok}" fill-opacity="${ok ? 1 : .15}" stroke="${ok ? F.ok : F.nok}" stroke-width="1"/>`;
+  const mitte = (xl + bl + xr) / 2;
+  s += `<text x="${mitte}" y="${((ya + yz) / 2 - 2).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="600" fill="${ok ? F.ok : F.nok}">${escHtml(t(ok ? 'hf.gr.bereich' : 'hf.gr.keinbereich'))}</text>`;
+  s += `<text x="${mitte}" y="${((ya + yz) / 2 + 12).toFixed(1)}" text-anchor="middle" font-size="10" fill="${F.text}">${fN(max.wert - min.wert, 0)} mm</text>`;
+  // hf_min / hf_max Linien mit Werten
+  s += `<line x1="${xl - 8}" x2="${xr + br + 6}" y1="${sy(min.wert).toFixed(1)}" y2="${sy(min.wert).toFixed(1)}" stroke="${F.unten}" stroke-width="1.6"/>`;
+  s += `<line x1="${xl - 8}" x2="${xr + br + 6}" y1="${sy(max.wert).toFixed(1)}" y2="${sy(max.wert).toFixed(1)}" stroke="${F.oben}" stroke-width="1.6"/>`;
+  s += `<text x="${xl}" y="${(sy(min.wert) - 5).toFixed(1)}" font-size="11" font-weight="700" fill="${F.unten}">hf<tspan font-size="8" dy="2">min</tspan><tspan dy="-2"> ${_hfM(min.wert)}</tspan></text>`;
+  s += `<text x="${xr + br}" y="${(sy(max.wert) + 14).toFixed(1)}" text-anchor="end" font-size="11" font-weight="700" fill="${F.oben}">hf<tspan font-size="8" dy="2">max</tspan><tspan dy="-2"> ${_hfM(max.wert)}</tspan></text>`;
+  s += `<text x="${xl + bl / 2}" y="${H - 8}" text-anchor="middle" font-size="10" fill="${F.leise}">${escHtml(t('hf.gr.anteile.min'))}</text>`;
+  s += `<text x="${xr + br / 2}" y="${H - 8}" text-anchor="middle" font-size="10" fill="${F.leise}">${escHtml(t('hf.gr.anteile.max'))}</text>`;
+  return s + '</svg>';
+}
+
+// hf_min und hf_max für alle zulässigen Spannweiten (übrige Eingaben wie gewählt)
+function _hfSvgSpannweite(r, e, F) {
+  const W = 460, H = 310, l = 58, rr = 14, o = 18, u = 54;
+  const punkte = [...HF_SPANNWEITEN].sort((a, b) => a - b).map(c => {
+    const x = hfBerechnen({ ...e, c, nfl: r.nfl });
+    return x.min ? { c, min: x.min.wert, max: x.max.wert } : null;
+  }).filter(Boolean);
+  if (!punkte.length) return '';
+  const alle = punkte.flatMap(p => [p.min, p.max]);
+  const y0 = Math.floor((Math.min(...alle) - 40) / 100) * 100, y1 = Math.ceil((Math.max(...alle) + 40) / 100) * 100;
+  const sx = c => l + (W - l - rr) * (c - 8) / (60 - 8);
+  const sy = mm => o + (H - o - u) * (1 - (mm - y0) / (y1 - y0));
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="hf-svg" role="img" aria-label="${escHtml(t('hf.gr.spannweite'))}" style="background:${F.hinter};width:100%;height:auto;display:block" font-family="Inter, Arial, sans-serif">`;
+  const schritt = (y1 - y0) > 1200 ? 200 : 100;
+  for (let v = y0; v <= y1; v += schritt) {
+    s += `<line x1="${l}" x2="${W - rr}" y1="${sy(v).toFixed(1)}" y2="${sy(v).toFixed(1)}" stroke="${F.raster}"/>`;
+    s += `<text x="${l - 6}" y="${(sy(v) + 3.5).toFixed(1)}" text-anchor="end" font-size="10" fill="${F.leise}">${_hfM(v)}</text>`;
+  }
+  for (const c of [8, 12, 16, 20, 24, 30, 36, 42, 48, 54, 60]) {
+    s += `<line x1="${sx(c).toFixed(1)}" x2="${sx(c).toFixed(1)}" y1="${o}" y2="${H - u}" stroke="${F.raster}" stroke-width=".5"/>`;
+    s += `<text x="${sx(c).toFixed(1)}" y="${H - u + 14}" text-anchor="middle" font-size="10" fill="${F.leise}">${c}</text>`;
+  }
+  s += `<text x="${(l + W - rr) / 2}" y="${H - u + 28}" text-anchor="middle" font-size="10" fill="${F.leise}">${escHtml(t('hf.gr.c'))}</text>`;
+  s += `<text x="12" y="${(o + H - u) / 2}" transform="rotate(-90 12 ${(o + H - u) / 2})" text-anchor="middle" font-size="10" fill="${F.leise}">${escHtml(t('hf.gr.achse'))}</text>`;
+  const linie = k => punkte.map((p, i) => `${i ? 'L' : 'M'}${sx(p.c).toFixed(1)} ${sy(p[k]).toFixed(1)}`).join(' ');
+  // Bereich zwischen den Kurven
+  const flaeche = linie('max') + ' ' + [...punkte].reverse().map(p => `L${sx(p.c).toFixed(1)} ${sy(p.min).toFixed(1)}`).join(' ') + ' Z';
+  s += `<path d="${flaeche}" fill="${F.okFlaeche}" stroke="none"/>`;
+  s += `<path d="${linie('min')}" fill="none" stroke="${F.unten}" stroke-width="2"/>`;
+  s += `<path d="${linie('max')}" fill="none" stroke="${F.oben}" stroke-width="2"/>`;
+  punkte.forEach(p => { if (p.max < p.min) s += `<circle cx="${sx(p.c).toFixed(1)}" cy="${sy(p.min).toFixed(1)}" r="2.5" fill="${F.nok}"/>`; });
+  // Gewählte Spannweite
+  const g = punkte.find(p => p.c === e.c);
+  if (g) {
+    s += `<line x1="${sx(g.c).toFixed(1)}" x2="${sx(g.c).toFixed(1)}" y1="${o}" y2="${H - u}" stroke="${F.text}" stroke-width="1" stroke-dasharray="4 3"/>`;
+    s += `<circle cx="${sx(g.c).toFixed(1)}" cy="${sy(g.min).toFixed(1)}" r="4" fill="${F.unten}"/><circle cx="${sx(g.c).toFixed(1)}" cy="${sy(g.max).toFixed(1)}" r="4" fill="${F.oben}"/>`;
+    const rechts = g.c < 44, tx = sx(g.c) + (rechts ? 7 : -7), anker = rechts ? 'start' : 'end';
+    s += `<text x="${tx.toFixed(1)}" y="${(sy(g.min) + 14).toFixed(1)}" text-anchor="${anker}" font-size="10.5" font-weight="700" fill="${F.unten}">${_hfM(g.min)}</text>`;
+    s += `<text x="${tx.toFixed(1)}" y="${(sy(g.max) - 7).toFixed(1)}" text-anchor="${anker}" font-size="10.5" font-weight="700" fill="${F.oben}">${_hfM(g.max)}</text>`;
+    s += `<text x="${sx(g.c).toFixed(1)}" y="${o - 5}" text-anchor="middle" font-size="10" fill="${F.text}">c = ${g.c} m</text>`;
+  }
+  // Legende
+  const ly = H - 9;
+  s += `<line x1="${l}" x2="${l + 18}" y1="${ly}" y2="${ly}" stroke="${F.unten}" stroke-width="2"/><text x="${l + 22}" y="${ly + 3.5}" font-size="10" fill="${F.text}">hf<tspan font-size="7" dy="2">min</tspan></text>`;
+  s += `<line x1="${l + 70}" x2="${l + 88}" y1="${ly}" y2="${ly}" stroke="${F.oben}" stroke-width="2"/><text x="${l + 92}" y="${ly + 3.5}" font-size="10" fill="${F.text}">hf<tspan font-size="7" dy="2">max</tspan></text>`;
+  s += `<rect x="${l + 140}" y="${ly - 5}" width="18" height="10" fill="${F.okFlaeche}" stroke="${F.ok}" stroke-width=".6"/><text x="${l + 162}" y="${ly + 3.5}" font-size="10" fill="${F.text}">${escHtml(t('hf.gr.bereich'))}</text>`;
+  return s + '</svg>';
+}
+
+function _hfGrafiken(r, e, F) {
+  return `<div class="hf-zwei hf-grafiken">
+    <figure class="hf-karte"><figcaption class="hf-titel">${t('hf.gr.leiter')}</figcaption>${_hfSvgLeiter(r, e, F)}</figure>
+    <figure class="hf-karte"><figcaption class="hf-titel">${t('hf.gr.spannweite')}</figcaption>${_hfSvgSpannweite(r, e, F)}
+      ${e.typ === 'nfl' ? `<p class="abs-hinweis" style="margin:.2rem 0 0">${t('hf.gr.lm').replace('{lm}', fN(e.Lm, 2))}</p>` : ''}</figure>
+  </div>`;
 }
 
 // ── PDF-Protokoll ──
@@ -12934,6 +13090,11 @@ ${r.nfl ? `<p class="sub">${document.getElementById('hf-nfl-zug')?.innerHTML || 
 <div class="step">${tab(r.min, 'min')}</div>
 <h2>${t('hf.erg.max')}: <strong class="r">${fN(r.max.wert, 0)} mm</strong></h2>
 <div class="step">${tab(r.max, 'max')}</div>
+<h2>${t('hf.gr.titel')}</h2>
+<div class="step" style="display:flex;gap:10px;page-break-inside:avoid">
+  <div style="flex:1;min-width:0"><p class="sub2" style="margin:0 0 3px">${t('hf.gr.leiter')}</p>${_hfSvgLeiter(r, e, HF_FARBEN_PDF)}</div>
+  <div style="flex:1;min-width:0"><p class="sub2" style="margin:0 0 3px">${t('hf.gr.spannweite')}</p>${_hfSvgSpannweite(r, e, HF_FARBEN_PDF)}</div>
+</div>
 ${r.hinweise.length ? `<h2 class="warm">${t('hf.hinweise')}</h2><div class="step">${r.hinweise.map(k => `<p>${t(k)}</p>`).join('')}</div>` : ''}
 <p class="sub2" style="margin-top:8px">${t('hf.quelle')}</p>
 <footer>${t('pdf.footer')} &nbsp;·&nbsp; ${APP_VERSION} &nbsp;|&nbsp; ${t('hf.titel')}</footer>`;
@@ -13644,6 +13805,17 @@ const LANG = {
     'hind.legende': 'Geprüft wird der oberste Leiter (Tragseil bzw. Einzelleiter) in allen Lastfällen. «Punkte verbinden»: Unterkante als Linie durch die nach x sortierten Punkte (Reihenfolge der Eingabe egal); aus: jeder Punkt einzeln. Im Diagramm gestrichelt: massgebender Lastfall.',
     'lf.knopf': 'Lastfälle …',
     'hf.titel': 'Fahrdrahthöhe hf_min / hf_max',
+    'ui.beta': 'BETA – nicht verifiziert',
+    'hf.gr.titel': 'Grafiken',
+    'hf.gr.leiter': 'Höhenleiter ab SOK',
+    'hf.gr.spannweite': 'hf_min / hf_max über die Spannweite',
+    'hf.gr.achse': 'Höhe über SOK [m]',
+    'hf.gr.bereich': 'zulässiger Bereich',
+    'hf.gr.keinbereich': 'kein zulässiger Bereich',
+    'hf.gr.anteile.min': 'Anteile hf_min',
+    'hf.gr.anteile.max': 'Zuschläge hf_max',
+    'hf.gr.c': 'Spannweite c [m]',
+    'hf.gr.lm': 'Übrige Eingaben wie gewählt; N-FL-Zugkräfte mit L<sub>m</sub> = {lm} m.',
     'hf.kurz': 'hf min/max',
     'hf.einleitung': 'Minimale und maximale Auslegungsfahrdrahthöhe nach AB-EBV 2024, Art. 5.2.1 und 5.2.2 — Nachbildung der SBB-Excel (Blätter hfmin / hfmax). Getrennt von der Durchhang-Berechnung; N-FL mit neuem Fahrdraht (ohne Abnutzung).',
     'hf.uebernehmen': 'Aus Durchhang übernehmen',
@@ -14436,6 +14608,17 @@ const LANG = {
     'hind.legende': 'Le conducteur le plus haut (câble porteur resp. conducteur simple) est vérifié dans tous les cas de charge. «Relier les points» : sous-face comme ligne passant par les points triés selon x (ordre de saisie sans importance) ; désactivé : chaque point séparément. En pointillé dans le diagramme : cas de charge déterminant.',
     'lf.knopf': 'Cas de charge …',
     'hf.titel': 'Hauteur du fil de contact hf_min / hf_max',
+    'ui.beta': 'BÊTA – non vérifié',
+    'hf.gr.titel': 'Graphiques',
+    'hf.gr.leiter': 'Échelle des hauteurs depuis le DRS',
+    'hf.gr.spannweite': 'hf_min / hf_max selon la portée',
+    'hf.gr.achse': 'Hauteur sur DRS [m]',
+    'hf.gr.bereich': 'plage admissible',
+    'hf.gr.keinbereich': 'aucune plage admissible',
+    'hf.gr.anteile.min': 'Parts hf_min',
+    'hf.gr.anteile.max': 'Suppléments hf_max',
+    'hf.gr.c': 'Portée c [m]',
+    'hf.gr.lm': 'Autres données comme choisies ; tractions LC N avec L<sub>m</sub> = {lm} m.',
     'hf.kurz': 'hf min/max',
     'hf.einleitung': 'Hauteur du fil de contact minimale et maximale de conception selon DE-OCF 2024, art. 5.2.1 et 5.2.2 — reproduction de l’Excel CFF (feuilles hfmin / hfmax). Séparée du calcul de flèche ; LC N avec fil de contact neuf (sans usure).',
     'hf.uebernehmen': 'Reprendre du calcul de flèche',
@@ -15228,6 +15411,17 @@ const LANG = {
     'hind.legende': 'Viene verificato il conduttore più alto (filo portante risp. conduttore singolo) in tutti i casi di carico. «Collega i punti»: intradosso come linea attraverso i punti ordinati secondo x (ordine di inserimento irrilevante); disattivato: ogni punto singolarmente. Tratteggiato nel diagramma: caso di carico determinante.',
     'lf.knopf': 'Casi di carico …',
     'hf.titel': 'Altezza del filo di contatto hf_min / hf_max',
+    'ui.beta': 'BETA – non verificato',
+    'hf.gr.titel': 'Grafici',
+    'hf.gr.leiter': 'Scala delle altezze dal PRF',
+    'hf.gr.spannweite': 'hf_min / hf_max in funzione della campata',
+    'hf.gr.achse': 'Altezza sul PRF [m]',
+    'hf.gr.bereich': 'campo ammissibile',
+    'hf.gr.keinbereich': 'nessun campo ammissibile',
+    'hf.gr.anteile.min': 'Quote hf_min',
+    'hf.gr.anteile.max': 'Supplementi hf_max',
+    'hf.gr.c': 'Campata c [m]',
+    'hf.gr.lm': 'Altri dati come scelti; tiri LC N con L<sub>m</sub> = {lm} m.',
     'hf.kurz': 'hf min/max',
     'hf.einleitung': 'Altezza minima e massima di progetto del filo di contatto secondo DE-OFerr 2024, art. 5.2.1 e 5.2.2 — riproduzione dell’Excel FFS (fogli hfmin / hfmax). Separata dal calcolo della freccia; LC N con filo di contatto nuovo (senza usura).',
     'hf.uebernehmen': 'Riprendi dal calcolo della freccia',
@@ -16975,6 +17169,7 @@ renderObstacleList();
           <li><strong>Ergebnisleiste</strong> (Tablet hochkant): Sobald Diagramm und Ergebniskarte aus dem Bild scrollen, zeigt eine Leiste unten Durchhang, Zugkraft und Höhe bei T<sub>2</sub> (und den T<sub>3</sub>-Vergleich). Antippen springt zum Diagramm; bei ungültiger Eingabe steht «Eingabe prüfen».</li>
           <li><strong>Sprache</strong> DE / FR / IT oben rechts; Fachbegriffe wie im SBB-Excel (Glossar, Kap. 9).</li>
           <li><strong>Offline</strong>: Die App funktioniert nach dem ersten Laden ohne Internet und lässt sich installieren. Nach einer Aktualisierung erscheint «Eine neue Version ist verfügbar» — «Jetzt laden» wählen oder die Seite neu laden.</li>
+          <li><strong>Wasserzeichen «BETA – nicht verifiziert»</strong>: Die App ist in der Beta-Phase, die Ergebnisse sind nicht verifiziert. Das Wasserzeichen liegt blass über dem Bildschirm und steht auch auf PDF-Protokollen und Zeichnung.</li>
           <li><strong>Escape</strong> schliesst offene Fenster; Pflichtfelder mit ungültigem Wert werden markiert, die Ergebnisse dann als veraltet angezeigt.</li>
         </ul>
       </div><!-- /hb-de -->
@@ -16987,6 +17182,7 @@ renderObstacleList();
           <li><strong>Barre de résultats</strong> (tablette en portrait) : dès que diagramme et carte de résultats sortent de l’écran, une barre en bas affiche flèche, force de traction et hauteur à T<sub>2</sub> (et la comparaison T<sub>3</sub>). Un appui ramène au diagramme ; en cas de saisie invalide : «Vérifier la saisie».</li>
           <li><strong>Langue</strong> DE / FR / IT en haut à droite ; termes techniques comme dans l’Excel CFF (glossaire, chap. 9).</li>
           <li><strong>Hors ligne</strong> : après le premier chargement, l’application fonctionne sans Internet et peut être installée. Après une mise à jour apparaît «Une nouvelle version est disponible» — choisir «Charger maintenant» ou recharger la page.</li>
+          <li><strong>Filigrane «BÊTA – non vérifié»</strong> : l’application est en phase bêta, les résultats ne sont pas vérifiés. Le filigrane apparaît en transparence sur l’écran ainsi que sur les protocoles PDF et le dessin.</li>
           <li><strong>Échap</strong> ferme les fenêtres ouvertes ; les champs invalides sont marqués et les résultats affichés comme obsolètes.</li>
         </ul>
       </div><!-- /hb-fr -->
@@ -16999,6 +17195,7 @@ renderObstacleList();
           <li><strong>Barra dei risultati</strong> (tablet verticale): quando diagramma e scheda dei risultati escono dallo schermo, una barra in basso mostra freccia, forza di trazione e altezza a T<sub>2</sub> (e il confronto T<sub>3</sub>). Un tocco riporta al diagramma; con dati non validi: «Controllare i dati inseriti».</li>
           <li><strong>Lingua</strong> DE / FR / IT in alto a destra; termini tecnici come nell’Excel FFS (glossario, cap. 9).</li>
           <li><strong>Offline</strong>: dopo il primo caricamento l’applicazione funziona senza Internet e può essere installata. Dopo un aggiornamento appare «È disponibile una nuova versione» — scegliere «Carica ora» o ricaricare la pagina.</li>
+          <li><strong>Filigrana «BETA – non verificato»</strong>: l’applicazione è in fase beta, i risultati non sono verificati. La filigrana appare in trasparenza sullo schermo e anche sui protocolli PDF e sul disegno.</li>
           <li><strong>Esc</strong> chiude le finestre aperte; i campi non validi vengono evidenziati e i risultati mostrati come non aggiornati.</li>
         </ul>
       </div><!-- /hb-it -->
@@ -17015,7 +17212,7 @@ renderObstacleList();
           <li><strong>R-FL</strong>: Eislast-Durchhang mit fest 12 kN + 10 kN, Fallprüfung P1.1–P1.3 und überdeckte Spannweite c<sub>übr</sub>; Vordurchhang 50 mm (c ≥ 42 m) bzw. 30 mm nur bis 140 km/h.</li>
           <li>Wie Excel: Spannweite c nur 60 … 26, 24, 20, 16, 12, 8 m; Temperaturen −20 … +80 °C in 5-K-Schritten; Zusatzlast 0 / 7 / 15 N/m nur bei −5 °C.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)"><em>Aus Durchhang übernehmen</em> holt FL-Typ, Kombination, Spannweite (auf den nächsten Tabellenwert aufgerundet), L<sub>m</sub> und Zugkräfte aus der aktuellen Berechnung. Die Tabelle zeigt jeden Zuschlag mit Quelle; <em>PDF-Protokoll</em> druckt die Berechnung. Kontrolle: der in der Excel gespeicherte Fall (N-FL 50+107, c = 30 m, −5 °C mit 7 N/m) ergibt hf<sub>min</sub> = 4928 mm und hf<sub>max</sub> = 6104 mm wie in der Excel.</p>
+        <p style="font-size:.8rem;color:var(--muted)"><em>Aus Durchhang übernehmen</em> holt FL-Typ, Kombination, Spannweite (auf den nächsten Tabellenwert aufgerundet), L<sub>m</sub> und Zugkräfte aus der aktuellen Berechnung. Die Tabelle zeigt jeden Zuschlag mit Quelle. Zwei Grafiken: die <em>Höhenleiter ab SOK</em> (links die Anteile bis hf<sub>min</sub>, rechts die Zuschläge ab 6.05 bzw. 6.20 m bis hf<sub>max</sub>, dazwischen der zulässige Bereich) und <em>hf<sub>min</sub> / hf<sub>max</sub> über die Spannweite</em> (alle Tabellenwerte von c, gewählte Spannweite markiert). <em>PDF-Protokoll</em> druckt Berechnung und Grafiken. Kontrolle: der in der Excel gespeicherte Fall (N-FL 50+107, c = 30 m, −5 °C mit 7 N/m) ergibt hf<sub>min</sub> = 4928 mm und hf<sub>max</sub> = 6104 mm wie in der Excel.</p>
       </div><!-- /hb-de -->
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.14 &nbsp;Hauteur du fil de contact hf_min / hf_max</p>
@@ -17028,7 +17225,7 @@ renderObstacleList();
           <li><strong>LC R</strong> : flèche sous glace avec 12 kN + 10 kN fixes, essai de cas P1.1–P1.3 et portée couverte c<sub>übr</sub> ; pré-flèche 50 mm (c ≥ 42 m) resp. 30 mm seulement jusqu’à 140 km/h.</li>
           <li>Comme Excel : portée c seulement 60 … 26, 24, 20, 16, 12, 8 m ; températures −20 … +80 °C par pas de 5 K ; charge add. 0 / 7 / 15 N/m seulement à −5 °C.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)"><em>Reprendre du calcul de flèche</em> reprend type de LC, combinaison, portée (arrondie à la valeur de tableau supérieure), L<sub>m</sub> et tractions. Le tableau montre chaque supplément avec sa source ; <em>Protocole PDF</em> imprime le calcul. Contrôle : le cas enregistré dans l’Excel (LC N 50+107, c = 30 m, −5 °C avec 7 N/m) donne hf<sub>min</sub> = 4928 mm et hf<sub>max</sub> = 6104 mm comme l’Excel.</p>
+        <p style="font-size:.8rem;color:var(--muted)"><em>Reprendre du calcul de flèche</em> reprend type de LC, combinaison, portée (arrondie à la valeur de tableau supérieure), L<sub>m</sub> et tractions. Le tableau montre chaque supplément avec sa source. Deux graphiques : l’<em>échelle des hauteurs depuis le DRS</em> (à gauche les parts jusqu’à hf<sub>min</sub>, à droite les suppléments depuis 6.05 resp. 6.20 m jusqu’à hf<sub>max</sub>, entre les deux la plage admissible) et <em>hf<sub>min</sub> / hf<sub>max</sub> selon la portée</em> (toutes les valeurs de c du tableau, portée choisie marquée). <em>Protocole PDF</em> imprime calcul et graphiques. Contrôle : le cas enregistré dans l’Excel (LC N 50+107, c = 30 m, −5 °C avec 7 N/m) donne hf<sub>min</sub> = 4928 mm et hf<sub>max</sub> = 6104 mm comme l’Excel.</p>
       </div><!-- /hb-fr -->
       <div class="hb-lang hb-it" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.14 &nbsp;Altezza del filo di contatto hf_min / hf_max</p>
@@ -17041,7 +17238,7 @@ renderObstacleList();
           <li><strong>LC R</strong>: freccia con ghiaccio con 12 kN + 10 kN fissi, verifica dei casi P1.1–P1.3 e campata coperta c<sub>übr</sub>; pre-freccia 50 mm (c ≥ 42 m) risp. 30 mm solo fino a 140 km/h.</li>
           <li>Come Excel: campata c solo 60 … 26, 24, 20, 16, 12, 8 m; temperature −20 … +80 °C a passi di 5 K; carico add. 0 / 7 / 15 N/m solo a −5 °C.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)"><em>Riprendi dal calcolo della freccia</em> riprende tipo di LC, combinazione, campata (arrotondata al valore di tabella superiore), L<sub>m</sub> e tiri. La tabella mostra ogni supplemento con la fonte; <em>Protocollo PDF</em> stampa il calcolo. Controllo: il caso salvato nell’Excel (LC N 50+107, c = 30 m, −5 °C con 7 N/m) dà hf<sub>min</sub> = 4928 mm e hf<sub>max</sub> = 6104 mm come l’Excel.</p>
+        <p style="font-size:.8rem;color:var(--muted)"><em>Riprendi dal calcolo della freccia</em> riprende tipo di LC, combinazione, campata (arrotondata al valore di tabella superiore), L<sub>m</sub> e tiri. La tabella mostra ogni supplemento con la fonte. Due grafici: la <em>scala delle altezze dal PRF</em> (a sinistra le quote fino a hf<sub>min</sub>, a destra i supplementi da 6.05 risp. 6.20 m fino a hf<sub>max</sub>, in mezzo il campo ammissibile) e <em>hf<sub>min</sub> / hf<sub>max</sub> in funzione della campata</em> (tutti i valori di c della tabella, campata scelta evidenziata). <em>Protocollo PDF</em> stampa calcolo e grafici. Controllo: il caso salvato nell’Excel (LC N 50+107, c = 30 m, −5 °C con 7 N/m) dà hf<sub>min</sub> = 4928 mm e hf<sub>max</sub> = 6104 mm come l’Excel.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 7 Beispielberechnung ══ -->

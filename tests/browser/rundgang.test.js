@@ -207,6 +207,7 @@ test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', asy
     // R-FL: Fallprüfung sichtbar, Ergebnis vorhanden
     hfWert('typ', 'rfl');
     const rfl = !!document.getElementById('hf-p11') && werte()[0].includes('mm');
+    const grafiken = document.querySelectorAll('#hf-modal .hf-grafiken svg').length;
     const texte = {};
     for (const l of ['fr', 'it', 'de']) { setLang(l); texte[l] = document.getElementById('hf-modal').innerText; }
     window.__fenster.length = 0; hfPdf();
@@ -215,7 +216,7 @@ test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', asy
     hfEingabe = null; setProjectState(zustand);
     const geladen = hfEingabe && hfEingabe.typ === 'rfl' && hfEingabe.Tmax === -20;
     closeHf();
-    return { offen, excel, zlGesperrt, rfl, texte, pdf, geladen };
+    return { offen, excel, zlGesperrt, rfl, grafiken, texte, pdf, geladen };
   });
   assert.equal(r.offen, true);
   assert.deepEqual(r.excel.map(s => s.split(' mm')[0]), ["4'928", "6'104"]);
@@ -225,8 +226,11 @@ test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', asy
     const treffer = text.match(/\bhf\.[a-z0-9.]+\b/);
     assert.equal(treffer, null, `${l}: roher Schlüssel «${treffer?.[0]}»`);
   }
+  assert.equal(r.grafiken, 2, 'Höhenleiter und Kurven über die Spannweite');
   assert.equal(r.pdf.length, 1);
   assert.match(r.pdf[0], /<h1/);
+  assert.equal((r.pdf[0].match(/<svg/g) || []).length, 2, 'Grafiken im PDF');
+  assert.match(r.pdf[0], /BETA – nicht verifiziert/);
   assert.equal(r.geladen, true);
   assert.deepEqual(fehler, []);
   await kontext.close();
@@ -254,6 +258,27 @@ test('Hindernisse nur in m ü. M.: ohne SOK Hinweis und keine Prüfung', async (
   assert.equal(r.mit.hinweis, false);
   assert.match(r.mit.einheit, /ü\. M\./);
   assert.equal(r.deltaImKoord, true);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Wasserzeichen «BETA – nicht verifiziert»: Bildschirm in allen Sprachen, alle PDFs', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await fensterAbfangen(seite);
+  const r = await seite.evaluate(() => {
+    const wz = document.getElementById('beta-wz');
+    const stil = getComputedStyle(wz);
+    const texte = {};
+    for (const l of ['fr', 'it', 'de']) { setLang(l); texte[l] = wz.innerText.trim(); }
+    window.__fenster.length = 0;
+    pdfExport(); pdfExportDrawing();
+    return { texte, fest: stil.position === 'fixed', klickbar: stil.pointerEvents, pdf: window.__fenster.map(f => f.html) };
+  });
+  assert.deepEqual(r.texte, { fr: 'BÊTA – non vérifié', it: 'BETA – non verificato', de: 'BETA – nicht verifiziert' });
+  assert.equal(r.fest, true);
+  assert.equal(r.klickbar, 'none', 'Wasserzeichen darf keine Klicks abfangen');
+  assert.equal(r.pdf.length, 2);
+  r.pdf.forEach(h => assert.match(h, /BETA – nicht verifiziert/));
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
