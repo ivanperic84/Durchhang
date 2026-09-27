@@ -6,8 +6,9 @@
  * übergibt sie hier als Funktionen. Prüfung ohne Browser: npm test.
  *
  * Mast:       { name, e, n, z, delta, h, km, L }   (Zahlen oder null)
- *             e/n = Aufhängepunkt (LV95), z = Mastfuss m ü. M.,
- *             delta = Δ Mastfuss-SOK, h = Aufhängehöhe über SOK,
+ *             e/n = Aufhängepunkt (LV95), z = SOK m ü. M.,
+ *             delta = Δ Mastfuss − SOK (freiwillig; Mastfuss = z + Δ, für
+ *             Foto-Messung und spätere Mastmodelle), h = Aufhängehöhe über SOK,
  *             km = Kilometrierung (Text, z. B. «12.345»),
  *             L  = Feldlänge bis zum nächsten Mast (nur wenn nicht berechenbar)
  * Hindernis:  { name, feld, verbinden, punkte: [{ x, h }] } — oberhalb der Leiter
@@ -183,21 +184,31 @@ function mittelspannweite(laengen, formel = 'arith') {
   return Math.sqrt(L.reduce((s, l) => s + l ** 3, 0) / L.reduce((s, l) => s + l, 0));
 }
 
-// SOK am Mast (m ü. M.) aus Z Mastfuss − Δ, sonst null
+// SOK am Mast (m ü. M.) = Z, sonst null
 function mastSok(m) {
-  return Number.isFinite(m.z) ? m.z - (Number.isFinite(m.delta) ? m.delta : 0) : null;
+  return Number.isFinite(m.z) ? m.z : null;
+}
+// Mastfuss (m ü. M.) = SOK + Δ; ohne Δ unbekannt (null)
+function mastFuss(m) {
+  return Number.isFinite(m.z) && Number.isFinite(m.delta) ? m.z + m.delta : null;
+}
+// Masten aus Daten bis v4.4 (Z = Mastfuss) auf Z = SOK umrechnen: SOK = Z − Δ
+function mastenAusMastfuss(masten) {
+  return masten.map(m => (Number.isFinite(m.z) && Number.isFinite(m.delta) ? { ...m, z: +(m.z - m.delta).toFixed(4) } : { ...m }));
 }
 
 // ── CSV ──
 const CSV_SPALTEN = ['name', 'e', 'n', 'z', 'delta', 'h', 'km', 'L'];
-const CSV_KOPF = ['Mast', 'E', 'N', 'Z_Mastfuss', 'Delta_Mastfuss_SOK', 'h_ueber_SOK', 'KM', 'L_bis_naechster'];
+const CSV_KOPF = ['Mast', 'E', 'N', 'Z_SOK', 'Delta_Mastfuss_SOK', 'h_ueber_SOK', 'KM', 'L_bis_naechster'];
 // Erkannte Kopfzeilen (klein, ohne Leer-/Sonderzeichen)
 const CSV_ALIAS = {
   strang: ['strang', 'kennung', 'leiterkennung', 'strand', 'ligne', 'linea', 'circuit'],
   name:  ['mast', 'name', 'nr', 'mastnr', 'mastname', 'bezeichnung', 'pt', 'punkt', 'punktnr', 'point', 'mat', 'palo', 'pylone'],
   e:     ['e', 'ost', 'east', 'easting', 'rechtswert', 'y', 'elv95', 'coorde'],
   n:     ['n', 'nord', 'north', 'northing', 'hochwert', 'x', 'nlv95', 'coordn'],
-  z:     ['z', 'zmastfuss', 'hmastfuss', 'hoehe', 'hohe', 'h_mastfuss', 'mastfuss', 'hoehemastfuss', 'hmum', 'altitude', 'quota'],
+  z:     ['z', 'zsok', 'sok', 'soknum', 'sokmum', 'hoehesok', 'zdrs', 'drs', 'zprf', 'prf', 'hoehe', 'hohe', 'altitude', 'quota'],
+  // bis v4.4: Z = Mastfuss → beim Lesen in SOK umgerechnet
+  zmf:   ['zmastfuss', 'hmastfuss', 'mastfuss', 'hoehemastfuss', 'hmum', 'zpieddemat', 'zpiededelpalo'],
   delta: ['delta', 'deltamastfusssok', 'dmastfusssok', 'dsok', 'deltasok', 'δ', 'δmastfusssok'],
   h:     ['h', 'hueber', 'hubersok', 'huebersok', 'hsok', 'aufhaengehoehe', 'aufhangehohe', 'hleiter', 'hauteur', 'altezza'],
   km:    ['km', 'kilometer', 'kilometrierung', 'pk', 'station'],
@@ -267,9 +278,16 @@ function csvLesen(text) {
     });
     if (!m.name && m.e === null && m.h === null) return;   // leere Zeile
     if (!m.name) m.name = String(masten.length + 1);
+    if ('zmf' in m) {
+      // Alte Spalte «Z_Mastfuss»: SOK = Mastfuss − Δ (mit Spalte SOK: Δ ergänzen)
+      if (m.z === null && m.zmf !== null) m.z = +(m.zmf - (m.delta ?? 0)).toFixed(4);
+      else if (m.z !== null && m.zmf !== null && m.delta === null) m.delta = +(m.zmf - m.z).toFixed(4);
+      delete m.zmf;
+    }
     masten.push(m);
     if (m.h === null) warnungen.push('h:' + (i + 1));
   });
+  if (spalten.includes('zmf') && !spalten.includes('z') && masten.length) warnungen.push('zmastfuss');
   return { masten, warnungen };
 }
 
@@ -327,11 +345,11 @@ function csvSchreiben(masten) {
 // 5 Masten, 4 Felder 45–50 m, leichte Kurve und Steigung, LV95 (fiktive Lage).
 function beispielMasten() {
   return csvLesen(csvSchreiben([
-    { name: '101', e: 2600000.000, n: 1200000.000, z: 540.000, delta: 0.35, h: 7.60, km: '12.300', L: null },
-    { name: '102', e: 2600049.980, n: 1200001.400, z: 540.380, delta: 0.30, h: 7.60, km: '12.350', L: null },
-    { name: '103', e: 2600099.920, n: 1200003.900, z: 540.820, delta: 0.30, h: 7.70, km: '12.400', L: null },
-    { name: '104', e: 2600144.800, n: 1200007.200, z: 541.150, delta: 0.25, h: 7.60, km: '12.445', L: null },
-    { name: '105', e: 2600189.600, n: 1200011.600, z: 541.500, delta: 0.30, h: 7.60, km: '12.490', L: null },
+    { name: '101', e: 2600000.000, n: 1200000.000, z: 539.650, delta: 0.35, h: 7.60, km: '12.300', L: null },
+    { name: '102', e: 2600049.980, n: 1200001.400, z: 540.080, delta: 0.30, h: 7.60, km: '12.350', L: null },
+    { name: '103', e: 2600099.920, n: 1200003.900, z: 540.520, delta: 0.30, h: 7.70, km: '12.400', L: null },
+    { name: '104', e: 2600144.800, n: 1200007.200, z: 540.900, delta: 0.25, h: 7.60, km: '12.445', L: null },
+    { name: '105', e: 2600189.600, n: 1200011.600, z: 541.200, delta: 0.30, h: 7.60, km: '12.490', L: null },
   ])).masten;
 }
 
@@ -346,9 +364,9 @@ function beispielStraenge() {
 // Vorlage mit Spalte «Strang»: Fahrleitung FL1 und Speiseleiter SPL an denselben Masten
 function csvVorlage() {
   const fl = [
-    { name: '101', e: 2600000.000, n: 1200000.000, z: 500.000, delta: 0.30, h: 7.00, km: '12.300', L: null },
-    { name: '102', e: 2600045.000, n: 1200001.000, z: 500.400, delta: 0.25, h: 7.00, km: '12.345', L: null },
-    { name: '103', e: 2600090.000, n: 1200003.000, z: 500.900, delta: 0.20, h: 7.10, km: '12.390', L: null },
+    { name: '101', e: 2600000.000, n: 1200000.000, z: 499.700, delta: 0.30, h: 7.00, km: '12.300', L: null },
+    { name: '102', e: 2600045.000, n: 1200001.000, z: 500.150, delta: 0.25, h: 7.00, km: '12.345', L: null },
+    { name: '103', e: 2600090.000, n: 1200003.000, z: 500.700, delta: 0.20, h: 7.10, km: '12.390', L: null },
   ];
   const spl = fl.map(m => ({ ...m, n: +(m.n - 2).toFixed(3), h: 9.20 }));
   return csvSchreibenStraenge([{ kennung: 'FL1', masten: fl }, { kennung: 'SPL', masten: spl }]);
@@ -357,7 +375,7 @@ function csvVorlage() {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     LASTFALL_VORGABE, EISLAST_HOEHENLAGE, EIS_TEMPERATUR, lastfallEinstellung, lastfaelle, temperaturenLesen,
-    hindernisPunkte, kanteBei, unterkanteBei, hindernisSeite, abstandHindernis, hindernisNormieren, kmInMeter, feldLaengen, mittelspannweite, mastSok,
+    hindernisPunkte, kanteBei, unterkanteBei, hindernisSeite, abstandHindernis, hindernisNormieren, kmInMeter, feldLaengen, mittelspannweite, mastSok, mastFuss, mastenAusMastfuss,
     csvLesen, csvSchreiben, csvVorlage, beispielMasten, CSV_KOPF,
     straengeAusMasten, mastAbweichungen, rolleVorschlag, csvSchreibenStraenge, beispielStraenge,
   };

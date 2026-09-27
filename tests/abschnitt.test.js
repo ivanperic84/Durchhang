@@ -110,10 +110,27 @@ test('Mittelspannweite arithmetisch und ideell', () => {
   assert.equal(A.mittelspannweite([null]), null);
 });
 
-test('SOK am Mast = Z − Δ', () => {
-  nahe(A.mastSok({ z: 500, delta: 0.3 }), 499.7, 1e-12, 'mit Δ');
+test('Z = SOK am Mast; Mastfuss = SOK + Δ (freiwillig); Umrechnung bisheriger Daten', () => {
+  assert.equal(A.mastSok({ z: 500, delta: 0.3 }), 500);
   assert.equal(A.mastSok({ z: 500, delta: null }), 500);
   assert.equal(A.mastSok({ z: null }), null);
+  nahe(A.mastFuss({ z: 499.7, delta: 0.3 }), 500, 1e-12, 'Mastfuss');
+  assert.equal(A.mastFuss({ z: 499.7, delta: null }), null);
+  // Bis v4.4: Z = Mastfuss → SOK = Z − Δ; ohne Δ bleibt Z
+  assert.deepEqual(A.mastenAusMastfuss([{ name: '1', z: 500, delta: 0.3 }, { name: '2', z: 501, delta: null }]).map(m => m.z), [499.7, 501]);
+});
+
+test('CSV im bisherigen Format (Z_Mastfuss): SOK = Z − Δ, mit Hinweis', () => {
+  const alt = A.csvLesen('Mast;E;N;Z_Mastfuss;Delta_Mastfuss_SOK;h_ueber_SOK;KM\n101;2600000;1200000;540;0.35;7.6;12.300\n102;2600050;1200001;540.4;;7.6;12.350\n');
+  assert.deepEqual(alt.masten.map(m => [m.z, m.delta]), [[539.65, 0.35], [540.4, null]]);
+  assert.ok(alt.warnungen.includes('zmastfuss'));
+  assert.ok(!('zmf' in alt.masten[0]));
+  // Beide Spalten: Z_SOK gilt, Δ wird aus dem Mastfuss ergänzt
+  const beide = A.csvLesen('Mast;E;N;Z_SOK;Z_Mastfuss;h\n1;2600000;1200000;499.7;500;7\n2;2600040;1200000;500;;7\n');
+  assert.deepEqual(beide.masten.map(m => [m.z, m.delta]), [[499.7, 0.3], [500, null]]);
+  assert.ok(!beide.warnungen.includes('zmastfuss'));
+  // Neue Vorlage: Kopf Z_SOK
+  assert.match(A.csvVorlage(), /Strang;Mast;E;N;Z_SOK;Delta_Mastfuss_SOK;/);
 });
 
 test('CSV: Vorlage lesen und wieder schreiben ergibt dieselben Masten', () => {
@@ -121,7 +138,7 @@ test('CSV: Vorlage lesen und wieder schreiben ergibt dieselben Masten', () => {
   const { masten, warnungen } = A.csvLesen(A.csvVorlage());
   assert.equal(masten.length, 6);
   assert.deepEqual(warnungen, []);
-  assert.deepEqual(masten[0], { name: '101', e: 2600000, n: 1200000, z: 500, delta: 0.3, h: 7, km: '12.300', L: null, strang: 'FL1' });
+  assert.deepEqual(masten[0], { name: '101', e: 2600000, n: 1200000, z: 499.7, delta: 0.3, h: 7, km: '12.300', L: null, strang: 'FL1' });
   const g = A.straengeAusMasten(masten);
   assert.deepEqual(g.straenge.map(s => [s.kennung, s.masten.length]), [['FL1', 3], ['SPL', 3]]);
   assert.deepEqual(g.abweichungen, []);

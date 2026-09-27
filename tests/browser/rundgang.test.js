@@ -86,13 +86,15 @@ test('Foto-Ansicht: Hinweis einmal pro Start', async () => {
   await kontext.close();
 });
 
-test('Koordinaten LV95 → Spannweite, SOK, IFC und DXF georeferenziert', async () => {
+test('Koordinaten LV95 → Spannweite; Höhe aus SOK m ü. M.; IFC und DXF georeferenziert', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   await seite.evaluate(() => {
     const setze = (id, v) => { document.getElementById(id).value = v; };
-    setze('koord-e-left', 2600000.5); setze('koord-n-left', 1200000.25); setze('koord-z-left', 500);
-    setze('koord-e-right', 2600030); setze('koord-n-right', 1200033.9); setze('koord-z-right', 501.2);
-    setze('mast-delta-sok-left', 0.3); setze('mast-delta-sok-right', 0.1);
+    setze('koord-e-left', 2600000.5); setze('koord-n-left', 1200000.25);
+    setze('koord-e-right', 2600030); setze('koord-n-right', 1200033.9);
+    setze('sok-mum-left', 499.7); onSokMumLeftInput();
+    setze('sok-mum-right', 501.1); document.getElementById('sok-mum-right').dataset.userEdited = '1'; onSokMumRightInput();
+    setze('mast-delta-sok-left', 0.3); setze('mast-delta-sok-right', 0.1);   // nur Mastfuss, ändert die SOK nicht
     koordSchalten(true);
   });
   const z = await seite.evaluate(() => ({ L: calcState.L, sokL: getSokMumLeft(), sokR: getSokMumRight(),
@@ -263,7 +265,8 @@ test('H-Punkte nur in m ü. M.: ohne SOK Hinweis und keine Prüfung', async () =
     renderObstacleList(); berechnen();
     const mit = { geprueft: _nachweis.some(n => n.best), hinweis: document.getElementById('hind-sok-fehlt').style.display !== 'none',
                   einheit: document.querySelector('.probe-h-unit').textContent };
-    return { ohne, mit, deltaImKoord: !!document.querySelector('#koord-felder #mast-delta-sok-left') };
+    return { ohne, mit, deltaBeiSok: !!document.querySelector('#mastangaben #mast-delta-sok-left') && !document.querySelector('#koord-felder #mast-delta-sok-left'),
+      ohneZ: !document.getElementById('koord-z-left') };
   });
   assert.equal(r.ohne.geprueft, false);
   assert.equal(r.ohne.hinweis, true);
@@ -271,7 +274,8 @@ test('H-Punkte nur in m ü. M.: ohne SOK Hinweis und keine Prüfung', async () =
   assert.equal(r.mit.geprueft, true);
   assert.equal(r.mit.hinweis, false);
   assert.match(r.mit.einheit, /ü\. M\./);
-  assert.equal(r.deltaImKoord, true);
+  assert.equal(r.deltaBeiSok, true);
+  assert.equal(r.ohneZ, true);
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
@@ -1149,6 +1153,40 @@ test('Stränge: Beispiel mit 2 Strängen übereinander, Sichtbarkeit, Farbe, Wec
   assert.equal(r.exp.spl, true);
   assert.deepEqual({ aktiv: r.exp.aktiv, sys: r.exp.sys }, { aktiv: 0, sys: 'nfl' });
   assert.deepEqual(r.geladen, { n: 2, aktiv: 0, farbe: '#123456', gleich: true });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Z = SOK: Projekt bis v4.3 (Z = Mastfuss) wird umgerechnet; Foto nutzt Mastfuss = SOK + Δ', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    // Projekt im bisherigen Format: abschnitt ohne zBezug, Z = Mastfuss
+    const st = JSON.parse(JSON.stringify(getProjectState()));
+    st.abschnitt = { masten: [{ name: 'A', e: 2600000, n: 1200000, z: 500, delta: 0.3, h: 7, km: '', L: null },
+                              { name: 'B', e: 2600045, n: 1200000, z: 501, delta: null, h: 7, km: '', L: null }], offen: null, mp: {} };
+    delete st.abschnitt.zBezug;
+    setProjectState(st);
+    const alt = abschnitt.masten.map(m => m.z);
+    // Gespeichert wird mit zBezug «sok» → erneutes Laden ändert nichts
+    const neu = JSON.parse(JSON.stringify(getProjectState()));
+    setProjectState(neu);
+    const nochmals = abschnitt.masten.map(m => m.z);
+    // Foto: Fusspunkte am Mastfuss → Höhe über SOK = gemessen + Δ, dh mit SOK-Differenz
+    const setze = (id, v) => { document.getElementById(id).value = v; };
+    setze('sok-mum-left', 500); onSokMumLeftInput();
+    setze('sok-mum-right', 501); document.getElementById('sok-mum-right').dataset.userEdited = '1'; onSokMumRightInput();
+    setze('foto-hmast-L', 10); setze('foto-hmast-R', 10); setze('foto-L', 50); setze('foto-T1', 10);
+    setze('mast-delta-sok-left', 0.3); setze('mast-delta-sok-right', 0.5);
+    const pts = [['top_L', 100, 100], ['base_L', 100, 600], ['top_R', 900, 120], ['base_R', 900, 620], ['p1', 100, 200], ['p2', 900, 220], ['cmid', 500, 350]]
+      .map(([role, px, py]) => ({ role, px, py }));
+    window._fotoSetProjectState({ pts, result: { neu: true } }); fotoRecalcIfReady();
+    const f = window._fotoResult;
+    return { alt, nochmals, foto: { h1: +f.h_P1.toFixed(3), h2: +f.h_P2.toFixed(3), dh: +f.dh.toFixed(3),
+      elL: document.getElementById('foto-elev-L').value, elR: document.getElementById('foto-elev-R').value } };
+  });
+  assert.deepEqual(r.alt, [499.7, 501]);
+  assert.deepEqual(r.nochmals, [499.7, 501]);
+  assert.deepEqual(r.foto, { h1: 8.3, h2: 8.5, dh: -1.2, elL: '500.300', elR: '501.500' });
   assert.deepEqual(fehler, []);
   await kontext.close();
 });

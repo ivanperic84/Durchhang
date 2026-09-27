@@ -2385,6 +2385,22 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
       </div>
       <div id="sok-mum-info" style="display:none;margin-top:.35rem;font-size:.7rem;color:var(--muted)"></div>
 
+      <!-- Δ Mastfuss − SOK (optional): Mastfuss = SOK + Δ (Foto-Messung, Mastmodelle) -->
+      <div style="margin-top:.6rem">
+        <label id="mast-delta-lbl" data-i18n="bp.delta.label" title="Δ positiv = Mastfuss liegt höher als SOK" data-i18n-title="koord.delta.titel" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.28rem">Δ Mastfuss − SOK (optional)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem">
+          <div class="input-wrap">
+            <input type="number" id="mast-delta-sok-left" step="0.01" autocomplete="off" placeholder="0.00" style="font-size:.78rem" aria-labelledby="mast-delta-lbl koord-lbl-li" oninput="berechnenEntprellt()" onchange="berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
+            <span class="input-unit" style="font-size:.7rem">m</span>
+          </div>
+          <div class="input-wrap">
+            <input type="number" id="mast-delta-sok-right" step="0.01" autocomplete="off" placeholder="0.00" style="font-size:.78rem" aria-labelledby="mast-delta-lbl koord-lbl-re" oninput="berechnenEntprellt()" onchange="berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
+            <span class="input-unit" style="font-size:.7rem">m</span>
+          </div>
+        </div>
+        <p id="mast-delta-info" data-i18n="bp.delta.info" style="margin:.25rem 0 0;font-size:.68rem;color:var(--tertiary)">Mastfuss = SOK + Δ (positiv = Mastfuss höher). Für die Foto-Messung; die Berechnung braucht nur die SOK.</p>
+      </div>
+
       <!-- Mastbezeichnung: Name/Nr. + KM -->
       <div style="margin-top:.6rem">
         <label id="bp-bez-label" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.28rem">Bezeichnung <span id="bp-bez-optional" style="font-weight:400;color:var(--tertiary)">(optional)</span></label>
@@ -2408,7 +2424,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
         </div>
       </div>
 
-      <!-- Koordinaten LV95 (optional): E/N = Aufhängepunkt des Leiters, Z = Mastfuss.
+      <!-- Koordinaten LV95 (optional): E/N = Aufhängepunkt des Leiters.
            Eingeschaltet: Spannweite L und SOK werden daraus berechnet (siehe _koordAnwenden). -->
       <div class="koord-block">
         <label class="schalter-zeile" for="koord-aktiv">
@@ -2417,7 +2433,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
           <span data-i18n="koord.schalter">Koordinaten LV95</span>
         </label>
         <div id="koord-felder" style="display:none">
-          <p class="koord-hinweis" data-i18n-html="koord.hinweis">E/N [m] = Aufhängepunkt des Leiters (Ausleger/Joch), Z [m ü. M.] = Mastfuss. Δ [m] = Mastfuss über SOK (positiv = Mastfuss höher). Spannweite L und SOK (= Z − Δ) werden daraus berechnet.</p>
+          <p class="koord-hinweis" data-i18n-html="koord.hinweis">E/N [m] = Aufhängepunkt des Leiters (Ausleger/Joch). Die Spannweite L wird daraus berechnet; die Höhe (SOK m ü. M.) steht oben.</p>
           <div class="koord-grid">
             <span></span>
             <span id="koord-lbl-li" class="koord-kopf" data-i18n="koord.links">links</span>
@@ -2428,12 +2444,6 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
             <span id="koord-lbl-n" data-i18n="koord.n">N</span>
             <input type="number" id="koord-n-left"  class="koord-inp" step="0.001" autocomplete="off" placeholder="1'200'000" aria-labelledby="koord-lbl-n koord-lbl-li" oninput="berechnenEntprellt()" onchange="berechnen()">
             <input type="number" id="koord-n-right" class="koord-inp" step="0.001" autocomplete="off" placeholder="1'200'000" aria-labelledby="koord-lbl-n koord-lbl-re" oninput="berechnenEntprellt()" onchange="berechnen()">
-            <span id="koord-lbl-z" data-i18n="koord.z">Z</span>
-            <input type="number" id="koord-z-left"  class="koord-inp" step="0.001" autocomplete="off" placeholder="—" aria-labelledby="koord-lbl-z koord-lbl-li" oninput="berechnenEntprellt()" onchange="berechnen()">
-            <input type="number" id="koord-z-right" class="koord-inp" step="0.001" autocomplete="off" placeholder="—" aria-labelledby="koord-lbl-z koord-lbl-re" oninput="berechnenEntprellt()" onchange="berechnen()">
-            <span id="koord-lbl-d" data-i18n="koord.delta" title="Δ positiv = Mastfuss liegt höher als SOK" data-i18n-title="koord.delta.titel">Δ</span>
-            <input type="number" id="mast-delta-sok-left"  class="koord-inp" step="0.01" autocomplete="off" placeholder="0.00" aria-labelledby="koord-lbl-d koord-lbl-li" oninput="berechnenEntprellt()" onchange="berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
-            <input type="number" id="mast-delta-sok-right" class="koord-inp" step="0.01" autocomplete="off" placeholder="0.00" aria-labelledby="koord-lbl-d koord-lbl-re" oninput="berechnenEntprellt()" onchange="berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
           </div>
           <p id="koord-info" class="koord-info" aria-live="polite"></p>
         </div>
@@ -4891,14 +4901,20 @@ function _extractExifGps(buf) {
     const k_L = hmastL / mastPxL;   // [m/px] bei linkem Mast
     const k_R = hmastR / mastPxR;   // [m/px] bei rechtem Mast
 
+    // Mastangaben: SOK m ü. M. und Δ Mastfuss − SOK (freiwillig, sonst 0).
+    // Die Fusspunkte im Foto liegen am Mastfuss → Höhe über SOK = gemessen + Δ;
+    // Mastfuss m ü. M. = SOK + Δ (für den Bericht in foto-elev-L/R).
+    const _dWert = id => { const v = parseFloat(document.getElementById(id)?.value); return Number.isFinite(v) ? v : 0; };
+    const dL = _dWert('mast-delta-sok-left'), dR = _dWert('mast-delta-sok-right');
+    const sokL = getSokMumLeft(), sokR = getSokMumRight();
+    const mitSok = sokL !== null && sokR !== null;
+    document.getElementById('foto-elev-L').value = mitSok ? (sokL + dL).toFixed(3) : '';
+    document.getElementById('foto-elev-R').value = mitSok ? (sokR + dR).toFixed(3) : '';
     // dh: Höhenunterschied Ankerpunkte, gemessen mit lokalem k
     // h_P1/h_P2 = Höhe über SOK des jeweiligen Masts (Canvas y wächst nach unten)
-    const h_P1 = (ptBaseL.py - ptP1.py) * k_L;
-    const h_P2 = (ptBaseR.py - ptP2.py) * k_R;
-    // Optional: Mastfuss-Höhe (m ü. M.) — wenn angegeben, SOK-Differenz addieren
-    const elevL = parseFloat(document.getElementById('foto-elev-L')?.value);
-    const elevR = parseFloat(document.getElementById('foto-elev-R')?.value);
-    const dhElev = (!isNaN(elevL) && !isNaN(elevR)) ? (elevL - elevR) : 0;
+    const h_P1 = (ptBaseL.py - ptP1.py) * k_L + dL;
+    const h_P2 = (ptBaseR.py - ptP2.py) * k_R + dR;
+    const dhElev = mitSok ? sokL - sokR : 0;
     const dh   = h_P1 - h_P2 + dhElev;   // catSagAt: h > 0 wenn linker Anker höher
 
     // Material / q
@@ -6075,7 +6091,7 @@ function onSokMumInput() { updateSokMumUI(); }
 function _mastangabenOeffnenFallsBelegt() {
   const det = document.getElementById('mastangaben');
   if (!det) return;
-  const belegt = ['sok-mum-left', 'sok-mum-right', 'mast-num-left', 'mast-num-right',
+  const belegt = ['sok-mum-left', 'sok-mum-right', 'mast-delta-sok-left', 'mast-delta-sok-right', 'mast-num-left', 'mast-num-right',
                   'mast-km-left', 'mast-km-right', 'koord-e-left', 'koord-e-right']
     .some(id => (document.getElementById(id)?.value ?? '').trim() !== '');
   if (belegt) det.open = true;
@@ -7035,7 +7051,7 @@ function getProjectState() {
     'mast-num-left','mast-num-right',
     'mast-km-left','mast-km-right',
     'mast-delta-sok-left','mast-delta-sok-right',
-    'koord-e-left','koord-n-left','koord-z-left','koord-e-right','koord-n-right','koord-z-right'
+    'koord-e-left','koord-n-left','koord-e-right','koord-n-right'
   ];
   const fields = {};
   FIELD_IDS.forEach(id => {
@@ -7050,7 +7066,7 @@ function getProjectState() {
   const fotoState = typeof window._fotoGetProjectState === 'function'
                     ? window._fotoGetProjectState() : null;
   return { schemaVersion: PROJEKT_SCHEMA_VERSION,
-           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, drawingHf: Ansicht.zeichnungHf, diagrammHf, lastfaelleAktiv, fotoState, elBerechnungsart, koordAktiv, abschnitt, messpunkte: _mpLive(), lastfaelle: lastfallEinst, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: _elMatEdits, hf: hfEingabe };
+           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, drawingHf: Ansicht.zeichnungHf, diagrammHf, lastfaelleAktiv, fotoState, elBerechnungsart, koordAktiv, abschnitt: { ...abschnitt, zBezug: 'sok' }, messpunkte: _mpLive(), lastfaelle: lastfallEinst, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: _elMatEdits, hf: hfEingabe };
 }
 
 // ── Projektzustand: Version, Pruefung, transaktionales Laden ──────────────
@@ -7205,7 +7221,7 @@ function _setProjectStateIntern(s) {
     'mast-num-left','mast-num-right',
     'mast-km-left','mast-km-right',
     'mast-delta-sok-left','mast-delta-sok-right',
-    'koord-e-left','koord-n-left','koord-z-left','koord-e-right','koord-n-right','koord-z-right'];
+    'koord-e-left','koord-n-left','koord-e-right','koord-n-right'];
   FIELDS.forEach(id => {
     const el = document.getElementById(id);
     if (el && flds[id] != null) el.value = flds[id];
@@ -12402,10 +12418,9 @@ const _fotoSidebarSync = Ansicht._fotoSidebarSync;
 
 // ═══════════════════════════════════════════════════════════════
 // KOORDINATEN LV95
-// E/N = Aufhängepunkt des Leiters (Ausleger/Joch), Z = Mastfuss (m ü. M.).
-// Eingeschaltet gilt: L = waagrechter Abstand der Aufhängepunkte,
-// SOK = Z − «Δ Mastfuss-SOK» (Δ positiv = Mastfuss liegt höher als SOK).
-// Aufhängehöhe = SOK + h₁ bzw. h₂ (h bleibt eine Eingabe).
+// E/N = Aufhängepunkt des Leiters (Ausleger/Joch).
+// Eingeschaltet gilt: L = waagrechter Abstand der Aufhängepunkte.
+// Höhe: SOK m ü. M. (Mastangaben); Aufhängehöhe = SOK + h₁ bzw. h₂.
 // ═══════════════════════════════════════════════════════════════
 var koordAktiv = false;   // var: vor der ersten Rechnung sicher lesbar
 
@@ -12421,9 +12436,8 @@ function koordSchalten(an, { rechnen = true } = {}) {
 function _koordWerte() {
   const v = id => { const n = parseFloat(document.getElementById(id)?.value); return Number.isFinite(n) ? n : null; };
   return {
-    eL: v('koord-e-left'),  nL: v('koord-n-left'),  zL: v('koord-z-left'),
-    eR: v('koord-e-right'), nR: v('koord-n-right'), zR: v('koord-z-right'),
-    dL: v('mast-delta-sok-left') ?? 0, dR: v('mast-delta-sok-right') ?? 0,
+    eL: v('koord-e-left'),  nL: v('koord-n-left'),
+    eR: v('koord-e-right'), nR: v('koord-n-right'),
   };
 }
 
@@ -12476,24 +12490,6 @@ function _koordAnwenden() {
     teile.push(`<span class="warn">${t('koord.fehlt')}</span>`);
   }
 
-  // SOK aus Z Mastfuss − Δ (nur Seiten mit Z)
-  const sokLEl = document.getElementById('sok-mum-left');
-  const sokREl = document.getElementById('sok-mum-right');
-  let sokGeaendert = false;
-  const setze = (el, wert) => {
-    const s = wert.toFixed(3);
-    if (el.value !== s) { el.value = s; sokGeaendert = true; }
-    gesperrt.push(el);
-  };
-  if (k.zL !== null) setze(sokLEl, k.zL - k.dL);
-  if (k.zR !== null) { setze(sokREl, k.zR - k.dR); sokREl.dataset.userEdited = '1'; }
-  if (k.zL !== null || k.zR !== null) {
-    const f = v => v === null ? '—' : fN(v, 3);
-    teile.push(t('koord.info.sok')
-      .replace('{l}', f(k.zL !== null ? k.zL - k.dL : getSokMumLeft()))
-      .replace('{r}', f(k.zR !== null ? k.zR - k.dR : getSokMumRight())));
-  }
-  if (sokGeaendert && typeof updateSokMumUI === 'function') updateSokMumUI();
 
   _koordSperren(gesperrt);
   if (info) info.innerHTML = teile.join('<br>');
@@ -12621,6 +12617,11 @@ function _abschnittLaden(s) {
     });
     if (!straenge.length) straenge = null;
     else aktiv = Number.isInteger(s.abschnitt.aktiv) && straenge[s.abschnitt.aktiv] ? s.abschnitt.aktiv : 0;
+  }
+  // Bis v4.4 war Z der Mastfuss: SOK = Z − Δ (einmalig beim Laden)
+  if (s.abschnitt && s.abschnitt.zBezug !== 'sok') {
+    if (straenge) straenge.forEach(x => { x.masten = mastenAusMastfuss(x.masten); });
+    else s = { ...s, abschnitt: { ...s.abschnitt, masten: mastenAusMastfuss(mastenLesen(s.abschnitt.masten)) } };
   }
   const masten = straenge ? straenge[aktiv].masten : mastenLesen(s.abschnitt?.masten);
   const mp = mpLesen(s.abschnitt?.mp);
@@ -12954,6 +12955,7 @@ async function abschnittCsvGewaehlt(input) {
   if (liste.length > 1) _strangStartSystem();
   const ohneH = erg.warnungen.filter(w => w.startsWith('h:')).length;
   if (ohneH) hinweise.push(t('abs.csv.warn.h').replace('{n}', ohneH));
+  if (erg.warnungen.includes('zmastfuss')) hinweise.push(t('abs.csv.zmastfuss'));
   erg.warnungen.filter(w => w.startsWith('spalte:')).forEach(w => hinweise.push(t('abs.csv.warn.spalte').replace('{s}', w.slice(7).toUpperCase())));
   meldung(hinweise.join(' '), ohneH || abweichungen.length ? 'warnung' : 'info');
   renderAbschnitt(); renderObstacleList();
@@ -13028,7 +13030,7 @@ function abschnittFeldOeffnen(i, { ansicht = true, koord = null } = {}) {
   setze('sok-mum-left', zahl(sA, 3)); setze('sok-mum-right', zahl(sB, 3));
   document.getElementById('sok-mum-right').dataset.userEdited = sB !== null ? '1' : '';
   const kmR = document.getElementById('mast-km-right'); if (kmR) kmR.dataset.userEdited = b.km ? '1' : '';
-  [['e', a.e, b.e], ['n', a.n, b.n], ['z', a.z, b.z]].forEach(([k, va, vb]) => {
+  [['e', a.e, b.e], ['n', a.n, b.n]].forEach(([k, va, vb]) => {
     setze(`koord-${k}-left`, zahl(va, 3)); setze(`koord-${k}-right`, zahl(vb, 3));
   });
   const mitKoord = koord ?? [a.e, a.n, b.e, b.n].every(Number.isFinite);
@@ -14846,23 +14848,23 @@ const LANG = {
     'pdf.maximum': 'Maximum',
     'pdf.minimum': 'Minimum',
     'koord.schalter': 'Koordinaten LV95',
-    'koord.hinweis': 'E/N [m] = Aufhängepunkt des Leiters (Ausleger/Joch), Z [m ü. M.] = Mastfuss. Δ [m] = Mastfuss über SOK (positiv = Mastfuss höher). Spannweite L und SOK (= Z − Δ) werden daraus berechnet.',
+    'koord.hinweis': 'E/N [m] = Aufhängepunkt des Leiters (Ausleger/Joch). Die Spannweite L wird daraus berechnet; die Höhe (SOK m ü. M.) steht oben.',
+    'bp.delta.label': 'Δ Mastfuss − SOK (optional)',
+    'bp.delta.info': 'Mastfuss = SOK + Δ (positiv = Mastfuss höher). Für die Foto-Messung; die Berechnung braucht nur die SOK.',
     'koord.links': 'links',
     'koord.rechts': 'rechts',
     'koord.e': 'E',
     'koord.n': 'N',
-    'koord.z': 'Z',
     'koord.delta': 'Δ',
     'koord.delta.titel': 'Δ positiv = Mastfuss liegt höher als SOK',
     'koord.info.L': 'L = {L} m aus Koordinaten',
-    'koord.info.sok': 'SOK links / rechts = {l} / {r} m ü. M.',
     'koord.fehlt': 'E und N links und rechts eingeben',
     'koord.unplausibel': 'Koordinaten liegen ausserhalb des LV95-Bereichs (E ≈ 2 600 000, N ≈ 1 200 000)',
     'koord.gesperrt.titel': 'Aus den Koordinaten berechnet — Schalter «Koordinaten LV95» ausschalten, um frei einzugeben',
     'exp.dxf': '3D-DXF',
     'exp.ifc': 'IFC4 (BIM)',
     'exp.keine.rechnung': 'Keine gültige Berechnung — Eingaben prüfen',
-    'exp.geo.sok.fehlt': 'Für den Export mit Koordinaten fehlt die Höhe: Z Mastfuss oder SOK m ü. M. eingeben.',
+    'exp.geo.sok.fehlt': 'Für den Export mit Koordinaten fehlt die Höhe: SOK m ü. M. (Z) eingeben.',
     'exp.fehler': 'Export fehlgeschlagen',
     'exp.haenger': 'Hänger',
     'exp.p.material': 'Material',
@@ -14885,7 +14887,7 @@ const LANG = {
     'exp.p.quelle': 'Erzeugt mit',
     'abs.tab': 'Abschnitt',
     'abs.titel': 'Abspannabschnitt',
-    'abs.hinweis': 'Masten in Reihenfolge erfassen. E/N = Aufhängepunkt des Leiters (LV95), Z = Mastfuss m ü. M., Δ = Mastfuss − SOK, h = Aufhängehöhe über SOK. L wird aus den Koordinaten oder der KM-Differenz berechnet, sonst bis zum nächsten Mast eingeben. Klick auf ein Feld öffnet es im Diagramm.',
+    'abs.hinweis': 'Masten in Reihenfolge erfassen. E/N = Aufhängepunkt des Leiters (LV95), Z = SOK m ü. M., Δ = Mastfuss − SOK (optional), h = Aufhängehöhe über SOK. L wird aus den Koordinaten oder der KM-Differenz berechnet, sonst bis zum nächsten Mast eingeben. Klick auf ein Feld öffnet es im Diagramm.',
     'abs.mast.hinzu': '+ Mast',
     'abs.csv.import': 'CSV importieren',
     'abs.csv.export': 'CSV exportieren',
@@ -14916,6 +14918,7 @@ const LANG = {
     'abs.csv.straenge': '{n} Stränge gelesen: {k}. System und Leiter je Strang: Strang wählen, dann links wie gewohnt einstellen.',
     'abs.csv.zuviele': 'Höchstens {n} Stränge — weitere wurden nicht übernommen.',
     'abs.csv.abweichung': 'Z / Δ / KM weichen zwischen den Strängen ab bei Mast {m} — bitte prüfen.',
+    'abs.csv.zmastfuss': 'Spalte «Z_Mastfuss» (bisheriges Format) erkannt: SOK = Z − Δ umgerechnet.',
     'exp.p.strang': 'Strang',
     'exp.p.rolle': 'Rolle',
     'abs.feldwahl': 'Feld',
@@ -14930,8 +14933,8 @@ const LANG = {
     'abs.sp.mast': 'Mast',
     'abs.sp.e': 'E',
     'abs.sp.n': 'N',
-    'abs.sp.z': 'Z Mastfuss',
-    'abs.sp.delta': 'Δ Mastfuss-SOK',
+    'abs.sp.z': 'Z SOK',
+    'abs.sp.delta': 'Δ Mastfuss (opt.)',
     'abs.sp.h': 'h über SOK',
     'abs.sp.km': 'KM',
     'abs.sp.L': 'L bis nächster [m]',
@@ -14962,7 +14965,7 @@ const LANG = {
     'abs.csv.warn.spalte': 'Spalte {s} nicht gefunden.',
     'abs.exp.unvollstaendig': 'Export nicht möglich: Nicht alle Felder sind vollständig (L und h).',
     'abs.loeschen.frage': 'Alle {n} Masten des Abschnitts löschen?',
-    'abs.ohne.sok': 'Höhen über SOK: nicht alle Masten haben Z Mastfuss.',
+    'abs.ohne.sok': 'Höhen über SOK: nicht alle Masten haben Z (SOK m ü. M.).',
     'hind.zone': 'Zone anzeigen',
     'hind.verbinden': 'Punkte verbinden',
     'hind.verbinden.titel': 'Unterkante als Linie durch die Punkte (nach x sortiert); aus = Einzelpunkte',
@@ -15709,23 +15712,23 @@ const LANG = {
     'pdf.maximum': 'maximum',
     'pdf.minimum': 'minimum',
     'koord.schalter': 'Coordonnées MN95',
-    'koord.hinweis': 'E/N [m] = point d’appui du conducteur (console/portique), Z [m s.n.m.] = pied de mât. Δ [m] = pied de mât au-dessus du DRS (positif = pied de mât plus haut). La portée L et le DRS (= Z − Δ) en sont calculés.',
+    'koord.hinweis': 'E/N [m] = point d’appui du conducteur (console/portique). La portée L en est calculée ; la hauteur (DRS m s.n.m.) se trouve plus haut.',
+    'bp.delta.label': 'Δ pied de mât − DRS (optionnel)',
+    'bp.delta.info': 'Pied de mât = DRS + Δ (positif = pied de mât plus haut). Pour la mesure photo ; le calcul n’a besoin que du DRS.',
     'koord.links': 'gauche',
     'koord.rechts': 'droite',
     'koord.e': 'E',
     'koord.n': 'N',
-    'koord.z': 'Z',
     'koord.delta': 'Δ',
     'koord.delta.titel': 'Δ positif = le pied du mât est plus haut que le DRS',
     'koord.info.L': 'L = {L} m selon coordonnées',
-    'koord.info.sok': 'DRS gauche / droite = {l} / {r} m s.n.m.',
     'koord.fehlt': 'Saisir E et N à gauche et à droite',
     'koord.unplausibel': 'Coordonnées hors du domaine MN95 (E ≈ 2 600 000, N ≈ 1 200 000)',
     'koord.gesperrt.titel': 'Calculé à partir des coordonnées — désactiver «Coordonnées MN95» pour saisir librement',
     'exp.dxf': 'DXF 3D',
     'exp.ifc': 'IFC4 (BIM)',
     'exp.keine.rechnung': 'Aucun calcul valable — vérifier la saisie',
-    'exp.geo.sok.fehlt': 'Pour l’export avec coordonnées, la hauteur manque : saisir Z pied de mât ou DRS m s.n.m.',
+    'exp.geo.sok.fehlt': 'Pour l’export avec coordonnées, la hauteur manque : saisir DRS m s.n.m. (Z).',
     'exp.fehler': 'Échec de l’export',
     'exp.haenger': 'Suspension',
     'exp.p.material': 'Matériau',
@@ -15748,7 +15751,7 @@ const LANG = {
     'exp.p.quelle': 'Généré avec',
     'abs.tab': 'Canton',
     'abs.titel': 'Canton de pose',
-    'abs.hinweis': 'Saisir les mâts dans l’ordre. E/N = point d’appui du conducteur (MN95), Z = pied de mât m s.n.m., Δ = pied de mât − DRS, h = hauteur d’appui sur DRS. L est calculée à partir des coordonnées ou de la différence de KM, sinon la saisir jusqu’au mât suivant. Un clic sur une portée l’ouvre dans le diagramme.',
+    'abs.hinweis': 'Saisir les mâts dans l’ordre. E/N = point d’appui du conducteur (MN95), Z = DRS m s.n.m., Δ = pied de mât − DRS (facultatif), h = hauteur d’appui sur DRS. L est calculée à partir des coordonnées ou de la différence de KM, sinon la saisir jusqu’au mât suivant. Un clic sur une portée l’ouvre dans le diagramme.',
     'abs.mast.hinzu': '+ Mât',
     'abs.csv.import': 'Importer CSV',
     'abs.csv.export': 'Exporter CSV',
@@ -15779,6 +15782,7 @@ const LANG = {
     'abs.csv.straenge': '{n} lignes lues : {k}. Système et conducteur par ligne : choisir la ligne, puis régler à gauche comme d’habitude.',
     'abs.csv.zuviele': 'Au maximum {n} lignes — les autres n’ont pas été reprises.',
     'abs.csv.abweichung': 'Z / Δ / PK diffèrent entre les lignes au mât {m} — à vérifier.',
+    'abs.csv.zmastfuss': 'Colonne «Z_Mastfuss» (ancien format) reconnue : DRS = Z − Δ converti.',
     'exp.p.strang': 'Ligne',
     'exp.p.rolle': 'Rôle',
     'abs.feldwahl': 'Portée',
@@ -15793,8 +15797,8 @@ const LANG = {
     'abs.sp.mast': 'Mât',
     'abs.sp.e': 'E',
     'abs.sp.n': 'N',
-    'abs.sp.z': 'Z pied de mât',
-    'abs.sp.delta': 'Δ pied de mât-DRS',
+    'abs.sp.z': 'Z DRS',
+    'abs.sp.delta': 'Δ pied de mât (fac.)',
     'abs.sp.h': 'h sur DRS',
     'abs.sp.km': 'KM',
     'abs.sp.L': 'L jusqu’au suivant [m]',
@@ -15825,7 +15829,7 @@ const LANG = {
     'abs.csv.warn.spalte': 'Colonne {s} introuvable.',
     'abs.exp.unvollstaendig': 'Export impossible : toutes les portées ne sont pas complètes (L et h).',
     'abs.loeschen.frage': 'Supprimer les {n} mâts du canton ?',
-    'abs.ohne.sok': 'Hauteurs sur DRS : tous les mâts n’ont pas de Z pied de mât.',
+    'abs.ohne.sok': 'Hauteurs sur DRS : tous les mâts n’ont pas de Z (DRS m s.n.m.).',
     'hind.zone': 'Afficher la zone',
     'hind.verbinden': 'Relier les points',
     'hind.verbinden.titel': 'Sous-face comme ligne passant par les points (triés selon x) ; désactivé = points isolés',
@@ -16572,23 +16576,23 @@ const LANG = {
     'pdf.maximum': 'massimo',
     'pdf.minimum': 'minimo',
     'koord.schalter': 'Coordinate MN95',
-    'koord.hinweis': 'E/N [m] = punto d’aggancio del conduttore (mensola/portale), Z [m s.l.m.] = piede del palo. Δ [m] = piede del palo sopra il PRF (positivo = piede più alto). La campata L e il PRF (= Z − Δ) vengono calcolati da questi valori.',
+    'koord.hinweis': 'E/N [m] = punto d’aggancio del conduttore (mensola/portale). La campata L viene calcolata da questi valori; l’altezza (PRF m s.l.m.) si trova più in alto.',
+    'bp.delta.label': 'Δ piede palo − PRF (opzionale)',
+    'bp.delta.info': 'Piede del palo = PRF + Δ (positivo = piede più alto). Per la misura foto; il calcolo richiede solo il PRF.',
     'koord.links': 'sinistra',
     'koord.rechts': 'destra',
     'koord.e': 'E',
     'koord.n': 'N',
-    'koord.z': 'Z',
     'koord.delta': 'Δ',
     'koord.delta.titel': 'Δ positivo = il piede del palo è più alto del PRF',
     'koord.info.L': 'L = {L} m dalle coordinate',
-    'koord.info.sok': 'PRF sinistra / destra = {l} / {r} m s.l.m.',
     'koord.fehlt': 'Inserire E e N a sinistra e a destra',
     'koord.unplausibel': 'Coordinate fuori dal campo MN95 (E ≈ 2 600 000, N ≈ 1 200 000)',
     'koord.gesperrt.titel': 'Calcolato dalle coordinate — disattivare «Coordinate MN95» per inserire liberamente',
     'exp.dxf': 'DXF 3D',
     'exp.ifc': 'IFC4 (BIM)',
     'exp.keine.rechnung': 'Nessun calcolo valido — controllare i dati',
-    'exp.geo.sok.fehlt': 'Per l’esportazione con coordinate manca l’altezza: inserire Z piede del palo o PRF m s.l.m.',
+    'exp.geo.sok.fehlt': 'Per l’esportazione con coordinate manca l’altezza: inserire PRF m s.l.m. (Z).',
     'exp.fehler': 'Esportazione non riuscita',
     'exp.haenger': 'Ballerina',
     'exp.p.material': 'Materiale',
@@ -16611,7 +16615,7 @@ const LANG = {
     'exp.p.quelle': 'Generato con',
     'abs.tab': 'Tratta',
     'abs.titel': 'Tratta di regolazione',
-    'abs.hinweis': 'Inserire i pali in ordine. E/N = punto d’aggancio del conduttore (MN95), Z = piede del palo m s.l.m., Δ = piede del palo − PRF, h = altezza d’aggancio sul PRF. L viene calcolata dalle coordinate o dalla differenza di KM, altrimenti inserirla fino al palo successivo. Un clic su una campata la apre nel diagramma.',
+    'abs.hinweis': 'Inserire i pali in ordine. E/N = punto d’aggancio del conduttore (MN95), Z = PRF m s.l.m., Δ = piede del palo − PRF (facoltativo), h = altezza d’aggancio sul PRF. L viene calcolata dalle coordinate o dalla differenza di KM, altrimenti inserirla fino al palo successivo. Un clic su una campata la apre nel diagramma.',
     'abs.mast.hinzu': '+ Palo',
     'abs.csv.import': 'Importa CSV',
     'abs.csv.export': 'Esporta CSV',
@@ -16642,6 +16646,7 @@ const LANG = {
     'abs.csv.straenge': '{n} linee lette: {k}. Sistema e conduttore per linea: scegliere la linea, poi impostare a sinistra come di consueto.',
     'abs.csv.zuviele': 'Al massimo {n} linee — le altre non sono state riprese.',
     'abs.csv.abweichung': 'Z / Δ / km differiscono tra le linee al palo {m} — da verificare.',
+    'abs.csv.zmastfuss': 'Colonna «Z_Mastfuss» (formato precedente) riconosciuta: PRF = Z − Δ convertito.',
     'exp.p.strang': 'Linea',
     'exp.p.rolle': 'Ruolo',
     'abs.feldwahl': 'Campata',
@@ -16656,8 +16661,8 @@ const LANG = {
     'abs.sp.mast': 'Palo',
     'abs.sp.e': 'E',
     'abs.sp.n': 'N',
-    'abs.sp.z': 'Z piede del palo',
-    'abs.sp.delta': 'Δ piede palo-PRF',
+    'abs.sp.z': 'Z PRF',
+    'abs.sp.delta': 'Δ piede palo (fac.)',
     'abs.sp.h': 'h sul PRF',
     'abs.sp.km': 'KM',
     'abs.sp.L': 'L fino al successivo [m]',
@@ -16688,7 +16693,7 @@ const LANG = {
     'abs.csv.warn.spalte': 'Colonna {s} non trovata.',
     'abs.exp.unvollstaendig': 'Esportazione impossibile: non tutte le campate sono complete (L e h).',
     'abs.loeschen.frage': 'Eliminare tutti i {n} pali della tratta?',
-    'abs.ohne.sok': 'Altezze sul PRF: non tutti i pali hanno Z piede del palo.',
+    'abs.ohne.sok': 'Altezze sul PRF: non tutti i pali hanno Z (PRF m s.l.m.).',
     'hind.zone': 'Mostra zona',
     'hind.verbinden': 'Collega i punti',
     'hind.verbinden.titel': 'Intradosso come linea attraverso i punti (ordinati secondo x); disattivato = punti singoli',
@@ -18395,9 +18400,8 @@ renderObstacleList();
         <p>Unter <em>Mastangaben</em> lässt sich der Schalter <strong>Koordinaten LV95</strong> einschalten. Einzugeben sind je Seite:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>E / N</strong> — Lage des <em>Aufhängepunkts des Leiters</em> (Rückleiter meist am Mast, Kettenwerk meist am Ausleger oder Joch).</li>
-          <li><strong>Z</strong> — Höhe des <em>Mastfusses</em> in m ü. M. (LN02).</li>
         </ul>
-        <p>Daraus berechnet die App: Spannweite L = waagrechter Abstand der beiden Aufhängepunkte, SOK = Z − Δ (Feld «Δ» im Koordinaten-Bereich = Mastfuss über SOK, positiv, wenn der Mastfuss höher liegt als SOK; nur hier wirksam), Aufhängehöhe = SOK + h<sub>1</sub> bzw. h<sub>2</sub>. Diese Felder sind gesperrt, solange der Schalter eingeschaltet ist.</p>
+        <p>Daraus berechnet die App die Spannweite L = waagrechter Abstand der beiden Aufhängepunkte (das Feld ist gesperrt, solange der Schalter eingeschaltet ist). Die Höhe kommt aus <strong>SOK m ü. M.</strong> (LN02) oben in den Mastangaben: Aufhängehöhe = SOK + h<sub>1</sub> bzw. h<sub>2</sub>. Freiwillig lässt sich <strong>Δ Mastfuss − SOK</strong> angeben (positiv, wenn der Mastfuss höher liegt): Mastfuss = SOK + Δ. Die Berechnung braucht Δ nicht; die Foto-Messung nutzt es, weil dort am Mastfuss gemessen wird.</p>
         <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Exporte (Menü «Teilen» in der Kopfleiste)</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>3D-DXF</strong> — Linien in Metern (AC1009/R12): Tragseil bzw. Leiter bei T<sub>2</sub>, Fahrdraht, Hänger, Tragseil bei T<sub>1</sub>, SOK und Messpunkte. Mit Koordinaten in E / N / H (LV95/LN02), sonst lokal (x längs Feld, z Höhe).</li>
@@ -18410,9 +18414,8 @@ renderObstacleList();
         <p>Sous <em>Données des mâts</em>, l’interrupteur <strong>Coordonnées MN95</strong> peut être activé. À saisir pour chaque côté :</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>E / N</strong> — position du <em>point d’appui du conducteur</em> (conducteur de retour généralement au mât, caténaire généralement à la console ou au portique).</li>
-          <li><strong>Z</strong> — altitude du <em>pied de mât</em> en m s.n.m. (NF02).</li>
         </ul>
-        <p>L’application en déduit : portée L = distance horizontale des deux points d’appui, DRS = Z − Δ (champ «Δ» dans la zone des coordonnées = pied de mât au-dessus du DRS, positif si le pied de mât est plus haut ; effectif seulement ici), hauteur d’appui = DRS + h<sub>1</sub> resp. h<sub>2</sub>. Ces champs sont verrouillés tant que l’interrupteur est activé.</p>
+        <p>L’application en déduit la portée L = distance horizontale des deux points d’appui (champ verrouillé tant que l’interrupteur est activé). La hauteur provient du <strong>DRS m s.n.m.</strong> (NF02) plus haut dans les données des mâts : hauteur d’appui = DRS + h<sub>1</sub> resp. h<sub>2</sub>. Facultativement, <strong>Δ pied de mât − DRS</strong> peut être saisi (positif si le pied de mât est plus haut) : pied de mât = DRS + Δ. Le calcul n’a pas besoin de Δ ; la mesure photo l’utilise, car elle mesure depuis le pied de mât.</p>
         <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Exports (menu «Exporter» dans la barre d’en-tête)</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>DXF 3D</strong> — lignes en mètres (AC1009/R12) : câble porteur resp. conducteur à T<sub>2</sub>, fil de contact, suspensions, câble porteur à T<sub>1</sub>, DRS et points de mesure. Avec coordonnées en E / N / H (MN95/NF02), sinon en local (x le long de la portée, z hauteur).</li>
@@ -18425,9 +18428,8 @@ renderObstacleList();
         <p>In <em>Dati dei pali</em> si può attivare l’interruttore <strong>Coordinate MN95</strong>. Da inserire per ogni lato:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>E / N</strong> — posizione del <em>punto d’aggancio del conduttore</em> (conduttore di ritorno di solito al palo, catenaria di solito alla mensola o al portale).</li>
-          <li><strong>Z</strong> — quota del <em>piede del palo</em> in m s.l.m. (RN02).</li>
         </ul>
-        <p>L’applicazione ne ricava: campata L = distanza orizzontale dei due punti d’aggancio, PRF = Z − Δ (campo «Δ» nella zona delle coordinate = piede del palo sopra il PRF, positivo se il piede è più alto; efficace solo qui), altezza d’aggancio = PRF + h<sub>1</sub> risp. h<sub>2</sub>. Questi campi sono bloccati finché l’interruttore è attivo.</p>
+        <p>L’applicazione ne ricava la campata L = distanza orizzontale dei due punti d’aggancio (campo bloccato finché l’interruttore è attivo). L’altezza proviene dal <strong>PRF m s.l.m.</strong> (RN02) più in alto nei dati dei pali: altezza d’aggancio = PRF + h<sub>1</sub> risp. h<sub>2</sub>. Facoltativamente si può inserire <strong>Δ piede palo − PRF</strong> (positivo se il piede è più alto): piede del palo = PRF + Δ. Il calcolo non richiede Δ; la misura foto lo usa, perché misura dal piede del palo.</p>
         <p style="font-weight:600;font-size:.82rem;margin:.6rem 0 .15rem">Esportazioni (menu «Esporta» nella barra in alto)</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>DXF 3D</strong> — linee in metri (AC1009/R12): filo portante risp. conduttore a T<sub>2</sub>, filo di contatto, ballerine, filo portante a T<sub>1</sub>, PRF e punti di misura. Con coordinate in E / N / H (MN95/RN02), altrimenti in locale (x lungo la campata, z altezza).</li>
@@ -18439,7 +18441,7 @@ renderObstacleList();
       <!-- ══ 6.11 Abspannabschnitt / 6.12 Abstandsprüfung ══ -->
       <div class="hb-lang hb-de">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.11 &nbsp;Abspannabschnitt (Reiter «Abschnitt»)</p>
-        <p>Im Reiter <strong>Abschnitt</strong> werden alle Masten eines Abschnitts in Reihenfolge erfasst — von Hand oder per <strong>CSV-Import</strong> (Vorlage im Reiter). Spalten: Mast, E, N (Aufhängepunkt LV95), Z Mastfuss, Δ Mastfuss-SOK, h über SOK, KM, optional L bis zum nächsten Mast. Die Kopfzeile wird erkannt (auch Y/X, Höhe, Punkt); Dezimalkomma und Tausendertrenner sind erlaubt.</p>
+        <p>Im Reiter <strong>Abschnitt</strong> werden alle Masten eines Abschnitts in Reihenfolge erfasst — von Hand oder per <strong>CSV-Import</strong> (Vorlage im Reiter). Spalten: Mast, E, N (Aufhängepunkt LV95), Z = SOK m ü. M., Δ Mastfuss − SOK (optional), h über SOK, KM, optional L bis zum nächsten Mast. Dateien im bisherigen Format mit «Z_Mastfuss» werden erkannt und umgerechnet (SOK = Z − Δ). Die Kopfzeile wird erkannt (auch Y/X, Höhe, Punkt); Dezimalkomma und Tausendertrenner sind erlaubt.</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li>Feldlänge L: aus den Koordinaten, sonst aus der KM-Differenz, sonst Eingabe.</li>
           <li>Berechnung wie im Einzelfeld: <em>ausgleichend</em> mit der Mittelspannweite Lm aller Felder (Formel wie unter Spannweite), <em>starr</em> je Feld mit eigener Länge, R-FL mit konstanter Zugkraft.</li>
@@ -18451,11 +18453,11 @@ renderObstacleList();
         <p style="font-size:.8rem;color:var(--muted);margin:0 0 .3rem">Zum Ausprobieren setzt <strong>«Beispiel laden»</strong> fünf Masten mit Koordinaten und zwei Strängen ein (Fahrleitung FL1 und Speiseleitung SPL, fiktive Lage).</p>
         <ol style="margin:.2rem 0 .5rem 1.2rem">
           <li><strong>Mastliste vorbereiten</strong> — «CSV-Vorlage» herunterladen und aus Vermessung oder Mastbild füllen, z. B.:
-            <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Mast;E;N;Z_Mastfuss;Delta_Mastfuss_SOK;h_ueber_SOK;KM;L_bis_naechster
-101;2600000.000;1200000.000;540.000;0.35;7.60;12.300;
-102;2600049.980;1200001.400;540.380;0.30;7.60;12.350;
-103;2600099.920;1200003.900;540.820;0.30;7.70;12.400;</pre>
-            E/N = Aufhängepunkt (LV95), Z = Mastfuss m ü. M., Δ = Mastfuss − SOK, h = Aufhängehöhe über SOK; L darf leer bleiben (aus Koordinaten bzw. KM).</li>
+            <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Mast;E;N;Z_SOK;Delta_Mastfuss_SOK;h_ueber_SOK;KM;L_bis_naechster
+101;2600000.000;1200000.000;539.650;0.35;7.60;12.300;
+102;2600049.980;1200001.400;540.080;0.30;7.60;12.350;
+103;2600099.920;1200003.900;540.520;;7.70;12.400;</pre>
+            E/N = Aufhängepunkt (LV95), Z = SOK m ü. M., Δ = Mastfuss − SOK (darf leer bleiben), h = Aufhängehöhe über SOK; L darf leer bleiben (aus Koordinaten bzw. KM).</li>
           <li><strong>Einlesen</strong> — «CSV importieren» (oder Masten mit «+ Mast» von Hand erfassen).</li>
           <li><strong>Leiter und Lastfall</strong> links wie gewohnt einstellen (System, Kombination/Reglage, T<sub>1</sub>/T<sub>2</sub>, Eis, Abnutzung); L<sub>m</sub> rechnet die App aus allen Feldern.</li>
           <li><strong>Prüfen</strong> — Feldtabelle (Durchhang, Zugkraft, tiefster Punkt, Abstandsprüfung) und Längsprofil; ein Klick öffnet das Feld im Diagramm für Messpunkte, Hindernisse, hf-Prüfung und PDF.</li>
@@ -18471,14 +18473,14 @@ renderObstacleList();
           <li><strong>Grenzen</strong>: im Modell nur die Leiter (keine Masten, Ausleger, Fundamente); ein Export zeigt einen Lastfall (T<sub>2</sub>).</li>
         </ul>
         <p style="font-weight:600;margin:.6rem 0 .2rem">Mehrere Stränge an denselben Masten</p>
-        <p>Ein Abschnitt kann bis zu fünf (höchstens acht) <strong>Stränge</strong> enthalten, z. B. Fahrleitung, Speiseleitung, Rückleiter und Erdseil an denselben Masten. Jeder Strang hat eigene Aufhängepunkte (E, N, h) und ein eigenes Leitersystem; die Masten (Name, Z Mastfuss, Δ, KM) sind gemeinsam.</p>
+        <p>Ein Abschnitt kann bis zu fünf (höchstens acht) <strong>Stränge</strong> enthalten, z. B. Fahrleitung, Speiseleitung, Rückleiter und Erdseil an denselben Masten. Jeder Strang hat eigene Aufhängepunkte (E, N, h) und ein eigenes Leitersystem; die Masten (Name, Z = SOK, Δ, KM) sind gemeinsam.</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>CSV mit Kennung</strong>: zusätzliche Spalte <em>Strang</em> vor <em>Mast</em>; jede Zeile ist ein Aufhängepunkt. Die CSV-Vorlage enthält zwei Stränge (FL1, SPL). Ohne Spalte Strang wird wie bisher ein einzelner Strang eingelesen. Weichen Z / Δ / KM beim gleichen Mast zwischen den Strängen ab, meldet die App die Masten.
-            <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Strang;Mast;E;N;Z_Mastfuss;Delta_Mastfuss_SOK;h_ueber_SOK;KM
-FL1;101;2600000.000;1200000.000;540.000;0.35;7.60;12.300
-FL1;102;2600049.980;1200001.400;540.380;0.30;7.60;12.350
-SPL;101;2600000.050;1199998.000;540.000;0.35;9.20;12.300
-SPL;102;2600050.030;1199999.400;540.380;0.30;9.20;12.350</pre></li>
+            <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Strang;Mast;E;N;Z_SOK;Delta_Mastfuss_SOK;h_ueber_SOK;KM
+FL1;101;2600000.000;1200000.000;539.650;0.35;7.60;12.300
+FL1;102;2600049.980;1200001.400;540.080;0.30;7.60;12.350
+SPL;101;2600000.050;1199998.000;539.650;0.35;9.20;12.300
+SPL;102;2600050.030;1199999.400;540.080;0.30;9.20;12.350</pre></li>
           <li><strong>Übersicht «Stränge»</strong>: je Strang Sichtbarkeit (Schalter), <strong>Farbe</strong>, Kennung, Rolle (Fahrleitung, Speiseleiter, Rückleiter, Erdseil / Schutzleiter, Andere), Leitersystem, Masten von–bis, Länge und Abstandsprüfung. «Wählen» macht einen Strang aktiv: Eingaben links, Masttabelle, Feldtabelle und Feld-Auswahl gelten dann für diesen Strang. System, Leiter, Zugkraft usw. merkt sich die App je Strang; T<sub>2</sub> und die Lastfälle gelten für alle. «+ Strang» fügt einen Strang mit denselben Masten hinzu.</li>
           <li><strong>Längsprofil</strong>: alle sichtbaren Stränge übereinander, jeder in seiner Farbe; der aktive Strang ist kräftiger gezeichnet (mit nur einem Strang: Temperaturfarbe von T<sub>2</sub>). Die übrigen Stränge rechnet die App im Hintergrund nach. Die Feld-Auswahl oben listet die Felder je Strang; eine Wahl wechselt auch den Strang.</li>
           <li><strong>Teilabschnitt</strong> (Mast von – bis): schränkt nur Anzeige und Export ein; die Berechnung (z. B. L<sub>m</sub>) nutzt immer den ganzen Abschnitt.</li>
@@ -18490,7 +18492,7 @@ SPL;102;2600050.030;1199999.400;540.380;0.30;9.20;12.350</pre></li>
       </div><!-- /hb-de -->
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.11 &nbsp;Canton de pose (onglet «Canton»)</p>
-        <p>Dans l’onglet <strong>Canton</strong>, tous les mâts d’un canton sont saisis dans l’ordre — à la main ou par <strong>import CSV</strong> (modèle dans l’onglet). Colonnes : mât, E, N (point d’appui MN95), Z pied de mât, Δ pied de mât-DRS, h sur DRS, KM, facultativement L jusqu’au mât suivant. L’en-tête est reconnu (aussi Y/X, hauteur, point) ; virgule décimale et séparateur de milliers admis.</p>
+        <p>Dans l’onglet <strong>Canton</strong>, tous les mâts d’un canton sont saisis dans l’ordre — à la main ou par <strong>import CSV</strong> (modèle dans l’onglet). Colonnes : mât, E, N (point d’appui MN95), Z = DRS m s.n.m., Δ pied de mât − DRS (facultatif), h sur DRS, KM, facultativement L jusqu’au mât suivant. Les fichiers à l’ancien format avec «Z_Mastfuss» sont reconnus et convertis (DRS = Z − Δ). L’en-tête est reconnu (aussi Y/X, hauteur, point) ; virgule décimale et séparateur de milliers admis.</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li>Longueur de portée L : selon les coordonnées, sinon la différence de KM, sinon saisie.</li>
           <li>Calcul comme pour la portée simple : <em>compensé</em> avec la portée moyenne Lm de toutes les portées, <em>rigide</em> par portée avec sa propre longueur, LC R avec force de traction constante.</li>
@@ -18502,11 +18504,11 @@ SPL;102;2600050.030;1199999.400;540.380;0.30;9.20;12.350</pre></li>
         <p style="font-size:.8rem;color:var(--muted);margin:0 0 .3rem">Pour essayer, <strong>«Charger un exemple»</strong> insère cinq mâts avec coordonnées et deux lignes (ligne de contact FL1 et feeder SPL, situation fictive).</p>
         <ol style="margin:.2rem 0 .5rem 1.2rem">
           <li><strong>Préparer la liste des mâts</strong> — télécharger le «Modèle CSV» et le remplir à partir du levé ou du plan des mâts, p. ex. :
-            <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Mast;E;N;Z_Mastfuss;Delta_Mastfuss_SOK;h_ueber_SOK;KM;L_bis_naechster
-101;2600000.000;1200000.000;540.000;0.35;7.60;12.300;
-102;2600049.980;1200001.400;540.380;0.30;7.60;12.350;
-103;2600099.920;1200003.900;540.820;0.30;7.70;12.400;</pre>
-            E/N = point de suspension (MN95), Z = pied de mât m s.n.m., Δ = pied de mât − DRS, h = hauteur de suspension sur DRS ; L peut rester vide (depuis les coordonnées ou le PK).</li>
+            <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Mast;E;N;Z_SOK;Delta_Mastfuss_SOK;h_ueber_SOK;KM;L_bis_naechster
+101;2600000.000;1200000.000;539.650;0.35;7.60;12.300;
+102;2600049.980;1200001.400;540.080;0.30;7.60;12.350;
+103;2600099.920;1200003.900;540.520;;7.70;12.400;</pre>
+            E/N = point de suspension (MN95), Z = DRS m s.n.m., Δ = pied de mât − DRS (peut rester vide), h = hauteur de suspension sur DRS ; L peut rester vide (depuis les coordonnées ou le PK).</li>
           <li><strong>Importer</strong> — «Importer CSV» (ou saisir les mâts avec «+ Mât»).</li>
           <li><strong>Conducteur et cas de charge</strong> à gauche comme d’habitude (système, combinaison/réglage, T<sub>1</sub>/T<sub>2</sub>, glace, usure) ; l’application calcule L<sub>m</sub> à partir de toutes les portées.</li>
           <li><strong>Vérifier</strong> — tableau des portées (flèche, traction, point bas, vérification des distances) et profil en long ; un clic ouvre la portée dans le diagramme pour points de mesure, obstacles, vérification hf et PDF.</li>
@@ -18522,14 +18524,14 @@ SPL;102;2600050.030;1199999.400;540.380;0.30;9.20;12.350</pre></li>
           <li><strong>Limites</strong> : seulement les conducteurs dans le modèle (pas de mâts, consoles, fondations) ; un export montre un cas de charge (T<sub>2</sub>).</li>
         </ul>
         <p style="font-weight:600;margin:.6rem 0 .2rem">Plusieurs lignes sur les mêmes mâts</p>
-        <p>Un canton peut contenir jusqu’à cinq (au plus huit) <strong>lignes</strong>, p. ex. ligne de contact, feeder, conducteur de retour et câble de terre sur les mêmes mâts. Chaque ligne a ses propres points de suspension (E, N, h) et son propre système de conducteur ; les mâts (nom, Z pied de mât, Δ, PK) sont communs.</p>
+        <p>Un canton peut contenir jusqu’à cinq (au plus huit) <strong>lignes</strong>, p. ex. ligne de contact, feeder, conducteur de retour et câble de terre sur les mêmes mâts. Chaque ligne a ses propres points de suspension (E, N, h) et son propre système de conducteur ; les mâts (nom, Z = DRS, Δ, PK) sont communs.</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>CSV avec identifiant</strong> : colonne supplémentaire <em>Strang</em> avant <em>Mast</em> ; chaque ligne est un point de suspension. Le modèle CSV contient deux lignes (FL1, SPL). Sans colonne Strang, une seule ligne est importée comme jusqu’ici. Si Z / Δ / PK diffèrent entre les lignes au même mât, l’application signale les mâts.
-            <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Strang;Mast;E;N;Z_Mastfuss;Delta_Mastfuss_SOK;h_ueber_SOK;KM
-FL1;101;2600000.000;1200000.000;540.000;0.35;7.60;12.300
-FL1;102;2600049.980;1200001.400;540.380;0.30;7.60;12.350
-SPL;101;2600000.050;1199998.000;540.000;0.35;9.20;12.300
-SPL;102;2600050.030;1199999.400;540.380;0.30;9.20;12.350</pre></li>
+            <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Strang;Mast;E;N;Z_SOK;Delta_Mastfuss_SOK;h_ueber_SOK;KM
+FL1;101;2600000.000;1200000.000;539.650;0.35;7.60;12.300
+FL1;102;2600049.980;1200001.400;540.080;0.30;7.60;12.350
+SPL;101;2600000.050;1199998.000;539.650;0.35;9.20;12.300
+SPL;102;2600050.030;1199999.400;540.080;0.30;9.20;12.350</pre></li>
           <li><strong>Aperçu «Lignes»</strong> : par ligne visibilité (interrupteur), <strong>couleur</strong>, identifiant, rôle (ligne de contact, feeder, conducteur de retour, câble de terre / de protection, autre), système de conducteur, mâts de–à, longueur et vérification des distances. «Choisir» rend une ligne active : la saisie à gauche, le tableau des mâts, le tableau des portées et la sélection de portée concernent alors cette ligne. Système, conducteur, traction, etc. sont mémorisés par ligne ; T<sub>2</sub> et les cas de charge valent pour toutes. «+ Ligne» ajoute une ligne avec les mêmes mâts.</li>
           <li><strong>Profil en long</strong> : toutes les lignes visibles superposées, chacune dans sa couleur ; la ligne active est dessinée plus épaisse (avec une seule ligne : couleur de température de T<sub>2</sub>). Les autres lignes sont recalculées en arrière-plan. La sélection de portée en haut liste les portées par ligne ; un choix change aussi de ligne.</li>
           <li><strong>Tronçon partiel</strong> (mât de – à) : limite seulement l’affichage et l’export ; le calcul (p. ex. L<sub>m</sub>) utilise toujours le canton entier.</li>
@@ -18541,7 +18543,7 @@ SPL;102;2600050.030;1199999.400;540.380;0.30;9.20;12.350</pre></li>
       </div><!-- /hb-fr -->
       <div class="hb-lang hb-it" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.11 &nbsp;Tratta di regolazione (scheda «Tratta»)</p>
-        <p>Nella scheda <strong>Tratta</strong> si inseriscono in ordine tutti i pali di una tratta — a mano o tramite <strong>importazione CSV</strong> (modello nella scheda). Colonne: palo, E, N (punto d’aggancio MN95), Z piede del palo, Δ piede palo-PRF, h sul PRF, KM, facoltativamente L fino al palo successivo. L’intestazione viene riconosciuta (anche Y/X, altezza, punto); ammessi virgola decimale e separatore delle migliaia.</p>
+        <p>Nella scheda <strong>Tratta</strong> si inseriscono in ordine tutti i pali di una tratta — a mano o tramite <strong>importazione CSV</strong> (modello nella scheda). Colonne: palo, E, N (punto d’aggancio MN95), Z = PRF m s.l.m., Δ piede palo − PRF (facoltativo), h sul PRF, KM, facoltativamente L fino al palo successivo. I file nel formato precedente con «Z_Mastfuss» vengono riconosciuti e convertiti (PRF = Z − Δ). L’intestazione viene riconosciuta (anche Y/X, altezza, punto); ammessi virgola decimale e separatore delle migliaia.</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li>Lunghezza della campata L: dalle coordinate, altrimenti dalla differenza di KM, altrimenti inserita.</li>
           <li>Calcolo come per la campata singola: <em>compensato</em> con la lunghezza media Lm di tutte le campate, <em>rigido</em> per campata con la propria lunghezza, LC R con forza di trazione costante.</li>
@@ -18553,11 +18555,11 @@ SPL;102;2600050.030;1199999.400;540.380;0.30;9.20;12.350</pre></li>
         <p style="font-size:.8rem;color:var(--muted);margin:0 0 .3rem">Per provare, <strong>«Carica esempio»</strong> inserisce cinque pali con coordinate e due linee (linea di contatto FL1 e alimentatore SPL, posizione fittizia).</p>
         <ol style="margin:.2rem 0 .5rem 1.2rem">
           <li><strong>Preparare l’elenco dei pali</strong> — scaricare il «Modello CSV» e compilarlo dal rilievo o dal piano dei pali, p. es.:
-            <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Mast;E;N;Z_Mastfuss;Delta_Mastfuss_SOK;h_ueber_SOK;KM;L_bis_naechster
-101;2600000.000;1200000.000;540.000;0.35;7.60;12.300;
-102;2600049.980;1200001.400;540.380;0.30;7.60;12.350;
-103;2600099.920;1200003.900;540.820;0.30;7.70;12.400;</pre>
-            E/N = punto di sospensione (MN95), Z = piede del palo m s.l.m., Δ = piede del palo − PRF, h = altezza di sospensione sopra PRF; L può restare vuoto (dalle coordinate o dal km).</li>
+            <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Mast;E;N;Z_SOK;Delta_Mastfuss_SOK;h_ueber_SOK;KM;L_bis_naechster
+101;2600000.000;1200000.000;539.650;0.35;7.60;12.300;
+102;2600049.980;1200001.400;540.080;0.30;7.60;12.350;
+103;2600099.920;1200003.900;540.520;;7.70;12.400;</pre>
+            E/N = punto di sospensione (MN95), Z = PRF m s.l.m., Δ = piede del palo − PRF (può restare vuoto), h = altezza di sospensione sopra PRF; L può restare vuoto (dalle coordinate o dal km).</li>
           <li><strong>Importare</strong> — «Importa CSV» (o inserire i pali con «+ Palo»).</li>
           <li><strong>Conduttore e caso di carico</strong> a sinistra come di consueto (sistema, combinazione/regolazione, T<sub>1</sub>/T<sub>2</sub>, ghiaccio, usura); L<sub>m</sub> viene calcolata da tutte le campate.</li>
           <li><strong>Verificare</strong> — tabella delle campate (freccia, tiro, punto più basso, verifica delle distanze) e profilo longitudinale; un clic apre la campata nel diagramma per punti di misura, ostacoli, verifica hf e PDF.</li>
@@ -18573,14 +18575,14 @@ SPL;102;2600050.030;1199999.400;540.380;0.30;9.20;12.350</pre></li>
           <li><strong>Limiti</strong>: nel modello solo i conduttori (niente pali, mensole, fondazioni); un export mostra un caso di carico (T<sub>2</sub>).</li>
         </ul>
         <p style="font-weight:600;margin:.6rem 0 .2rem">Più linee sugli stessi pali</p>
-        <p>Una tratta può contenere fino a cinque (al massimo otto) <strong>linee</strong>, p. es. linea di contatto, alimentatore, conduttore di ritorno e fune di terra sugli stessi pali. Ogni linea ha i propri punti di sospensione (E, N, h) e il proprio sistema di conduttori; i pali (nome, Z piede del palo, Δ, km) sono comuni.</p>
+        <p>Una tratta può contenere fino a cinque (al massimo otto) <strong>linee</strong>, p. es. linea di contatto, alimentatore, conduttore di ritorno e fune di terra sugli stessi pali. Ogni linea ha i propri punti di sospensione (E, N, h) e il proprio sistema di conduttori; i pali (nome, Z = PRF, Δ, km) sono comuni.</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>CSV con identificativo</strong>: colonna aggiuntiva <em>Strang</em> prima di <em>Mast</em>; ogni riga è un punto di sospensione. Il modello CSV contiene due linee (FL1, SPL). Senza colonna Strang viene importata una sola linea come finora. Se Z / Δ / km differiscono tra le linee allo stesso palo, l’app segnala i pali.
-            <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Strang;Mast;E;N;Z_Mastfuss;Delta_Mastfuss_SOK;h_ueber_SOK;KM
-FL1;101;2600000.000;1200000.000;540.000;0.35;7.60;12.300
-FL1;102;2600049.980;1200001.400;540.380;0.30;7.60;12.350
-SPL;101;2600000.050;1199998.000;540.000;0.35;9.20;12.300
-SPL;102;2600050.030;1199999.400;540.380;0.30;9.20;12.350</pre></li>
+            <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Strang;Mast;E;N;Z_SOK;Delta_Mastfuss_SOK;h_ueber_SOK;KM
+FL1;101;2600000.000;1200000.000;539.650;0.35;7.60;12.300
+FL1;102;2600049.980;1200001.400;540.080;0.30;7.60;12.350
+SPL;101;2600000.050;1199998.000;539.650;0.35;9.20;12.300
+SPL;102;2600050.030;1199999.400;540.080;0.30;9.20;12.350</pre></li>
           <li><strong>Panoramica «Linee»</strong>: per linea visibilità (interruttore), <strong>colore</strong>, identificativo, ruolo (linea di contatto, alimentatore, conduttore di ritorno, fune di terra / di protezione, altro), sistema di conduttori, pali da–a, lunghezza e verifica delle distanze. «Scegli» rende attiva una linea: i dati a sinistra, la tabella dei pali, la tabella delle campate e la selezione della campata valgono allora per questa linea. Sistema, conduttore, tiro ecc. sono memorizzati per linea; T<sub>2</sub> e i casi di carico valgono per tutte. «+ Linea» aggiunge una linea con gli stessi pali.</li>
           <li><strong>Profilo longitudinale</strong>: tutte le linee visibili sovrapposte, ognuna nel suo colore; la linea attiva è disegnata più spessa (con una sola linea: colore di temperatura di T<sub>2</sub>). Le altre linee vengono ricalcolate in background. La selezione della campata in alto elenca le campate per linea; una scelta cambia anche la linea.</li>
           <li><strong>Tratta parziale</strong> (palo da – a): limita solo visualizzazione ed export; il calcolo (p. es. L<sub>m</sub>) usa sempre la tratta intera.</li>

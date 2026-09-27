@@ -44,10 +44,10 @@ test('Feld öffnen: Einzelfeld rechnet exakt wie die Abschnittsübersicht', asyn
       abschnittFeldOeffnen(i);
       const c = calcState.c2_vem || calcState.c2;
       return { ab: [f.oben.sag, f.z.c2.H, f.L], ein: [c.sag, calcState.c2.H, calcState.L],
-               sok: getSokMumLeft(), soll: f.a.z - f.a.delta };
+               sok: getSokMumLeft(), soll: f.a.z };
     }, i);
     assert.deepEqual(r.ein, r.ab, `Feld ${i + 1}`);
-    assert.ok(Math.abs(r.sok - r.soll) < 1e-9, 'SOK = Z − Δ');
+    assert.ok(Math.abs(r.sok - r.soll) < 1e-9, 'SOK = Z');
   }
   assert.deepEqual(fehler, []);
   await kontext.close();
