@@ -268,7 +268,8 @@ test('Alle Checkboxen erscheinen als Schalter', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   const r = await seite.evaluate(() => {
     openLastfaelle();
-    const kaesten = [...document.querySelectorAll('input[type=checkbox]')].filter(el => el.offsetParent !== null);
+    // Ausnahme: Auswahlboxen in Listen (.auswahl) bleiben normale Kästchen
+    const kaesten = [...document.querySelectorAll('input[type=checkbox]:not(.auswahl)')].filter(el => el.offsetParent !== null);
     const falsch = kaesten.filter(el => {
       const st = getComputedStyle(el);
       // Schalter: eigener Stil (appearance none, breiter als hoch) oder versteckt mit .schalter daneben
@@ -467,6 +468,106 @@ test('«Bewegung reduzieren»: Systemwechsel ohne Animation', async () => {
     sysWaehlen('rfl'); const a = eigene(); openHf(); hfWert('typ', 'rfl'); return a + eigene();
   });
   assert.equal(n, 0);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Projektliste: Auswahl als normale Box; Kopfleiste kompakt mit «Teilen»', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    openProjectsModal(); saveCurrentCalc(); renderProjectList();
+    const box = document.querySelector('.proj-check');
+    const st = box && getComputedStyle(box);
+    const auswahl = box ? { klasse: box.classList.contains('auswahl'), appearance: st.appearance, quadratisch: Math.abs(parseFloat(st.width) - parseFloat(st.height)) < 1 } : null;
+    closeProjectsModal();
+    const kopf = document.querySelector('.header');
+    const teilen = kopf.querySelector('#share-btn');
+    const symbole = [...kopf.querySelectorAll('.header-symbol')].map(b => ({ titel: !!b.title, text: b.textContent.trim() }));
+    teilen.click();
+    const menu = document.getElementById('share-menu');
+    const m = menu.getBoundingClientRect();
+    const offen = getComputedStyle(menu).display !== 'none' && m.left >= 0 && m.right <= document.documentElement.clientWidth;
+    closeShareMenu();
+    return { auswahl, teilenImKopf: !!teilen, teilenImDiagramm: !!document.querySelector('.canvas-card #share-btn'), symbole, offen };
+  });
+  assert.deepEqual(r.auswahl, { klasse: true, appearance: 'auto', quadratisch: true });
+  assert.equal(r.teilenImKopf, true);
+  assert.equal(r.teilenImDiagramm, false);
+  assert.equal(r.symbole.length, 4);
+  for (const b of r.symbole) assert.deepEqual(b, { titel: true, text: '' });
+  assert.equal(r.offen, true, 'Menü «Teilen» offen und im Bild');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Handy: Menü «Teilen» bleibt im Bild; im Vollbild erreichbar', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const r = await seite.evaluate(() => {
+    document.getElementById('share-btn').click();
+    const m = document.getElementById('share-menu').getBoundingClientRect();
+    const handy = m.left >= 0 && m.right <= document.documentElement.clientWidth;
+    closeShareMenu();
+    toggleCanvasFullscreen();
+    const fs = document.getElementById('share-btn-fs');
+    const sichtbar = fs.getClientRects().length > 0;
+    fs.click();
+    const menu = document.getElementById('share-menu');
+    const oben = parseInt(getComputedStyle(menu).zIndex, 10) > 1000 && getComputedStyle(menu).display !== 'none';
+    closeShareMenu(); toggleCanvasFullscreen();
+    return { handy, sichtbar, oben, breite: document.documentElement.scrollWidth, W: document.documentElement.clientWidth };
+  });
+  assert.deepEqual(r, { handy: true, sichtbar: true, oben: true, breite: r.W, W: r.W });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Diagramm: Schalter «Fahrdraht + hf», Prüfzeile im Ergebnis, Speichern', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    const zeile = () => { const el = document.getElementById('hf-pruefzeile'); return el.getClientRects().length ? el.className : 'aus'; };
+    const vorher = zeile();
+    const yHi0 = view.yHi, sc0 = view.scaleY;
+    setDiagrammHf(true);
+    const erweitert = view.scaleY < sc0;                    // Ausschnitt reicht jetzt bis zum Fahrdraht
+    // Aufhängung 7.40 m, sh 2.40 → Fahrdraht um 5.0 m: innerhalb 4.965 … 5.995
+    document.getElementById('h1').value = '7.40'; document.getElementById('h2').value = '7.40'; berechnen();
+    const ok = zeile();
+    document.getElementById('h1').value = '7.00'; document.getElementById('h2').value = '7.00'; berechnen();
+    const nok = zeile(), text = document.getElementById('hf-pruefzeile').textContent;
+    const stand = getProjectState();
+    setDiagrammHf(false);
+    const legEl = (sysWaehlen('el'), document.getElementById('leg-hf-item').getClientRects().length > 0);
+    const zeileEl = zeile();
+    setSysMode('nfl');
+    return { vorher, erweitert, ok, nok, unter: /unter hf/.test(text), gespeichert: stand.diagrammHf, legEl, zeileEl };
+  });
+  assert.equal(r.vorher, 'aus');
+  assert.equal(r.erweitert, true);
+  assert.equal(r.ok, 'hf-pruefzeile ok');
+  assert.equal(r.nok, 'hf-pruefzeile nok');
+  assert.equal(r.unter, true);
+  assert.equal(r.gespeichert, true);
+  assert.equal(r.legEl, false, 'Einzelleiter: kein Schalter');
+  assert.equal(r.zeileEl, 'aus');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Zeichnung: hf-Beschriftungen überlagern sich nicht; Höhenleiter erklärt die Leserichtung', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    setCanvasView('zeichnung'); setDrawingHf(true);
+    const texte = [...document.querySelectorAll('#scale-svg-container svg text')].filter(t => /^hf(min|max) = /.test(t.textContent));
+    const [a, b] = texte.map(t => t.getBoundingClientRect());
+    const getrennt = a && b && (a.bottom <= b.top + 0.5 || b.bottom <= a.top + 0.5);
+    const pruef = [...document.querySelectorAll('#scale-svg-container svg text')].find(t => /hf(min|max)/.test(t.textContent) && /Fd T2/.test(t.textContent));
+    setCanvasView('diagramm');
+    openHf();
+    const svg = document.querySelector('#hf-erg .hf-svg').textContent;
+    closeHf();
+    return { anzahl: texte.length, getrennt, pruef: !!pruef, auf: /↑ aufgebaut ab GfA/.test(svg), ab: /↓ abgezogen von 6.200 m/.test(svg) };
+  });
+  assert.deepEqual(r, { anzahl: 2, getrennt: true, pruef: true, auf: true, ab: true });
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
