@@ -364,7 +364,9 @@ test('Zeichnung: «Kettenwerk» ohne Masten bis SOK; hf-Band mit Prüfung, PDF, 
     setDrawingHf(false); setProjectState(st);
     const geladen = document.getElementById('draw-hf').checked;
     setSysMode('el');
-    const elVersteckt = document.querySelector('.draw-hf-teil').style.display === 'none';
+    const cbEl = document.getElementById('draw-hf');
+    const elVersteckt = cbEl.disabled && !cbEl.checked && cbEl.closest('label').classList.contains('hf-gesperrt')
+      && document.querySelector('.draw-hf-teil').style.display !== 'none';
     setSysMode('nfl'); setCanvasView('diagramm');
     return { sokLinie: />SOK</.test(mitSok), kwSok: />SOK</.test(nurKw), kwBruch: nurKw.includes('SOK ↓'),
              band: band.includes('hf<tspan') && /[✓✗]/.test(band), pdf: pdf.includes('hf<tspan'),
@@ -572,10 +574,17 @@ test('Diagramm: Schalter «Fahrdraht + hf», Prüfzeile im Ergebnis, Speichern',
     const nok = zeile(), text = document.getElementById('hf-pruefzeile').textContent;
     const stand = getProjectState();
     setDiagrammHf(false);
-    const legEl = (sysWaehlen('el'), document.getElementById('leg-hf-item').getClientRects().length > 0);
+    setDiagrammHf(true);
+    sysWaehlen('el');
+    const cbD = document.getElementById('diagramm-hf'), hfBtn = document.getElementById('hf-btn');
+    const legEl = { sichtbar: document.getElementById('leg-hf-item').getClientRects().length > 0,
+      gesperrt: cbD.disabled && !cbD.checked, knopf: hfBtn.disabled, titel: hfBtn.title };
+    setSysMode('nfl');
+    const zurueck = { an: cbD.checked, frei: !cbD.disabled && !hfBtn.disabled };
+    setDiagrammHf(false); sysWaehlen('el');
     const zeileEl = zeile();
     setSysMode('nfl');
-    return { vorher, erweitert, ok, nok, unter: /unter hf/.test(text), gespeichert: stand.diagrammHf, legEl, zeileEl };
+    return { vorher, erweitert, ok, nok, unter: /unter hf/.test(text), gespeichert: stand.diagrammHf, legEl, zurueck, zeileEl };
   });
   assert.equal(r.vorher, 'aus');
   assert.equal(r.erweitert, true);
@@ -583,7 +592,8 @@ test('Diagramm: Schalter «Fahrdraht + hf», Prüfzeile im Ergebnis, Speichern',
   assert.equal(r.nok, 'hf-pruefzeile nok');
   assert.equal(r.unter, true);
   assert.equal(r.gespeichert, true);
-  assert.equal(r.legEl, false, 'Einzelleiter: kein Schalter');
+  assert.deepEqual(r.legEl, { sichtbar: true, gesperrt: true, knopf: true, titel: 'Einzelleiter: kein Fahrdraht — hf_min / hf_max nur bei N-FL oder R-FL.' }, 'Einzelleiter: Schalter und Knopf ausgegraut');
+  assert.deepEqual(r.zurueck, { an: true, frei: true }, 'zurück zu N-FL: Wahl bleibt, wieder bedienbar');
   assert.equal(r.zeileEl, 'aus');
   assert.deepEqual(fehler, []);
   await kontext.close();

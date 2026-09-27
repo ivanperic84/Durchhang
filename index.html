@@ -974,9 +974,13 @@ button.header-manual-link {
   white-space: nowrap;
   flex-shrink: 0;
 }
-button.header-manual-link:hover {
+button.header-manual-link:hover:not(:disabled) {
   background: color-mix(in srgb, var(--primary) 12%, transparent);
 }
+button.header-manual-link:disabled { opacity: .4; cursor: not-allowed; }
+/* hf-Schalter beim Einzelleiter (kein Fahrdraht) */
+.schalter-zeile.hf-gesperrt { opacity: .45; cursor: not-allowed; }
+.schalter-zeile.hf-gesperrt input { cursor: not-allowed; }
 
 /* ── Tooltip (shown during drag) ── */
 #drag-tooltip {
@@ -2968,7 +2972,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.16.3';
+const APP_VERSION = 'v3.16.4';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -6025,8 +6029,8 @@ function updateSysModeUI(mode) {
   const isNfl = mode === 'nfl';
   const isRfl = mode === 'rfl';
   const isEl  = mode === 'el';
-  // hf-Band in der Zeichnung nur bei Kettenwerk (Fahrdraht)
-  document.querySelectorAll('.draw-hf-teil').forEach(el => zeigeElement(el, !isEl));
+  // hf nur bei Kettenwerk (Fahrdraht) — beim Einzelleiter ausgegraut
+  hfElSperre();
 
   // 3-Punkte-Modus beim Moduswechsel zurücksetzen
   if (mode3pt) {
@@ -8793,17 +8797,38 @@ async function hfNachfrage() {
 let diagrammHf = false;   // Schalter in der Legende: Fahrdraht + hf-Band im Diagramm
 function setDiagrammHf(an) {
   diagrammHf = !!an;
-  const cb = document.getElementById('diagramm-hf');
-  if (cb) cb.checked = diagrammHf;
+  hfElSperre();
   quickDraw();
   hfPruefzeile();
   hHfHinweis();
 }
+// Einzelleiter hat keinen Fahrdraht: Knopf «hf» in der Kopfleiste und die
+// Schalter in Diagramm und Zeichnung ausgrauen (statt ausblenden). Die
+// gespeicherte Wahl bleibt; der Schalter zeigt beim Einzelleiter nur «aus».
+function hfElSperre() {
+  const isEl = sysMode === 'el';
+  const titel = isEl ? t('hf.el.gesperrt') : null;
+  const btn = document.getElementById('hf-btn');
+  if (btn) { btn.disabled = isEl; btn.title = titel ?? t('hf.titel'); }
+  // Beim Laden kann die Funktion vor den Deklarationen laufen (let/const)
+  let dia = false, zei = false;
+  try { dia = diagrammHf; zei = Ansicht.zeichnungHf; } catch { /* noch nicht geladen */ }
+  for (const [id, an] of [['diagramm-hf', dia], ['draw-hf', zei]]) {
+    const cb = document.getElementById(id);
+    if (!cb) continue;
+    cb.disabled = isEl;
+    cb.checked = !isEl && an;
+    const lbl = cb.closest('label');
+    if (lbl) {
+      lbl.classList.toggle('hf-gesperrt', isEl);
+      if (isEl) lbl.title = titel;
+      else lbl.title = id === 'draw-hf' ? t('draw.hf.titel') : '';
+    }
+  }
+}
 // Prüfzeile unter den Ergebnissen: Fahrdraht T₂ gegen hf_min / hf_max
 function hfPruefzeile() {
   const el = document.getElementById('hf-pruefzeile');
-  const leg = document.getElementById('leg-hf-item');
-  if (leg) zeigeElement(leg, sysMode !== 'el');
   if (!el) return;
   let aktiv = false;
   // Nur solange im Diagramm «Fahrdraht Soll/Ist + hf» eingeschaltet ist (dann zuoberst im Ergebnis)
@@ -11416,8 +11441,7 @@ var drawingHf         = false; // hf_min / hf_max als Band in der Zeichnung (Wer
 
 function setDrawingHf(an) {
   drawingHf = !!an;
-  const cb = document.getElementById('draw-hf');
-  if (cb) cb.checked = drawingHf;
+  if (typeof hfElSperre === 'function') hfElSperre();
   refreshScaleViewIfActive();
   if (typeof hHfHinweis === 'function') hHfHinweis();
 }
@@ -14179,6 +14203,7 @@ const LANG = {
     'hf.ja': 'Ja',
     'hf.nein': 'Nein',
     'hf.quelle': 'Quelle: SBB-Excel «Durchhang 2026», Blätter hfmin_v11_D / hfmax_v11_D (AB-EBV 2024); Regelungen 0161.1010.0011, 0161.1010.0012, 0161.1010.0201; Zeichnung 0162.1020.0006.',
+    'hf.el.gesperrt': 'Einzelleiter: kein Fahrdraht — hf_min / hf_max nur bei N-FL oder R-FL.',
     'hf.msg.el': 'Einzelleiter: keine Fahrdrahthöhe — bitte N-FL oder R-FL wählen.',
     'hf.fest': 'Aus der Durchhang-Berechnung (fest):',
     'hf.fest.link': 'Eingaben ändern →',
@@ -14992,6 +15017,7 @@ const LANG = {
     'hf.ja': 'Oui',
     'hf.nein': 'Non',
     'hf.quelle': 'Source : Excel CFF « Durchhang 2026 », feuilles hfmin_v11_D / hfmax_v11_D (DE-OCF 2024) ; règlements 0161.1010.0011, 0161.1010.0012, 0161.1010.0201 ; plan 0162.1020.0006.',
+    'hf.el.gesperrt': 'Conducteur simple : pas de fil de contact — hf_min / hf_max seulement en LC N ou LC R.',
     'hf.msg.el': 'Conducteur simple : pas de hauteur du fil de contact — choisir LC N ou LC R.',
     'hf.fest': 'Repris du calcul de flèche (fixe) :',
     'hf.fest.link': 'Modifier les données →',
@@ -15805,6 +15831,7 @@ const LANG = {
     'hf.ja': 'Sì',
     'hf.nein': 'No',
     'hf.quelle': 'Fonte: Excel FFS «Durchhang 2026», fogli hfmin_v11_D / hfmax_v11_D (DE-OFerr 2024); regolamenti 0161.1010.0011, 0161.1010.0012, 0161.1010.0201; disegno 0162.1020.0006.',
+    'hf.el.gesperrt': 'Conduttore singolo: nessun filo di contatto — hf_min / hf_max solo con LC N o LC R.',
     'hf.msg.el': 'Conduttore singolo: nessuna altezza del filo di contatto — scegliere LC N o LC R.',
     'hf.fest': 'Dal calcolo della freccia (fisso):',
     'hf.fest.link': 'Modifica i dati →',
@@ -15889,6 +15916,7 @@ function setLang(lang) {
   const _thBtn = document.getElementById('thema-btn');
   if (_thBtn) _thBtn.title = t('ui.thema.' + (document.documentElement.dataset.themaWahl || 'auto'));
   if (typeof renderObstacleList === 'function') renderObstacleList();
+  if (typeof hfElSperre === 'function') hfElSperre();
   if (document.getElementById('hf-modal')?.classList.contains('open')) renderHf();
 
   // Hinweis: Der Handbuch-Knopf im Header ist reines Symbol ohne Textlabel.
