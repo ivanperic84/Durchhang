@@ -719,3 +719,21 @@ test('Systemhöhe: zulässiger Bereich aus hf, Übernahme per Knopf und Rückfra
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Exporte mit hf: Berechnungs-PDF mit Prüfung, Zeichnungs-PDF mit Version, DXF-Layer auch bei Diagramm-Schalter', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await fensterAbfangen(seite);
+  await seite.evaluate(() => { setDiagrammHf(true); });
+  const [dl] = await Promise.all([seite.waitForEvent('download'), seite.evaluate(() => exportDxf())]);
+  const dxf = require('fs').readFileSync(await dl.path(), 'utf8');
+  const r = await seite.evaluate(() => {
+    window.__fenster.length = 0; pdfExport(); setCanvasView('zeichnung'); pdfExportDrawing();
+    return window.__fenster.map(f => f.html);
+  });
+  assert.match(dxf, /\nHF_MIN\n/); assert.match(dxf, /\nHF_MAX\n/);
+  assert.match(r[0], /Fahrdraht Soll an den Stützpunkten/);
+  assert.match(r[0], /zulässig 1\.01 … 2\.03 m/);
+  assert.match(r[1], new RegExp('Durchhang ' + (await seite.evaluate(() => APP_VERSION)).replace(/\./g, '\\.')));
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});

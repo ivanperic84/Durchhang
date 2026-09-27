@@ -2972,7 +2972,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.15.1';
+const APP_VERSION = 'v3.15.2';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -10509,6 +10509,18 @@ ${(isNFL || isEl) ? `
   ${tr('T_max', c1.T_max, c2.T_max, 'N', 1)}
 </table>` : ''}
 
+${(() => {   // Fahrdrahthöhe: gleiche Prüfung wie die Prüfzeile unter den Ergebnissen
+  const el = document.getElementById('hf-pruefzeile');
+  if (!el || !el.getClientRects().length) return '';
+  const g = hfGrenzenM(), b = shGrenzen();
+  const ok = el.classList.contains('ok');
+  return `
+<h2 class="green">${t('hf.titel')}</h2>
+<div class="step"><p><strong style="color:${ok ? '#2f7a3d' : '#dc2626'}">${ok ? '✓' : '✗'}</strong> ${el.querySelector('span:nth-child(2)').innerHTML}</p>
+${b && b.moeglich ? `<p class="sub">${t('par.sh')}: ${t('par.sh.hf').replace('{min}', b.min.toFixed(2)).replace('{max}', b.max.toFixed(2))} (${t('par.sh.hf.titel')})</p>` : ''}
+<p class="sub">hf<sub>min</sub> = ${g.min.toFixed(3)} m · hf<sub>max</sub> = ${g.max.toFixed(3)} m — ${t('hf.pdf.quelle.kurz')}</p></div>`;
+})()}
+
 ${hasAnyProbe ? `
 <!-- ── Messpunkte ── -->
 <h2 class="green">${t('pdf.messpunkte')}</h2>
@@ -11281,7 +11293,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
   <rect x="0" y="0" width="${VW}" height="${titleH}" fill="#f8f9fa"/>
   <line x1="0" y1="${titleH}" x2="${VW}" y2="${titleH}" stroke="#d2d2d2" stroke-width="0.3"/>
   <text x="3" y="7.8" font-size="4.2" font-weight="700" fill="#212121">${mainTitle}</text>
-  <text x="${VW-3}" y="7.8" font-size="2.2" text-anchor="end" fill="#bbb">${dateS}</text>
+  <text x="${VW-3}" y="7.8" font-size="2.2" text-anchor="end" fill="#bbb">Durchhang ${APP_VERSION}  ·  ${dateS}</text>
   ${_nameLine ? `<text x="3" y="12.5" font-size="2.7" fill="#555">${_nameLine}</text>` : ''}
   <text x="3" y="${_nameLine ? '17.5' : '13'}" font-size="2.45" fill="#888">${_paramLine}</text>` : '';
 
@@ -12653,8 +12665,8 @@ function exportDxf() {
     linien.push({ layer: 'MAST', punkte: [P(L, 0), P(L, h2)] });
   }
   if (hasSok) linien.push({ layer: 'SOK', punkte: [P(0, 0), P(L, 0)] });
-  // hf_min / hf_max als Linien über SOK, wenn in der Zeichnung eingeblendet
-  const hfZ = Ansicht.zeichnungHf ? Ansicht._hfFuerZeichnung() : null;
+  // hf_min / hf_max als Linien über SOK, wenn in Zeichnung oder Diagramm eingeblendet
+  const hfZ = (Ansicht.zeichnungHf || diagrammHf) ? hfGrenzenM() : null;
   if (hfZ && !hfZ.fehler) {
     linien.push({ layer: 'HF_MIN', punkte: [P(0, hfZ.min), P(L, hfZ.min)] });
     linien.push({ layer: 'HF_MAX', punkte: [P(0, hfZ.max), P(L, hfZ.max)] });
@@ -13345,6 +13357,7 @@ const LANG = {
     'par.sh.hf': 'zulässig {min} … {max} m',
     'par.sh.hf.knopf': '→ {v} m übernehmen',
     'par.sh.hf.titel': 'Aus hf_min / hf_max: Fahrdraht-Solllage h − sh an beiden Stützpunkten im Bereich',
+    'hf.pdf.quelle.kurz': 'Werte aus der Ansicht «hf min/max» (AB-EBV 2024, Art. 5.2.1/5.2.2).',
     'par.sh.hf.keins': 'Kein sh passt: h<sub>1</sub>/h<sub>2</sub> liegen zu weit auseinander für hf<sub>min</sub>/hf<sub>max</sub>.',
     'par.sh.frage.titel': 'Systemhöhe anpassen?',
     'par.sh.frage': 'Die Systemhöhe sh = {sh} m liegt ausserhalb des Bereichs {min} … {max} m, der sich aus hf_min / hf_max ergibt (Fahrdraht-Solllage h − sh an den Stützpunkten). Auf {v} m anpassen?',
@@ -14153,6 +14166,7 @@ const LANG = {
     'par.sh.hf': 'admissible {min} … {max} m',
     'par.sh.hf.knopf': '→ reprendre {v} m',
     'par.sh.hf.titel': 'Selon hf_min / hf_max : position théorique du fil de contact h − sh aux deux supports dans la plage',
+    'hf.pdf.quelle.kurz': 'Valeurs de la vue « hf min/max » (DE-OCF 2024, art. 5.2.1/5.2.2).',
     'par.sh.hf.keins': 'Aucun sh ne convient : h<sub>1</sub>/h<sub>2</sub> sont trop différents pour hf<sub>min</sub>/hf<sub>max</sub>.',
     'par.sh.frage.titel': 'Adapter la hauteur du système ?',
     'par.sh.frage': 'La hauteur du système sh = {sh} m est hors de la plage {min} … {max} m résultant de hf_min / hf_max (position théorique du fil de contact h − sh aux supports). Adapter à {v} m ?',
@@ -14961,6 +14975,7 @@ const LANG = {
     'par.sh.hf': 'ammessa {min} … {max} m',
     'par.sh.hf.knopf': '→ riprendere {v} m',
     'par.sh.hf.titel': 'Da hf_min / hf_max: posizione teorica del filo di contatto h − sh ai due sostegni nel campo',
+    'hf.pdf.quelle.kurz': 'Valori dalla vista «hf min/max» (DE-OFerr 2024, art. 5.2.1/5.2.2).',
     'par.sh.hf.keins': 'Nessun sh adatto: h<sub>1</sub>/h<sub>2</sub> troppo diversi per hf<sub>min</sub>/hf<sub>max</sub>.',
     'par.sh.frage.titel': 'Adattare l’altezza del sistema?',
     'par.sh.frage': 'L’altezza del sistema sh = {sh} m è fuori dal campo {min} … {max} m risultante da hf_min / hf_max (posizione teorica del filo di contatto h − sh ai sostegni). Adattare a {v} m?',
