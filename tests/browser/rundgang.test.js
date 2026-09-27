@@ -475,7 +475,7 @@ test('«Bewegung reduzieren»: Systemwechsel ohne Animation', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url, { reducedMotion: 'reduce' });
   const n = await seite.evaluate(() => {
     const eigene = () => document.getAnimations().filter(a => a.constructor === Animation).length;   // ohne CSS-Farbübergänge
-    sysWaehlen('rfl'); return eigene();
+    sysWaehlen('rfl'); document.getElementById('view-seg-zeichnung').click(); return eigene();
   });
   assert.equal(n, 0);
   assert.deepEqual(fehler, []);
@@ -570,7 +570,7 @@ test('Zeichnung: hf-Beschriftungen überlagern sich nicht; Höhenleiter erklärt
     const texte = [...document.querySelectorAll('#scale-svg-container svg text')].filter(t => /^hf(min|max) = /.test(t.textContent));
     const [a, b] = texte.map(t => t.getBoundingClientRect());
     const getrennt = a && b && (a.bottom <= b.top + 0.5 || b.bottom <= a.top + 0.5);
-    const pruef = [...document.querySelectorAll('#scale-svg-container svg text')].find(t => /hf(min|max)/.test(t.textContent) && /Fd T2/.test(t.textContent));
+    const pruef = [...document.querySelectorAll('#scale-svg-container svg text')].find(t => /Solllage/.test(t.textContent) && /Soll 4\.60 \/ 4\.60 m · Ist T2/.test(t.textContent));
     setCanvasView('diagramm');
     openHf();
     const svg = document.querySelector('#hf-erg .hf-svg').textContent;
@@ -618,4 +618,68 @@ test('Schalter: Knopf bleibt im Schalter (Maus und Touch, ein und aus)', async (
     assert.deepEqual(fehler, []);
     await kontext.close();
   }
+});
+
+test('hf-Prüfung: Soll-Fahrdrahthöhe an den Stützpunkten (h − sh), Ist bei T2 nur Info', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    setDiagrammHf(true);
+    const zeile = () => document.getElementById('hf-pruefzeile');
+    // h1 = h2 = 7.40, sh 2.40 → Soll 5.00 m: innerhalb 4.965 … 5.995; Ist bei T2 (−20 °C) liegt höher
+    document.getElementById('h1').value = '7.40'; document.getElementById('h2').value = '7.40'; berechnen();
+    const a = { klasse: zeile().className, text: zeile().textContent.replace(/\s+/g, ' ') };
+    // Ungleiche Höhen: rechts 8.50 → Soll 6.10 m > hf_max
+    document.getElementById('h2').value = '8.50'; berechnen();
+    const b = { klasse: zeile().className, text: zeile().textContent.replace(/\s+/g, ' ') };
+    return { a, b };
+  });
+  assert.equal(r.a.klasse, 'hf-pruefzeile ok');
+  assert.match(r.a.text, /Fahrdraht Soll an den Stützpunkten \(h − sh\) 5\.00 \/ 5\.00 m über SOK — innerhalb/);
+  assert.match(r.a.text, /Ist-Lage bei T2: .* \(Info/);
+  assert.equal(r.b.klasse, 'hf-pruefzeile nok');
+  assert.match(r.b.text, /5\.00 \/ 6\.10 m über SOK — über hfmax/);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('«H Ts» gesperrt, solange die Reglage der Kombination gilt; ohne Reglage frei', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    const el = document.getElementById('tension'), hw = document.getElementById('tension-reglage-hw');
+    const zustand = () => ({ gesperrt: el.readOnly, hinweis: hw.getClientRects().length > 0 });
+    const out = { nfl: zustand() };
+    setSysMode('rfl'); out.rfl = zustand();
+    setSysMode('nfl');
+    document.getElementById('preset-select').value = ''; activePresetRef = null; activePresetP = null; berechnen(); out.frei = zustand();
+    toggle3pt(); out.dreiPunkte = zustand(); toggle3pt();
+    out.hwText = hw.textContent;
+    return out;
+  });
+  assert.deepEqual(r.nfl, { gesperrt: true, hinweis: true });
+  assert.deepEqual(r.rfl, { gesperrt: true, hinweis: true });
+  assert.deepEqual(r.frei, { gesperrt: false, hinweis: false });
+  assert.deepEqual(r.dreiPunkte, { gesperrt: true, hinweis: false });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Wechsel Diagramm / Zeichnung / Abschnitt / Foto: Höhe gleitet, Inhalt blendet ein', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    const eigene = () => document.getAnimations().filter(a => a.constructor === Animation);
+    const karte = document.querySelector('.canvas-card');
+    document.getElementById('view-seg-zeichnung').click();
+    const z = { anim: eigene().length, hoehe: eigene().some(a => a.effect?.target === karte), aktiv: document.getElementById('view-seg-zeichnung').classList.contains('active') };
+    eigene().forEach(a => a.finish());
+    document.getElementById('view-seg-diagramm').click();
+    const d = { anim: eigene().length > 0, aktiv: document.getElementById('view-seg-diagramm').classList.contains('active') };
+    eigene().forEach(a => a.finish());
+    return { z, d };
+  });
+  assert.ok(r.z.anim >= 2);
+  assert.equal(r.z.hoehe, true);
+  assert.equal(r.z.aktiv, true);
+  assert.deepEqual(r.d, { anim: true, aktiv: true });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
 });
