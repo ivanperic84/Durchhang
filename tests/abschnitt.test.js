@@ -166,3 +166,12 @@ test('Einzelleiter über einem Hindernis: Lage automatisch, Abstand Leiter − O
   const e = A.abstandHindernis(hoehe, unten, false, L, true);
   assert.ok(Math.abs(e.abstand - Math.min(hoehe(10) - 6.3, hoehe(32.8) - 6.2)) < 1e-9);
 });
+
+test('Beispielabschnitt: 5 Masten mit Koordinaten, Felder 45–50 m, SOK je Mast', () => {
+  const m = A.beispielMasten();
+  assert.equal(m.length, 5);
+  const L = A.feldLaengen(m);
+  assert.deepEqual(L.map(f => f.quelle), ['koord', 'koord', 'koord', 'koord']);
+  L.forEach(f => assert.ok(f.L > 44.9 && f.L < 50.1, String(f.L)));
+  m.forEach(x => assert.ok(A.mastSok(x) !== null));
+});

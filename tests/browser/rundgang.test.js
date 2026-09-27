@@ -356,6 +356,134 @@ test('Zeichnung folgt dem Dunkelmodus, PDF bleibt hell, Texte übersetzt', async
   await kontext.close();
 });
 
+test('Handbuch: Kapitel links mit aktueller Stelle, Suche markiert und springt, Handy-Menü', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  // Bewegung reduziert: Sprünge ohne Animation, damit der Test nicht auf das Scrollen wartet
+  await seite.emulateMedia({ reducedMotion: 'reduce' });
+  await seite.evaluate(() => openHandbuch());
+  const r = await seite.evaluate(async () => {
+    const warte = ms => new Promise(res => setTimeout(res, ms));
+    const aktiv = () => document.querySelector('#hb-nav a.aktiv .hb-nav-nr')?.textContent;
+    const nrn = _hbKapitel.map(k => k.nr);
+    const start = aktiv();
+    // Klick auf 6.12 scrollt den Text dorthin, Liste markiert 6.12, Kapitel 6 aufgeklappt
+    const text = document.getElementById('hb-text');
+    text.style.scrollBehavior = 'auto';
+    _hbKapitel.find(k => k.nr === '6.12').link.click();
+    await warte(700);
+    const nachKlick = { aktiv: aktiv(), offen: document.querySelector('.hb-nav-k.offen > a .hb-nav-nr')?.textContent };
+    // Suche
+    const feld = document.getElementById('hb-suche');
+    feld.value = 'Reglage'; hbSuchen();
+    const n = _hbTreffer.length, zahl = document.getElementById('hb-such-zahl').textContent;
+    const aktuell = document.querySelectorAll('mark.hb-treffer.aktuell').length;
+    hbTrefferGehe(1);
+    const zahl2 = document.getElementById('hb-such-zahl').textContent;
+    const badges = [...document.querySelectorAll('.hb-nav-zahl:not([hidden])')].length;
+    feld.value = 'xyzxyz'; hbSuchen();
+    const keine = document.getElementById('hb-such-zahl').textContent;
+    feld.value = ''; hbSuchen();
+    const rest = document.querySelectorAll('mark.hb-treffer').length;
+    // Sprache: Liste neu in FR
+    setLang('fr');
+    const fr = _hbKapitel.find(k => k.nr === '9')?.titel;
+    const ph = feld.placeholder;
+    setLang('de');
+    return { nrn, start, nachKlick, n, zahl, aktuell, zahl2, badges, keine, rest, fr, ph };
+  });
+  assert.ok(r.nrn.includes('1') && r.nrn.includes('6.14') && r.nrn.includes('9'), r.nrn.join(' '));
+  assert.equal(r.start, '1');
+  assert.deepEqual(r.nachKlick, { aktiv: '6.12', offen: '6' });
+  assert.ok(r.n > 3);
+  assert.equal(r.zahl, `1 / ${r.n}`);
+  assert.equal(r.aktuell, 1);
+  assert.equal(r.zahl2, `2 / ${r.n}`);
+  assert.ok(r.badges >= 2);
+  assert.equal(r.keine, 'Keine Treffer');
+  assert.equal(r.rest, 0, 'Markierungen entfernt');
+  assert.match(r.fr, /Glossaire/);
+  assert.match(r.ph, /Rechercher/);
+  // Handy: Aufklappmenü
+  await seite.setViewportSize({ width: 390, height: 800 });
+  const h = await seite.evaluate(() => {
+    const knopf = document.getElementById('hb-kapitel-knopf'), nav = document.getElementById('hb-nav');
+    const vorher = { knopf: getComputedStyle(knopf).display !== 'none', nav: getComputedStyle(nav).display };
+    knopf.click();
+    const auf = getComputedStyle(nav).display;
+    _hbKapitel[3].link.click();
+    return { vorher, auf, zu: getComputedStyle(nav).display, text: document.getElementById('hb-kapitel-aktuell').textContent };
+  });
+  assert.deepEqual(h.vorher, { knopf: true, nav: 'none' });
+  assert.equal(h.auf, 'block');
+  assert.equal(h.zu, 'none');
+  assert.ok(h.text.length > 0);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Kein Verweis auf das SBB-Excel in Handbuch, Hinweisen und PDFs; Schieber-Zahl in Temperaturfarbe', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await fensterAbfangen(seite);
+  const r = await seite.evaluate(() => {
+    const excel = /xlsm|SBB-Excel|Excel CFF|Excel FFS|\bVBA\b|Upro1|in der Excel|wie Excel|comme Excel|come Excel/i;
+    const funde = [];
+    openHandbuch();
+    for (const l of ['de', 'fr', 'it']) {
+      setLang(l);
+      const m = document.getElementById('hb-text').innerText.match(excel);
+      if (m) funde.push(`Handbuch ${l}: ${m[0]}`);
+      window.__fenster.length = 0; pdfExport();
+      const pm = (window.__fenster[0]?.html || '').replace(/<[^>]+>/g, ' ').match(excel);
+      if (pm) funde.push(`PDF ${l}: ${pm[0]}`);
+      for (const [k, v] of Object.entries(LANG[l])) if (typeof v === 'string' && excel.test(v)) funde.push(`${l} ${k}`);
+    }
+    setLang('de'); closeHandbuch();
+    // Schieber T2 beim Ziehen: hervorgehobene Zahl in derselben Farbe wie der Knopf
+    onT2Slider(50, true);
+    const lbl = [...document.querySelectorAll('.t2-lbl')].find(el => el.dataset.val === '50');
+    const knopf = document.getElementById('temp2-slider').style.getPropertyValue('--t2-clr');
+    // Gesetzter Farbwert (die Anzeige blendet mit einem kurzen Übergang über)
+    const probe = document.createElement('span'); probe.style.color = knopf;
+    const gleich = !!lbl.style.color && lbl.style.color === probe.style.color;
+    onT2Slider(45, true);
+    const nachbarn = [...document.querySelectorAll('.t2-lbl')].filter(el => ['40', '50'].includes(el.dataset.val)).map(el => el.style.color);
+    probe.style.color = document.getElementById('temp2-slider').style.getPropertyValue('--t2-clr');
+    const nachbarGleich = nachbarn.every(c => c === probe.style.color);
+    onT2Slider(40, false);
+    return { funde, gleich, nachbarGleich };
+  });
+  assert.deepEqual(r.funde, []);
+  assert.equal(r.gleich, true);
+  assert.equal(r.nachbarGleich, true);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Abschnitt: «Beispiel laden» setzt 5 Masten, IFC georeferenziert, Handbuch mit Ablauf', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    abschnittAnsicht();
+    document.getElementById('abs-beispiel').click();
+    await new Promise(res => setTimeout(res, 200));
+    const n = abschnitt.masten.length;
+    let datei = ''; const alt = window._dateiHerunterladen; window._dateiHerunterladen = x => { datei = x; };
+    abschnittExport('ifc');
+    window._dateiHerunterladen = alt;
+    openHandbuch();
+    const hb = document.getElementById('hb-text').innerText;
+    closeHandbuch(); setCanvasView('diagramm');
+    return { n, ifc: /IFCCABLESEGMENT/.test(datei), epsg: /EPSG:2056/.test(datei), felder: (datei.match(/Feld|CH_Durchhang/g) || []).length,
+      hb: /Beispiel: Ablauf vom Mastbild zum BIM-Modell/.test(hb) && /IfcCableSegment/.test(hb) };
+  });
+  assert.equal(r.n, 5);
+  assert.equal(r.ifc, true);
+  assert.equal(r.epsg, true);
+  assert.ok(r.felder > 0);
+  assert.equal(r.hb, true);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
 test('Wasserzeichen «BETA – nicht verifiziert»: Bildschirm in allen Sprachen, alle PDFs', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   await fensterAbfangen(seite);
