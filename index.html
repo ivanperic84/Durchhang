@@ -245,12 +245,6 @@ body {
   border-bottom: 1px solid var(--border);
 }
 .sidebar-scroll .card:last-of-type { border-bottom: none; }
-/* Buttons am Ende */
-.sidebar-scroll .btn-group {
-  padding: 1rem 1.25rem 1.1rem;
-  border-top: 1px solid var(--border);
-  margin-top: 0;
-}
 @media (max-width: 860px) {
   .sidebar { position: static; max-height: none; }
   .sidebar-scroll {
@@ -260,7 +254,6 @@ body {
   .sidebar-scroll .card { background: var(--card); box-shadow: var(--shadow); border-radius: var(--radius); border-bottom: none;
   border: 1px solid var(--border);
 }
-  .sidebar-scroll .btn-group { padding: 0; border-top: none; }
 }
 
 /* ── Cards ── */
@@ -427,18 +420,6 @@ body {
 .btn:active { opacity: .75; }
 .btn-primary { background: var(--primary); color: white; }
 .btn-primary:hover { background: var(--primary-dk); }
-.btn-pdf {
-  background: color-mix(in srgb, var(--primary) 7%, transparent);
-  color: var(--primary);
-}
-.btn-pdf:hover { background: color-mix(in srgb, var(--primary) 13%, transparent); }
-.btn-pdf:disabled {
-  background: rgba(0,0,0,.03);
-  color: var(--tertiary);
-  cursor: not-allowed;
-  opacity: .6;
-}
-.btn-group { display: flex; flex-direction: column; gap: .5rem; margin-top: auto; padding-top: .75rem; }
 
 /* ── Segmented control ── */
 .seg-ctrl {
@@ -662,18 +643,6 @@ body {
   white-space: nowrap; transition: background .12s;
 }
 .share-item:hover { background: var(--s3); }
-.pdf-draw-btn {
-  display: flex; align-items: center; gap: .35rem;
-  font-size: .72rem; font-weight: 500; font-family: inherit;
-  color: var(--text2);
-  background: rgba(0,0,0,.06);
-  border: 1px solid rgba(0,0,0,.15);
-  border-radius: 6px;
-  padding: .3rem .75rem;
-  cursor: pointer;
-  transition: background .12s;
-}
-.pdf-draw-btn:hover { background: rgba(0,0,0,.11); }
 /* SVG viewport — viewBox controls zoom/pan, no scrollbars */
 #drawing-viewport {
   position: relative;
@@ -896,14 +865,6 @@ body {
 .istzustand-divider {
   width: 1px; height: 2.5rem; background: rgba(0,0,0,.1); flex-shrink: 0;
 }
-.istzustand-secondary {
-  display: flex; flex-direction: column; gap: .25rem;
-}
-.istzustand-row {
-  font-size: .8rem; color: var(--muted);
-  display: flex; gap: .4rem; align-items: baseline;
-}
-.istzustand-row strong { color: var(--text); font-family: 'SF Mono','Menlo',monospace; }
 
 /* ── Error / Warn ── */
 .alert {
@@ -921,9 +882,6 @@ body {
   border-top: 1px solid rgba(0,0,0,.06);
   font-size: .8rem;
   display: flex; flex-direction: column; gap: .45rem;
-}
-.probe-mp-row {
-  display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
 }
 .probe-mp-badge {
   font-size: .68rem; font-weight: 700; text-transform: uppercase;
@@ -945,7 +903,6 @@ body {
 }
 .probe-mp-xinput:focus { outline: none; border-color: var(--primary); }
 .probe-mp-unit { font-size: .7rem; color: var(--tertiary); flex-shrink: 0; }
-.probe-mp-sep { width: 1px; height: 1.1rem; background: rgba(0,0,0,.1); margin: 0 .1rem; }
 /* H-Punkte (Hindernishöhe pro Messpunkt) — Monochrom, eindeutig verschieden von T2-Rot und T3-Blau */
 /* H-Punkte: Farben aus den Thema-Farben, damit hell und dunkel stimmen */
 :root { --h-clr: var(--text2); --h-bg: var(--s4); --h-border: transparent; }
@@ -994,46 +951,12 @@ body {
 /* Mastangaben Name/Nr. und KM wie die übrigen Eingabefelder */
 #mast-num-left, #mast-num-right, #mast-km-left, #mast-km-right { background: var(--s4); border-color: transparent !important; border-radius: 8px !important; }
 #mast-num-left:focus, #mast-num-right:focus, #mast-km-left:focus, #mast-km-right:focus { outline: none; box-shadow: 0 0 0 2px var(--acc-s); }
-/* Hindernisse oberhalb — Liste unter dem Diagramm (renderObstacleList) */
-.obs-row { display: flex; align-items: center; gap: .4rem; margin-bottom: .3rem; }
-.obs-badge {
-  font-size: .68rem; font-weight: 700;
-  padding: .15rem .45rem; border-radius: 6px;
-  white-space: nowrap; flex-shrink: 0;
-  color: var(--warn); background: var(--warn-s);
-}
-.obs-name-input {
-  flex: 2; min-width: 0; width: 0;
-  font-size: .78rem; padding: .22rem .4rem;
-  border: 1px solid var(--border); border-radius: 7px;
-  background: var(--bg); color: var(--text);
-}
-.obs-name-input:focus { outline: none; border-color: var(--warn); }
-.obs-num-input {
-  width: 4.5rem; flex-shrink: 0;
-  font-family: 'SF Mono','Menlo',monospace;
-  font-size: .8rem; font-weight: 600;
-  padding: .2rem .4rem; text-align: right;
-  border: 1px solid var(--border); border-radius: 7px;
-  background: var(--bg); color: var(--text);
-}
-.obs-num-input:focus { outline: none; border-color: var(--warn); }
 .obs-rm-btn {
   flex-shrink: 0; background: none; border: none;
   color: var(--muted); cursor: pointer; font-size: .85rem;
   padding: .1rem .25rem; line-height: 1; border-radius: 5px;
 }
 .obs-rm-btn:hover { color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
-.probe-mp-kv { display: flex; flex-direction: column; gap: .05rem; }
-.probe-mp-klabel { font-size: .65rem; color: var(--muted); line-height: 1; }
-.probe-mp-kvalue {
-  font-family: 'SF Mono','Menlo',monospace;
-  font-weight: 600; font-size: .82rem; color: var(--text);
-}
-.probe-mp-kvalue.m1 { color: #0d9488; }
-.probe-mp-kvalue.m2 { color: #0d9488; }
-.probe-mp-kvalue.m3 { color: #0d9488; }
-.probe-mp-kvalue.m4 { color: #0d9488; }
 .probe-hint-small {
   font-size: .72rem; color: var(--tertiary); font-style: italic;
 }
@@ -1054,8 +977,6 @@ button.header-manual-link {
 button.header-manual-link:hover {
   background: color-mix(in srgb, var(--primary) 12%, transparent);
 }
-#foto-undo:not([disabled]), #foto-redo:not([disabled]) { opacity: 1; color: var(--text); }
-#foto-undo[disabled], #foto-redo[disabled] { opacity: .3; cursor: default; }
 
 /* ── Tooltip (shown during drag) ── */
 #drag-tooltip {
@@ -1132,7 +1053,6 @@ button.header-manual-link:hover {
     font-size: .95rem;
     border-radius: 12px;
   }
-  .btn-group { gap: .55rem; margin-top: .65rem; }
 
   /* Segmented controls */
   .seg-ctrl { padding: 3px; }
@@ -1156,17 +1076,12 @@ button.header-manual-link:hover {
   /* Probe readout — wrap key-value pairs to next line */
   .probe-readout { padding: .5rem .75rem; gap: .45rem; }
   .probe-hint-small { font-size: .68rem; }
-  .probe-mp-row { flex-wrap: wrap; gap: .3rem; row-gap: .35rem; }
-  .probe-mp-sep { display: none; }
   .probe-mp-badge { font-size: .63rem; padding: .12rem .4rem; }
   .probe-mp-xinput {
     width: 100%; min-height: 36px;
     font-size: 15px;
     padding: .15rem .4rem;
   }
-  .probe-mp-kv { flex: 1; min-width: 4.8rem; }
-  .probe-mp-klabel { font-size: .6rem; }
-  .probe-mp-kvalue { font-size: .78rem; }
   .probe-mp-unit { font-size: .66rem; }
 
   /* Results */
@@ -1182,7 +1097,6 @@ button.header-manual-link:hover {
   .istzustand-value { font-size: 1.7rem; }
   .istzustand-divider { height: 2rem; }
   .istzustand-label { font-size: .62rem; }
-  .istzustand-row { font-size: .75rem; }
 }
 
 /* ── Telefon: Zeichnungs- und Fotoansicht ──────────────────────────────────
@@ -1402,20 +1316,8 @@ button.header-manual-link:hover {
 .hind-kopf { display: flex; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap; margin-bottom: .4rem; }
 .hind-titel { font-size: .72rem; font-weight: 600; color: var(--muted); }
 .hind-min-lbl { display: inline-flex; align-items: center; gap: .3rem; font-size: .7rem; color: var(--muted); }
-.hind-block { border: 1px solid var(--border); border-radius: 8px; padding: .45rem .55rem .4rem; margin-bottom: .45rem; }
-.hind-zeile { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .35rem; }
-.hind-name { flex: 1 1 10rem; }
-.hind-feld-lbl { display: inline-flex; align-items: center; gap: .3rem; font-size: .68rem; color: var(--muted); }
-.hind-feld-lbl select { width: 3.6rem; }
 .hind-verb { font-size: .7rem; }
-.hind-punkte { display: grid; grid-template-columns: minmax(4rem, 7rem) minmax(5rem, 8rem) auto; gap: .2rem .4rem; align-items: center; justify-content: start; }
-.hind-punkt-hinzu { margin-top: .3rem; font-size: .68rem; padding: .1rem .45rem; border-radius: 6px; border: 1px dashed var(--border2);
-  background: none; color: var(--muted); cursor: pointer; font-family: inherit; }
-.hind-punkt-hinzu:hover { color: var(--text2); border-color: var(--muted); }
 .obs-rm-btn:disabled { opacity: .3; cursor: default; }
-.hind-tab { display: grid; grid-template-columns: minmax(6rem, 1.4fr) repeat(3, minmax(3.6rem, .7fr)) auto; gap: .25rem .35rem; align-items: center; }
-.hind-tab.mit-feld { grid-template-columns: minmax(6rem, 1.4fr) 3.2rem repeat(3, minmax(3.6rem, .7fr)) auto; }
-.hind-th { font-size: .62rem; color: var(--tertiary); }
 .hind-inp { border: 1px solid var(--border); border-radius: 6px; padding: .2rem .35rem; font-size: .74rem; font-family: inherit;
   color: var(--text); background: var(--card); width: 100%; min-width: 0; }
 .hind-num { font-variant-numeric: tabular-nums; max-width: 6.5rem; }
@@ -1559,15 +1461,6 @@ input.aus-koord { background: var(--acc-s) !important; color: var(--text) !impor
   border-color: var(--fail) !important;
   box-shadow: 0 0 0 2.5px color-mix(in srgb, var(--fail) 18%, transparent) !important;
 }
-.cm-error-msg {
-  font-size: .7rem; color: var(--fail); margin-top: .3rem; display: none;
-}
-.combo-info-custom {
-  background: var(--acc-s); border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent); border-radius: 10px;
-  padding: .55rem .7rem; font-size: .72rem; margin-top: .6rem;
-}
-.combo-info-custom .combo-custom-title { font-weight: 600; color: #7c3aed; margin-bottom: .2rem; }
-.combo-info-custom .combo-custom-note  { color: var(--muted); }
 
 /* Gemeinsamer Stil: Reglage-Infobox (N-FL / R-FL Kombination + Einzelleiter) */
 .reglage-info-box {
@@ -1596,21 +1489,6 @@ input.aus-koord { background: var(--acc-s) !important; color: var(--text) !impor
   font-family: inherit;
 }
 #el-reglage-edit-btn:hover { color: var(--text); border-color: var(--xdim); }
-.rp-params {
-  display: grid; grid-template-columns: auto 1fr auto;
-  gap: .22rem .5rem; align-items: center;
-  padding: .35rem 0; border-bottom: 1px solid var(--border); margin-bottom: .1rem;
-}
-.rp-params .rp-reset {
-  grid-column: 1 / -1; display: flex; justify-content: flex-end; padding-top: .1rem;
-}
-.rp-lbl { font-size: .67rem; color: var(--muted); white-space: nowrap; }
-.rp-input {
-  width: 5.2rem; border: 1px solid var(--border2); border-radius: 6px;
-  padding: .13rem .3rem; font-size: .7rem; text-align: right;
-  background: var(--card); font-family: inherit;
-}
-.rp-input:focus { outline: none; border-color: var(--primary); }
 .rtbl { width: 100%; border-collapse: collapse; font-size: .68rem; margin-top: .35rem; }
 .rtbl th, .rtbl td { padding: .15rem .32rem; text-align: right; border-bottom: 1px solid var(--border); }
 .rtbl th { color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border2); }
@@ -1681,13 +1559,6 @@ input.aus-koord { background: var(--acc-s) !important; color: var(--text) !impor
   margin-bottom: .9rem; display: flex; gap: .5rem; align-items: flex-start;
 }
 .proj-warning svg { flex-shrink: 0; margin-top: 1px; }
-.proj-new-row { display: flex; gap: .5rem; margin-bottom: 1rem; }
-.proj-new-row input {
-  flex: 1; border: 1px solid var(--border); border-radius: 8px;
-  padding: .45rem .75rem; font-size: .83rem; font-family: inherit;
-  outline: none; background: var(--s2);
-}
-.proj-new-row input:focus { border-color: var(--primary); background: var(--card); }
 .proj-list { display: flex; flex-direction: column; gap: .35rem; max-height: 320px; overflow-y: auto; margin-bottom: .75rem; }
 .proj-item {
   border: 1px solid var(--border); border-radius: 9px;
@@ -1702,7 +1573,6 @@ input.aus-koord { background: var(--acc-s) !important; color: var(--text) !impor
 .proj-item-bottom { display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; }
 .proj-item-date { font-size: .67rem; color: var(--muted); flex: 1; white-space: nowrap; }
 .proj-item-actions { display: flex; gap: .2rem; flex-wrap: wrap; }
-.proj-btn-row { display: flex; gap: .25rem; }
 .proj-btn {
   border: 1px solid var(--border); border-radius: 6px; background: var(--card);
   cursor: pointer; padding: .22rem .55rem; font-size: .7rem; color: var(--text2);
@@ -1724,13 +1594,10 @@ input.aus-koord { background: var(--acc-s) !important; color: var(--text) !impor
 /* ── Projekt-Hierarchie ─────────────────────────────── */
 .proj-save-block { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:.75rem .95rem; margin-bottom:.85rem; }
 .proj-save-section-title { font-size:.7rem; font-weight:600; color:var(--muted); margin-bottom:.6rem; }
-.proj-save-grid { display:grid; grid-template-columns:1fr 1fr; gap:.45rem .6rem; margin-bottom:.45rem; }
 .proj-save-label { font-size:.7rem; color:var(--muted); margin-bottom:.18rem; }
 .proj-save-inp { width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:7px; padding:.38rem .6rem; font-size:.8rem; font-family:inherit; background:var(--s2); outline:none; color:var(--text); }
 .proj-save-inp:focus { border-color:var(--primary); background:var(--card); }
 .proj-new-grp-row { display:flex; align-items:center; gap:.4rem; margin-top:.35rem; padding-top:.35rem; border-top:1px solid var(--border); }
-.proj-new-grp-inp { flex:1; border:1px solid var(--border); border-radius:7px; padding:.35rem .6rem; font-size:.78rem; font-family:inherit; background:var(--s2); outline:none; color:var(--text); }
-.proj-new-grp-inp:focus { border-color:var(--primary); background:var(--card); }
 .proj-group-wrap { border:1px solid var(--border); border-radius:10px; overflow:hidden; }
 .proj-group-wrap.has-active { border-color:var(--primary); }
 .proj-group-header { padding:.5rem .8rem; display:flex; align-items:center; gap:.45rem; background:var(--s2); cursor:pointer; user-select:none; }
@@ -3069,7 +2936,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.13.5';
+const APP_VERSION = 'v3.13.6';
 
 // Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
 function sysName(mode) {
@@ -3141,10 +3008,6 @@ let probeHWerte = [null, null, null, null];
 let probeSperre = [false, false, false, false];
 let hVerbinden  = false;   // H-Punkte als Unterkante verbinden (sonst Einzelpunkte)
 let _nachweis    = [];     // Abstandsprüfung des angezeigten Felds: [{ h, best, ok }]
-let _drawingObstData = []; // [{xFrac, name, h, clearance}] für HTML-Strip
-// Frühere Einzelwerte der H-Punkte: nicht mehr belegt (siehe probeHWerte);
-// die alte Darstellung in Diagramm/Zeichnung bleibt damit inaktiv.
-let probeH1 = null, probeH2 = null, probeH3 = null, probeH4 = null;
 let minClearance = null;      // Mindestabstand H-Punkt → Leiter [m]
 let _showMinClearance = true; // Mindestabstand-Zone ein-/ausblenden
 let showT3 = false;
@@ -3652,8 +3515,6 @@ function _extractExifGps(buf) {
   // ── State ──
   let _img        = null;
   let _pts        = [];         // { px, py, role }
-  let _undoStack     = [];         // Snapshots von _pts für Undo
-  let _redoStack     = [];         // Snapshots von _pts für Redo
   let _activeRole    = null;       // Rolle die der nächste Klick setzt
   let _gps           = null;       // { lat, lon } aus EXIF, oder null
   let _showCatenary      = false;      // Seillinie-Overlay ein/aus
@@ -3774,8 +3635,6 @@ function _extractExifGps(buf) {
     _img = new Image();
     _img.onload = () => {
       _pts = [];
-      _undoStack = [];
-      _redoStack = [];
       _activeRole = _roles[_mode()][0];
       // Zoom + Bemaßungsoffsets zurücksetzen
       _fotoZoom = 1.0; _fotoPanX = 0; _fotoPanY = 0;
@@ -3787,7 +3646,6 @@ function _extractExifGps(buf) {
       _draw();
       _updateRoleButtons();
       _updateStatus();
-      _updateUndoButtons();
     };
     _img.src = src;
   }
@@ -3917,8 +3775,6 @@ function _extractExifGps(buf) {
 
   function _placePoint(px, py) {
     if (!_activeRole) { _status(t('foto.ziel.waehlen')); return; }
-    _undoStack.push(_pts.map(p => ({ ...p })));
-    _redoStack = [];
     if (_activeRole === 'curve') {
       _pts.push({ px, py, role: 'curve' });
     } else {
@@ -3927,7 +3783,6 @@ function _extractExifGps(buf) {
       else _pts.push({ px, py, role: _activeRole });
     }
     _draw();
-    _updateUndoButtons();
     // Mastlänge-Prompt nach Setzen von Mastfuss (falls Feld noch leer)
     if (_activeRole === 'base_L' || _activeRole === 'base_R') {
       _showMastLaengePrompt(_activeRole === 'base_L' ? 'L' : 'R');
@@ -4030,8 +3885,6 @@ function _extractExifGps(buf) {
     if (idx >= 0 && !isMiddle) {
       _dragIdx   = idx;
       _dragMoved = false;
-      _undoStack.push(_pts.map(p => ({ ...p })));
-      _redoStack = [];
       event.preventDefault();
       document.getElementById('foto-canvas').style.cursor = 'grabbing';
     } else if (!_fotoPanLocked && (isMiddle || (!_activeRole && idx < 0))) {
@@ -4171,46 +4024,6 @@ function _extractExifGps(buf) {
   // Der Kurven-Knopf trägt eine Anzahl und lässt sich deshalb nicht rein
   // über data-i18n setzen.
   window._fotoBeschriftungenAuffrischen = _updateRoleButtons;
-
-  // ── Undo / Redo (Snapshot-basiert) ──
-  function _updateUndoButtons() {
-    const u = document.getElementById('foto-undo');
-    const r = document.getElementById('foto-redo');
-    if (u) u.disabled = _undoStack.length === 0;
-    if (r) r.disabled = _redoStack.length === 0;
-  }
-
-  window.fotoUndo = function() {
-    if (_undoStack.length === 0) return;
-    _redoStack.push(_pts.map(p => ({ ...p })));
-    _pts = _undoStack.pop();
-    // Aktive Rolle auf erste ungesetzte Pflicht-Rolle zurücksetzen
-    const mode = _mode();
-    const firstUnset = _roles[mode].find(r => !_pts.some(p => p.role === r));
-    _activeRole = firstUnset || (mode === 'multi' ? 'curve' : _roles[mode].at(-1));
-    zeigeElement(document.getElementById('foto-result'), false);
-    window._fotoResult = null;
-    if (_img) _draw();
-    _updateRoleButtons();
-    _updateStatus();
-    _updateUndoButtons();
-  };
-
-  window.fotoRedo = function() {
-    if (_redoStack.length === 0) return;
-    _undoStack.push(_pts.map(p => ({ ...p })));
-    _pts = _redoStack.pop();
-    const mode = _mode();
-    const firstUnset = _roles[mode].find(r => !_pts.some(p => p.role === r));
-    _activeRole = firstUnset || (mode === 'multi' ? 'curve' : null);
-    zeigeElement(document.getElementById('foto-result'), false);
-    window._fotoResult = null;
-    if (_img) _draw();
-    _updateRoleButtons();
-    if (!firstUnset && mode === 'single') _calculate();
-    else _updateStatus();
-    _updateUndoButtons();
-  };
 
   // ── Status-Zeile ──
   function _updateStatus() {
@@ -5306,7 +5119,6 @@ function _extractExifGps(buf) {
   // ── Reset ──
   window.fotoReset = function() {
     _pts = [];
-    _undoStack = [];
     _gps = null;
     _updateGpsDisplay();
     zeigeElement(document.getElementById('foto-result'), false);
@@ -5322,7 +5134,6 @@ function _extractExifGps(buf) {
     _lastDimArms = { L: null, R: null };
     _showCatenary = false;
     _updateCatenaryBtn();
-    _updateUndoButtons();
     if (_img) { _draw(); _updateStatus(); }
     else _status(t('foto.load.hint'));
   };
@@ -5583,15 +5394,8 @@ window.fotoToggleFullscreen = function() {
 };
 document.addEventListener('fullscreenchange', function() {
   const inFS   = !!document.fullscreenElement;
-  const btn    = document.getElementById('foto-fullscreen-btn');
   const statusMain = document.getElementById('foto-status');
   const statusFS   = document.getElementById('foto-status-fs');
-  if (btn) {
-    btn.title = inFS ? 'Vollbild beenden (Esc)' : 'Vollbild';
-    btn.innerHTML = inFS
-      ? '<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M5 1v4H1M15 5h-4V1M1 11h4v4M11 15v-4h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-      : '<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M1 5V1h4M11 1h4v4M1 11v4h4M15 11v4h-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  }
   // Status-Kopie in der Rollen-Leiste zeigen (sichtbar im Vollbild)
   zeigeElement(statusFS, inFS);
   if (statusMain && statusFS) statusFS.textContent = statusMain.textContent;
@@ -5876,29 +5680,12 @@ function _mastangabenOeffnenFallsBelegt() {
   if (belegt) det.open = true;
 }
 
-// ── Mastbezeichnung: Name/Nr. + KM kombiniert ────────────────────────────────
-function _buildMastLabel(side) {
-  const num = document.getElementById(side === 'left' ? 'mast-num-left' : 'mast-num-right')?.value?.trim();
-  const km  = document.getElementById(side === 'left' ? 'mast-km-left'  : 'mast-km-right')?.value?.trim();
-  if (!num && !km) return '';
-  if (num && km) return `${num}  ·  ${km}`;
-  return num || km;
-}
 function _buildMastParts(side) {
   const num = document.getElementById(side === 'left' ? 'mast-num-left' : 'mast-num-right')?.value?.trim() || '';
   const km  = document.getElementById(side === 'left' ? 'mast-km-left'  : 'mast-km-right')?.value?.trim()  || '';
   return { num, km };
 }
 
-// ── KM-Format-Hilfsfunktion ───────────────────────────────────────────────────
-function _formatKm(v) {
-  if (isNaN(v) || v === null) return '';
-  const neg  = v < 0;
-  const abs  = Math.abs(v);
-  const int  = Math.floor(abs);
-  const frac = Math.round((abs - int) * 1000);
-  return (neg ? '-' : '') + String(int).padStart(3, '0') + '.' + String(frac).padStart(3, '0');
-}
 
 // ── Foto-Name-Brücke: mast-num-left/right als Quelle für Foto-Auswertung ─────
 function _syncMastNames() {
@@ -5960,7 +5747,6 @@ function setYCMode(mode) {
   if (mode === 'mum') { const d = document.getElementById('mastangaben'); if (d) d.open = true; }
   const btns  = { sag: 'yc-btn-sag', sok: 'yc-btn-sok', mum: 'yc-btn-mum' };
   const active = 'border:1px solid color-mix(in srgb, var(--primary) 30%, transparent);background:var(--acc-s);color:var(--primary);font-weight:600';
-  const idle   = 'border:1px solid var(--border);background:none;color:var(--muted);font-weight:400';
   Object.entries(btns).forEach(([k, id]) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -6253,13 +6039,10 @@ function updateSysModeUI(mode) {
   const ts1Lbl  = document.getElementById('leg-ts1');
   const ts2Item = document.getElementById('leg-ts2-item');
   const ts2Lbl  = document.getElementById('leg-ts2-label');
-  const fdItem  = document.getElementById('leg-fd-item');
-  const fdLbl   = document.getElementById('leg-fd-label');
   const fdSoll  = document.getElementById('leg-fd-solllage-item');
   if (ts1Lbl)  ts1Lbl.innerHTML  = isEl ? t('leg.leiter1') : isNfl ? t('leg.ts1') : t('leg.ts1.rfl');
   zeigeElement(ts2Item, (isNfl || isEl));
   if (ts2Lbl)  ts2Lbl.innerHTML  = isEl ? t('leg.leiter2') : t('leg.ts2');
-  zeigeElement(fdItem, false);   // Fd nicht mehr im Diagramm
   zeigeElement(fdSoll, false);   // Fd Solllage nicht mehr im Diagramm
 
   // Mittelspannweite: bei R-FL und bei Berechnungsart=Starr deaktivieren
@@ -6570,8 +6353,6 @@ function setWear(pct) {
 // ── Materialparameter aus versteckten Eingabefeldern auslesen ──
 function getAlphaTs()        { return parseFloat(document.getElementById('alpha-ts').value) * 1e-6; }
 function getEATs()           { const sel = document.getElementById('material-ts').value; if (sel === 'custom-ts') { const v = parseFloat(document.getElementById('ea-ts').value); return isNaN(v) ? null : v; } const m = MATERIALS[sel]; if (!m || m.E == null || m.AK == null) return null; return m.E * m.AK; }
-function getEAFd()           { const sel = document.getElementById('material-fd').value; if (sel === 'custom-fd') { const v = parseFloat(document.getElementById('ea-fd').value); return isNaN(v) || v === 0 ? null : v; } return MATERIALS[sel].E * MATERIALS[sel].AK; }
-function getAlphaFd()        { const sel = document.getElementById('material-fd').value; if (sel === 'custom-fd') { const v = parseFloat(document.getElementById('alpha-fd').value); return isNaN(v) ? null : v * 1e-6; } return MATERIALS[sel].alpha; }
 function _getMaterialName(type) {
   const sel = document.getElementById(`material-${type}`).value;
   return sel === `custom-${type}` ? 'Benutzerdefiniert' : MATERIALS[sel]?.name ?? '—';
@@ -6967,12 +6748,6 @@ function _setProjectStateIntern(s) {
     if (mcInp) mcInp.value = minClearance !== null ? minClearance : ''; }
   // Mindestabstand-Toggle wiederherstellen
   _showMinClearance = s.showMinClearance ?? true;
-  { const mcChk  = document.getElementById('min-clearance-show');
-    const mcKnob = document.getElementById('mc-tog-knob');
-    const mcBg   = document.getElementById('mc-tog-bg');
-    if (mcChk)  mcChk.checked            = _showMinClearance;
-    if (mcKnob) mcKnob.style.left        = _showMinClearance ? '13px' : '2px';
-    if (mcBg)   mcBg.style.background    = _showMinClearance ? '#6b7280' : '#d1d5db'; }
   // Mastnamen-Brücke synchronisieren (foto-name-L/R hidden inputs)
   if (typeof _syncMastNames === 'function') _syncMastNames();
 
@@ -7290,37 +7065,7 @@ function fmtDate(iso) {
   return d.toLocaleDateString(_sprachTag()) + ' ' + d.toLocaleTimeString(_sprachTag(), {hour:'2-digit',minute:'2-digit'});
 }
 
-// ── CRUD ──
-function createGroup() {
-  const inp = document.getElementById('proj-name-input');
-  const name = inp.value.trim();
-  if (!name) { inp.focus(); return; }
-  const id = 'g' + Date.now() + Math.random().toString(36).slice(2,5);
-  const now = new Date().toISOString();
-  const meta = getProjMeta();
-  meta.unshift({ id, name, isGroup: true, parentId: null, createdAt: now, updatedAt: now });
-  saveProjMeta(meta);
-  inp.value = '';
-  renderProjectList();
-}
 
-function createProject() {
-  const inp = document.getElementById('proj-name-input');
-  const name = inp.value.trim();
-  if (!name) { inp.focus(); return; }
-  const id = genProjId();
-  const now = new Date().toISOString();
-  const meta = getProjMeta();
-  const parentSel = document.getElementById('proj-parent-select');
-  const parentId = (parentSel && parentSel.value) ? parentSel.value : null;
-  if (!_schreibeBerechnung(id, getProjectState(), name)) return;
-  meta.unshift({ id, name, isGroup: false, parentId, createdAt: now, updatedAt: now });
-  if (!_speichereMetaOderRollback(meta, [id])) return;
-  currentProjectId = id;
-  inp.value = '';
-  renderProjectList();
-  updateProjectBadge();
-}
 
 function saveToProject(id) {
   const meta = getProjMeta();
@@ -7552,23 +7297,6 @@ ${sections.map(s => `<div class="pdf-section">${s}</div>`).join('\n')}
   win.onload = () => win.print();
 }
 
-function saveToGroup(groupId) {
-  const meta = getProjMeta();
-  const group = meta.find(m => m.id === groupId);
-  if (!group) return;
-  const calcInp = document.getElementById('proj-calc-name');
-  const name = (calcInp && calcInp.value.trim()) || nextCalcName(groupId);
-  const id = genProjId();
-  const now = new Date().toISOString();
-  if (!_schreibeBerechnung(id, getProjectState(), name)) return;
-  meta.push({ id, name, isGroup: false, parentId: groupId, createdAt: now, updatedAt: now });
-  if (!_speichereMetaOderRollback(meta, [id])) return;
-  currentProjectId = id;
-  if (calcInp) calcInp.value = '';
-  collapsedGroups.delete(groupId);
-  renderProjectList();
-  updateProjectBadge();
-}
 
 function exportProjectById(id) {
   const raw  = localStorage.getItem(PROJ_KEY_PREFIX + id);
@@ -7730,13 +7458,10 @@ function renderProjectList() {
     const children = [...meta.filter(m => m.parentId === g.id && !m.isGroup)].sort(sortFn);
     const collapsed = collapsedGroups.has(g.id);
     const hasActive = children.some(c => c.id === currentProjectId);
-    const allChildrenSelected = children.length > 0 && children.every(c => selectedIds.has(c.id));
-    const someSelected = children.some(c => selectedIds.has(c.id));
     const childrenHtml = children.map(c => calcRow(c, true)).join('');
 
     const toggleFn = `toggleGroupCollapse('${g.id}')`;
     const childIds = children.map(c => c.id);
-    const checkFn = `event.stopPropagation();toggleGroupSelect(${JSON.stringify(childIds)},${allChildrenSelected})`;
 
     return `<div class="proj-group-wrap${hasActive ? ' has-active' : ''}" data-grp-id="${g.id}">
       <div class="proj-group-header" onclick="${toggleFn}">
@@ -8000,7 +7725,6 @@ function renderReglageEditPanel() {
 
   const temps    = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80];
   const canCalc  = H_max && mat.E && mat.AK;
-  const hasOvr   = elReglageHmaxOvr !== null || elReglageLrefOvr !== null;
   const T1cur    = parseFloat(document.getElementById('temp1')?.value) ?? 10;
 
   // Tabelle aufbauen
@@ -8416,8 +8140,6 @@ function readInputs(ov = {}) {
   // Materialsteifigkeiten
   const alpha_Ts = getAlphaTs();
   const EA_Ts    = getEATs();
-  const EA_Fd    = getEAFd();
-  const alpha_Fd = getAlphaFd();
 
   // FL-Kombination erkennen (matTs-Key + '+' + matFd-Key, z.B. 'stcu50+cu107')
   const matTsKey  = document.getElementById('material-ts').value;
@@ -8618,7 +8340,6 @@ function berechnen() {
   _hindernisErgebnisse();
   if (_abschnittSichtbar) abschnittAktualisieren();
   updateAllMesspunkte();
-  updateHInputVisibility();
   refreshScaleViewIfActive();
 }
 
@@ -8683,12 +8404,8 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
   // Fd-Anhebung bei T<sub>2</sub> (N-FL): Δy_Fd = Δy_Ts am Tiefpunkt = c1.sag − c2.sag
   // Absolute Fd-Höhe über SOK am Tiefpunkt des Istzustands
   const yFdSoll = x => (h1 - sh) + (h2 - h1) * x / L;
-  const catY_c1 = x => c1.a * Math.cosh((x - c1.x_low) / c1.a) + c1.C;
   // R-FL: Fd folgt dem Tragseil nur bei Eislast/Abnutzung (VEM 7.53a)
   const x_ist   = sysMode === 'el' ? c1.x_low : c2.x_low;
-  const fd_abs  = sysMode === 'nfl' ? yFdSoll(x_ist) + (c2.y_low - catY_c1(x_ist))
-                : sysMode === 'rfl' ? yFdSoll(x_ist) + rflFahrdrahtVerschiebung(c2, cFdRef, x_ist)
-                : yFdSoll(x_ist);
 
   const fdBlock = `
     <div style="margin-top:.75rem;padding:.6rem .75rem;background:var(--bg);border:1px solid var(--border);border-radius:10px">
@@ -8819,7 +8536,6 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   const h1d  = aY(0, h1);
   const h2d  = aY(L, h2);
   // Fd-Solllage in Zeichenkoordinaten
-  const yFdD = x => aY(x, (h1 - sh) + (h2 - h1) * x / L);
 
   // DPI-bewusstes Rendering: canvas.width/height in Gerätepixeln,
   // ctx.setTransform skaliert auf CSS-Pixel-Koordinaten (0..cssW, 0..cssH)
@@ -9473,93 +9189,6 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.setLineDash([]); ctx.globalAlpha = 1;
     ctx.restore();
   }
-
-  // ── H-Punkte im Canvas-Diagramm ──
-  if (hasSok) {
-    const hPairs = [
-      { xv: probeX1, hMum: probeH1, badge: 'M1', lbl: 'H1' },
-      { xv: probeX2, hMum: probeH2, badge: 'M2', lbl: 'H2' },
-      { xv: probeX3, hMum: probeH3, badge: 'M3', lbl: 'H3' },
-      { xv: probeX4, hMum: probeH4, badge: 'M4', lbl: 'H4' },
-    ].filter(p => p.xv !== null && p.hMum !== null);
-
-    const hClr = DF.hpunkt;
-    const cT2h = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
-
-    // Pass 1: Grundpositionen berechnen
-    const hItems = hPairs.map(({ xv, hMum, badge, lbl }) => {
-      const obsAbsH  = hMum;
-      const tsT2AbsH = catYD(xv, cT2h);
-      let nearAbsH   = tsT2AbsH;
-      if (showT3 && c3) {
-        const tsT3AbsH = catYD(xv, c3);
-        if (Math.abs(obsAbsH - tsT3AbsH) < Math.abs(obsAbsH - tsT2AbsH)) nearAbsH = tsT3AbsH;
-      }
-      const clear   = obsAbsH - nearAbsH;
-      const vio     = minClearance !== null && (isEl ? Math.abs(clear) < minClearance : clear < minClearance);
-      const hpx     = cx(xv);
-      const hpy     = cy(obsAbsH);
-      const onRight = (hpx + 85) < (padL + plotW);
-      const lblW    = 82;
-      const lblH    = 26;
-      return { hpx, hpy, badge, lbl, clear, vio, onRight, lblW, lblH,
-               lblY: hpy - 2 };
-    });
-
-    // Pass 2: Kollisionsvermeidung (nutzt drawnBoxes der Probe-Badges)
-    const allBoxes = [...drawnBoxes];
-    hItems.sort((a, b) => a.lblY - b.lblY);
-    for (const item of hItems) {
-      const boxX = item.onRight ? item.hpx + 5 : item.hpx - item.lblW - 5;
-      let boxY   = item.lblY - 2;
-      let changed = true, iters = 0;
-      while (changed && iters++ < 12) {
-        changed = false;
-        for (const box of allBoxes) {
-          const xOvlp = boxX < box.x + box.w + 4 && boxX + item.lblW + 4 > box.x;
-          if (!xOvlp) continue;
-          const yOvlp = boxY < box.y + box.h + 4 && boxY + item.lblH > box.y - 4;
-          if (!yOvlp) continue;
-          const below = box.y + box.h + 5;
-          const above = box.y - item.lblH - 5;
-          if (below + item.lblH <= padT + plotH) boxY = below;
-          else if (above >= padT)                boxY = above;
-          changed = true; break;
-        }
-      }
-      item.lblY = Math.max(padT + 2, Math.min(boxY + 2, padT + plotH - item.lblH));
-      allBoxes.push({ x: boxX, y: boxY, w: item.lblW, h: item.lblH });
-    }
-
-    // Pass 3: Zeichnen
-    hItems.forEach(({ hpx, hpy, badge, lbl, clear, vio, onRight, lblY }) => {
-      const dotClr = vio ? DF.fehler : hClr;
-      const lblX   = onRight ? hpx + 7 : hpx - 7;
-      const align  = onRight ? 'left' : 'right';
-      ctx.save();
-      // Verbindungslinie wenn Label verschoben
-      if (Math.abs(lblY - (hpy - 2)) > 8) {
-        ctx.strokeStyle = dotClr; ctx.lineWidth = 0.7; ctx.globalAlpha = 0.35;
-        ctx.setLineDash([2, 3]);
-        ctx.beginPath(); ctx.moveTo(hpx, hpy); ctx.lineTo(lblX, lblY + 10); ctx.stroke();
-        ctx.setLineDash([]); ctx.globalAlpha = 1;
-      }
-      // Punkt am H-Punkt
-      ctx.beginPath(); ctx.arc(hpx, hpy, 3.5, 0, Math.PI * 2);
-      ctx.fillStyle = dotClr; ctx.fill();
-      ctx.beginPath(); ctx.arc(hpx, hpy, 3.5, 0, Math.PI * 2);
-      ctx.strokeStyle = 'white'; ctx.lineWidth = 1.2; ctx.stroke();
-      // Label
-      ctx.textAlign = align;
-      ctx.fillStyle = dotClr;
-      ctx.font = `bold 10px ${DIAGRAMM_SCHRIFT}`;
-      ctx.fillText(`${badge} (${lbl})`, lblX, lblY);
-      ctx.font = `9px ${DIAGRAMM_SCHRIFT}`;
-      ctx.fillStyle = vio ? DF.fehler : DF.dim;
-      ctx.fillText(`${clear >= 0 ? '+' : ''}${clear.toFixed(2)} m${vio ? ' ⚠' : ''}`, lblX, lblY + 12);
-      ctx.restore();
-    });
-  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -9742,7 +9371,6 @@ function updateHighlightCard() {
   const sokAtXH = x => sokLHv + (sokRHv - sokLHv) * x / L;
   // Höhe in Anzeigeeinheit
   const dispH = (x, y) => hasSokH ? y + sokAtXH(x) : y;
-  const hUnit = hasSokH ? t('bp.mum.abbrev') : 'm';
   const _hKey = isEl ? 'res.seil.hoehe' : 'res.ts.hoehe';
   const seilLabel = hasSokH ? t(_hKey) : `${t(_hKey)} ${t('dyn.ueber.sok')}`;
   const dhLabel = isEl ? t('res.sag') : t('res.sag.ts');
@@ -9762,8 +9390,6 @@ function updateHighlightCard() {
     const sag     = cDisp.sag;                     // geometrischer Sehnen-Durchhang (identisch mit Diagramm-f)
     _leiste = { art: 'tiefpunkt', x: x_ist, f: sag, hoehe: y2_disp, mum: hasSokH,
                 f3: _c3curve ? _c3curve.sag : null, farbe: curveClr, farbe3: _t3clr };
-    const subInfo = hasSokH
-      ? `<div class="istzustand-row" style="opacity:.6">${f3(y2_raw)} m ${t('dyn.ueber.sok')}</div>` : '';
     el.innerHTML = `
       <div class="istzustand-card${rflCls}" style="margin-bottom:.75rem">
         <div class="istzustand-main">
@@ -9890,8 +9516,6 @@ function updateAllMesspunkte() {
   updateHighlightCard();
 }
 
-// H-Punkte stehen immer zur Verfügung (Prüfung braucht SOK m ü. M., siehe _hindernisErgebnisse)
-function updateHInputVisibility() {}
 
 // ── Hindernisse oberhalb + Abstandsprüfung ──────────────────────────────────
 // Geprüft wird der oberste Leiter (Tragseil bzw. Einzelleiter) über alle
@@ -10782,12 +10406,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
   // Strip dimensions — declared early so grid and spanDim can reference them
   const _probesEarlyCount = [probeX1, probeX2, probeX3, probeX4].filter(x => x !== null).length;
   const _stripRowH_early  = 5.5;
-  // H-Punkt Zeilen: Header + H[m ü.M.] + Abstand = 3 Zeilen (nur wenn SOK + mind. 1 H-Punkt gesetzt)
-  const _hPtCount_early  = hasSok ? [[probeX1,probeH1],[probeX2,probeH2],[probeX3,probeH3],[probeX4,probeH4]]
-                            .filter(([x,h]) => x !== null && h !== null).length : 0;
-  const _hasHPunkt_early = _hPtCount_early > 0;
-  const _stripNRows_early = 2 + 1 + (c3data ? 1 : 0) + (hasSok ? 2 : 0) + (hasSok && c3data ? 1 : 0)
-                          + (_hasHPunkt_early ? 3 : 0);
+  const _stripNRows_early = 2 + 1 + (c3data ? 1 : 0) + (hasSok ? 2 : 0) + (hasSok && c3data ? 1 : 0);
   const _stripH_early     = _stripNRows_early * _stripRowH_early + 0.5;
 
   // Grid lines
@@ -11010,11 +10629,6 @@ function buildScaleDrawingPage(stripInSvg = false) {
     ...(hasSok ? ['T2 [m ü.M.]'] : []),
     ...(hasSok && c3data ? ['T3 [m ü.M.]'] : []),
     ...(hasSok ? ['SOK [m ü.M.]'] : []),
-    ...(_hasHPunkt_early ? [
-      'H-Punkt',
-      'H [m ü.M.]',
-      `↕ Abstand${minClearance ? ' ≥' + minClearance.toFixed(2) + ' m' : ' [m]'}`,
-    ] : []),
   ];
   const stripNRows   = _stripNRows;
   const stripH       = _stripH;
@@ -11064,7 +10678,6 @@ function buildScaleDrawingPage(stripInSvg = false) {
       const sokKote  = sokAt(xv);
       const px       = sx(xv);
       const py       = sy(y2abs);
-      const sokSvgY  = sy(sokKote);
 
       // Dashed plumb line
       probesSvg += `
@@ -11162,58 +10775,10 @@ function buildScaleDrawingPage(stripInSvg = false) {
     _drawingCenterXFrac = sx(L / 2) / VW;
   }
 
-  // H-Punkte pro Messpunkt (m ü.M.) → nur wenn hasSok
-  const obsClr = '#3a3a3a';
-  _drawingObstData = [];
-  let obstSvg = '';
-  const _hPairs = [
-    { xv: probeX1, hMum: probeH1, badge: 'M1', hidx: 1 },
-    { xv: probeX2, hMum: probeH2, badge: 'M2', hidx: 2 },
-    { xv: probeX3, hMum: probeH3, badge: 'M3', hidx: 3 },
-    { xv: probeX4, hMum: probeH4, badge: 'M4', hidx: 4 },
-  ].filter(p => p.xv !== null && p.hMum !== null && hasSok);
-
-  _hPairs.forEach(({ xv, hMum, badge, hidx }) => {
-    const ox       = sx(xv);
-    const obsAbsH  = hMum;                         // absolute Höhe H-Punkt [m ü.M.]
-    const oy       = sy(obsAbsH);
-    const lbl      = `H${hidx}`;                   // H1, H2, …
-
-    // Nächstliegender Leiter: T2 immer, T3 wenn vorhanden → kleinster Abstand
-    const tsT2AbsH = absY(xv, catY(xv, cDisp));
-    let nearAbsH = tsT2AbsH, nearLbl = 'T<sub>2</sub>';
-    if (c3data) {
-      const tsT3AbsH = absY(xv, catY(xv, c3data));
-      if (Math.abs(obsAbsH - tsT3AbsH) < Math.abs(obsAbsH - tsT2AbsH)) {
-        nearAbsH = tsT3AbsH; nearLbl = 'T<sub>3</sub>';
-      }
-    }
-    const ty    = sy(nearAbsH);
-    // Vorzeichen: positiv wenn H-Punkt ÜBER Leiter (Bauwerk höher als Ts → Freiraum)
-    const clear = obsAbsH - nearAbsH;
-    const midY  = (oy + ty) / 2;
-
-    // Horizontale Markierungslinie (symSc-skaliert)
-    const hk = 5 * symSc, ts = 0.7 * symSc;
-    obstSvg += `<line x1="${(ox-hk).toFixed(2)}" y1="${oy.toFixed(2)}" x2="${(ox+hk).toFixed(2)}" y2="${oy.toFixed(2)}" stroke="${obsClr}" stroke-width="${ts.toFixed(3)}"/>`;
-    // Dreieck-Pfeil (zeigt zum Leiter)
-    const tDir = clear >= 0 ? 1 : -1;
-    const ta = 3 * symSc, tb = 1.8 * symSc;
-    obstSvg += `<polygon points="${ox.toFixed(2)},${(oy + tDir*ta).toFixed(2)} ${(ox-tb).toFixed(2)},${(oy - tDir*0.2*symSc).toFixed(2)} ${(ox+tb).toFixed(2)},${(oy - tDir*0.2*symSc).toFixed(2)}" fill="${obsClr}" opacity="0.85"/>`;
-    // Abstandslinie zwischen H-Punkt und Leiter
-    const ac = 3 * symSc;
-    obstSvg += `<line x1="${(ox+ac).toFixed(2)}" y1="${oy.toFixed(2)}" x2="${(ox+ac).toFixed(2)}" y2="${ty.toFixed(2)}" stroke="${obsClr}" stroke-width="${(0.5*symSc).toFixed(3)}" stroke-dasharray="${(1.5*symSc).toFixed(2)},${(1.1*symSc).toFixed(2)}" opacity="0.55"/>`;
-    // Ticks an Leiter und H-Punkt
-    obstSvg += `<line x1="${(ox+1.5*symSc).toFixed(2)}" y1="${ty.toFixed(2)}" x2="${(ox+4.5*symSc).toFixed(2)}" y2="${ty.toFixed(2)}" stroke="${obsClr}" stroke-width="${(0.4*symSc).toFixed(3)}"/>`;
-    obstSvg += `<line x1="${(ox+1.5*symSc).toFixed(2)}" y1="${oy.toFixed(2)}" x2="${(ox+4.5*symSc).toFixed(2)}" y2="${oy.toFixed(2)}" stroke="${obsClr}" stroke-width="${(0.4*symSc).toFixed(3)}"/>`;
-    const minC   = minClearance;
-    const vio    = minC !== null && (sysMode === 'el' ? Math.abs(clear) < minC : clear < minC);
-
-    _drawingObstData.push({ xFrac: ox / VW, name: lbl, badge, h: obsAbsH, xVal: xv, clear: parseFloat(clear.toFixed(3)), nearLbl, violated: vio });
-  });
-
   // Hindernisse oberhalb (Abstandsprüfung des Felds): Unterkante bzw. Punkte und
   // Abstand im massgebenden Lastfall. Zeichnung und PDF sind immer hell.
+  const obsClr = '#3a3a3a';
+  let obstSvg = '';
   _nachweis.forEach(({ h, best, ok }) => {
     if (!best) return;
     const P = hindernisPunkte(h.punkte);
@@ -11239,22 +10804,6 @@ function buildScaleDrawingPage(stripInSvg = false) {
     obstSvg += `<line x1="${bx.toFixed(2)}" y1="${by.toFixed(2)}" x2="${bx.toFixed(2)}" y2="${ly.toFixed(2)}" stroke="${farbe}" stroke-width="${(0.45 * symSc).toFixed(3)}" stroke-dasharray="${(1.4 * symSc).toFixed(2)},${(1 * symSc).toFixed(2)}"/>`;
     obstSvg += `<text x="${(bx + 1.2 * symSc).toFixed(2)}" y="${((by + ly) / 2).toFixed(2)}" font-size="${(2.3 * symSc).toFixed(2)}" font-weight="700" fill="${farbe}">${escHtml(h.name ? h.name + ': ' : '')}a = ${best.abstand.toFixed(2)} m${ok ? '' : ' ⚠'}</text>`;
   });
-
-  // H-Punkt SVG-Strip Zellen (PDF-Export)
-  if (stripInSvg && _hasHPunkt_early && _drawingObstData.length > 0) {
-    const hOff   = stripNRows - 3;  // H-Punkt Header bei Row hOff, H-Wert bei hOff+1, Abstand bei hOff+2
-    const rowY   = (r) => (stripY0 + r * stripRowH + stripRowH * 0.65).toFixed(2);
-    const obsClrS = '#3a3a3a';
-    _drawingObstData.forEach(({ xFrac, h, clear, violated }) => {
-      const px = (xFrac * VW).toFixed(2);
-      // H-Wert
-      probesSvg += `<text x="${px}" y="${rowY(hOff+1)}" font-size="2.3" font-weight="600" text-anchor="middle" fill="${obsClrS}">${h.toFixed(2)}</text>`;
-      // Abstandswert (rot wenn verletzt)
-      const clrV = violated ? '#eb0000' : obsClrS;
-      const warnS = violated ? ' ⚠' : '';
-      probesSvg += `<text x="${px}" y="${rowY(hOff+2)}" font-size="2.3" font-weight="700" text-anchor="middle" fill="${clrV}">${clear.toFixed(2)}${warnS}</text>`;
-    });
-  }
 
   // Footer: scale bars + legend (PDF only)
   const _t3v_foot = c3data
@@ -11595,18 +11144,11 @@ function updateStripVisibility() {
         .filter(({ frac }) => frac >= -0.005 && frac <= 1.005)
     : [];
 
-  // Visible obstacles
-  const visibleObs = (_drawingObstData || [])
-    .map(o => ({ obs: o, frac: screenFrac(o.xFrac) }))
-    .filter(({ frac }) => frac >= -0.005 && frac <= 1.005);
-
-  if (visibleProbes.length === 0 && visibleObs.length === 0) {
+  if (visibleProbes.length === 0) {
     zeigeElement(strip, false);
     return;
   }
   zeigeElement(strip, true);
-
-  const obsClrStrip = '#3a3a3a';
 
   // ── M-probe rows ──
   let html = '';
@@ -11625,39 +11167,8 @@ function updateStripVisibility() {
       const cellClr = (probe.colors && probe.colors[r]) ? (grau[probe.colors[r]] || probe.colors[r]) : color;
       html += `<div class="strip-val${isBold ? ' bold' : ''}" style="left:${(frac*100).toFixed(2)}%;color:${cellClr}">${probe.cells[r] ?? ''}</div>`;
     });
-    // Obstacle columns: show name in row 0, x in row 1, '—' for T2/T3 rows
-    visibleObs.forEach(({ obs, frac }) => {
-      let val = '';
-      if (r === 0) val = `<span style="background:var(--s4);color:${obsClrStrip};padding:0 3px;border-radius:3px;font-size:12px;font-weight:700">${obs.badge} (${escHtml(obs.name)})</span>`;
-      else if (r === 1) val = obs.xVal?.toFixed(2) ?? '';
-      html += `<div class="strip-val${r===0?' bold':''}" style="left:${(frac*100).toFixed(2)}%;color:${obsClrStrip}">${val}</div>`;
-    });
     html += '</div>';
   });
-
-  // ── Obstacle-specific rows (Höhe + Abstand) ──
-  if (visibleObs.length > 0) {
-    // Divider — gleiche Höhe wie andere Zeilen
-    html += `<div class="strip-row" style="background:rgba(80,80,80,.07)"><div class="strip-label" style="background:rgba(80,80,80,.06);color:${obsClrStrip};font-weight:600;letter-spacing:.02em">H-Punkt</div></div>`;
-    // Höhe row
-    html += `<div class="strip-row"><div class="strip-label" style="color:${obsClrStrip}">H [m ü.M.]</div>`;
-    visibleObs.forEach(({ obs, frac }) => {
-      html += `<div class="strip-val" style="left:${(frac*100).toFixed(2)}%;color:${obsClrStrip}">${obs.h.toFixed(2)}</div>`;
-    });
-    html += '</div>';
-    // Abstand row
-    const nearLbls = [...new Set(visibleObs.map(v => v.obs.nearLbl || 'T<sub>2</sub>'))];
-    const grenzStr = minClearance !== null ? ` ≥${minClearance.toFixed(2)} m` : '';
-    const distLabel = `↕ Abstand (${nearLbls.join('/')}) [m]${grenzStr}`;
-    html += `<div class="strip-row"><div class="strip-label" style="color:${obsClrStrip}">${distLabel}</div>`;
-    visibleObs.forEach(({ obs, frac }) => {
-      const vio    = obs.violated;
-      const clrVal = vio ? '#eb0000' : (obs.clear < 0 ? '#eb0000' : obsClrStrip);
-      const warn   = vio ? ' ⚠' : '';
-      html += `<div class="strip-val bold" style="left:${(frac*100).toFixed(2)}%;color:${clrVal}">${obs.clear.toFixed(2)}${warn}</div>`;
-    });
-    html += '</div>';
-  }
 
   strip.innerHTML = html;
 
@@ -11665,7 +11176,7 @@ function updateStripVisibility() {
   const mcNote = document.getElementById('scale-min-clearance-note');
   if (mcNote) {
     if (minClearance !== null && minClearance > 0) {
-      const anyVio = (_drawingObstData || []).some(o => o.violated);
+      const anyVio = _nachweis.some(n => n.best && !n.ok);
       mcNote.textContent = `Mindestabstand zu Leiter: ${minClearance.toFixed(2)} m`;
       mcNote.style.color  = anyVio ? '#dc2626' : '#5a6a7a';
       zeigeElement(mcNote, true);
@@ -12021,8 +11532,6 @@ function _onDrawingWheel(e) {
   if (lbl) lbl.textContent = Math.round(drawingZoom * 100) + '%';
 }
 
-// Rückwärtskompatibilität
-function toggleScaleView() { setCanvasView(scaleViewActive ? 'diagramm' : 'zeichnung'); }
 
 // Wenn neu berechnet wird, Scale-View aktualisieren falls aktiv
 function refreshScaleViewIfActive() {
@@ -12815,10 +12324,8 @@ function exportDxf() {
   }
 
   const hw = Math.min(1.0, L * 0.03);
-  [{ xv: probeX1, h: probeH1 }, { xv: probeX2, h: probeH2 },
-   { xv: probeX3, h: probeH3 }, { xv: probeX4, h: probeH4 }]
-    .filter(p => p.xv !== null)
-    .forEach(({ xv, h }) => {
+  _probeXs().filter(xv => xv !== null)
+    .forEach(xv => {
       const y = catY(xv, cDisp);
       linien.push({ layer: 'MESSPUNKT', punkte: [P(xv - hw, y), P(xv + hw, y)] });
       linien.push({ layer: 'MESSPUNKT', punkte: [P(xv, y - hw), P(xv, y + hw)] });
@@ -13374,7 +12881,6 @@ const LANG = {
     'app.title.nfl':        'Durchhang N-FL',
     'app.title.rfl':        'Durchhang R-FL',
     'app.title.el':         'Durchhang Einzelleiter',
-    'app.handbuch':         'Handbuch',
     // Card titles
     'card.befestigung':     'Befestigungspunkte Ts',
     'card.befestigung.sub': '(über SOK)',
@@ -13389,8 +12895,6 @@ const LANG = {
     'bp.sok.clear':         '✕ löschen',
     'bp.drag.hint':         'Ankerpunkte im Diagramm verschiebbar',
     // Δ Mastfuss-SOK / Bezeichnung / KM
-    'bp.delta.sok.li':     'Δ Mastfuss-SOK li',
-    'bp.delta.sok.re':     'Δ Mastfuss-SOK re',
     'bp.bez.label':        'Bezeichnung',
     'bp.bez.optional':     '(optional)',
     'bp.name.li':          'Name / Nr. links',
@@ -13398,9 +12902,7 @@ const LANG = {
     'bp.km.li':            'KM links',
     'bp.km.re':            'KM rechts',
     // H-Punkt / Mindestabstand
-    'probe.h.hdr':         'H-Punkt: z.B. Unterkante Brücke / Bauwerk',
     'probe.h.placeholder': 'Höhe',
-    'probe.mindest.hdr':   'Mindestabstand',
     'bp.befestigung.li':   'Befestigung li',
     'bp.befestigung.re':    'Befestigung re',
     'bp.mum.abbrev':        'm ü.M.',
@@ -13467,12 +12969,10 @@ const LANG = {
     'preset.bei.t1':        'bei',
     'preset.hts.konst':     'N konstant (Nachspannvorrichtung)',
     'preset.abnutzung':     'Abnutzung max.',
-    'preset.el.reglage':    'Reglage bei T<sub>1</sub> = 10 °C, Lm = 45 m',
     'preset.custom.lbl':    'Benutzerdefiniertes Kettenwerk',
     'preset.bearbeiten':    'Bearbeiten',
     'mat.rn.6kn.rl':        '6 kN Basiskraft (Rückleiter/Speiseleitung)',
     'mat.rn.9kn':           '9 kN Basiskraft (normale Zugkraft)',
-    'mat.rn.6kn.lm35':      '6 kN Basiskraft, Lm > 35 m',
     'par.T1':               'Temperatur T<sub>1</sub>',
     'par.T1.sub':           '(Montage)',
     'par.T2':               'Temperatur T<sub>2</sub>',
@@ -13480,7 +12980,6 @@ const LANG = {
     'par.eislast.sub':      '(bei T<sub>2</sub> = −5 °C)',
     'par.eislast.hint':     'Zusatzlast durch Eisansatz [N/m] — aktiv bei N-FL und −20 °C ≤ T<sub>2</sub> ≤ −5 °C.',
     // Buttons
-    'btn.pdf':              'PDF Berechnungsprotokoll',
     'btn.drawing':          'Zeichnung',
     // Canvas / Legend
     'canvas.title':         'Diagramm',
@@ -13488,16 +12987,11 @@ const LANG = {
     'canvas.y.sok':         'Höhe [m ü.SOK]',
     'canvas.y.mum':         'Höhe [m ü.M.]',
     'canvas.x.label':       'Horizontalabstand [m]',
-    'canvas.fd.solllage':   'Fd Solllage',
-    'canvas.fd':            'Fd',
-    'canvas.fd.t2':         'Fd (T<sub>2</sub>)',
     'canvas.probe.hint':    'Messpunkte: ins Diagramm klicken / ziehen oder x-Wert eingeben',
     'canvas.probe.reset':   '✕ Reset',
     'leg.ts1':              'Ts bei T<sub>1</sub>',
     'leg.ts1.rfl':          'Tragseil (Ts)',
     'leg.ts2':              'Ts bei T<sub>2</sub>',
-    'leg.fd':               'Fahrdraht (Fd)',
-    'leg.fd.nfl':           'Fd effektiv (T<sub>2</sub>)',
     'leg.fd.solllage':      'Fd Solllage (T<sub>1</sub>)',
     'leg.sehne':            'Sehnenlinie',
     'leg.leiter1':          'Leiter bei T<sub>1</sub>',
@@ -13510,14 +13004,12 @@ const LANG = {
     'res.sag.ts':           'Durchhang Ts',
     'dyn.ueber.sok':        'ü.SOK',
     'dyn.ueber.mum':        'm ü.M.',
-    'dyn.bei.t1':           'bei T<sub>1</sub>',
     'dyn.bei.t2':           'bei T<sub>2</sub>',
     'dyn.ts':               'Ts',
     // Results area
     'res.ausgangszustand':  'Ausgangszustand',
     'res.x_low':            'Tiefpunkt x',
     'res.tiefpunkt.label':  'Tiefpunkt',
-    'res.tiefpunkt.x0':     'Tiefpunkt x₀',
     'res.sag.belastet':     'Durchhang Ts belastet',
     'res.sag.ts.label':     'Durchhang f Ts',
     'res.sag.el.label':     'Durchhang f',
@@ -13538,7 +13030,6 @@ const LANG = {
     'res.eigengewicht':     'Eigengewicht q',
     'res.material':         'Material',
     'res.abnutzung.fd':     'Abnutzung Fd',
-    'res.h.ts':             'H Ts',
     // Handbuch
     'hb.modal.title':       'Handbuch — Kettenwerk Rechner N-FL / R-FL',
     'hb.toc.1':  '1 Übersicht',     'hb.toc.2':  '2 Eingabe',
@@ -13677,7 +13168,6 @@ const LANG = {
     // Projekt / Speichern
     'msg.gespeichert.ohne.foto': 'Gespeichert (Foto-Bild weggelassen — Speicher voll)',
     'msg.speicher.voll.loeschen':'Speichern fehlgeschlagen: Browser-Speicher voll.\nBitte alte Projekte löschen.',
-    'msg.speicher.voll':         'Speichern fehlgeschlagen: Browser-Speicher voll.',
     'msg.reset.frage':           'Alle Eingaben zurücksetzen auf Standardwerte?\nNicht gespeicherte Daten gehen verloren.',
     'msg.gespeichert':           '\u2713 Gespeichert',
     'msg.ladefehler':            'Fehler beim Laden',
@@ -13907,11 +13397,7 @@ const LANG = {
     'ui.reglage.bei': 'Reglage bei',
     'ui.export.csv': 'Export CSV',
     'ui.import.csv': 'Import CSV',
-    'ui.waermedehnzahl': 'Wärmedehnzahl α',
-    'ui.steifigkeit': 'Steifigkeit E·A',
-    'ui.eigengewicht': 'Eigengewicht q',
     'ui.leiterkennwerte': 'Leiterkennwerte',
-    'ui.bezeichnung': 'Bezeichnung',
     'ui.elm.titel': 'Eigenes Leitermaterial',
     'ui.elm.platzhalter': 'z. B. Al 240 mm²',
     'ui.elm.alle.loeschen': 'Alle eigenen löschen',
@@ -13922,9 +13408,6 @@ const LANG = {
     'ui.hoehe.yc': 'Höhe y<sub>C</sub>',
     'ui.temp.t3': 'Temperatur T<sub>3</sub>',
     'ui.sok.hinweis': 'ⓘ SOK zwischen den Eingabepunkten wird interpoliert und entspricht nicht der effektiven Höhenlage.',
-    'ui.hindernis': 'Hindernispunkte',
-    'ui.hinzufuegen': '+ Hinzufügen',
-    'ui.alle': '✕ Alle',
     'ui.foto.ablauf.titel': 'Foto-Auswertung — Ablauf',
     'ui.foto.genau.titel': 'Foto-Auswertung — nur Abschätzung',
     'ui.foto.genau.text': 'Die Foto-Auswertung ist keine präzise Berechnung. Sie eignet sich nur für eine Abschätzung des Durchhangs.\n\nFür verbindliche Werte die Berechnung im Diagramm mit gemessenen Höhen und Spannweite verwenden.',
@@ -13935,9 +13418,6 @@ const LANG = {
     'ui.sok.kurz': 'SOK',
     'err.3pt.sok.fehlt': 'SOK m ü. M. nicht definiert',
     'err.3pt.ueber.sehne': 'Punkt C liegt über der Sehne (Sehne bei {h} m {was})',
-    'ui.obs.name.ph': 'Name (z.B. UK Brücke)',
-    'ui.obs.h.titel': 'Höhe über SOK [m]',
-    'ui.obs.legende': 'x = Position im Feld [m] &nbsp;·&nbsp; h = Höhe über SOK [m]',
     'pdf.fd.hoehe.tp': 'Fd-Höhe über SOK am Tiefpunkt',
     'pdf.fd.ist.t2': 'Istzustand bei T<sub>2</sub>',
     'pdf.fd.hoehe.sok': 'Fd-Höhe über SOK',
@@ -14033,8 +13513,6 @@ const LANG = {
     'hind.zone': 'Zone anzeigen',
     'hind.verbinden': 'Punkte verbinden',
     'hind.verbinden.titel': 'Unterkante als Linie durch die Punkte (nach x sortiert); aus = Einzelpunkte',
-    'hind.punkt.hinzu': '+ Punkt',
-    'hind.punkt.weg': 'Punkt löschen',
     'hind.titel': 'H-Punkte: Hindernis oberhalb (z. B. Unterkante Brücke / Bauwerk)',
     'probe.h.sokfehlt': 'SOK fehlt',
     'probe.sok.link': 'SOK m ü. M. eintragen →',
@@ -14048,18 +13526,12 @@ const LANG = {
     'hind.massgebend': 'massgebend',
     'hind.uebernommen': 'Hindernisse aus der früheren Liste als H-Punkte bei M1–M4 übernommen.',
     'hind.uebernommen.gekuerzt': 'Hindernisse als H-Punkte übernommen — je Feld höchstens 4 Punkte (die tiefsten); bitte prüfen.',
-    'hind.hinzu': '+ Hindernis',
     'hind.mindest': 'Mindestabstand a',
-    'hind.name': 'Bezeichnung',
-    'hind.feld': 'Feld',
-    'hind.uk': 'Höhe',
-    'hind.uk.mum': '[m ü. M.]',
     'hind.sok.fehlt': 'SOK m ü. M. fehlt — keine Prüfung',
     'hind.sok.fehlt.kurz': 'SOK fehlt',
     'hind.sok.hinweis': 'Höhen der Hindernisse in m ü. M. Für die Prüfung die SOK m ü. M. unter «Mastangaben» eintragen (direkt oder über die Koordinaten).',
     'hind.unvollstaendig': 'Punkte mit x und Höhe eingeben',
     'hind.ausserhalb': 'Punkte liegen ausserhalb des Felds',
-    'hind.anderes.feld': 'gehört zu einem anderen Feld des Abschnitts',
     'hind.legende': 'Geprüft wird der oberste Leiter (Tragseil bzw. Einzelleiter) an den H-Punkten in allen Lastfällen. «Punkte verbinden»: Unterkante als Linie durch die H-Punkte (nach x sortiert); aus: jeder H-Punkt einzeln. Schloss: Messpunkt gegen Verschieben und Löschen sichern. Im Diagramm gestrichelt: massgebender Lastfall.',
     'lf.knopf': 'Lastfälle …',
     'hf.titel': 'Fahrdrahthöhe hf_min / hf_max',
@@ -14185,7 +13657,6 @@ const LANG = {
     'ui.foto.hinweis.4': 'Punkte können nach dem Setzen verschoben werden',
     'card.temperatur': 'Temperatur',
     'ui.mastangaben': 'Mastangaben: SOK m ü. M., Name, KM, Koordinaten',
-    'ui.mastangaben.sub': '(optional)',
   },
   fr: {
     'app.subtitle':         'Caténaire — courbe du câble avec influence de la température',
@@ -14193,7 +13664,6 @@ const LANG = {
     'app.title.nfl':        'Flèche LC N',
     'app.title.rfl':        'Flèche LC R',
     'app.title.el':         'Flèche conducteur simple',
-    'app.handbuch':         'Manuel',
     // Card titles
     'card.befestigung':     'Points d’appui CP',
     'card.befestigung.sub': '(sur DRS)',
@@ -14208,8 +13678,6 @@ const LANG = {
     'bp.sok.clear':         '✕ effacer',
     'bp.drag.hint':         'Points d’appui déplaçables dans le diagramme',
     // Δ Pied de mât / Désignation / KM
-    'bp.delta.sok.li':     'Δ Pied mât-DRS gauche',
-    'bp.delta.sok.re':     'Δ Pied mât-DRS droit',
     'bp.bez.label':        'Désignation',
     'bp.bez.optional':     '(optionnel)',
     'bp.name.li':          'Nom / No. gauche',
@@ -14217,9 +13685,7 @@ const LANG = {
     'bp.km.li':            'KM gauche',
     'bp.km.re':            'KM droit',
     // Point H / Distance minimale
-    'probe.h.hdr':         'Point H: p.ex. sous-face pont / ouvrage',
     'probe.h.placeholder': 'Hauteur',
-    'probe.mindest.hdr':   'Distance minimale',
     'bp.befestigung.li':   'Point d’appui gauche',
     'bp.befestigung.re':    'Point d’appui droit',
     'bp.mum.abbrev':        'm s.n.m.',
@@ -14286,12 +13752,10 @@ const LANG = {
     'preset.bei.t1':        'à',
     'preset.hts.konst':     'N constant (tendeur automatique)',
     'preset.abnutzung':     'Usure max.',
-    'preset.el.reglage':    'Réglage à T<sub>1</sub> = 10 °C, Lm = 45 m',
     'preset.custom.lbl':    'Caténaire personnalisée',
     'preset.bearbeiten':    'Modifier',
     'mat.rn.6kn.rl':        '6 kN force de base (fil de retour/câble d\'alimentation)',
     'mat.rn.9kn':           '9 kN force de base (tension nominale)',
-    'mat.rn.6kn.lm35':      '6 kN force de base, Lm > 35 m',
     'par.T1':               'Température T<sub>1</sub>',
     'par.T1.sub':           '(pose)',
     'par.T2':               'Température T<sub>2</sub>',
@@ -14299,7 +13763,6 @@ const LANG = {
     'par.eislast.sub':      '(à T<sub>2</sub> = −5 °C)',
     'par.eislast.hint':     'Charge additionnelle due au givre [N/m] — active pour LC N et −20 °C ≤ T<sub>2</sub> ≤ −5 °C.',
     // Buttons
-    'btn.pdf':              'Protocole de calcul PDF',
     'btn.drawing':          'Dessin',
     // Canvas / Legend
     'canvas.title':         'Diagramme',
@@ -14307,16 +13770,11 @@ const LANG = {
     'canvas.y.sok':         'Hauteur [m s.DRS]',
     'canvas.y.mum':         'Hauteur [m alt.]',
     'canvas.x.label':       'Distance horizontale [m]',
-    'canvas.fd.solllage':   'FC position nominale',
-    'canvas.fd':            'FC',
-    'canvas.fd.t2':         'FC (T<sub>2</sub>)',
     'canvas.probe.hint':    'Points de mesure: cliquer/glisser dans le diagramme ou saisir x',
     'canvas.probe.reset':   '✕ Reset',
     'leg.ts1':              'CP à T<sub>1</sub>',
     'leg.ts1.rfl':          'Câble porteur (CP)',
     'leg.ts2':              'CP à T<sub>2</sub>',
-    'leg.fd':               'Fil de contact (FC)',
-    'leg.fd.nfl':           'FC effectif (T<sub>2</sub>)',
     'leg.fd.solllage':      'FC position théorique (T<sub>1</sub>)',
     'leg.sehne':            'Ligne de corde',
     'leg.leiter1':          'Conducteur à T<sub>1</sub>',
@@ -14329,14 +13787,12 @@ const LANG = {
     'res.sag.ts':           'Flèche CP',
     'dyn.ueber.sok':        's.DRS',
     'dyn.ueber.mum':        'm s.n.m.',
-    'dyn.bei.t1':           'à T<sub>1</sub>',
     'dyn.bei.t2':           'à T<sub>2</sub>',
     'dyn.ts':               'CP',
     // Results area
     'res.ausgangszustand':  'État initial',
     'res.x_low':            'Point le plus bas x',
     'res.tiefpunkt.label':  'Point le plus bas',
-    'res.tiefpunkt.x0':     'Point le plus bas x₀',
     'res.sag.belastet':     'Flèche CP chargée',
     'res.sag.ts.label':     'Flèche f CP',
     'res.sag.el.label':     'Flèche f',
@@ -14357,7 +13813,6 @@ const LANG = {
     'res.eigengewicht':     'Poids propre q',
     'res.material':         'Matériau',
     'res.abnutzung.fd':     'Usure FC',
-    'res.h.ts':             'H CP',
     // Handbuch
     'hb.modal.title':       'Manuel — Calculateur caténaire LC N / LC R',
     'hb.toc.1':  '1 Aperçu',          'hb.toc.2':  '2 Saisie',
@@ -14496,7 +13951,6 @@ const LANG = {
     // Projet / Enregistrement
     'msg.gespeichert.ohne.foto': 'Enregistré (photo omise — mémoire pleine)',
     'msg.speicher.voll.loeschen':"Échec de l'enregistrement: mémoire du navigateur pleine.\nSupprimer d'anciens projets.",
-    'msg.speicher.voll':         "Échec de l'enregistrement: mémoire du navigateur pleine.",
     'msg.reset.frage':           'Réinitialiser toutes les saisies aux valeurs par défaut?\nLes données non enregistrées seront perdues.',
     'msg.gespeichert':           '\u2713 Enregistré',
     'msg.ladefehler':            'Erreur lors du chargement',
@@ -14726,11 +14180,7 @@ const LANG = {
     'ui.reglage.bei': 'Réglage à',
     'ui.export.csv': 'Exporter CSV',
     'ui.import.csv': 'Importer CSV',
-    'ui.waermedehnzahl': 'Coefficient de dilatation α',
-    'ui.steifigkeit': 'Rigidité E·A',
-    'ui.eigengewicht': 'Poids propre q',
     'ui.leiterkennwerte': 'Caractéristiques du conducteur',
-    'ui.bezeichnung': 'Désignation',
     'ui.elm.titel': 'Matériau de conducteur personnalisé',
     'ui.elm.platzhalter': 'p. ex. Al 240 mm²',
     'ui.elm.alle.loeschen': 'Supprimer tous les personnalisés',
@@ -14741,9 +14191,6 @@ const LANG = {
     'ui.hoehe.yc': 'Hauteur y<sub>C</sub>',
     'ui.temp.t3': 'Température T<sub>3</sub>',
     'ui.sok.hinweis': 'ⓘ Le DRS entre les points saisis est interpolé et ne correspond pas à l\'altitude effective.',
-    'ui.hindernis': 'Points d’obstacle',
-    'ui.hinzufuegen': '+ Ajouter',
-    'ui.alle': '✕ Tous',
     'ui.foto.ablauf.titel': 'Analyse photo — Procédure',
     'ui.foto.genau.titel': 'Analyse photo — estimation seulement',
     'ui.foto.genau.text': 'L\'analyse photo n\'est pas un calcul précis. Elle convient uniquement pour estimer la flèche.\n\nPour des valeurs fiables, utiliser le calcul dans le diagramme avec les hauteurs et la portée mesurées.',
@@ -14754,9 +14201,6 @@ const LANG = {
     'ui.sok.kurz': 'DRS',
     'err.3pt.sok.fehlt': 'DRS m s.n.m. non défini',
     'err.3pt.ueber.sehne': 'Le point C se trouve au-dessus de la ligne de corde (corde à {h} m {was})',
-    'ui.obs.name.ph': 'Nom (p. ex. sous-face pont)',
-    'ui.obs.h.titel': 'Hauteur sur DRS [m]',
-    'ui.obs.legende': 'x = position dans la portée [m] &nbsp;·&nbsp; h = hauteur sur DRS [m]',
     'pdf.fd.hoehe.tp': 'Hauteur FC sur DRS au point le plus bas',
     'pdf.fd.ist.t2': 'état réel à T<sub>2</sub>',
     'pdf.fd.hoehe.sok': 'Hauteur FC sur DRS',
@@ -14852,8 +14296,6 @@ const LANG = {
     'hind.zone': 'Afficher la zone',
     'hind.verbinden': 'Relier les points',
     'hind.verbinden.titel': 'Sous-face comme ligne passant par les points (triés selon x) ; désactivé = points isolés',
-    'hind.punkt.hinzu': '+ Point',
-    'hind.punkt.weg': 'Supprimer le point',
     'hind.titel': 'Points H : obstacle au-dessus (p. ex. sous-face pont / ouvrage)',
     'probe.h.sokfehlt': 'DRS manquant',
     'probe.sok.link': 'Saisir le DRS m s.n.m. →',
@@ -14867,18 +14309,12 @@ const LANG = {
     'hind.massgebend': 'déterminant',
     'hind.uebernommen': 'Obstacles de l’ancienne liste repris comme points H à M1–M4.',
     'hind.uebernommen.gekuerzt': 'Obstacles repris comme points H — au plus 4 points par portée (les plus bas) ; à vérifier.',
-    'hind.hinzu': '+ Obstacle',
     'hind.mindest': 'Distance minimale a',
-    'hind.name': 'Désignation',
-    'hind.feld': 'Portée',
-    'hind.uk': 'Hauteur',
-    'hind.uk.mum': '[m s.n.m.]',
     'hind.sok.fehlt': 'DRS m s.n.m. manquant — pas de vérification',
     'hind.sok.fehlt.kurz': 'DRS manquant',
     'hind.sok.hinweis': 'Hauteurs des obstacles en m s.n.m. Pour la vérification, saisir le DRS m s.n.m. sous « Données des mâts » (directement ou via les coordonnées).',
     'hind.unvollstaendig': 'saisir des points avec x et hauteur',
     'hind.ausserhalb': 'les points sont hors de la portée',
-    'hind.anderes.feld': 'appartient à une autre portée du canton',
     'hind.legende': 'Le conducteur le plus haut (câble porteur resp. conducteur simple) est vérifié aux points H dans tous les cas de charge. «Relier les points» : sous-face comme ligne passant par les points H (triés selon x) ; désactivé : chaque point H séparément. Cadenas : protéger le point de mesure contre le déplacement et la suppression. En pointillé dans le diagramme : cas de charge déterminant.',
     'lf.knopf': 'Cas de charge …',
     'hf.titel': 'Hauteur du fil de contact hf_min / hf_max',
@@ -15004,7 +14440,6 @@ const LANG = {
     'ui.foto.hinweis.4': 'Les points peuvent être déplacés après leur placement',
     'card.temperatur': 'Température',
     'ui.mastangaben': 'Données des mâts : DRS m s.n.m., nom, km, coordonnées',
-    'ui.mastangaben.sub': '(optionnel)',
   },
   it: {
     'app.subtitle':         'Catenaria — curva del cavo con influenza della temperatura',
@@ -15012,7 +14447,6 @@ const LANG = {
     'app.title.nfl':        'Freccia LC N',
     'app.title.rfl':        'Freccia LC R',
     'app.title.el':         'Freccia conduttore singolo',
-    'app.handbuch':         'Manuale',
     // Card titles
     'card.befestigung':     'Punti d’aggancio FP',
     'card.befestigung.sub': '(sul PRF)',
@@ -15027,8 +14461,6 @@ const LANG = {
     'bp.sok.clear':         '✕ cancella',
     'bp.drag.hint':         'Punti d’aggancio spostabili nel diagramma',
     // Δ Piede palo / Denominazione / KM
-    'bp.delta.sok.li':     'Δ Piede palo-PRF sinistro',
-    'bp.delta.sok.re':     'Δ Piede palo-PRF destro',
     'bp.bez.label':        'Denominazione',
     'bp.bez.optional':     '(opzionale)',
     'bp.name.li':          'Nome / Nr. sinistro',
@@ -15036,9 +14468,7 @@ const LANG = {
     'bp.km.li':            'KM sinistro',
     'bp.km.re':            'KM destro',
     // Punto H / Distanza minima
-    'probe.h.hdr':         'Punto H: p.es. intradosso ponte / opera',
     'probe.h.placeholder': 'Altezza',
-    'probe.mindest.hdr':   'Distanza minima',
     'bp.befestigung.li':   'Punto d’aggancio sinistro',
     'bp.befestigung.re':    'Punto d’aggancio destro',
     'bp.mum.abbrev':        'm s.l.m.',
@@ -15105,12 +14535,10 @@ const LANG = {
     'preset.bei.t1':        'a',
     'preset.hts.konst':     'N costante (tenditore automatico)',
     'preset.abnutzung':     'Usura max.',
-    'preset.el.reglage':    'Regolazione a T<sub>1</sub> = 10 °C, Lm = 45 m',
     'preset.custom.lbl':    'Catenaria personalizzata',
     'preset.bearbeiten':    'Modifica',
     'mat.rn.6kn.rl':        '6 kN forza base (conduttore di ritorno/linea di alimentazione)',
     'mat.rn.9kn':           '9 kN forza base (tensione nominale)',
-    'mat.rn.6kn.lm35':      '6 kN forza base, Lm > 35 m',
     'par.T1':               'Temperatura T<sub>1</sub>',
     'par.T1.sub':           '(posa)',
     'par.T2':               'Temperatura T<sub>2</sub>',
@@ -15118,7 +14546,6 @@ const LANG = {
     'par.eislast.sub':      '(a T<sub>2</sub> = −5 °C)',
     'par.eislast.hint':     'Carico aggiuntivo da ghiaccio [N/m] — attivo per LC N e −20 °C ≤ T<sub>2</sub> ≤ −5 °C.',
     // Buttons
-    'btn.pdf':              'Protocollo di calcolo PDF',
     'btn.drawing':          'Disegno',
     // Canvas / Legend
     'canvas.title':         'Diagramma',
@@ -15126,16 +14553,11 @@ const LANG = {
     'canvas.y.sok':         'Altezza [m s.PRF]',
     'canvas.y.mum':         'Altezza [m s.l.m.]',
     'canvas.x.label':       'Distanza orizzontale [m]',
-    'canvas.fd.solllage':   'FC posizione nominale',
-    'canvas.fd':            'FC',
-    'canvas.fd.t2':         'FC (T<sub>2</sub>)',
     'canvas.probe.hint':    'Punti di misura: cliccare/trascinare nel diagramma o inserire x',
     'canvas.probe.reset':   '✕ Reset',
     'leg.ts1':              'FP a T<sub>1</sub>',
     'leg.ts1.rfl':          'Filo portante (FP)',
     'leg.ts2':              'FP a T<sub>2</sub>',
-    'leg.fd':               'Filo di contatto (FC)',
-    'leg.fd.nfl':           'FC effettivo (T<sub>2</sub>)',
     'leg.fd.solllage':      'FC posizione teorica (T<sub>1</sub>)',
     'leg.sehne':            'Linea di corda',
     'leg.leiter1':          'Conduttore a T<sub>1</sub>',
@@ -15148,14 +14570,12 @@ const LANG = {
     'res.sag.ts':           'Freccia FP',
     'dyn.ueber.sok':        's.PRF',
     'dyn.ueber.mum':        'm s.l.m.',
-    'dyn.bei.t1':           'a T<sub>1</sub>',
     'dyn.bei.t2':           'a T<sub>2</sub>',
     'dyn.ts':               'FP',
     // Results area
     'res.ausgangszustand':  'Stato iniziale',
     'res.x_low':            'Punto più basso x',
     'res.tiefpunkt.label':  'Punto più basso',
-    'res.tiefpunkt.x0':     'Punto più basso x₀',
     'res.sag.belastet':     'Freccia FP caricato',
     'res.sag.ts.label':     'Freccia f FP',
     'res.sag.el.label':     'Freccia f',
@@ -15176,7 +14596,6 @@ const LANG = {
     'res.eigengewicht':     'Peso proprio q',
     'res.material':         'Materiale',
     'res.abnutzung.fd':     'Usura FC',
-    'res.h.ts':             'H FP',
     // Handbuch
     'hb.modal.title':       'Manuale — Calcolatore catenaria LC N / LC R',
     'hb.toc.1':  '1 Panoramica',      'hb.toc.2':  '2 Dati di ingresso',
@@ -15315,7 +14734,6 @@ const LANG = {
     // Progetto / Salvataggio
     'msg.gespeichert.ohne.foto': 'Salvato (foto omessa — memoria piena)',
     'msg.speicher.voll.loeschen':'Salvataggio non riuscito: memoria del browser piena.\nEliminare progetti vecchi.',
-    'msg.speicher.voll':         'Salvataggio non riuscito: memoria del browser piena.',
     'msg.reset.frage':           'Reimpostare tutti i dati sui valori predefiniti?\nI dati non salvati andranno persi.',
     'msg.gespeichert':           '\u2713 Salvato',
     'msg.ladefehler':            'Errore durante il caricamento',
@@ -15545,11 +14963,7 @@ const LANG = {
     'ui.reglage.bei': 'Regolazione a',
     'ui.export.csv': 'Esporta CSV',
     'ui.import.csv': 'Importa CSV',
-    'ui.waermedehnzahl': 'Coefficiente di dilatazione α',
-    'ui.steifigkeit': 'Rigidezza E·A',
-    'ui.eigengewicht': 'Peso proprio q',
     'ui.leiterkennwerte': 'Caratteristiche del conduttore',
-    'ui.bezeichnung': 'Denominazione',
     'ui.elm.titel': 'Materiale conduttore personalizzato',
     'ui.elm.platzhalter': 'p. es. Al 240 mm²',
     'ui.elm.alle.loeschen': 'Elimina tutti i personalizzati',
@@ -15560,9 +14974,6 @@ const LANG = {
     'ui.hoehe.yc': 'Altezza y<sub>C</sub>',
     'ui.temp.t3': 'Temperatura T<sub>3</sub>',
     'ui.sok.hinweis': 'ⓘ Il PRF tra i punti inseriti è interpolato e non corrisponde all\'altezza effettiva.',
-    'ui.hindernis': 'Punti di ostacolo',
-    'ui.hinzufuegen': '+ Aggiungi',
-    'ui.alle': '✕ Tutti',
     'ui.foto.ablauf.titel': 'Analisi foto — Procedura',
     'ui.foto.genau.titel': 'Analisi foto — solo stima',
     'ui.foto.genau.text': 'L\'analisi foto non è un calcolo preciso. È adatta solo per stimare la freccia.\n\nPer valori affidabili utilizzare il calcolo nel diagramma con altezze e campata misurate.',
@@ -15573,9 +14984,6 @@ const LANG = {
     'ui.sok.kurz': 'PRF',
     'err.3pt.sok.fehlt': 'PRF m s.l.m. non definito',
     'err.3pt.ueber.sehne': 'Il punto C si trova sopra la linea di corda (corda a {h} m {was})',
-    'ui.obs.name.ph': 'Nome (p. es. intradosso ponte)',
-    'ui.obs.h.titel': 'Altezza sul PRF [m]',
-    'ui.obs.legende': 'x = posizione nella campata [m] &nbsp;·&nbsp; h = altezza sul PRF [m]',
     'pdf.fd.hoehe.tp': 'Altezza FC sul PRF al punto più basso',
     'pdf.fd.ist.t2': 'stato reale a T<sub>2</sub>',
     'pdf.fd.hoehe.sok': 'Altezza FC sul PRF',
@@ -15671,8 +15079,6 @@ const LANG = {
     'hind.zone': 'Mostra zona',
     'hind.verbinden': 'Collega i punti',
     'hind.verbinden.titel': 'Intradosso come linea attraverso i punti (ordinati secondo x); disattivato = punti singoli',
-    'hind.punkt.hinzu': '+ Punto',
-    'hind.punkt.weg': 'Elimina punto',
     'hind.titel': 'Punti H: ostacolo sopra (p. es. intradosso ponte / opera)',
     'probe.h.sokfehlt': 'PRF mancante',
     'probe.sok.link': 'Inserire il PRF m s.l.m. →',
@@ -15686,18 +15092,12 @@ const LANG = {
     'hind.massgebend': 'determinante',
     'hind.uebernommen': 'Ostacoli della lista precedente ripresi come punti H a M1–M4.',
     'hind.uebernommen.gekuerzt': 'Ostacoli ripresi come punti H — al massimo 4 punti per campata (i più bassi); da verificare.',
-    'hind.hinzu': '+ Ostacolo',
     'hind.mindest': 'Distanza minima a',
-    'hind.name': 'Denominazione',
-    'hind.feld': 'Campata',
-    'hind.uk': 'Altezza',
-    'hind.uk.mum': '[m s.l.m.]',
     'hind.sok.fehlt': 'PRF m s.l.m. mancante — nessuna verifica',
     'hind.sok.fehlt.kurz': 'PRF mancante',
     'hind.sok.hinweis': 'Altezze degli ostacoli in m s.l.m. Per la verifica inserire il PRF m s.l.m. sotto «Dati dei pali» (direttamente o tramite le coordinate).',
     'hind.unvollstaendig': 'inserire punti con x e altezza',
     'hind.ausserhalb': 'i punti sono fuori dalla campata',
-    'hind.anderes.feld': 'appartiene a un’altra campata della tratta',
     'hind.legende': 'Il conduttore più alto (filo portante risp. conduttore singolo) viene verificato ai punti H in tutti i casi di carico. «Collega i punti»: intradosso come linea attraverso i punti H (ordinati secondo x); disattivato: ogni punto H singolarmente. Lucchetto: proteggere il punto di misura da spostamento ed eliminazione. Tratteggiato nel diagramma: caso di carico determinante.',
     'lf.knopf': 'Casi di carico …',
     'hf.titel': 'Altezza del filo di contatto hf_min / hf_max',
@@ -15823,7 +15223,6 @@ const LANG = {
     'ui.foto.hinweis.4': 'I punti possono essere spostati dopo averli posizionati',
     'card.temperatur': 'Temperatura',
     'ui.mastangaben': 'Dati dei pali: PRF m s.l.m., nome, km, coordinate',
-    'ui.mastangaben.sub': '(opzionale)',
   },
 };
 
@@ -15883,15 +15282,11 @@ function setLang(lang) {
   const h2lbl = document.getElementById('h2-label');
   if (h2lbl) h2lbl.innerHTML = `${t('bp.h2')} <span style="font-weight:400;color:var(--tertiary);font-size:.7em">${t('bp.ueber.sok')}</span>`;
 
-  // Δ Mastfuss-SOK Labels
-
   // Bezeichnung / Name / KM
   const bpBezLbl = document.getElementById('bp-bez-label');
   const bpBezOpt = document.getElementById('bp-bez-optional');
   if (bpBezLbl) bpBezLbl.childNodes[0].textContent = t('bp.bez.label') + ' ';
   if (bpBezOpt) bpBezOpt.textContent = t('bp.bez.optional');
-
-  // H-Punkt Header + Mindestabstand Header
 
   // H-Punkt Placeholders
   [1,2,3,4].forEach(i => {
