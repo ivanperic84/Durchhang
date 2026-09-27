@@ -297,6 +297,32 @@ test('Alle Checkboxen erscheinen als Schalter', async () => {
   await kontext.close();
 });
 
+test('Lastfälle: Minuswert tippbar, keine Höhenlage-Auswahl, Hinweis Zusatzlast nur bei −5 °C', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await seite.evaluate(() => { localStorage.removeItem('dh_lastfaelle'); lastfallEinst = null; openLastfaelle(); });
+  const feld = seite.locator('#lf-temps');
+  await feld.fill('');
+  await feld.pressSequentially('-20; 0 -5');
+  const beimTippen = await feld.inputValue();
+  await feld.blur();
+  const r = await seite.evaluate(() => ({
+    gespeichert: lastfallEinst[_lfSys].temperaturen,
+    danach: document.getElementById('lf-temps').value,
+    hoehenlage: !!document.getElementById('lf-hl-unter'),
+    text: document.getElementById('lastfall-modal').innerText,
+    eisHinweis: t('par.eislast.hint'),
+  }));
+  assert.equal(beimTippen, '-20; 0 -5');
+  assert.deepEqual(r.gespeichert, [-20, 0, -5]);
+  assert.equal(r.danach, '-20; -5; 0');
+  assert.equal(r.hoehenlage, false);
+  assert.doesNotMatch(r.text, /1000 m/);
+  assert.match(r.text, /nur bei −5 °C/);
+  assert.match(r.eisHinweis, /nur bei T<sub>2<\/sub> = −5 °C/);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
 test('Wasserzeichen «BETA – nicht verifiziert»: Bildschirm in allen Sprachen, alle PDFs', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   await fensterAbfangen(seite);
