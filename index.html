@@ -1408,7 +1408,11 @@ input.feld-gesperrt { color: var(--muted) !important; cursor: default; backgroun
 .abs-str-tab select.abs-inp { width: auto; min-width: 7rem; }
 .abs-str-sys { font-size: .74rem; color: var(--text2); max-width: 16rem; }
 .abs-str-aktiv { font-size: .72rem; font-weight: 600; color: var(--primary); }
-.abs-farbe { width: 2rem; height: 1.6rem; padding: 0; border: 1px solid var(--border); border-radius: 6px; background: none; cursor: pointer; }
+.abs-farbe { width: 2rem; height: 1.6rem; padding: 2px; border: 1px solid var(--border2); border-radius: 7px; background: var(--s2); cursor: pointer; }
+.abs-farbe::-webkit-color-swatch-wrapper { padding: 0; }
+.abs-farbe::-webkit-color-swatch { border: none; border-radius: 4px; }
+.abs-farbe::-moz-color-swatch { border: none; border-radius: 4px; }
+.abs-farbe:hover { border-color: var(--primary); }
 .abs-teil { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .35rem; font-size: .74rem; color: var(--muted); }
 .abs-teil select.abs-inp { width: auto; min-width: 4.5rem; }
 .abs-leg.aktiv { font-weight: 700; color: var(--text); }
@@ -1726,8 +1730,26 @@ input.aus-koord { background: var(--acc-s) !important; color: var(--text) !impor
 .proj-child-item { border:1px solid var(--border); border-radius:8px; background:var(--card); }
 .proj-child-item.active-proj { border-color:var(--primary); background:var(--acc-s); }
 /* Auswahl in Listen (mehrere markieren): normale Auswahlbox, kein Schalter */
-input[type=checkbox].auswahl { width:16px; height:16px; margin:0; accent-color:var(--primary); cursor:pointer; }
-@media (any-pointer: coarse) { input[type=checkbox].auswahl { width:20px; height:20px; } }
+/* Auswahlkästchen (Projektliste, Stränge) im App-Design statt Browser-Standard */
+input[type=checkbox].auswahl {
+  -webkit-appearance: none; appearance: none; position: relative; flex-shrink: 0; vertical-align: middle;
+  width: 18px; height: 18px; margin: 0; border-radius: 5px; cursor: pointer;
+  border: 1.5px solid color-mix(in srgb, var(--tertiary) 75%, var(--card)); background: var(--s2);
+  transition: background .15s, border-color .15s;
+}
+input[type=checkbox].auswahl::after {
+  content: ''; position: absolute; left: 4.5px; top: 1px; width: 5px; height: 10px;
+  border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg) scale(0); transition: transform .12s;
+}
+input[type=checkbox].auswahl:hover:not(:disabled) { border-color: var(--primary); }
+input[type=checkbox].auswahl:checked { background: var(--primary); border-color: var(--primary); }
+input[type=checkbox].auswahl:checked::after { transform: rotate(45deg) scale(1); }
+input[type=checkbox].auswahl:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+input[type=checkbox].auswahl:disabled { opacity: .45; cursor: default; }
+@media (any-pointer: coarse) {
+  input[type=checkbox].auswahl { width: 22px; height: 22px; }
+  input[type=checkbox].auswahl::after { left: 6px; top: 2px; width: 6px; height: 12px; }
+}
 .proj-check { cursor:pointer; flex-shrink:0; margin-right:1px; }
 .proj-bulk-bar { background:var(--text2); color:var(--on-acc); border-radius:8px; padding:.4rem .7rem; display:flex; align-items:center; gap:.45rem; margin-bottom:.5rem; flex-wrap:wrap; }
 .proj-bulk-label { font-size:.75rem; flex:1; min-width:60px; }
@@ -3061,7 +3083,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v4.5.0';
+const APP_VERSION = 'v4.5.1';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -12642,6 +12664,15 @@ function _abschnittLaden(s) {
 // sind Masteigenschaften) und den Leiter-Einstellungen (zustand). T₂/T₃ gelten
 // für alle Stränge gemeinsam. abschnitt.teil grenzt nur Anzeige und Export ein.
 const STRANG_FARBEN = ['#4a5cb8', '#d9822b', '#2f9e6e', '#b8457a', '#8a6d10', '#3aa6c2'];
+// Dunkelmodus: dieselben Farben als weiche Neon-Töne (leuchtend, nicht grell)
+const STRANG_FARBEN_DUNKEL = ['#8c9bff', '#ffab5c', '#4fe3a5', '#ff7ac6', '#f2d25c', '#55d8f2'];
+const _themaDunkel = () => document.documentElement.dataset.thema === 'dunkel';
+// Anzeigefarbe eines Strangs: Standardfarben im Dunkelmodus als Neon-Variante,
+// eigene Farben unverändert (gespeichert wird immer die helle Standardfarbe)
+function _strangFarbeAnzeige(f) {
+  const i = STRANG_FARBEN.indexOf(String(f).toLowerCase());
+  return _themaDunkel() && i >= 0 ? STRANG_FARBEN_DUNKEL[i] : f;
+}
 const STRANG_ROLLEN = ['fahrleitung', 'speiseleiter', 'rueckleiter', 'erdseil', 'andere'];
 const STRANG_MAX = 8;
 const _STRANG_FELDER = ['preset-select', 'el-material-select', 'tension', 'tension-fd', 'sh',
@@ -12799,7 +12830,10 @@ function strangSichtbar(k, an) {
 }
 function strangFarbe(k, farbe) {
   _straengeSichern();
-  if (/^#[0-9a-f]{6}$/i.test(farbe)) abschnitt.straenge[k].farbe = farbe;
+  if (/^#[0-9a-f]{6}$/i.test(farbe)) {
+    const i = STRANG_FARBEN_DUNKEL.indexOf(farbe.toLowerCase());
+    abschnitt.straenge[k].farbe = i >= 0 ? STRANG_FARBEN[i] : farbe.toLowerCase();
+  }
   abschnittAktualisieren();
 }
 function strangKennung(k, wert) {
@@ -13098,6 +13132,7 @@ function _straengeHtml() {
   const basis = _basisMasten();
   const opt = sel => basis.map(x => `<option value="${escHtml(x.name)}"${x.name === sel ? ' selected' : ''}>${escHtml(x.name)}</option>`).join('');
   let h = `<div class="abs-str"><p class="abs-h4">${t('abs.straenge')}</p>
+    <datalist id="abs-farbvorschlag">${(_themaDunkel() ? STRANG_FARBEN_DUNKEL : STRANG_FARBEN).map(f => `<option value="${f}"></option>`).join('')}</datalist>
     <div class="abs-scroll"><table class="abs-tab abs-str-tab"><thead><tr>
       <th>${t('abs.str.sichtbar')}</th><th>${t('abs.str.farbe')}</th><th>${t('abs.strang')}</th><th>${t('abs.str.rolle')}</th>
       <th>${t('abs.str.leiter')}</th><th>${t('abs.str.masten')}</th><th>${t('abs.str.laenge')}</th><th>${t('abs.sp.hind')}</th>
@@ -13107,7 +13142,7 @@ function _straengeHtml() {
     const L = feldLaengen(s.masten).reduce((a, f) => a + (f.L > 0 ? f.L : 0), 0);
     h += `<tr${aktiv ? ' class="offen"' : ''}>
       <td><input type="checkbox" class="auswahl" ${s.sichtbar || aktiv ? 'checked' : ''} ${aktiv ? 'disabled' : ''} onchange="strangSichtbar(${k},this.checked)" aria-label="${escHtml(t('abs.str.sichtbar'))} ${name}"></td>
-      <td><input type="color" class="abs-farbe" value="${s.farbe}" onchange="strangFarbe(${k},this.value)" aria-label="${escHtml(t('abs.str.farbe'))} ${name}"></td>
+      <td><input type="color" class="abs-farbe" list="abs-farbvorschlag" value="${_strangFarbeAnzeige(s.farbe)}" onchange="strangFarbe(${k},this.value)" aria-label="${escHtml(t('abs.str.farbe'))} ${name}"></td>
       <td><input class="abs-inp" style="width:5.5rem" value="${escHtml(s.kennung)}" placeholder="${name}" onchange="strangKennung(${k},this.value)" aria-label="${escHtml(t('abs.strang'))} ${k + 1}"></td>
       <td><select class="abs-inp" onchange="strangRolle(${k},this.value)" aria-label="${escHtml(t('abs.str.rolle'))} ${name}">${
         STRANG_ROLLEN.map(r => `<option value="${r}"${r === s.rolle ? ' selected' : ''}>${escHtml(t('rolle.' + r))}</option>`).join('')}</select></td>
@@ -13310,7 +13345,7 @@ function _abschnittProfil(alle, absolut) {
   // Ein Strang: Leiter in der Temperaturfarbe wie im Diagramm; mehrere: Farbe je Strang
   const T2 = parseFloat(document.getElementById('temp2')?.value);
   const tempClr = sysMode === 'rfl' || !Number.isFinite(T2) ? 'var(--primary)' : t2TempColor(T2);
-  const farbe = e => mehrere ? e.s.farbe : tempClr;
+  const farbe = e => mehrere ? _strangFarbeAnzeige(e.s.farbe) : tempClr;
   let svg = `<svg viewBox="0 0 ${W} ${H}" class="abs-svg" role="img" aria-label="${escHtml(t('abs.profil'))}"${breit ? ` style="width:${W}px;max-width:none"` : ''}>`;
   for (let k = 0; k <= 4; k++) {
     const y = yMin + (yMax - yMin) * k / 4;
@@ -13363,8 +13398,8 @@ function _abschnittProfil(alle, absolut) {
   const t2Txt = Number.isFinite(T2) ? ` = ${fN(T2, 0)} °C` : '';
   let legende;
   if (mehrere) {
-    legende = lagen.map(e => `<span class="abs-leg${e.k === A.aktiv ? ' aktiv' : ''}"><span class="abs-leg-linie" style="background:${e.s.farbe}${e.k === A.aktiv ? '' : ';opacity:.45'}"></span><span>${escHtml(_strangName(e.s, e.k))}</span></span>`).join('')
-      + alle.filter(e => !e.erg && e.s.sichtbar && e.k !== A.aktiv).map(e => `<span class="abs-leg leise"><span class="abs-leg-linie" style="background:${e.s.farbe}"></span><span>${escHtml(_strangName(e.s, e.k))} …</span></span>`).join('')
+    legende = lagen.map(e => `<span class="abs-leg${e.k === A.aktiv ? ' aktiv' : ''}"><span class="abs-leg-linie" style="background:${_strangFarbeAnzeige(e.s.farbe)}${e.k === A.aktiv ? '' : ';opacity:.45'}"></span><span>${escHtml(_strangName(e.s, e.k))}</span></span>`).join('')
+      + alle.filter(e => !e.erg && e.s.sichtbar && e.k !== A.aktiv).map(e => `<span class="abs-leg leise"><span class="abs-leg-linie" style="background:${_strangFarbeAnzeige(e.s.farbe)}"></span><span>${escHtml(_strangName(e.s, e.k))} …</span></span>`).join('')
       + `<span class="abs-leg leise"><span>T<sub>2</sub>${t2Txt}</span></span>`;
   } else {
     const leiterTxt = sysMode === 'el' ? t('leg.leiter2') : t('leg.ts2');
@@ -17113,6 +17148,8 @@ function themaAnwenden(wahl = _themaWahl()) {
   if (btn) btn.title = t('ui.thema.' + wahl);
   // Diagramm neu zeichnen (Canvas-Farben kommen nicht aus CSS)
   if (typeof berechnen === 'function' && typeof calcState !== 'undefined') berechnen();
+  // Abschnitt: Strangfarben je Thema (Neon-Töne im Dunkelmodus)
+  if (typeof renderAbschnitt === 'function' && _abschnittSichtbar) renderAbschnitt();
 }
 function wechsleThema() {
   const naechste = THEMA_WAHLEN[(THEMA_WAHLEN.indexOf(_themaWahl()) + 1) % THEMA_WAHLEN.length];
