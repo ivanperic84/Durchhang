@@ -1276,6 +1276,8 @@ button.header-manual-link:hover {
 /* Zugkraft aus der Reglage: gesperrt, mit Hinweis darunter */
 input.feld-gesperrt { color: var(--muted) !important; cursor: default; background: var(--s2) !important; }
 .feld-reglage-hw { margin-top: .25rem; font-size: .66rem; line-height: 1.35; color: var(--tertiary); }
+.feld-reglage-hw.nok { color: var(--fail); }
+.feld-reglage-hw .sh-knopf { display: block; margin-top: .15rem; text-align: left; }
 .hf-pz-ist { display: block; color: var(--muted); font-size: .7rem; margin-top: .1rem; }
 .hf-pz-link { border: none; background: none; padding: 0; min-height: 0 !important; color: var(--primary); font: inherit; font-weight: 600; cursor: pointer; text-decoration: underline; }
 .hf-grafiken { margin-top: .7rem; }
@@ -2375,6 +2377,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
               <input type="number" id="sh" value="2.4" min="0.1" step="0.1" oninput="berechnenEntprellt()" onchange="berechnen()">
               <span class="input-unit">m</span>
             </div>
+            <div id="sh-hf-hw" class="feld-reglage-hw" role="status" style="display:none"></div>
           </div>
           <div class="field">
             <label for="tension" id="tension-label" style="display:flex;justify-content:space-between;align-items:center;gap:.3rem">
@@ -2528,7 +2531,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
           <!-- hf_min / hf_max als Band (nur Kettenwerk) -->
           <span class="draw-hf-teil" style="width:1px;height:14px;background:var(--border);flex-shrink:0"></span>
           <label class="schalter-zeile draw-hf-teil" style="font-size:.7rem;color:var(--muted)" title="hf_min / hf_max aus der hf-Ansicht einblenden" data-i18n-title="draw.hf.titel">
-            <input type="checkbox" role="switch" id="draw-hf" onchange="setDrawingHf(this.checked)"><span class="schalter" aria-hidden="true"></span><span>hf<sub>min</sub> / hf<sub>max</sub></span>
+            <input type="checkbox" role="switch" id="draw-hf" onchange="setDrawingHf(this.checked);if(this.checked)shNachfrage()"><span class="schalter" aria-hidden="true"></span><span>hf<sub>min</sub> / hf<sub>max</sub></span>
           </label>
         </div>
       </div>
@@ -2789,7 +2792,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
       <div class="legend-item" id="leg-ts3-item" style="display:none"><div class="legend-dot" id="leg-ts3-dot" style="border:2px dashed var(--xdim);background:transparent"></div><span id="leg-ts3-label">Ts bei T<sub>3</sub></span></div>
       <div class="legend-item" id="leg-fd-solllage-item" style="display:none"><div class="legend-dot" style="background:var(--muted);opacity:.35"></div><span id="leg-fd-solllage-label" data-i18n-html="leg.fd.solllage">Fd Solllage (T<sub>1</sub>)</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--muted);opacity:.7"></div><span id="leg-sehne-label" data-i18n="leg.sehne">Sehnenlinie</span></div>
-      <label class="schalter-zeile legend-item" id="leg-hf-item"><input type="checkbox" role="switch" id="diagramm-hf" onchange="setDiagrammHf(this.checked)"><span class="schalter" aria-hidden="true"></span><span data-i18n-html="leg.hf">Fahrdraht Soll/Ist + hf<sub>min</sub>/hf<sub>max</sub></span></label>
+      <label class="schalter-zeile legend-item" id="leg-hf-item"><input type="checkbox" role="switch" id="diagramm-hf" onchange="setDiagrammHf(this.checked);if(this.checked)shNachfrage()"><span class="schalter" aria-hidden="true"></span><span data-i18n-html="leg.hf">Fahrdraht Soll/Ist + hf<sub>min</sub>/hf<sub>max</sub></span></label>
     </div>
     <div id="abschnitt-view" style="display:none"></div>
     <div id="canvas-scroll-area">
@@ -2969,7 +2972,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.15.0';
+const APP_VERSION = 'v3.15.2';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -8474,6 +8477,7 @@ function berechnen() {
                 matTs: getMaterialNameTs(), matFd: getMaterialNameFd() };
   _hindernisErgebnisse();
   hfPruefzeile();
+  shHfHinweis();
   _zugkraftSperre();
   if (_abschnittSichtbar) abschnittAktualisieren();
   updateAllMesspunkte();
@@ -8706,6 +8710,50 @@ function hfSollPruefung(g, e) {
   const unter = soll.some(h => h < g.min - 1e-9), ueber = soll.some(h => h > g.max + 1e-9);
   return { soll, unter, ueber, ok: !unter && !ueber };
 }
+// Zulässige Systemhöhe aus hf: Soll-Fahrdrahthöhe h − sh muss an beiden Stützpunkten
+// zwischen hf_min und hf_max liegen → sh ≤ min(h) − hf_min und sh ≥ max(h) − hf_max.
+// Auf cm nach innen gerundet (sichere Seite). null = hf nicht aktiv / nicht berechenbar.
+function shGrenzen() {
+  if (sysMode === 'el' || !calcState) return null;
+  let aktiv = false;
+  try { aktiv = hfEingabe !== null || diagrammHf || Ansicht.zeichnungHf; } catch { aktiv = false; }
+  const g = aktiv ? hfGrenzenM() : null;
+  if (!g || g.fehler) return null;
+  const { h1, h2, sh } = calcState;
+  const min = Math.ceil((Math.max(h1, h2) - g.max) * 100 - 1e-6) / 100;
+  const max = Math.floor((Math.min(h1, h2) - g.min) * 100 + 1e-6) / 100;
+  const moeglich = min <= max;
+  const vorschlag = !moeglich ? null : sh > max ? max : sh < min ? min : null;   // nächster Grenzwert
+  return { min, max, moeglich, sh, ok: moeglich && sh >= min - 1e-9 && sh <= max + 1e-9, vorschlag };
+}
+function shUebernehmen(v) {
+  const el = document.getElementById('sh');
+  if (!el || !Number.isFinite(v)) return;
+  el.value = v.toFixed(2);
+  berechnen();
+}
+// Info unter der Systemhöhe
+function shHfHinweis() {
+  const hw = document.getElementById('sh-hf-hw');
+  if (!hw) return;
+  const b = shGrenzen();
+  if (!b) { zeigeElement(hw, false); return; }
+  hw.classList.toggle('nok', !b.ok);
+  hw.innerHTML = !b.moeglich
+    ? t('par.sh.hf.keins')
+    : `<span title="${escHtml(t('par.sh.hf.titel'))}">${t('par.sh.hf').replace('{min}', b.min.toFixed(2)).replace('{max}', b.max.toFixed(2))}</span>`
+      + (b.vorschlag !== null ? `<button type="button" class="hf-pz-link sh-knopf" onclick="shUebernehmen(${b.vorschlag})">${t('par.sh.hf.knopf').replace('{v}', b.vorschlag.toFixed(2))}</button>` : '');
+  zeigeElement(hw, true);
+}
+// Beim Einschalten eines hf-Schalters: liegt sh ausserhalb, nachfragen, ob angepasst werden soll
+async function shNachfrage() {
+  const b = shGrenzen();
+  if (!b || b.ok || b.vorschlag === null) return;
+  const text = t('par.sh.frage').replace('{sh}', b.sh.toFixed(2)).replace('{min}', b.min.toFixed(2))
+    .replace('{max}', b.max.toFixed(2)).replace('{v}', b.vorschlag.toFixed(2));
+  if (await frageBestaetigung(text, { titel: t('par.sh.frage.titel'), ok: t('par.sh.frage.ok'), abbrechen: t('par.sh.frage.nein') }))
+    shUebernehmen(b.vorschlag);
+}
 let diagrammHf = false;   // Schalter in der Legende: Fahrdraht + hf-Band im Diagramm
 function setDiagrammHf(an) {
   diagrammHf = !!an;
@@ -8713,6 +8761,7 @@ function setDiagrammHf(an) {
   if (cb) cb.checked = diagrammHf;
   quickDraw();
   hfPruefzeile();
+  shHfHinweis();
 }
 // Prüfzeile unter den Ergebnissen: Fahrdraht T₂ gegen hf_min / hf_max
 function hfPruefzeile() {
@@ -10460,6 +10509,18 @@ ${(isNFL || isEl) ? `
   ${tr('T_max', c1.T_max, c2.T_max, 'N', 1)}
 </table>` : ''}
 
+${(() => {   // Fahrdrahthöhe: gleiche Prüfung wie die Prüfzeile unter den Ergebnissen
+  const el = document.getElementById('hf-pruefzeile');
+  if (!el || !el.getClientRects().length) return '';
+  const g = hfGrenzenM(), b = shGrenzen();
+  const ok = el.classList.contains('ok');
+  return `
+<h2 class="green">${t('hf.titel')}</h2>
+<div class="step"><p><strong style="color:${ok ? '#2f7a3d' : '#dc2626'}">${ok ? '✓' : '✗'}</strong> ${el.querySelector('span:nth-child(2)').innerHTML}</p>
+${b && b.moeglich ? `<p class="sub">${t('par.sh')}: ${t('par.sh.hf').replace('{min}', b.min.toFixed(2)).replace('{max}', b.max.toFixed(2))} (${t('par.sh.hf.titel')})</p>` : ''}
+<p class="sub">hf<sub>min</sub> = ${g.min.toFixed(3)} m · hf<sub>max</sub> = ${g.max.toFixed(3)} m — ${t('hf.pdf.quelle.kurz')}</p></div>`;
+})()}
+
 ${hasAnyProbe ? `
 <!-- ── Messpunkte ── -->
 <h2 class="green">${t('pdf.messpunkte')}</h2>
@@ -11232,7 +11293,7 @@ function buildScaleDrawingPage(stripInSvg = false) {
   <rect x="0" y="0" width="${VW}" height="${titleH}" fill="#f8f9fa"/>
   <line x1="0" y1="${titleH}" x2="${VW}" y2="${titleH}" stroke="#d2d2d2" stroke-width="0.3"/>
   <text x="3" y="7.8" font-size="4.2" font-weight="700" fill="#212121">${mainTitle}</text>
-  <text x="${VW-3}" y="7.8" font-size="2.2" text-anchor="end" fill="#bbb">${dateS}</text>
+  <text x="${VW-3}" y="7.8" font-size="2.2" text-anchor="end" fill="#bbb">Durchhang ${APP_VERSION}  ·  ${dateS}</text>
   ${_nameLine ? `<text x="3" y="12.5" font-size="2.7" fill="#555">${_nameLine}</text>` : ''}
   <text x="3" y="${_nameLine ? '17.5' : '13'}" font-size="2.45" fill="#888">${_paramLine}</text>` : '';
 
@@ -11283,6 +11344,7 @@ function setDrawingHf(an) {
   const cb = document.getElementById('draw-hf');
   if (cb) cb.checked = drawingHf;
   refreshScaleViewIfActive();
+  if (typeof shHfHinweis === 'function') shHfHinweis();
 }
 // hf-Werte für die Zeichnung in m über SOK (null = kein Kettenwerk)
 function _hfFuerZeichnung() { return hfGrenzenM(); }
@@ -12603,8 +12665,8 @@ function exportDxf() {
     linien.push({ layer: 'MAST', punkte: [P(L, 0), P(L, h2)] });
   }
   if (hasSok) linien.push({ layer: 'SOK', punkte: [P(0, 0), P(L, 0)] });
-  // hf_min / hf_max als Linien über SOK, wenn in der Zeichnung eingeblendet
-  const hfZ = Ansicht.zeichnungHf ? Ansicht._hfFuerZeichnung() : null;
+  // hf_min / hf_max als Linien über SOK, wenn in Zeichnung oder Diagramm eingeblendet
+  const hfZ = (Ansicht.zeichnungHf || diagrammHf) ? hfGrenzenM() : null;
   if (hfZ && !hfZ.fehler) {
     linien.push({ layer: 'HF_MIN', punkte: [P(0, hfZ.min), P(L, hfZ.min)] });
     linien.push({ layer: 'HF_MAX', punkte: [P(0, hfZ.max), P(L, hfZ.max)] });
@@ -13292,6 +13354,15 @@ const LANG = {
     'par.H.el':             'H Leiter (direkt)',
     'par.H.reglage': 'Aus der Reglage der Kombination. Spezialfall: eigene Kombination über «+».',
     'par.H.reglage.el': 'Aus der Reglage des Leiters. Spezialfall: Reglage-Werte anpassen.',
+    'par.sh.hf': 'zulässig {min} … {max} m',
+    'par.sh.hf.knopf': '→ {v} m übernehmen',
+    'par.sh.hf.titel': 'Aus hf_min / hf_max: Fahrdraht-Solllage h − sh an beiden Stützpunkten im Bereich',
+    'hf.pdf.quelle.kurz': 'Werte aus der Ansicht «hf min/max» (AB-EBV 2024, Art. 5.2.1/5.2.2).',
+    'par.sh.hf.keins': 'Kein sh passt: h<sub>1</sub>/h<sub>2</sub> liegen zu weit auseinander für hf<sub>min</sub>/hf<sub>max</sub>.',
+    'par.sh.frage.titel': 'Systemhöhe anpassen?',
+    'par.sh.frage': 'Die Systemhöhe sh = {sh} m liegt ausserhalb des Bereichs {min} … {max} m, der sich aus hf_min / hf_max ergibt (Fahrdraht-Solllage h − sh an den Stützpunkten). Auf {v} m anpassen?',
+    'par.sh.frage.ok': 'Anpassen',
+    'par.sh.frage.nein': 'So lassen',
     'par.3pt':              '3-Punkte-Messung',
     'par.3pt.hdr':          '3-Punkte-Messung',
     'par.3pt.sub':          'Punkt C zwischen den Masten',
@@ -14092,6 +14163,15 @@ const LANG = {
     'par.H.el':             'H conducteur (direct)',
     'par.H.reglage': 'Selon le réglage de la combinaison. Cas spécial : combinaison propre via «+».',
     'par.H.reglage.el': 'Selon le réglage du conducteur. Cas spécial : adapter les valeurs de réglage.',
+    'par.sh.hf': 'admissible {min} … {max} m',
+    'par.sh.hf.knopf': '→ reprendre {v} m',
+    'par.sh.hf.titel': 'Selon hf_min / hf_max : position théorique du fil de contact h − sh aux deux supports dans la plage',
+    'hf.pdf.quelle.kurz': 'Valeurs de la vue « hf min/max » (DE-OCF 2024, art. 5.2.1/5.2.2).',
+    'par.sh.hf.keins': 'Aucun sh ne convient : h<sub>1</sub>/h<sub>2</sub> sont trop différents pour hf<sub>min</sub>/hf<sub>max</sub>.',
+    'par.sh.frage.titel': 'Adapter la hauteur du système ?',
+    'par.sh.frage': 'La hauteur du système sh = {sh} m est hors de la plage {min} … {max} m résultant de hf_min / hf_max (position théorique du fil de contact h − sh aux supports). Adapter à {v} m ?',
+    'par.sh.frage.ok': 'Adapter',
+    'par.sh.frage.nein': 'Laisser',
     'par.3pt':              'Mesure 3 points',
     'par.3pt.hdr':          'Mesure 3 points',
     'par.3pt.sub':          'Point C entre les mâts',
@@ -14892,6 +14972,15 @@ const LANG = {
     'par.H.el':             'H conduttore (diretto)',
     'par.H.reglage': 'Dalla regolazione della combinazione. Caso speciale: combinazione propria con «+».',
     'par.H.reglage.el': 'Dalla regolazione del conduttore. Caso speciale: adattare i valori di regolazione.',
+    'par.sh.hf': 'ammessa {min} … {max} m',
+    'par.sh.hf.knopf': '→ riprendere {v} m',
+    'par.sh.hf.titel': 'Da hf_min / hf_max: posizione teorica del filo di contatto h − sh ai due sostegni nel campo',
+    'hf.pdf.quelle.kurz': 'Valori dalla vista «hf min/max» (DE-OFerr 2024, art. 5.2.1/5.2.2).',
+    'par.sh.hf.keins': 'Nessun sh adatto: h<sub>1</sub>/h<sub>2</sub> troppo diversi per hf<sub>min</sub>/hf<sub>max</sub>.',
+    'par.sh.frage.titel': 'Adattare l’altezza del sistema?',
+    'par.sh.frage': 'L’altezza del sistema sh = {sh} m è fuori dal campo {min} … {max} m risultante da hf_min / hf_max (posizione teorica del filo di contatto h − sh ai sostegni). Adattare a {v} m?',
+    'par.sh.frage.ok': 'Adattare',
+    'par.sh.frage.nein': 'Lasciare',
     'par.3pt':              'Misura 3 punti',
     'par.3pt.hdr':          'Misura 3 punti',
     'par.3pt.sub':          'Punto C tra i pali',
@@ -17316,7 +17405,7 @@ renderObstacleList();
           <li><strong>R-FL</strong>: Eislast-Durchhang mit fest 12 kN + 10 kN, Fallprüfung P1.1–P1.3 und überdeckte Spannweite c<sub>übr</sub>; Vordurchhang 50 mm (c ≥ 42 m) bzw. 30 mm nur bis 140 km/h.</li>
           <li>Wie Excel: Spannweite c nur 60 … 26, 24, 20, 16, 12, 8 m; Temperaturen −20 … +80 °C in 5-K-Schritten; Zusatzlast 0 / 7 / 15 N/m nur bei −5 °C.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)">FL-Typ, Kombination, L<sub>m</sub>, Ts unbelastet (Reglagetabelle bei T<sub>1</sub>), T<sub>1</sub> und H<sub>Fd</sub> kommen immer aus der Durchhang-Berechnung und stehen als Zusammenfassung oben — geändert werden sie dort. Die Spannweite c folgt L (nächster Tabellenwert nach oben) und lässt sich zum Vergleich anders wählen. Die Tabelle zeigt jeden Zuschlag mit Quelle. Zwei Grafiken: die <em>Höhenleiter ab SOK</em> (links die Anteile bis hf<sub>min</sub>, rechts die Zuschläge ab 6.05 bzw. 6.20 m bis hf<sub>max</sub>, dazwischen der zulässige Bereich) und <em>hf<sub>min</sub> / hf<sub>max</sub> über die Spannweite</em> (alle Tabellenwerte von c, gewählte Spannweite markiert). <em>PDF-Protokoll</em> druckt Berechnung und Grafiken. In der Zeichnung lassen sich hf<sub>min</sub> / hf<sub>max</sub> als Band einblenden (6.13), im Diagramm mit dem Schalter <em>Fahrdraht Soll/Ist + hf<sub>min</sub>/hf<sub>max</sub></em> in der Legende. Unter den Ergebnissen zeigt dann eine Prüfzeile, ob die Soll-Fahrdrahthöhe an den Stützpunkten (h − sh) zwischen hf<sub>min</sub> und hf<sub>max</sub> liegt; die Ist-Lage bei T<sub>2</sub> steht als Information darunter. In der Höhenleiter wird die linke Säule von unten aufgebaut (↑ ab GfA), die rechte von oben abgezogen (↓ ab 6.05 bzw. 6.20 m); die Box <em>Zusammensetzung</em> unter den Grafiken schreibt hf<sub>min</sub> und hf<sub>max</sub> einmal als Formel mit allen Anteilen und einmal mit Zahlen aus. Kontrolle: der in der Excel gespeicherte Fall (N-FL 50+107, c = 30 m, −5 °C mit 7 N/m) ergibt hf<sub>min</sub> = 4928 mm und hf<sub>max</sub> = 6104 mm wie in der Excel. Zusätzlich wurden 480 Fälle (N-FL / R-FL, alle Spannweiten, Geschwindigkeiten, Bahnübergang, EBV 1–4, 15 / 25 kV, Schotter, LRP, Temperaturen, Eis, f / H, Fallprüfung P1.1–P1.3 mit c<sub>übr</sub>) in der Excel nachgerechnet: hf<sub>min</sub>, hf<sub>max</sub> und jeder Zuschlag stimmen mit der App überein; die Fälle laufen als automatischer Test mit.</p>
+        <p style="font-size:.8rem;color:var(--muted)">FL-Typ, Kombination, L<sub>m</sub>, Ts unbelastet (Reglagetabelle bei T<sub>1</sub>), T<sub>1</sub> und H<sub>Fd</sub> kommen immer aus der Durchhang-Berechnung und stehen als Zusammenfassung oben — geändert werden sie dort. Die Spannweite c folgt L (nächster Tabellenwert nach oben) und lässt sich zum Vergleich anders wählen. Die Tabelle zeigt jeden Zuschlag mit Quelle. Zwei Grafiken: die <em>Höhenleiter ab SOK</em> (links die Anteile bis hf<sub>min</sub>, rechts die Zuschläge ab 6.05 bzw. 6.20 m bis hf<sub>max</sub>, dazwischen der zulässige Bereich) und <em>hf<sub>min</sub> / hf<sub>max</sub> über die Spannweite</em> (alle Tabellenwerte von c, gewählte Spannweite markiert). <em>PDF-Protokoll</em> druckt Berechnung und Grafiken. In der Zeichnung lassen sich hf<sub>min</sub> / hf<sub>max</sub> als Band einblenden (6.13), im Diagramm mit dem Schalter <em>Fahrdraht Soll/Ist + hf<sub>min</sub>/hf<sub>max</sub></em> in der Legende. Unter den Ergebnissen zeigt dann eine Prüfzeile, ob die Soll-Fahrdrahthöhe an den Stützpunkten (h − sh) zwischen hf<sub>min</sub> und hf<sub>max</sub> liegt; die Ist-Lage bei T<sub>2</sub> steht als Information darunter. Unter der <em>Systemhöhe sh</em> erscheint der zulässige Bereich (sh ≤ min(h) − hf<sub>min</sub>, sh ≥ max(h) − hf<sub>max</sub>, auf cm nach innen gerundet); liegt sh ausserhalb, übernimmt ein Knopf den nächsten Grenzwert, und beim Einschalten eines hf-Schalters fragt die App nach. In der Höhenleiter wird die linke Säule von unten aufgebaut (↑ ab GfA), die rechte von oben abgezogen (↓ ab 6.05 bzw. 6.20 m); die Box <em>Zusammensetzung</em> unter den Grafiken schreibt hf<sub>min</sub> und hf<sub>max</sub> einmal als Formel mit allen Anteilen und einmal mit Zahlen aus. Kontrolle: der in der Excel gespeicherte Fall (N-FL 50+107, c = 30 m, −5 °C mit 7 N/m) ergibt hf<sub>min</sub> = 4928 mm und hf<sub>max</sub> = 6104 mm wie in der Excel. Zusätzlich wurden 480 Fälle (N-FL / R-FL, alle Spannweiten, Geschwindigkeiten, Bahnübergang, EBV 1–4, 15 / 25 kV, Schotter, LRP, Temperaturen, Eis, f / H, Fallprüfung P1.1–P1.3 mit c<sub>übr</sub>) in der Excel nachgerechnet: hf<sub>min</sub>, hf<sub>max</sub> und jeder Zuschlag stimmen mit der App überein; die Fälle laufen als automatischer Test mit.</p>
       </div><!-- /hb-de -->
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.14 &nbsp;Hauteur du fil de contact hf_min / hf_max</p>
@@ -17329,7 +17418,7 @@ renderObstacleList();
           <li><strong>LC R</strong> : flèche sous glace avec 12 kN + 10 kN fixes, essai de cas P1.1–P1.3 et portée couverte c<sub>übr</sub> ; pré-flèche 50 mm (c ≥ 42 m) resp. 30 mm seulement jusqu’à 140 km/h.</li>
           <li>Comme Excel : portée c seulement 60 … 26, 24, 20, 16, 12, 8 m ; températures −20 … +80 °C par pas de 5 K ; charge add. 0 / 7 / 15 N/m seulement à −5 °C.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)">Type de LC, combinaison, L<sub>m</sub>, CP non chargé (tableau de réglage à T<sub>1</sub>), T<sub>1</sub> et H<sub>FC</sub> proviennent toujours du calcul de flèche et sont résumés en haut — ils se modifient là-bas. La portée c suit L (valeur de tableau supérieure) et peut être choisie autrement pour comparaison. Le tableau montre chaque supplément avec sa source. Deux graphiques : l’<em>échelle des hauteurs depuis le DRS</em> (à gauche les parts jusqu’à hf<sub>min</sub>, à droite les suppléments depuis 6.05 resp. 6.20 m jusqu’à hf<sub>max</sub>, entre les deux la plage admissible) et <em>hf<sub>min</sub> / hf<sub>max</sub> selon la portée</em> (toutes les valeurs de c du tableau, portée choisie marquée). <em>Protocole PDF</em> imprime calcul et graphiques. Dans le dessin, hf<sub>min</sub> / hf<sub>max</sub> peuvent être affichés comme bande (6.13), dans le diagramme avec l’interrupteur <em>Fil de contact théorique/réel + hf<sub>min</sub>/hf<sub>max</sub></em> de la légende. Sous les résultats, une ligne de contrôle indique alors si la hauteur théorique du fil de contact aux supports (h − sh) se trouve entre hf<sub>min</sub> et hf<sub>max</sub> ; la position réelle à T<sub>2</sub> figure en dessous à titre d’information. Dans l’échelle des hauteurs, la colonne gauche est additionnée depuis le bas (↑ depuis GfA), la droite déduite depuis le haut (↓ depuis 6.05 ou 6.20 m) ; l’encadré <em>Composition</em> sous les graphiques écrit hf<sub>min</sub> et hf<sub>max</sub> une fois en formule avec toutes les parts et une fois en chiffres. Contrôle : le cas enregistré dans l’Excel (LC N 50+107, c = 30 m, −5 °C avec 7 N/m) donne hf<sub>min</sub> = 4928 mm et hf<sub>max</sub> = 6104 mm comme l’Excel. En plus, 480 cas (LC N / LC R, toutes les portées, vitesses, passage à niveau, OCF 1–4, 15 / 25 kV, ballast, LRP, températures, glace, f / H, essai de cas P1.1–P1.3 avec c<sub>übr</sub>) ont été recalculés dans l’Excel : hf<sub>min</sub>, hf<sub>max</sub> et chaque supplément concordent avec l’application ; les cas font partie des tests automatiques.</p>
+        <p style="font-size:.8rem;color:var(--muted)">Type de LC, combinaison, L<sub>m</sub>, CP non chargé (tableau de réglage à T<sub>1</sub>), T<sub>1</sub> et H<sub>FC</sub> proviennent toujours du calcul de flèche et sont résumés en haut — ils se modifient là-bas. La portée c suit L (valeur de tableau supérieure) et peut être choisie autrement pour comparaison. Le tableau montre chaque supplément avec sa source. Deux graphiques : l’<em>échelle des hauteurs depuis le DRS</em> (à gauche les parts jusqu’à hf<sub>min</sub>, à droite les suppléments depuis 6.05 resp. 6.20 m jusqu’à hf<sub>max</sub>, entre les deux la plage admissible) et <em>hf<sub>min</sub> / hf<sub>max</sub> selon la portée</em> (toutes les valeurs de c du tableau, portée choisie marquée). <em>Protocole PDF</em> imprime calcul et graphiques. Dans le dessin, hf<sub>min</sub> / hf<sub>max</sub> peuvent être affichés comme bande (6.13), dans le diagramme avec l’interrupteur <em>Fil de contact théorique/réel + hf<sub>min</sub>/hf<sub>max</sub></em> de la légende. Sous les résultats, une ligne de contrôle indique alors si la hauteur théorique du fil de contact aux supports (h − sh) se trouve entre hf<sub>min</sub> et hf<sub>max</sub> ; la position réelle à T<sub>2</sub> figure en dessous à titre d’information. Sous la <em>hauteur du système sh</em> apparaît la plage admissible (sh ≤ min(h) − hf<sub>min</sub>, sh ≥ max(h) − hf<sub>max</sub>, arrondie au cm vers l’intérieur) ; si sh est hors plage, un bouton reprend la limite la plus proche, et l’app le demande à l’activation d’un interrupteur hf. Dans l’échelle des hauteurs, la colonne gauche est additionnée depuis le bas (↑ depuis GfA), la droite déduite depuis le haut (↓ depuis 6.05 ou 6.20 m) ; l’encadré <em>Composition</em> sous les graphiques écrit hf<sub>min</sub> et hf<sub>max</sub> une fois en formule avec toutes les parts et une fois en chiffres. Contrôle : le cas enregistré dans l’Excel (LC N 50+107, c = 30 m, −5 °C avec 7 N/m) donne hf<sub>min</sub> = 4928 mm et hf<sub>max</sub> = 6104 mm comme l’Excel. En plus, 480 cas (LC N / LC R, toutes les portées, vitesses, passage à niveau, OCF 1–4, 15 / 25 kV, ballast, LRP, températures, glace, f / H, essai de cas P1.1–P1.3 avec c<sub>übr</sub>) ont été recalculés dans l’Excel : hf<sub>min</sub>, hf<sub>max</sub> et chaque supplément concordent avec l’application ; les cas font partie des tests automatiques.</p>
       </div><!-- /hb-fr -->
       <div class="hb-lang hb-it" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.14 &nbsp;Altezza del filo di contatto hf_min / hf_max</p>
@@ -17342,7 +17431,7 @@ renderObstacleList();
           <li><strong>LC R</strong>: freccia con ghiaccio con 12 kN + 10 kN fissi, verifica dei casi P1.1–P1.3 e campata coperta c<sub>übr</sub>; pre-freccia 50 mm (c ≥ 42 m) risp. 30 mm solo fino a 140 km/h.</li>
           <li>Come Excel: campata c solo 60 … 26, 24, 20, 16, 12, 8 m; temperature −20 … +80 °C a passi di 5 K; carico add. 0 / 7 / 15 N/m solo a −5 °C.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)">Tipo di LC, combinazione, L<sub>m</sub>, FP scarica (tabella di regolazione a T<sub>1</sub>), T<sub>1</sub> e H<sub>FC</sub> provengono sempre dal calcolo della freccia e sono riassunti in alto — si modificano lì. La campata c segue L (valore di tabella superiore) e può essere scelta diversamente per confronto. La tabella mostra ogni supplemento con la fonte. Due grafici: la <em>scala delle altezze dal PRF</em> (a sinistra le quote fino a hf<sub>min</sub>, a destra i supplementi da 6.05 risp. 6.20 m fino a hf<sub>max</sub>, in mezzo il campo ammissibile) e <em>hf<sub>min</sub> / hf<sub>max</sub> in funzione della campata</em> (tutti i valori di c della tabella, campata scelta evidenziata). <em>Protocollo PDF</em> stampa calcolo e grafici. Nel disegno hf<sub>min</sub> / hf<sub>max</sub> possono essere mostrati come banda (6.13), nel diagramma con l’interruttore <em>Filo di contatto teorico/reale + hf<sub>min</sub>/hf<sub>max</sub></em> nella legenda. Sotto i risultati una riga di controllo indica allora se l’altezza teorica del filo di contatto ai sostegni (h − sh) si trova tra hf<sub>min</sub> e hf<sub>max</sub>; la posizione reale a T<sub>2</sub> è indicata sotto come informazione. Nella scala delle altezze la colonna sinistra è sommata dal basso (↑ da GfA), la destra dedotta dall’alto (↓ da 6.05 o 6.20 m); il riquadro <em>Composizione</em> sotto i grafici scrive hf<sub>min</sub> e hf<sub>max</sub> una volta come formula con tutte le quote e una volta con i numeri. Controllo: il caso salvato nell’Excel (LC N 50+107, c = 30 m, −5 °C con 7 N/m) dà hf<sub>min</sub> = 4928 mm e hf<sub>max</sub> = 6104 mm come l’Excel. Inoltre 480 casi (LC N / LC R, tutte le campate, velocità, passaggio a livello, OFerr 1–4, 15 / 25 kV, ballast, LRP, temperature, ghiaccio, f / H, verifica dei casi P1.1–P1.3 con c<sub>übr</sub>) sono stati ricalcolati nell’Excel: hf<sub>min</sub>, hf<sub>max</sub> e ogni supplemento concordano con l’applicazione; i casi fanno parte dei test automatici.</p>
+        <p style="font-size:.8rem;color:var(--muted)">Tipo di LC, combinazione, L<sub>m</sub>, FP scarica (tabella di regolazione a T<sub>1</sub>), T<sub>1</sub> e H<sub>FC</sub> provengono sempre dal calcolo della freccia e sono riassunti in alto — si modificano lì. La campata c segue L (valore di tabella superiore) e può essere scelta diversamente per confronto. La tabella mostra ogni supplemento con la fonte. Due grafici: la <em>scala delle altezze dal PRF</em> (a sinistra le quote fino a hf<sub>min</sub>, a destra i supplementi da 6.05 risp. 6.20 m fino a hf<sub>max</sub>, in mezzo il campo ammissibile) e <em>hf<sub>min</sub> / hf<sub>max</sub> in funzione della campata</em> (tutti i valori di c della tabella, campata scelta evidenziata). <em>Protocollo PDF</em> stampa calcolo e grafici. Nel disegno hf<sub>min</sub> / hf<sub>max</sub> possono essere mostrati come banda (6.13), nel diagramma con l’interruttore <em>Filo di contatto teorico/reale + hf<sub>min</sub>/hf<sub>max</sub></em> nella legenda. Sotto i risultati una riga di controllo indica allora se l’altezza teorica del filo di contatto ai sostegni (h − sh) si trova tra hf<sub>min</sub> e hf<sub>max</sub>; la posizione reale a T<sub>2</sub> è indicata sotto come informazione. Sotto l’<em>altezza del sistema sh</em> appare il campo ammesso (sh ≤ min(h) − hf<sub>min</sub>, sh ≥ max(h) − hf<sub>max</sub>, arrotondato al cm verso l’interno); se sh è fuori campo, un pulsante riprende il limite più vicino, e l’app lo chiede all’attivazione di un interruttore hf. Nella scala delle altezze la colonna sinistra è sommata dal basso (↑ da GfA), la destra dedotta dall’alto (↓ da 6.05 o 6.20 m); il riquadro <em>Composizione</em> sotto i grafici scrive hf<sub>min</sub> e hf<sub>max</sub> una volta come formula con tutte le quote e una volta con i numeri. Controllo: il caso salvato nell’Excel (LC N 50+107, c = 30 m, −5 °C con 7 N/m) dà hf<sub>min</sub> = 4928 mm e hf<sub>max</sub> = 6104 mm come l’Excel. Inoltre 480 casi (LC N / LC R, tutte le campate, velocità, passaggio a livello, OFerr 1–4, 15 / 25 kV, ballast, LRP, temperature, ghiaccio, f / H, verifica dei casi P1.1–P1.3 con c<sub>übr</sub>) sono stati ricalcolati nell’Excel: hf<sub>min</sub>, hf<sub>max</sub> e ogni supplemento concordano con l’applicazione; i casi fanno parte dei test automatici.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 7 Beispielberechnung ══ -->

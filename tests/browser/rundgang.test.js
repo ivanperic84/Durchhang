@@ -683,3 +683,57 @@ test('Wechsel Diagramm / Zeichnung / Abschnitt / Foto: Höhe gleitet, Inhalt ble
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Systemhöhe: zulässiger Bereich aus hf, Übernahme per Knopf und Rückfrage beim Einschalten', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const hw = document.getElementById('sh-hf-hw'), sh = document.getElementById('sh');
+    const sichtbar = () => hw.getClientRects().length > 0;
+    const vorher = sichtbar();                                   // hf noch nicht aktiv
+    // h1 = h2 = 7.00, hf 4.965 … 5.995 → sh 1.01 … 2.03 m; Vorgabe sh 2.40 liegt ausserhalb
+    const cb = document.getElementById('diagramm-hf');
+    cb.checked = true; cb.dispatchEvent(new Event('change'));
+    await new Promise(r => setTimeout(r, 50));
+    const dialog = document.getElementById('rueckfrage').getClientRects().length > 0 && document.getElementById('rf-text').textContent;
+    document.getElementById('rf-abbrechen').click();             // «So lassen»
+    await new Promise(r => setTimeout(r, 50));
+    const gelassen = sh.value;
+    const info = { sichtbar: sichtbar(), nok: hw.classList.contains('nok'), text: hw.textContent.replace(/\s+/g, ' ').trim() };
+    hw.querySelector('button').click();                          // «2.03 m übernehmen»
+    const nachKnopf = { sh: sh.value, nok: hw.classList.contains('nok'), knopf: !!hw.querySelector('button') };
+    // Rückfrage bestätigen
+    sh.value = '0.80'; berechnen();
+    cb.checked = false; cb.dispatchEvent(new Event('change'));
+    cb.checked = true; cb.dispatchEvent(new Event('change'));
+    await new Promise(r => setTimeout(r, 50));
+    document.getElementById('rf-ok').click();
+    await new Promise(r => setTimeout(r, 50));
+    return { vorher, dialog, gelassen, info, nachKnopf, bestaetigt: sh.value };
+  });
+  assert.equal(r.vorher, false);
+  assert.match(r.dialog, /sh = 2\.40 m liegt ausserhalb des Bereichs 1\.01 … 2\.03 m.* Auf 2\.03 m anpassen\?/);
+  assert.equal(r.gelassen, '2.4');
+  assert.deepEqual(r.info, { sichtbar: true, nok: true, text: 'zulässig 1.01 … 2.03 m→ 2.03 m übernehmen' });
+  assert.deepEqual(r.nachKnopf, { sh: '2.03', nok: false, knopf: false });
+  assert.equal(r.bestaetigt, '1.01', 'zu klein → nächster Grenzwert sh min');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Exporte mit hf: Berechnungs-PDF mit Prüfung, Zeichnungs-PDF mit Version, DXF-Layer auch bei Diagramm-Schalter', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await fensterAbfangen(seite);
+  await seite.evaluate(() => { setDiagrammHf(true); });
+  const [dl] = await Promise.all([seite.waitForEvent('download'), seite.evaluate(() => exportDxf())]);
+  const dxf = require('fs').readFileSync(await dl.path(), 'utf8');
+  const r = await seite.evaluate(() => {
+    window.__fenster.length = 0; pdfExport(); setCanvasView('zeichnung'); pdfExportDrawing();
+    return window.__fenster.map(f => f.html);
+  });
+  assert.match(dxf, /\nHF_MIN\n/); assert.match(dxf, /\nHF_MAX\n/);
+  assert.match(r[0], /Fahrdraht Soll an den Stützpunkten/);
+  assert.match(r[0], /zulässig 1\.01 … 2\.03 m/);
+  assert.match(r[1], new RegExp('Durchhang ' + (await seite.evaluate(() => APP_VERSION)).replace(/\./g, '\\.')));
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
