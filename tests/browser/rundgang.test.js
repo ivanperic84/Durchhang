@@ -86,13 +86,15 @@ test('Foto-Ansicht: Hinweis einmal pro Start', async () => {
   await kontext.close();
 });
 
-test('Koordinaten LV95 → Spannweite, SOK, IFC und DXF georeferenziert', async () => {
+test('Koordinaten LV95 → Spannweite; Höhe aus SOK m ü. M.; IFC und DXF georeferenziert', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   await seite.evaluate(() => {
     const setze = (id, v) => { document.getElementById(id).value = v; };
-    setze('koord-e-left', 2600000.5); setze('koord-n-left', 1200000.25); setze('koord-z-left', 500);
-    setze('koord-e-right', 2600030); setze('koord-n-right', 1200033.9); setze('koord-z-right', 501.2);
-    setze('mast-delta-sok-left', 0.3); setze('mast-delta-sok-right', 0.1);
+    setze('koord-e-left', 2600000.5); setze('koord-n-left', 1200000.25);
+    setze('koord-e-right', 2600030); setze('koord-n-right', 1200033.9);
+    setze('sok-mum-left', 499.7); onSokMumLeftInput();
+    setze('sok-mum-right', 501.1); document.getElementById('sok-mum-right').dataset.userEdited = '1'; onSokMumRightInput();
+    setze('mast-delta-sok-left', 0.3); setze('mast-delta-sok-right', 0.1);   // nur Mastfuss, ändert die SOK nicht
     koordSchalten(true);
   });
   const z = await seite.evaluate(() => ({ L: calcState.L, sokL: getSokMumLeft(), sokR: getSokMumRight(),
@@ -263,7 +265,8 @@ test('H-Punkte nur in m ü. M.: ohne SOK Hinweis und keine Prüfung', async () =
     renderObstacleList(); berechnen();
     const mit = { geprueft: _nachweis.some(n => n.best), hinweis: document.getElementById('hind-sok-fehlt').style.display !== 'none',
                   einheit: document.querySelector('.probe-h-unit').textContent };
-    return { ohne, mit, deltaImKoord: !!document.querySelector('#koord-felder #mast-delta-sok-left') };
+    return { ohne, mit, deltaBeiSok: !!document.querySelector('#mastangaben #mast-delta-sok-left') && !document.querySelector('#koord-felder #mast-delta-sok-left'),
+      ohneZ: !document.getElementById('koord-z-left') };
   });
   assert.equal(r.ohne.geprueft, false);
   assert.equal(r.ohne.hinweis, true);
@@ -271,7 +274,8 @@ test('H-Punkte nur in m ü. M.: ohne SOK Hinweis und keine Prüfung', async () =
   assert.equal(r.mit.geprueft, true);
   assert.equal(r.mit.hinweis, false);
   assert.match(r.mit.einheit, /ü\. M\./);
-  assert.equal(r.deltaImKoord, true);
+  assert.equal(r.deltaBeiSok, true);
+  assert.equal(r.ohneZ, true);
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
@@ -559,7 +563,7 @@ test('Feld-Schnellauswahl, H/a im Zeichnungsband, Abschnitt-Scroll (normal und V
   assert.ok(r.seitenH <= r.spalteUnten + 200, `Seite ${r.seitenH} vs. Spalte ${r.spalteUnten}`);
   assert.equal(r.vollbild, true, 'Abschnitt im Vollbild scrollbar');
   assert.equal(r.mit, true);
-  assert.deepEqual({ offen: r.nachSchritt.offen, zeichnung: r.nachSchritt.zeichnung, wert: r.nachSchritt.wert }, { offen: 1, zeichnung: true, wert: '1' });
+  assert.deepEqual({ offen: r.nachSchritt.offen, zeichnung: r.nachSchritt.zeichnung, wert: r.nachSchritt.wert }, { offen: 1, zeichnung: true, wert: '0:1' });
   assert.match(r.nachSchritt.text, /Feld 2 · 102–103 · KM 12\.350/);
   assert.ok(r.zeilen.includes('H [m ü.M.]') && r.zeilen.includes('a [m]'), r.zeilen.join(' | '));
   assert.deepEqual(fehler, []);
@@ -1090,6 +1094,99 @@ test('Zeichnung startet mit Überhöhung 5×; Link «SOK m ü. M. eintragen» oh
     link: document.getElementById('probe-sok-link').textContent.trim(),
   }));
   assert.deepEqual(r, { vex: 5, auswahl: '5', link: 'SOK m ü. M. eintragen' });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Stränge: Beispiel mit 2 Strängen übereinander, Sichtbarkeit, Farbe, Wechsel, Teilabschnitt, Export je Strang, Speichern', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const warte = ms => new Promise(res => setTimeout(res, ms));
+    const titel = () => [...document.querySelectorAll('#abs-profil .abs-leiter title')].map(e => e.textContent);
+    abschnittAnsicht(); await abschnittBeispiel(); await warte(900);
+    const start = { n: abschnitt.straenge.length, kennungen: abschnitt.straenge.map(s => s.kennung), sys: sysMode,
+      pfade: [...new Set(titel())].sort(), zeilen: document.querySelectorAll('.abs-str-tab tbody tr').length };
+    // Sichtbarkeit und Farbe
+    strangSichtbar(1, false);
+    const aus = [...new Set(titel())];
+    strangSichtbar(0, false);                        // aktiver Strang bleibt sichtbar
+    const aktivBleibt = abschnitt.straenge[0].sichtbar;
+    strangSichtbar(1, true); await warte(50);
+    strangFarbe(1, '#123456');
+    const farbe = [...document.querySelectorAll('#abs-profil .abs-leiter')].some(p => /18, 52, 86|#123456/i.test(p.style.stroke));
+    // Feldwahl mit Gruppen je Strang, Wechsel auf SPL
+    const gruppen = [...document.querySelectorAll('#feld-select optgroup')].map(g => g.label);
+    feldWaehlen('1:2'); await warte(900);
+    const spl = { aktiv: abschnitt.aktiv, sys: sysMode, offen: abschnittOffenesFeld(), h1: document.getElementById('h1').value };
+    strangWaehlen(0); await warte(900);
+    const zurueck = { aktiv: abschnitt.aktiv, sys: sysMode };
+    // Teilabschnitt: nur Felder 102–104
+    teilSetzen('104', '102'); await warte(50);
+    const teil = { ...abschnitt.teil, felder: document.querySelectorAll('.abs-erg tbody tr').length };
+    // Export: IfcGroup und DXF-Layer je Strang, danach wieder derselbe Zustand
+    let ifc = '', dxf = ''; const alt = window._dateiHerunterladen;
+    window._dateiHerunterladen = x => { ifc = x; }; abschnittExport('ifc');
+    window._dateiHerunterladen = x => { dxf = x; }; abschnittExport('dxf');
+    window._dateiHerunterladen = alt;
+    const exp = { gruppen: (ifc.match(/IFCGROUP\(/g) || []).length, spl: /\nSPL_TRAGSEIL\n|\nSPL_[A-Z]+\n/.test(dxf), fl1: /\nFL1_TRAGSEIL\n/.test(dxf),
+      aktiv: abschnitt.aktiv, sys: sysMode };
+    teilSetzen(null, null);
+    // Speichern / Laden
+    const st = JSON.parse(JSON.stringify(getProjectState()));
+    abschnitt = { masten: [], offen: null, mp: {} }; renderAbschnitt();
+    setProjectState(st); await warte(100);
+    const geladen = { n: abschnitt.straenge.length, aktiv: abschnitt.aktiv, farbe: abschnitt.straenge[1].farbe,
+      gleich: abschnitt.masten === abschnitt.straenge[abschnitt.aktiv].masten };
+    setCanvasView('diagramm');
+    return { start, aus, aktivBleibt, farbe, gruppen, spl, zurueck, teil, exp, geladen };
+  });
+  assert.deepEqual(r.start, { n: 2, kennungen: ['FL1', 'SPL'], sys: 'nfl', pfade: ['FL1', 'SPL'], zeilen: 2 });
+  assert.deepEqual(r.aus, ['FL1']);
+  assert.equal(r.aktivBleibt, true);
+  assert.equal(r.farbe, true, 'Strangfarbe im Profil');
+  assert.equal(r.gruppen.length, 2);
+  assert.deepEqual(r.spl, { aktiv: 1, sys: 'el', offen: 2, h1: '9.20' });
+  assert.deepEqual(r.zurueck, { aktiv: 0, sys: 'nfl' });
+  assert.deepEqual(r.teil, { von: '102', bis: '104', felder: 2 });
+  assert.equal(r.exp.gruppen, 2);
+  assert.equal(r.exp.fl1, true);
+  assert.equal(r.exp.spl, true);
+  assert.deepEqual({ aktiv: r.exp.aktiv, sys: r.exp.sys }, { aktiv: 0, sys: 'nfl' });
+  assert.deepEqual(r.geladen, { n: 2, aktiv: 0, farbe: '#123456', gleich: true });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Z = SOK: Projekt bis v4.3 (Z = Mastfuss) wird umgerechnet; Foto nutzt Mastfuss = SOK + Δ', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    // Projekt im bisherigen Format: abschnitt ohne zBezug, Z = Mastfuss
+    const st = JSON.parse(JSON.stringify(getProjectState()));
+    st.abschnitt = { masten: [{ name: 'A', e: 2600000, n: 1200000, z: 500, delta: 0.3, h: 7, km: '', L: null },
+                              { name: 'B', e: 2600045, n: 1200000, z: 501, delta: null, h: 7, km: '', L: null }], offen: null, mp: {} };
+    delete st.abschnitt.zBezug;
+    setProjectState(st);
+    const alt = abschnitt.masten.map(m => m.z);
+    // Gespeichert wird mit zBezug «sok» → erneutes Laden ändert nichts
+    const neu = JSON.parse(JSON.stringify(getProjectState()));
+    setProjectState(neu);
+    const nochmals = abschnitt.masten.map(m => m.z);
+    // Foto: Fusspunkte am Mastfuss → Höhe über SOK = gemessen + Δ, dh mit SOK-Differenz
+    const setze = (id, v) => { document.getElementById(id).value = v; };
+    setze('sok-mum-left', 500); onSokMumLeftInput();
+    setze('sok-mum-right', 501); document.getElementById('sok-mum-right').dataset.userEdited = '1'; onSokMumRightInput();
+    setze('foto-hmast-L', 10); setze('foto-hmast-R', 10); setze('foto-L', 50); setze('foto-T1', 10);
+    setze('mast-delta-sok-left', 0.3); setze('mast-delta-sok-right', 0.5);
+    const pts = [['top_L', 100, 100], ['base_L', 100, 600], ['top_R', 900, 120], ['base_R', 900, 620], ['p1', 100, 200], ['p2', 900, 220], ['cmid', 500, 350]]
+      .map(([role, px, py]) => ({ role, px, py }));
+    window._fotoSetProjectState({ pts, result: { neu: true } }); fotoRecalcIfReady();
+    const f = window._fotoResult;
+    return { alt, nochmals, foto: { h1: +f.h_P1.toFixed(3), h2: +f.h_P2.toFixed(3), dh: +f.dh.toFixed(3),
+      elL: document.getElementById('foto-elev-L').value, elR: document.getElementById('foto-elev-R').value } };
+  });
+  assert.deepEqual(r.alt, [499.7, 501]);
+  assert.deepEqual(r.nochmals, [499.7, 501]);
+  assert.deepEqual(r.foto, { h1: 8.3, h2: 8.5, dh: -1.2, elL: '500.300', elR: '501.500' });
   assert.deepEqual(fehler, []);
   await kontext.close();
 });

@@ -110,19 +110,42 @@ test('Mittelspannweite arithmetisch und ideell', () => {
   assert.equal(A.mittelspannweite([null]), null);
 });
 
-test('SOK am Mast = Z − Δ', () => {
-  nahe(A.mastSok({ z: 500, delta: 0.3 }), 499.7, 1e-12, 'mit Δ');
+test('Z = SOK am Mast; Mastfuss = SOK + Δ (freiwillig); Umrechnung bisheriger Daten', () => {
+  assert.equal(A.mastSok({ z: 500, delta: 0.3 }), 500);
   assert.equal(A.mastSok({ z: 500, delta: null }), 500);
   assert.equal(A.mastSok({ z: null }), null);
+  nahe(A.mastFuss({ z: 499.7, delta: 0.3 }), 500, 1e-12, 'Mastfuss');
+  assert.equal(A.mastFuss({ z: 499.7, delta: null }), null);
+  // Bis v4.4: Z = Mastfuss → SOK = Z − Δ; ohne Δ bleibt Z
+  assert.deepEqual(A.mastenAusMastfuss([{ name: '1', z: 500, delta: 0.3 }, { name: '2', z: 501, delta: null }]).map(m => m.z), [499.7, 501]);
+});
+
+test('CSV im bisherigen Format (Z_Mastfuss): SOK = Z − Δ, mit Hinweis', () => {
+  const alt = A.csvLesen('Mast;E;N;Z_Mastfuss;Delta_Mastfuss_SOK;h_ueber_SOK;KM\n101;2600000;1200000;540;0.35;7.6;12.300\n102;2600050;1200001;540.4;;7.6;12.350\n');
+  assert.deepEqual(alt.masten.map(m => [m.z, m.delta]), [[539.65, 0.35], [540.4, null]]);
+  assert.ok(alt.warnungen.includes('zmastfuss'));
+  assert.ok(!('zmf' in alt.masten[0]));
+  // Beide Spalten: Z_SOK gilt, Δ wird aus dem Mastfuss ergänzt
+  const beide = A.csvLesen('Mast;E;N;Z_SOK;Z_Mastfuss;h\n1;2600000;1200000;499.7;500;7\n2;2600040;1200000;500;;7\n');
+  assert.deepEqual(beide.masten.map(m => [m.z, m.delta]), [[499.7, 0.3], [500, null]]);
+  assert.ok(!beide.warnungen.includes('zmastfuss'));
+  // Neue Vorlage: Kopf Z_SOK
+  assert.match(A.csvVorlage(), /Strang;Mast;E;N;Z_SOK;Delta_Mastfuss_SOK;/);
 });
 
 test('CSV: Vorlage lesen und wieder schreiben ergibt dieselben Masten', () => {
+  // Vorlage mit Spalte «Strang»: FL1 und SPL an denselben 3 Masten
   const { masten, warnungen } = A.csvLesen(A.csvVorlage());
-  assert.equal(masten.length, 3);
+  assert.equal(masten.length, 6);
   assert.deepEqual(warnungen, []);
-  assert.deepEqual(masten[0], { name: '101', e: 2600000, n: 1200000, z: 500, delta: 0.3, h: 7, km: '12.300', L: null });
-  const zurueck = A.csvLesen(A.csvSchreiben(masten)).masten;
-  assert.deepEqual(zurueck, masten);
+  assert.deepEqual(masten[0], { name: '101', e: 2600000, n: 1200000, z: 499.7, delta: 0.3, h: 7, km: '12.300', L: null, strang: 'FL1' });
+  const g = A.straengeAusMasten(masten);
+  assert.deepEqual(g.straenge.map(s => [s.kennung, s.masten.length]), [['FL1', 3], ['SPL', 3]]);
+  assert.deepEqual(g.abweichungen, []);
+  const zurueck = A.straengeAusMasten(A.csvLesen(A.csvSchreibenStraenge(g.straenge)).masten).straenge;
+  assert.deepEqual(zurueck, g.straenge);
+  const ohne = A.csvLesen(A.csvSchreiben(g.straenge[0].masten)).masten;
+  assert.deepEqual(ohne, g.straenge[0].masten);
 });
 
 test('CSV aus Vermessung: Komma-Dezimal, Tausendertrenner, andere Kopfzeilen, Tab', () => {
@@ -174,4 +197,31 @@ test('Beispielabschnitt: 5 Masten mit Koordinaten, Felder 45–50 m, SOK je Mast
   assert.deepEqual(L.map(f => f.quelle), ['koord', 'koord', 'koord', 'koord']);
   L.forEach(f => assert.ok(f.L > 44.9 && f.L < 50.1, String(f.L)));
   m.forEach(x => assert.ok(A.mastSok(x) !== null));
+});
+
+test('Stränge: CSV mit Kennung wird je Strang gruppiert, Abweichungen bei Z/Δ/KM gemeldet', () => {
+  const txt = 'Strang;Mast;E;N;Z_Mastfuss;Delta_Mastfuss_SOK;h_ueber_SOK;KM\n'
+    + 'FL1;101;2600000;1200000;540;0.35;7.6;12.300\nSPL;101;2600002.1;1200000.4;540;0.35;9.2;12.300\n'
+    + 'FL1;102;2600050;1200001;540.4;0.3;7.6;12.350\nSPL;102;2600052;1200001.4;540.5;0.3;9.2;12.350\n';
+  const { straenge, abweichungen } = A.straengeAusMasten(A.csvLesen(txt).masten);
+  assert.deepEqual(straenge.map(s => [s.kennung, s.masten.map(m => m.name)]), [['FL1', ['101', '102']], ['SPL', ['101', '102']]]);
+  assert.equal(straenge[1].masten[0].h, 9.2);
+  assert.ok(!('strang' in straenge[0].masten[0]));
+  assert.deepEqual(abweichungen, ['102']);   // Z 540.4 ↔ 540.5
+  // Ohne Spalte «Strang»: ein Strang ohne Kennung (bisheriges Format)
+  const eins = A.straengeAusMasten(A.csvLesen(A.csvSchreiben(A.beispielMasten())).masten);
+  assert.equal(eins.straenge.length, 1);
+  assert.equal(eins.straenge[0].kennung, '');
+});
+
+test('Stränge: CSV schreiben und wieder lesen, Beispiel mit FL1 und SPL, Rolle aus Kennung', () => {
+  const bsp = A.beispielStraenge();
+  assert.deepEqual(bsp.map(s => s.kennung), ['FL1', 'SPL']);
+  const zurueck = A.straengeAusMasten(A.csvLesen(A.csvSchreibenStraenge(bsp)).masten);
+  assert.deepEqual(zurueck.straenge.map(s => s.masten), bsp.map(s => s.masten));
+  assert.deepEqual(zurueck.abweichungen, []);
+  assert.equal(A.rolleVorschlag('SPL'), 'speiseleiter');
+  assert.equal(A.rolleVorschlag('RL 2'), 'rueckleiter');
+  assert.equal(A.rolleVorschlag('Erdseil'), 'erdseil');
+  assert.equal(A.rolleVorschlag('FL1'), 'fahrleitung');
 });
