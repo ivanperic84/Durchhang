@@ -1385,6 +1385,13 @@ input.feld-gesperrt { color: var(--muted) !important; cursor: default; backgroun
 .abs-h4 { font-size: .74rem; font-weight: 700; margin: .7rem 0 .3rem; color: var(--text2); }
 .abs-lm { font-weight: 400; color: var(--muted); margin-left: .4rem; }
 .abs-svg { width: 100%; height: auto; display: block; background: var(--s2); border-radius: 8px; }
+.abs-profil-scroll { overflow-x: auto; border-radius: 8px; }
+.abs-profil-scroll:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.abs-profil-kopf { display: flex; align-items: baseline; flex-wrap: wrap; gap: .3rem 1rem; }
+.abs-leg { display: inline-flex; align-items: center; gap: .35rem; font-size: .72rem; color: var(--text2); }
+.abs-leg.leise { color: var(--muted); font-style: italic; }
+.abs-leg-linie { width: 22px; height: 3px; border-radius: 2px; display: inline-block; }
+.abs-leg-linie.fd { height: 1.5px; background: var(--muted); }
 .abs-svg .abs-raster { stroke: var(--border); stroke-width: 1; }
 .abs-svg .abs-achse { fill: var(--muted); font-size: 11px; }
 .abs-svg .abs-feld { fill: transparent; cursor: pointer; }
@@ -3012,7 +3019,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v4.2.0';
+const APP_VERSION = 'v4.2.1';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -12790,7 +12797,15 @@ function abschnittAktualisieren() {
   html += '</tbody></table></div>';
   if (!absolut && m.some(x => mastSok(x) !== null)) html += `<p class="abs-hinweis">${t('abs.ohne.sok')}</p>`;
   felderBox.innerHTML = html;
-  if (profilBox) profilBox.innerHTML = _abschnittProfil(erg, absolut);
+  if (profilBox) {
+    profilBox.innerHTML = _abschnittProfil(erg, absolut);
+    // Breites Profil: offenes Feld in den sichtbaren Bereich schieben
+    const box = profilBox.querySelector('.abs-profil-scroll'), feld = box?.querySelector('.abs-feld.offen');
+    if (box && feld && box.scrollWidth > box.clientWidth) {
+      const r = feld.getBoundingClientRect(), br = box.getBoundingClientRect();
+      box.scrollLeft += r.left - br.left - (br.width - r.width) / 2;
+    }
+  }
 }
 
 // Hindernispunkte im Bezug des Längsprofils (absolut, wenn das Feld SOK hat), nach x sortiert
@@ -12817,10 +12832,19 @@ function _abschnittProfil(erg, absolut) {
     yMax = Math.max(yMax, hoehe(f, 0, f.a.h), hoehe(f, f.L, f.b.h));
     f.nachweis.forEach(n => { if (n.best) _ukProfilPunkte(f, n.h, absolut).forEach(p => { yMax = Math.max(yMax, p.h); }); });
   });
-  const W = 1000, H = 300, pl = 48, pr = 30, pt = 30, pb = 30;
+  // Viele Felder (Nachspannlänge bis ~650 m, 50+ Felder): das Profil wird breiter
+  // statt enger, damit das kürzeste Feld mindestens 60 Einheiten hat; die Box
+  // lässt sich dann seitlich schieben. Bis ca. 12 Felder passt alles wie bisher.
+  const H = 300, pl = 48, pr = 30, pt = 30, pb = 30;
+  const Lmin = Math.min(...F.map(f => f.L));
+  const W = Math.round(Math.min(Math.max(1000, pl + pr + S * 60 / Math.max(Lmin, 1)), pl + pr + 90 * F.length));
+  const breit = W > 1000;
   const sx = x => pl + (W - pl - pr) * x / S;
   const sy = y => pt + (H - pt - pb) * (1 - (y - yMin) / Math.max(0.5, yMax - yMin));
-  let svg = `<svg viewBox="0 0 ${W} ${H}" class="abs-svg" role="img" aria-label="${escHtml(t('abs.profil'))}">`;
+  // Leiter in der Temperaturfarbe wie im Diagramm (R-FL: Akzentfarbe, Temperatur wirkt nicht)
+  const T2 = parseFloat(document.getElementById('temp2')?.value);
+  const leiterClr = sysMode === 'rfl' || !Number.isFinite(T2) ? 'var(--primary)' : t2TempColor(T2);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" class="abs-svg" role="img" aria-label="${escHtml(t('abs.profil'))}"${breit ? ` style="width:${W}px;max-width:none"` : ''}>`;
   // Raster + Beschriftung Höhe
   for (let k = 0; k <= 4; k++) {
     const y = yMin + (yMax - yMin) * k / 4;
@@ -12835,7 +12859,7 @@ function _abschnittProfil(erg, absolut) {
       onclick="abschnittFeldOeffnen(${i})"><title>${t('abs.sp.feld')} ${i + 1}: ${escHtml(f.a.name)}–${escHtml(f.b.name)} · L = ${fN(f.L, 2)} m</title></rect>`;
     if (absolut) svg += `<line x1="${sx(x0)}" y1="${sy(sok(f, 0))}" x2="${sx(x0 + f.L)}" y2="${sy(sok(f, f.L))}" class="abs-sok"/>`;
     if (f.fdY) svg += `<path d="${pfad(f.fdY)}" class="abs-fd"/>`;
-    svg += `<path d="${pfad(x => kettenY(f.oben, x))}" class="abs-leiter"/>`;
+    svg += `<path d="${pfad(x => kettenY(f.oben, x))}" class="abs-leiter" style="stroke:${leiterClr}"/>`;
     f.nachweis.forEach(n => {
       if (!n.best) return;
       const P = _ukProfilPunkte(f, n.h, absolut).filter(p => p.x >= 0 && p.x <= f.L);
@@ -12854,7 +12878,11 @@ function _abschnittProfil(erg, absolut) {
       <text x="${sx(st[i])}" y="${sy(oben) - 6}" class="abs-mastname" text-anchor="middle">${escHtml(mast.name)}</text>`;
   });
   svg += '</svg>';
-  return `<p class="abs-h4">${t('abs.profil')}</p>${svg}`;
+  const leiterTxt = sysMode === 'el' ? t('leg.leiter2') : t('leg.ts2');
+  const legende = `<span class="abs-leg"><span class="abs-leg-linie" style="background:${leiterClr}"></span><span>${leiterTxt}${Number.isFinite(T2) && sysMode !== 'rfl' ? ` = ${fN(T2, 0)} °C` : ''}</span></span>`
+    + (F.some(f => f.fdY) ? `<span class="abs-leg"><span class="abs-leg-linie fd"></span><span>${t('leg.fd2')}</span></span>` : '');
+  return `<div class="abs-profil-kopf"><p class="abs-h4">${t('abs.profil')}</p>${legende}${breit ? `<span class="abs-leg leise">${t('abs.profil.schieben')}</span>` : ''}</div>`
+    + `<div class="abs-profil-scroll" tabindex="0" role="region" aria-label="${escHtml(t('abs.profil'))}">${svg}</div>`;
 }
 
 // ── Export des ganzen Abschnitts (IFC / 3D-DXF) ──
@@ -14379,6 +14407,7 @@ const LANG = {
     'abs.leer': 'Noch keine Masten erfasst — «+ Mast», «CSV importieren» oder «Beispiel laden».',
     'abs.unvollstaendig': 'L oder h fehlt',
     'abs.profil': 'Längsprofil (Höhe überhöht)',
+    'abs.profil.schieben': 'Seitlich schieben für die ganze Strecke →',
     'abs.profil.fehlt': 'Das Längsprofil erscheint, sobald alle Felder vollständig sind.',
     'abs.csv.ersetzen': 'Die {n} vorhandenen Masten durch {m} Masten aus der Datei ersetzen?',
     'abs.csv.gelesen': '{n} Masten eingelesen.',
@@ -15210,6 +15239,7 @@ const LANG = {
     'abs.leer': 'Aucun mât saisi — «+ Mât», «Importer CSV» ou «Charger un exemple».',
     'abs.unvollstaendig': 'L ou h manque',
     'abs.profil': 'Profil en long (hauteur exagérée)',
+    'abs.profil.schieben': 'Faire défiler latéralement pour tout le canton →',
     'abs.profil.fehlt': 'Le profil en long apparaît dès que toutes les portées sont complètes.',
     'abs.csv.ersetzen': 'Remplacer les {n} mâts existants par {m} mâts du fichier ?',
     'abs.csv.gelesen': '{n} mâts importés.',
@@ -16041,6 +16071,7 @@ const LANG = {
     'abs.leer': 'Nessun palo inserito — «+ Palo», «Importa CSV» o «Carica esempio».',
     'abs.unvollstaendig': 'manca L o h',
     'abs.profil': 'Profilo longitudinale (altezza esagerata)',
+    'abs.profil.schieben': 'Scorrere lateralmente per l’intera tratta →',
     'abs.profil.fehlt': 'Il profilo longitudinale appare quando tutte le campate sono complete.',
     'abs.csv.ersetzen': 'Sostituire i {n} pali esistenti con {m} pali dal file?',
     'abs.csv.gelesen': '{n} pali importati.',
@@ -17795,7 +17826,7 @@ renderObstacleList();
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li>Feldlänge L: aus den Koordinaten, sonst aus der KM-Differenz, sonst Eingabe.</li>
           <li>Berechnung wie im Einzelfeld: <em>ausgleichend</em> mit der Mittelspannweite Lm aller Felder (Formel wie unter Spannweite), <em>starr</em> je Feld mit eigener Länge, R-FL mit konstanter Zugkraft.</li>
-          <li>Übersicht je Feld: L, Durchhang, Zugkraft, tiefster Punkt von Leiter und Fahrdraht, Abstandsprüfung. Dazu ein Längsprofil (Höhe überhöht).</li>
+          <li>Übersicht je Feld: L, Durchhang, Zugkraft, tiefster Punkt von Leiter und Fahrdraht, Abstandsprüfung. Dazu ein Längsprofil (Höhe überhöht; Leiter in der Temperaturfarbe von T<sub>2</sub>). Lange Nachspannlängen mit 50 und mehr Feldern sind möglich: das Profil wird dann breiter und lässt sich seitlich schieben.</li>
           <li><strong>Öffnen</strong> (oder Klick ins Längsprofil) überträgt das Feld in die Eingaben: Diagramm, Zeichnung, PDF und Export zeigen dann genau dieses Feld.</li>
           <li><strong>IFC / 3D-DXF Abschnitt</strong> exportiert alle Felder in einer Datei (mit Koordinaten georeferenziert).</li>
         </ul>
@@ -17832,7 +17863,7 @@ renderObstacleList();
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li>Longueur de portée L : selon les coordonnées, sinon la différence de KM, sinon saisie.</li>
           <li>Calcul comme pour la portée simple : <em>compensé</em> avec la portée moyenne Lm de toutes les portées, <em>rigide</em> par portée avec sa propre longueur, LC R avec force de traction constante.</li>
-          <li>Aperçu par portée : L, flèche, force de traction, point le plus bas du conducteur et du fil de contact, vérification des distances ; en plus un profil en long (hauteur exagérée).</li>
+          <li>Aperçu par portée : L, flèche, force de traction, point le plus bas du conducteur et du fil de contact, vérification des distances ; en plus un profil en long (hauteur exagérée ; conducteur dans la couleur de température de T<sub>2</sub>). Les longs cantons de 50 portées et plus sont possibles : le profil devient alors plus large et se fait défiler latéralement.</li>
           <li><strong>Ouvrir</strong> (ou clic dans le profil) transfère la portée dans la saisie : diagramme, dessin, PDF et export montrent alors cette portée.</li>
           <li><strong>IFC / DXF 3D canton</strong> exporte toutes les portées dans un fichier (géoréférencé avec coordonnées).</li>
         </ul>
@@ -17869,7 +17900,7 @@ renderObstacleList();
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li>Lunghezza della campata L: dalle coordinate, altrimenti dalla differenza di KM, altrimenti inserita.</li>
           <li>Calcolo come per la campata singola: <em>compensato</em> con la lunghezza media Lm di tutte le campate, <em>rigido</em> per campata con la propria lunghezza, LC R con forza di trazione costante.</li>
-          <li>Panoramica per campata: L, freccia, forza di trazione, punto più basso del conduttore e del filo di contatto, verifica delle distanze; inoltre un profilo longitudinale (altezza esagerata).</li>
+          <li>Panoramica per campata: L, freccia, forza di trazione, punto più basso del conduttore e del filo di contatto, verifica delle distanze; inoltre un profilo longitudinale (altezza esagerata; conduttore nel colore di temperatura di T<sub>2</sub>). Sono possibili lunghe tratte con 50 e più campate: il profilo diventa più largo e si scorre lateralmente.</li>
           <li><strong>Apri</strong> (o clic nel profilo) trasferisce la campata nei dati: diagramma, disegno, PDF ed esportazione mostrano allora questa campata.</li>
           <li><strong>IFC / DXF 3D tratta</strong> esporta tutte le campate in un unico file (georeferenziato con coordinate).</li>
         </ul>
