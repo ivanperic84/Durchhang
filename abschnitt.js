@@ -152,9 +152,21 @@ function hindernisNormieren(h) {
 // KM-Text → Meter («12.345» km → 12345 m; «12+345» ebenso)
 function kmInMeter(km) {
   if (km === null || km === undefined) return null;
-  const s = String(km).trim().replace(/\s/g, '').replace('+', '.').replace(',', '.');
+  const s = String(km).trim().replace(/\s/g, '').replace(/[−–]/g, '-').replace(',', '.');
+  // «12+345» = km 12 + 345 m (auch «12+45» = 12.045)
+  const plus = /^(-?)(\d+)\+(\d{1,3}(?:\.\d+)?)$/.exec(s);
+  if (plus) return (plus[1] ? -1 : 1) * (parseInt(plus[2], 10) * 1000 + parseFloat(plus[3]));
   if (!/^-?\d+(\.\d+)?$/.test(s)) return null;
   return parseFloat(s) * 1000;
+}
+// KM im Format 000.000 («12.3» → «012.300»); nicht lesbarer Text bleibt unverändert
+function kmFormat(km) {
+  const t = String(km ?? '').trim();
+  if (!t) return '';
+  const m = kmInMeter(t);
+  if (m === null) return t;
+  const [g, d] = (Math.abs(m) / 1000).toFixed(3).split('.');
+  return (m < 0 ? '-' : '') + g.padStart(3, '0') + '.' + d;
 }
 
 // Feldlängen: aus Koordinaten, sonst aus KM-Differenz, sonst Eingabe L
@@ -273,7 +285,8 @@ function csvLesen(text) {
     if (spalten.includes('strang')) m.strang = '';
     spalten.forEach((sp, j) => {
       if (!sp) return;
-      if (sp === 'name' || sp === 'km' || sp === 'strang') m[sp] = w[j] ?? '';
+      if (sp === 'km') m.km = kmFormat(w[j]);
+      else if (sp === 'name' || sp === 'strang') m[sp] = w[j] ?? '';
       else m[sp] = csvZahl(w[j], trenn);
     });
     if (!m.name && m.e === null && m.h === null) return;   // leere Zeile
@@ -353,29 +366,35 @@ function beispielMasten() {
   ])).masten;
 }
 
-// Beispiel mit zwei Strängen an denselben Masten: Fahrleitung FL1 und Speiseleiter SPL
-// (SPL 2 m seitlich versetzt, höher aufgehängt)
+// Beispiel mit drei Strängen an denselben Masten (Mastachse 2.5 m neben dem
+// Aufhängepunkt der Fahrleitung): Kettenwerk FL1 am Ausleger, Rückleiter RL am
+// Mast (0.3 m aussen, h 6.80 m), Speiseleitung SPL an der Mastspitze (0.3 m
+// gleisseitig, h 10.50 m)
 function beispielStraenge() {
   const fl = beispielMasten();
-  const spl = fl.map(m => ({ ...m, e: +(m.e + 0.05).toFixed(3), n: +(m.n - 2.0).toFixed(3), h: 9.20 }));
-  return [{ kennung: 'FL1', rolle: 'fahrleitung', masten: fl }, { kennung: 'SPL', rolle: 'speiseleiter', masten: spl }];
+  const versetzt = (dn, h) => fl.map(m => ({ ...m, n: +(m.n - dn).toFixed(3), h }));
+  return [{ kennung: 'FL1', rolle: 'fahrleitung', masten: fl },
+    { kennung: 'RL', rolle: 'rueckleiter', masten: versetzt(2.8, 6.80) },
+    { kennung: 'SPL', rolle: 'speiseleiter', masten: versetzt(2.2, 10.50) }];
 }
 
-// Vorlage mit Spalte «Strang»: Fahrleitung FL1 und Speiseleiter SPL an denselben Masten
+// Vorlage mit Spalte «Strang»: Kettenwerk FL1, Rückleiter RL und Speiseleitung SPL
+// an denselben Masten
 function csvVorlage() {
   const fl = [
-    { name: '101', e: 2600000.000, n: 1200000.000, z: 499.700, delta: 0.30, h: 7.00, km: '12.300', L: null },
-    { name: '102', e: 2600045.000, n: 1200001.000, z: 500.150, delta: 0.25, h: 7.00, km: '12.345', L: null },
-    { name: '103', e: 2600090.000, n: 1200003.000, z: 500.700, delta: 0.20, h: 7.10, km: '12.390', L: null },
+    { name: '101', e: 2600000.000, n: 1200000.000, z: 499.700, delta: 0.30, h: 7.00, km: '012.300', L: null },
+    { name: '102', e: 2600045.000, n: 1200001.000, z: 500.150, delta: -0.15, h: 7.00, km: '012.345', L: null },
+    { name: '103', e: 2600090.000, n: 1200003.000, z: 500.700, delta: 0.20, h: 7.10, km: '012.390', L: null },
   ];
-  const spl = fl.map(m => ({ ...m, n: +(m.n - 2).toFixed(3), h: 9.20 }));
-  return csvSchreibenStraenge([{ kennung: 'FL1', masten: fl }, { kennung: 'SPL', masten: spl }]);
+  const versetzt = (dn, h) => fl.map(m => ({ ...m, n: +(m.n - dn).toFixed(3), h }));
+  return csvSchreibenStraenge([{ kennung: 'FL1', masten: fl }, { kennung: 'RL', masten: versetzt(2.8, 6.80) },
+    { kennung: 'SPL', masten: versetzt(2.2, 10.50) }]);
 }
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     LASTFALL_VORGABE, EISLAST_HOEHENLAGE, EIS_TEMPERATUR, lastfallEinstellung, lastfaelle, temperaturenLesen,
-    hindernisPunkte, kanteBei, unterkanteBei, hindernisSeite, abstandHindernis, hindernisNormieren, kmInMeter, feldLaengen, mittelspannweite, mastSok, mastFuss, mastenAusMastfuss,
+    hindernisPunkte, kanteBei, unterkanteBei, hindernisSeite, abstandHindernis, hindernisNormieren, kmInMeter, kmFormat, feldLaengen, mittelspannweite, mastSok, mastFuss, mastenAusMastfuss,
     csvLesen, csvSchreiben, csvVorlage, beispielMasten, CSV_KOPF,
     straengeAusMasten, mastAbweichungen, rolleVorschlag, csvSchreibenStraenge, beispielStraenge,
   };
