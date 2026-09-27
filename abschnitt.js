@@ -278,6 +278,18 @@ function csvSchreiben(masten) {
   return '﻿' + zeilen.join('\r\n') + '\r\n';
 }
 
+// Beispielabschnitt zum Ausprobieren (Reiter «Abschnitt» → «Beispiel laden»):
+// 5 Masten, 4 Felder 45–50 m, leichte Kurve und Steigung, LV95 (fiktive Lage).
+function beispielMasten() {
+  return csvLesen(csvSchreiben([
+    { name: '101', e: 2600000.000, n: 1200000.000, z: 540.000, delta: 0.35, h: 7.60, km: '12.300', L: null },
+    { name: '102', e: 2600049.980, n: 1200001.400, z: 540.380, delta: 0.30, h: 7.60, km: '12.350', L: null },
+    { name: '103', e: 2600099.920, n: 1200003.900, z: 540.820, delta: 0.30, h: 7.70, km: '12.400', L: null },
+    { name: '104', e: 2600144.800, n: 1200007.200, z: 541.150, delta: 0.25, h: 7.60, km: '12.445', L: null },
+    { name: '105', e: 2600189.600, n: 1200011.600, z: 541.500, delta: 0.30, h: 7.60, km: '12.490', L: null },
+  ])).masten;
+}
+
 function csvVorlage() {
   return csvSchreiben([
     { name: '101', e: 2600000.000, n: 1200000.000, z: 500.000, delta: 0.30, h: 7.00, km: '12.300', L: null },
@@ -290,6 +302,6 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     LASTFALL_VORGABE, EISLAST_HOEHENLAGE, EIS_TEMPERATUR, lastfallEinstellung, lastfaelle, temperaturenLesen,
     hindernisPunkte, kanteBei, unterkanteBei, hindernisSeite, abstandHindernis, hindernisNormieren, kmInMeter, feldLaengen, mittelspannweite, mastSok,
-    csvLesen, csvSchreiben, csvVorlage, CSV_KOPF,
+    csvLesen, csvSchreiben, csvVorlage, beispielMasten, CSV_KOPF,
   };
 }

@@ -358,6 +358,8 @@ test('Zeichnung folgt dem Dunkelmodus, PDF bleibt hell, Texte übersetzt', async
 
 test('Handbuch: Kapitel links mit aktueller Stelle, Suche markiert und springt, Handy-Menü', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  // Bewegung reduziert: Sprünge ohne Animation, damit der Test nicht auf das Scrollen wartet
+  await seite.emulateMedia({ reducedMotion: 'reduce' });
   await seite.evaluate(() => openHandbuch());
   const r = await seite.evaluate(async () => {
     const warte = ms => new Promise(res => setTimeout(res, ms));
@@ -453,6 +455,31 @@ test('Kein Verweis auf das SBB-Excel in Handbuch, Hinweisen und PDFs; Schieber-Z
   assert.deepEqual(r.funde, []);
   assert.equal(r.gleich, true);
   assert.equal(r.nachbarGleich, true);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Abschnitt: «Beispiel laden» setzt 5 Masten, IFC georeferenziert, Handbuch mit Ablauf', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    abschnittAnsicht();
+    document.getElementById('abs-beispiel').click();
+    await new Promise(res => setTimeout(res, 200));
+    const n = abschnitt.masten.length;
+    let datei = ''; const alt = window._dateiHerunterladen; window._dateiHerunterladen = x => { datei = x; };
+    abschnittExport('ifc');
+    window._dateiHerunterladen = alt;
+    openHandbuch();
+    const hb = document.getElementById('hb-text').innerText;
+    closeHandbuch(); setCanvasView('diagramm');
+    return { n, ifc: /IFCCABLESEGMENT/.test(datei), epsg: /EPSG:2056/.test(datei), felder: (datei.match(/Feld|CH_Durchhang/g) || []).length,
+      hb: /Beispiel: Ablauf vom Mastbild zum BIM-Modell/.test(hb) && /IfcCableSegment/.test(hb) };
+  });
+  assert.equal(r.n, 5);
+  assert.equal(r.ifc, true);
+  assert.equal(r.epsg, true);
+  assert.ok(r.felder > 0);
+  assert.equal(r.hb, true);
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
