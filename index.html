@@ -3069,7 +3069,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.13.4';
+const APP_VERSION = 'v3.13.5';
 
 // Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
 function sysName(mode) {
@@ -9962,6 +9962,17 @@ function setMindestabstand(wert) {
   _triggerDrawingRebuild();
 }
 
+// Bereich «H-Punkte» (Mindestabstand, Zone, Punkte verbinden, Ergebnis): nur in
+// der Ansicht «Diagramm» und nur mit SOK m ü. M. — ohne SOK ist keine Prüfung
+// möglich (H1–H4 sind dann gesperrt, Link zu den Mastangaben).
+var _ansichtDiagramm = true;
+function _obsSichtbarkeit() {
+  const sec = document.getElementById('obs-section');
+  if (!sec) return;
+  const hasSok = getSokMumLeft() !== null || getSokMumRight() !== null;
+  zeigeElement(sec, _ansichtDiagramm && hasSok);
+}
+
 // H-Zeile an den SOK-Bezug anpassen: ohne SOK m ü. M. gesperrt (Link zu den
 // Mastangaben), mit SOK unter jedem Wert die Höhe über SOK.
 function _hZeileStatus() {
@@ -9981,6 +9992,7 @@ function _hZeileStatus() {
       ? `≙ ${fN(h - (l + (r - l) * x / L), 2)} m ${t('dyn.ueber.sok')}` : '';
   }
   zeigeElement(document.getElementById('probe-sok-link'), !hasSok);
+  _obsSichtbarkeit();
 }
 // Mastangaben öffnen und ins Feld SOK m ü. M. springen
 function sokEintragen() {
@@ -10016,7 +10028,6 @@ function _hindernisErgebnisse() {
 function renderObstacleList() {
   const sec = document.getElementById('obs-section');
   if (!sec) return;
-  sec.style.display = '';
   const knopf = 'font-size:.7rem;padding:.14rem .45rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer';
   sec.innerHTML = `<div class="hind-kopf">
     <span class="hind-titel">${t('hind.titel')}</span>
@@ -11814,6 +11825,8 @@ function _syncHighlightFsVisibility() {
 
 function setCanvasView(view) {
   _abschnittAusblenden();
+  _ansichtDiagramm = view !== 'zeichnung' && view !== 'foto';
+  _obsSichtbarkeit();
   const isScale   = view === 'zeichnung';
   const isFoto    = view === 'foto';
   const scaleDiv  = document.getElementById('scale-view');
