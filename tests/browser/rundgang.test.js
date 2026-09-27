@@ -323,6 +323,39 @@ test('Lastfälle: Minuswert tippbar, keine Höhenlage-Auswahl, Hinweis Zusatzlas
   await kontext.close();
 });
 
+test('Zeichnung folgt dem Dunkelmodus, PDF bleibt hell, Texte übersetzt', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await fensterAbfangen(seite);
+  const r = await seite.evaluate(() => {
+    document.getElementById('sok-mum-left').value = '450'; onSokMumInput();
+    setDrawingHf(true); setCanvasView('zeichnung');
+    const svg = () => document.querySelector('#scale-svg-container svg').outerHTML;
+    const pdfSvg = () => { window.__fenster.length = 0; pdfExportDrawing(); const h = window.__fenster[0].html; return h.slice(h.indexOf('<svg xmlns')); };
+    themaAnwenden('hell');
+    const hell = { raster: svg().includes('#ebebeb') };
+    themaAnwenden('dunkel');
+    const dunkel = { raster: svg().includes('#2a2c32'), hg: getComputedStyle(document.getElementById('drawing-viewport')).backgroundColor,
+      pdfHell: pdfSvg().includes('#ebebeb') && !pdfSvg().includes('#2a2c32') };
+    const deutsch = /Masstab|Massstab|Überhöhung|Ts bei|Fd bei|SOK|m ü\.M\.|Höhe \[|Punkt|Mindestabstand/;
+    const sprachen = {};
+    for (const l of ['fr', 'it']) {
+      setLang(l);
+      const strip = document.getElementById('scale-data-strip')?.innerText || '';
+      sprachen[l] = { bild: (svg() + document.getElementById('drawing-legend-overlay').innerText + strip).match(deutsch)?.[0] ?? null,
+        pdf: pdfSvg().match(deutsch)?.[0] ?? null };
+    }
+    setLang('de'); themaAnwenden('auto'); setCanvasView('diagramm');
+    return { hell, dunkel, sprachen };
+  });
+  assert.equal(r.hell.raster, true);
+  assert.equal(r.dunkel.raster, true, 'Zeichnung im Dunkelmodus dunkel');
+  assert.notEqual(r.dunkel.hg, 'rgb(255, 255, 255)');
+  assert.equal(r.dunkel.pdfHell, true, 'PDF bleibt hell');
+  assert.deepEqual(r.sprachen, { fr: { bild: null, pdf: null }, it: { bild: null, pdf: null } });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
 test('Wasserzeichen «BETA – nicht verifiziert»: Bildschirm in allen Sprachen, alle PDFs', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   await fensterAbfangen(seite);
