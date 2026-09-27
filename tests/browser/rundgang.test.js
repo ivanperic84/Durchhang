@@ -559,7 +559,7 @@ test('Feld-Schnellauswahl, H/a im Zeichnungsband, Abschnitt-Scroll (normal und V
   assert.ok(r.seitenH <= r.spalteUnten + 200, `Seite ${r.seitenH} vs. Spalte ${r.spalteUnten}`);
   assert.equal(r.vollbild, true, 'Abschnitt im Vollbild scrollbar');
   assert.equal(r.mit, true);
-  assert.deepEqual({ offen: r.nachSchritt.offen, zeichnung: r.nachSchritt.zeichnung, wert: r.nachSchritt.wert }, { offen: 1, zeichnung: true, wert: '1' });
+  assert.deepEqual({ offen: r.nachSchritt.offen, zeichnung: r.nachSchritt.zeichnung, wert: r.nachSchritt.wert }, { offen: 1, zeichnung: true, wert: '0:1' });
   assert.match(r.nachSchritt.text, /Feld 2 · 102–103 · KM 12\.350/);
   assert.ok(r.zeilen.includes('H [m ü.M.]') && r.zeilen.includes('a [m]'), r.zeilen.join(' | '));
   assert.deepEqual(fehler, []);
@@ -1090,6 +1090,65 @@ test('Zeichnung startet mit Überhöhung 5×; Link «SOK m ü. M. eintragen» oh
     link: document.getElementById('probe-sok-link').textContent.trim(),
   }));
   assert.deepEqual(r, { vex: 5, auswahl: '5', link: 'SOK m ü. M. eintragen' });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Stränge: Beispiel mit 2 Strängen übereinander, Sichtbarkeit, Farbe, Wechsel, Teilabschnitt, Export je Strang, Speichern', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const warte = ms => new Promise(res => setTimeout(res, ms));
+    const titel = () => [...document.querySelectorAll('#abs-profil .abs-leiter title')].map(e => e.textContent);
+    abschnittAnsicht(); await abschnittBeispiel(); await warte(900);
+    const start = { n: abschnitt.straenge.length, kennungen: abschnitt.straenge.map(s => s.kennung), sys: sysMode,
+      pfade: [...new Set(titel())].sort(), zeilen: document.querySelectorAll('.abs-str-tab tbody tr').length };
+    // Sichtbarkeit und Farbe
+    strangSichtbar(1, false);
+    const aus = [...new Set(titel())];
+    strangSichtbar(0, false);                        // aktiver Strang bleibt sichtbar
+    const aktivBleibt = abschnitt.straenge[0].sichtbar;
+    strangSichtbar(1, true); await warte(50);
+    strangFarbe(1, '#123456');
+    const farbe = [...document.querySelectorAll('#abs-profil .abs-leiter')].some(p => /18, 52, 86|#123456/i.test(p.style.stroke));
+    // Feldwahl mit Gruppen je Strang, Wechsel auf SPL
+    const gruppen = [...document.querySelectorAll('#feld-select optgroup')].map(g => g.label);
+    feldWaehlen('1:2'); await warte(900);
+    const spl = { aktiv: abschnitt.aktiv, sys: sysMode, offen: abschnittOffenesFeld(), h1: document.getElementById('h1').value };
+    strangWaehlen(0); await warte(900);
+    const zurueck = { aktiv: abschnitt.aktiv, sys: sysMode };
+    // Teilabschnitt: nur Felder 102–104
+    teilSetzen('104', '102'); await warte(50);
+    const teil = { ...abschnitt.teil, felder: document.querySelectorAll('.abs-erg tbody tr').length };
+    // Export: IfcGroup und DXF-Layer je Strang, danach wieder derselbe Zustand
+    let ifc = '', dxf = ''; const alt = window._dateiHerunterladen;
+    window._dateiHerunterladen = x => { ifc = x; }; abschnittExport('ifc');
+    window._dateiHerunterladen = x => { dxf = x; }; abschnittExport('dxf');
+    window._dateiHerunterladen = alt;
+    const exp = { gruppen: (ifc.match(/IFCGROUP\(/g) || []).length, spl: /\nSPL_TRAGSEIL\n|\nSPL_[A-Z]+\n/.test(dxf), fl1: /\nFL1_TRAGSEIL\n/.test(dxf),
+      aktiv: abschnitt.aktiv, sys: sysMode };
+    teilSetzen(null, null);
+    // Speichern / Laden
+    const st = JSON.parse(JSON.stringify(getProjectState()));
+    abschnitt = { masten: [], offen: null, mp: {} }; renderAbschnitt();
+    setProjectState(st); await warte(100);
+    const geladen = { n: abschnitt.straenge.length, aktiv: abschnitt.aktiv, farbe: abschnitt.straenge[1].farbe,
+      gleich: abschnitt.masten === abschnitt.straenge[abschnitt.aktiv].masten };
+    setCanvasView('diagramm');
+    return { start, aus, aktivBleibt, farbe, gruppen, spl, zurueck, teil, exp, geladen };
+  });
+  assert.deepEqual(r.start, { n: 2, kennungen: ['FL1', 'SPL'], sys: 'nfl', pfade: ['FL1', 'SPL'], zeilen: 2 });
+  assert.deepEqual(r.aus, ['FL1']);
+  assert.equal(r.aktivBleibt, true);
+  assert.equal(r.farbe, true, 'Strangfarbe im Profil');
+  assert.equal(r.gruppen.length, 2);
+  assert.deepEqual(r.spl, { aktiv: 1, sys: 'el', offen: 2, h1: '9.20' });
+  assert.deepEqual(r.zurueck, { aktiv: 0, sys: 'nfl' });
+  assert.deepEqual(r.teil, { von: '102', bis: '104', felder: 2 });
+  assert.equal(r.exp.gruppen, 2);
+  assert.equal(r.exp.fl1, true);
+  assert.equal(r.exp.spl, true);
+  assert.deepEqual({ aktiv: r.exp.aktiv, sys: r.exp.sys }, { aktiv: 0, sys: 'nfl' });
+  assert.deepEqual(r.geladen, { n: 2, aktiv: 0, farbe: '#123456', gleich: true });
   assert.deepEqual(fehler, []);
   await kontext.close();
 });

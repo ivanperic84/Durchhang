@@ -114,3 +114,13 @@ test('3D-DXF: Layer und Linien, Koordinaten in LV95', () => {
   for (const l of ['TRAGSEIL', 'FAHRDRAHT', 'HAENGER']) assert.match(dxf, new RegExp(`\\nLAYER\\n2\\n${l}\\n`));
   assert.match(dxf, /\n10\n2600000\.5000\n20\n1200000\.2500\n30\n506\.7000\n/);
 });
+
+test('Stränge: eigene DXF-Layer je Strang, IfcGroup je Strang', () => {
+  const m = beispielModell(true);
+  m.leiter.forEach(l => { l.layerPraefix = 'Spl ä'; l.gruppe = 'Strang SPL'; });
+  const dxf = X.dxfErzeugen(X.modellAlsDxfLinien(m));
+  assert.match(dxf, /\nLAYER\n2\nSPL_A_TRAGSEIL\n70\n0\n62\n5\n/);   // Farbe wie TRAGSEIL
+  const ifc = X.ifcErzeugen(m, { zufall: zufallFolge(3) });
+  assert.equal((ifc.match(/IFCGROUP\(/g) || []).length, 1);
+  assert.match(ifc, /IFCRELASSIGNSTOGROUP\('[^']+',\$,\$,\$,\(#\d+,#\d+,#\d+\),\$,#\d+\)/);
+});

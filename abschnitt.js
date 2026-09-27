@@ -193,6 +193,7 @@ const CSV_SPALTEN = ['name', 'e', 'n', 'z', 'delta', 'h', 'km', 'L'];
 const CSV_KOPF = ['Mast', 'E', 'N', 'Z_Mastfuss', 'Delta_Mastfuss_SOK', 'h_ueber_SOK', 'KM', 'L_bis_naechster'];
 // Erkannte Kopfzeilen (klein, ohne Leer-/Sonderzeichen)
 const CSV_ALIAS = {
+  strang: ['strang', 'kennung', 'leiterkennung', 'strand', 'ligne', 'linea', 'circuit'],
   name:  ['mast', 'name', 'nr', 'mastnr', 'mastname', 'bezeichnung', 'pt', 'punkt', 'punktnr', 'point', 'mat', 'palo', 'pylone'],
   e:     ['e', 'ost', 'east', 'easting', 'rechtswert', 'y', 'elv95', 'coorde'],
   n:     ['n', 'nord', 'north', 'northing', 'hochwert', 'x', 'nlv95', 'coordn'],
@@ -258,9 +259,10 @@ function csvLesen(text) {
   zeilen.slice(mitKopf ? 1 : 0).forEach((z, i) => {
     const w = csvZeileTeilen(z, trenn);
     const m = { name: '', e: null, n: null, z: null, delta: null, h: null, km: '', L: null };
+    if (spalten.includes('strang')) m.strang = '';
     spalten.forEach((sp, j) => {
       if (!sp) return;
-      if (sp === 'name' || sp === 'km') m[sp] = w[j] ?? '';
+      if (sp === 'name' || sp === 'km' || sp === 'strang') m[sp] = w[j] ?? '';
       else m[sp] = csvZahl(w[j], trenn);
     });
     if (!m.name && m.e === null && m.h === null) return;   // leere Zeile
@@ -269,6 +271,49 @@ function csvLesen(text) {
     if (m.h === null) warnungen.push('h:' + (i + 1));
   });
   return { masten, warnungen };
+}
+
+// ── Mehrere Stränge (gemeinsame Masten) ──
+// Masten aus einer CSV mit Spalte «Strang» nach Kennung gruppieren (Reihenfolge
+// wie in der Datei). Ohne Kennung: ein Strang. Z, Δ und KM sind Masteigenschaften
+// und müssen in allen Strängen gleich sein — Abweichungen werden gemeldet.
+function straengeAusMasten(masten) {
+  const gruppen = new Map();
+  for (const m of masten) {
+    const k = String(m.strang ?? '').trim();
+    if (!gruppen.has(k)) gruppen.set(k, []);
+    const { strang, ...rest } = m;
+    gruppen.get(k).push(rest);
+  }
+  const straenge = [...gruppen].map(([kennung, ms], i) => ({ kennung: kennung || (gruppen.size > 1 ? `S${i + 1}` : ''), masten: ms }));
+  return { straenge, abweichungen: mastAbweichungen(straenge) };
+}
+// Masten (nach Name), deren Z / Δ / KM zwischen Strängen abweichen
+function mastAbweichungen(straenge) {
+  const ref = new Map(), aus = new Set();
+  const gleich = (a, b) => (a === null || a === '' || a === undefined || b === null || b === '' || b === undefined)
+    || (typeof a === 'number' ? Math.abs(a - b) < 0.0005 : String(a) === String(b));
+  for (const s of straenge) for (const m of s.masten) {
+    if (!ref.has(m.name)) { ref.set(m.name, m); continue; }
+    const r = ref.get(m.name);
+    if (!gleich(r.z, m.z) || !gleich(r.delta, m.delta) || !gleich(r.km, m.km)) aus.add(m.name);
+  }
+  return [...aus];
+}
+// Rolle aus der Kennung raten (Fahrleitung als Vorgabe)
+function rolleVorschlag(kennung) {
+  const k = String(kennung).toUpperCase();
+  if (/SPL|SPEIS|FEED|ALIM/.test(k)) return 'speiseleiter';
+  if (/(^|[^A-Z])RL|RUECK|RÜCK|RETOUR|RITORNO/.test(k)) return 'rueckleiter';
+  if (/ERD|(^|[^A-Z])SL([^A-Z]|$)|PE([^A-Z]|$)|TERRE|TERRA|SCHUTZ/.test(k)) return 'erdseil';
+  return 'fahrleitung';
+}
+// CSV mit Spalte «Strang» (alle Stränge nacheinander)
+function csvSchreibenStraenge(straenge) {
+  const f = v => v === null || v === undefined || v === '' ? '' : String(v).replace(/;/g, ',');
+  const zeilen = [['Strang', ...CSV_KOPF].join(';')];
+  for (const s of straenge) for (const m of s.masten) zeilen.push([f(s.kennung), ...CSV_SPALTEN.map(sp => f(m[sp]))].join(';'));
+  return '﻿' + zeilen.join('\r\n') + '\r\n';
 }
 
 function csvSchreiben(masten) {
@@ -290,12 +335,23 @@ function beispielMasten() {
   ])).masten;
 }
 
+// Beispiel mit zwei Strängen an denselben Masten: Fahrleitung FL1 und Speiseleiter SPL
+// (SPL 2 m seitlich versetzt, höher aufgehängt)
+function beispielStraenge() {
+  const fl = beispielMasten();
+  const spl = fl.map(m => ({ ...m, e: +(m.e + 0.05).toFixed(3), n: +(m.n - 2.0).toFixed(3), h: 9.20 }));
+  return [{ kennung: 'FL1', rolle: 'fahrleitung', masten: fl }, { kennung: 'SPL', rolle: 'speiseleiter', masten: spl }];
+}
+
+// Vorlage mit Spalte «Strang»: Fahrleitung FL1 und Speiseleiter SPL an denselben Masten
 function csvVorlage() {
-  return csvSchreiben([
+  const fl = [
     { name: '101', e: 2600000.000, n: 1200000.000, z: 500.000, delta: 0.30, h: 7.00, km: '12.300', L: null },
     { name: '102', e: 2600045.000, n: 1200001.000, z: 500.400, delta: 0.25, h: 7.00, km: '12.345', L: null },
     { name: '103', e: 2600090.000, n: 1200003.000, z: 500.900, delta: 0.20, h: 7.10, km: '12.390', L: null },
-  ]);
+  ];
+  const spl = fl.map(m => ({ ...m, n: +(m.n - 2).toFixed(3), h: 9.20 }));
+  return csvSchreibenStraenge([{ kennung: 'FL1', masten: fl }, { kennung: 'SPL', masten: spl }]);
 }
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -303,5 +359,6 @@ if (typeof module !== 'undefined' && module.exports) {
     LASTFALL_VORGABE, EISLAST_HOEHENLAGE, EIS_TEMPERATUR, lastfallEinstellung, lastfaelle, temperaturenLesen,
     hindernisPunkte, kanteBei, unterkanteBei, hindernisSeite, abstandHindernis, hindernisNormieren, kmInMeter, feldLaengen, mittelspannweite, mastSok,
     csvLesen, csvSchreiben, csvVorlage, beispielMasten, CSV_KOPF,
+    straengeAusMasten, mastAbweichungen, rolleVorschlag, csvSchreibenStraenge, beispielStraenge,
   };
 }

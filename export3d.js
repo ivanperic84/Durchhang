@@ -74,15 +74,23 @@ function dxfErzeugen(linien) {
   dxf += `0\nTABLE\n2\nLAYER\n70\n${benutzt.length + 1}\n`;
   dxf += '0\nLAYER\n2\n0\n70\n0\n62\n7\n6\nCONTINUOUS\n';
   for (const l of benutzt)
-    dxf += `0\nLAYER\n2\n${l}\n70\n0\n62\n${DXF_LAYER[l] ?? 7}\n6\nCONTINUOUS\n`;
+    dxf += `0\nLAYER\n2\n${l}\n70\n0\n62\n${DXF_LAYER[l] ?? DXF_LAYER[l.split('_').pop()] ?? 7}\n6\nCONTINUOUS\n`;
   dxf += '0\nENDTAB\n0\nENDSEC\n';
   dxf += '0\nSECTION\n2\nENTITIES\n' + ents + '0\nENDSEC\n0\nEOF\n';
   return dxf;
 }
 
-// Leiter des Modells als DXF-Linien
+// Leiter des Modells als DXF-Linien. l.layerPraefix (z. B. Strang «FL1») ergibt
+// eigene Layer je Strang: FL1_TRAGSEIL, SPL_LEITER … (Farbe wie der Grundlayer)
 function modellAlsDxfLinien(modell) {
-  return modell.leiter.map(l => ({ layer: LAYER_FUER_ART[l.art] ?? 'LEITER', punkte: l.punkte }));
+  return modell.leiter.map(l => {
+    const basis = LAYER_FUER_ART[l.art] ?? 'LEITER';
+    return { layer: l.layerPraefix ? `${dxfLayerName(l.layerPraefix)}_${basis}` : basis, punkte: l.punkte };
+  });
+}
+// DXF-Layernamen: nur Buchstaben, Ziffern, _ und - (R12), gross
+function dxfLayerName(s) {
+  return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9_-]+/g, '_').slice(0, 24) || 'STRANG';
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -235,6 +243,18 @@ function ifcErzeugen(modell, optionen = {}) {
   for (const [, m] of materialien)
     neu(`IFCRELASSOCIATESMATERIAL(${stepText(guid())},$,$,$,(${m.elemente.join(',')}),${m.ref})`);
 
+  // Gruppen (z. B. ein Strang je Gruppe): IfcGroup + Zuordnung der Leiter
+  const gruppen = new Map();
+  modell.leiter.forEach((l, i) => {
+    if (!l.gruppe) return;
+    if (!gruppen.has(l.gruppe)) gruppen.set(l.gruppe, []);
+    gruppen.get(l.gruppe).push(elemente[i]);
+  });
+  for (const [name, els] of gruppen) {
+    const g = neu(`IFCGROUP(${stepText(guid())},$,${stepText(name)},$,$)`);
+    neu(`IFCRELASSIGNSTOGROUP(${stepText(guid())},$,$,$,(${els.join(',')}),$,${g})`);
+  }
+
   // Eigenschaften: gemeinsamer Satz für alle Leiter + eigener Satz je Leiter
   const psetName = 'CH_Durchhang';
   const pset = (eig, fuer, name) => {
@@ -260,7 +280,7 @@ function ifcErzeugen(modell, optionen = {}) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     lv95Achse, feldPunkt, lv95Plausibel,
-    dxfErzeugen, modellAlsDxfLinien, DXF_LAYER,
+    dxfErzeugen, modellAlsDxfLinien, dxfLayerName, DXF_LAYER,
     ifcGuid, stepText, stepReal, ifcErzeugen,
   };
 }

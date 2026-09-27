@@ -1403,6 +1403,15 @@ input.feld-gesperrt { color: var(--muted) !important; cursor: default; backgroun
 .abs-lm { font-weight: 400; color: var(--muted); margin-left: .4rem; }
 .abs-svg { width: 100%; height: auto; display: block; background: var(--s2); border-radius: 8px; }
 .abs-profil-scroll { overflow-x: auto; border-radius: 8px; }
+.abs-str { margin: .2rem 0 .6rem; }
+.abs-str-tab td { vertical-align: middle; }
+.abs-str-tab select.abs-inp { width: auto; min-width: 7rem; }
+.abs-str-sys { font-size: .74rem; color: var(--text2); max-width: 16rem; }
+.abs-str-aktiv { font-size: .72rem; font-weight: 600; color: var(--primary); }
+.abs-farbe { width: 2rem; height: 1.6rem; padding: 0; border: 1px solid var(--border); border-radius: 6px; background: none; cursor: pointer; }
+.abs-teil { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .35rem; font-size: .74rem; color: var(--muted); }
+.abs-teil select.abs-inp { width: auto; min-width: 4.5rem; }
+.abs-leg.aktiv { font-weight: 700; color: var(--text); }
 .abs-profil-scroll:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .abs-profil-kopf { display: flex; align-items: baseline; flex-wrap: wrap; gap: .3rem 1rem; }
 .abs-leg { display: inline-flex; align-items: center; gap: .35rem; font-size: .72rem; color: var(--text2); }
@@ -2543,7 +2552,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
         <!-- Schnellauswahl Feld (nur mit Abspannabschnitt): ◀ Liste ▶ -->
         <div class="feld-wahl" id="feld-wahl" style="display:none" role="group" aria-label="Feld" data-i18n-aria="abs.feldwahl">
           <button type="button" class="feld-wahl-pfeil" id="feld-vor" onclick="feldSchritt(-1)" title="Vorheriges Feld" data-i18n-title="abs.feld.vor" aria-label="Vorheriges Feld" data-i18n-aria="abs.feld.vor">◀</button>
-          <select id="feld-select" class="feld-wahl-liste" onchange="feldWaehlen(+this.value)" aria-label="Feld" data-i18n-aria="abs.feldwahl"></select>
+          <select id="feld-select" class="feld-wahl-liste" onchange="feldWaehlen(this.value)" aria-label="Feld" data-i18n-aria="abs.feldwahl"></select>
           <button type="button" class="feld-wahl-pfeil" id="feld-nach" onclick="feldSchritt(1)" title="Nächstes Feld" data-i18n-title="abs.feld.nach" aria-label="Nächstes Feld" data-i18n-aria="abs.feld.nach">▶</button>
         </div>
         <!-- Status-Info (nur im Foto-Tab sichtbar) -->
@@ -3042,7 +3051,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v4.3.0';
+const APP_VERSION = 'v4.4.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -12588,15 +12597,266 @@ function _messpunkteLaden(s) {
 function _abschnittLaden(s) {
   const zahl = v => (typeof v === 'number' && Number.isFinite(v)) ? v : null;
   const text = v => (typeof v === 'string' || typeof v === 'number') ? String(v) : '';
-  const masten = Array.isArray(s.abschnitt?.masten) ? s.abschnitt.masten.filter(x => x && typeof x === 'object')
+  const mastenLesen = arr => Array.isArray(arr) ? arr.filter(x => x && typeof x === 'object')
     .map(x => ({ name: text(x.name), e: zahl(x.e), n: zahl(x.n), z: zahl(x.z), delta: zahl(x.delta), h: zahl(x.h), km: text(x.km), L: zahl(x.L) })) : [];
-  const mp = {};
-  if (s.abschnitt?.mp && typeof s.abschnitt.mp === 'object')
-    Object.entries(s.abschnitt.mp).forEach(([k, v]) => { if (/^\d+$/.test(k) && v && typeof v === 'object') mp[k] = _mpNormieren(v); });
-  abschnitt = { masten, offen: Number.isInteger(s.abschnitt?.offen) ? s.abschnitt.offen : null, mp };
+  const mpLesen = obj => {
+    const mp = {};
+    if (obj && typeof obj === 'object')
+      Object.entries(obj).forEach(([k, v]) => { if (/^\d+$/.test(k) && v && typeof v === 'object') mp[k] = _mpNormieren(v); });
+    return mp;
+  };
+  // Stränge (ab v4.4); ältere Projekte: ein Strang aus abschnitt.masten
+  let straenge = null, aktiv = 0;
+  if (Array.isArray(s.abschnitt?.straenge) && s.abschnitt.straenge.length) {
+    straenge = s.abschnitt.straenge.filter(x => x && typeof x === 'object').slice(0, STRANG_MAX).map((x, i) => {
+      let zustand = null;
+      if (x.zustand && typeof x.zustand === 'object') {
+        zustand = { fields: {}, leiter: text(x.zustand.leiter) };
+        _STRANG_FELDER.forEach(k => { if (x.zustand.fields?.[k] != null) zustand.fields[k] = text(x.zustand.fields[k]); });
+        _STRANG_OBEN.forEach(k => { if (k in x.zustand) zustand[k] = x.zustand[k]; });
+      }
+      return { kennung: text(x.kennung).slice(0, 24), rolle: STRANG_ROLLEN.includes(x.rolle) ? x.rolle : rolleVorschlag(text(x.kennung)),
+        farbe: /^#[0-9a-f]{6}$/i.test(x.farbe) ? x.farbe : STRANG_FARBEN[i % STRANG_FARBEN.length], sichtbar: x.sichtbar !== false,
+        masten: mastenLesen(x.masten), offen: Number.isInteger(x.offen) ? x.offen : null, mp: mpLesen(x.mp), zustand };
+    });
+    if (!straenge.length) straenge = null;
+    else aktiv = Number.isInteger(s.abschnitt.aktiv) && straenge[s.abschnitt.aktiv] ? s.abschnitt.aktiv : 0;
+  }
+  const masten = straenge ? straenge[aktiv].masten : mastenLesen(s.abschnitt?.masten);
+  const mp = mpLesen(s.abschnitt?.mp);
+  const teil = s.abschnitt?.teil && typeof s.abschnitt.teil === 'object'
+    ? { von: text(s.abschnitt.teil.von) || null, bis: text(s.abschnitt.teil.bis) || null } : { von: null, bis: null };
+  abschnitt = { masten, offen: Number.isInteger(s.abschnitt?.offen) ? s.abschnitt.offen : null, mp, aktiv, teil };
+  if (straenge) abschnitt.straenge = straenge;
+  _straengeSichern();
   if (s.lastfaelle && typeof s.lastfaelle === 'object') lastfallEinst = s.lastfaelle;
   renderObstacleList();
   if (_abschnittSichtbar) renderAbschnitt();
+}
+
+// ── Mehrere Stränge an denselben Masten ──────────────────────────────────
+// abschnitt.masten / .offen / .mp gehören immer zum aktiven Strang (die übrige
+// Abschnitt-Logik bleibt unverändert). abschnitt.straenge hält alle Stränge mit
+// Kennung, Rolle, Farbe, Sichtbarkeit, eigenen Masten (E/N/h je Strang; Z, Δ, KM
+// sind Masteigenschaften) und den Leiter-Einstellungen (zustand). T₂/T₃ gelten
+// für alle Stränge gemeinsam. abschnitt.teil grenzt nur Anzeige und Export ein.
+const STRANG_FARBEN = ['#4a5cb8', '#d9822b', '#2f9e6e', '#b8457a', '#8a6d10', '#3aa6c2'];
+const STRANG_ROLLEN = ['fahrleitung', 'speiseleiter', 'rueckleiter', 'erdseil', 'andere'];
+const STRANG_MAX = 8;
+const _STRANG_FELDER = ['preset-select', 'el-material-select', 'tension', 'tension-fd', 'sh',
+  'material-ts', 'material-fd', 'weight-ts', 'weight-fd', 'alpha-ts', 'alpha-fd', 'temp1'];
+const _STRANG_OBEN = ['sysMode', 'elBerechnungsart', 'wearPct', 'elBasiskraftIdx', 'lmFormula', 'lmOvr',
+  'elReglageHmaxOvr', 'elReglageLrefOvr', 'elMatEdits'];
+const _strangErg = new Map();          // Rechenergebnis je Strang (nicht gespeichert)
+let _strangVersion = 0, _straengeRechnenLaeuft = false, _strangTimer = null;
+
+function _neuerStrang(kennung, masten, i, rolle) {
+  return { kennung, rolle: rolle || rolleVorschlag(kennung), farbe: STRANG_FARBEN[i % STRANG_FARBEN.length],
+    sichtbar: true, masten, offen: null, mp: {}, zustand: null };
+}
+// Stellt sicher, dass abschnitt.straenge existiert und der aktive Strang auf abschnitt.masten zeigt
+function _straengeSichern() {
+  const A = abschnitt;
+  if (!Array.isArray(A.straenge) || !A.straenge.length) {
+    A.straenge = [_neuerStrang('', A.masten, 0, sysMode === 'el' ? 'speiseleiter' : 'fahrleitung')];
+    A.aktiv = 0;
+  }
+  if (!Number.isInteger(A.aktiv) || !A.straenge[A.aktiv]) A.aktiv = 0;
+  A.straenge[A.aktiv].masten = A.masten;
+  A.straenge[A.aktiv].mp = A.mp;
+  if (!A.teil || typeof A.teil !== 'object') A.teil = { von: null, bis: null };
+  return A.straenge;
+}
+const _mehrereStraenge = () => Array.isArray(abschnitt.straenge) && abschnitt.straenge.length > 1;
+const _strangName = (s, k) => s.kennung || `${t('abs.strang')} ${k + 1}`;
+const _strangSchl = k => `${k}|${abschnitt.straenge[k]?.kennung ?? ''}`;
+
+// Leiter-Einstellungen des aktiven Strangs (für den Wechsel und die Übersicht)
+function _strangZustandLesen() {
+  const st = getProjectState();
+  const fields = {};
+  _STRANG_FELDER.forEach(k => { if (st.fields[k] != null) fields[k] = st.fields[k]; });
+  const z = { fields };
+  _STRANG_OBEN.forEach(k => { z[k] = st[k] ?? null; });
+  const sel = document.getElementById(sysMode === 'el' ? 'el-material-select' : 'preset-select');
+  z.leiter = sel?.selectedOptions?.[0]?.textContent?.trim() || '';
+  return z;
+}
+// System für einen neuen Strang: Fahrleitung wie eingestellt, sonst Einzelleiter
+function _strangSystemVorgabe(s) {
+  if (s.rolle === 'fahrleitung') return sysMode === 'el' ? 'nfl' : sysMode;
+  return 'el';
+}
+
+// Strang k aktiv machen. feld: 'paar' = Feld mit demselben Mastpaar öffnen
+// (Bedienung); false = kein Feld öffnen, abschnitt.offen = offen (Hintergrund).
+function _strangAktivieren(k, { feld = 'paar', offen = null } = {}) {
+  const A = abschnitt;
+  _straengeSichern();
+  if (k === A.aktiv || !A.straenge[k]) return false;
+  const alt = A.straenge[A.aktiv];
+  const offenAlt = abschnittOffenesFeld();
+  const paar = offenAlt !== null ? [A.masten[offenAlt].name, A.masten[offenAlt + 1].name] : null;
+  if (offenAlt !== null) A.mp[offenAlt] = _mpLive();
+  alt.offen = A.offen; alt.mp = A.mp; alt.zustand = _strangZustandLesen();
+  const neu = A.straenge[k];
+  const voll = JSON.parse(JSON.stringify(getProjectState()));
+  voll.fotoState = null;
+  if (neu.zustand) {
+    _STRANG_OBEN.forEach(key => { if (key in neu.zustand) voll[key] = neu.zustand[key]; });
+    Object.assign(voll.fields, neu.zustand.fields || {});
+  }
+  voll.abschnitt.aktiv = k;
+  voll.abschnitt.masten = neu.masten;
+  voll.abschnitt.mp = neu.mp || {};
+  voll.abschnitt.offen = feld === 'paar' ? null : offen;
+  if (!setProjectState(voll)) return false;
+  if (!neu.zustand) { const v = _strangSystemVorgabe(neu); if (v !== sysMode) setSysMode(v); }
+  if (feld === 'paar') {
+    const m = abschnitt.masten;
+    let j = paar ? m.findIndex((x, i) => x.name === paar[0] && m[i + 1]?.name === paar[1]) : -1;
+    if (j < 0 && m.length >= 2) j = 0;   // sonst erstes Feld: Eingaben links gehören zum gewählten Strang
+    if (j >= 0) abschnittFeldOeffnen(j, { ansicht: false });
+  }
+  return true;
+}
+// Nach Import/Beispiel: System des ersten (aktiven) Strangs passend zur Rolle
+function _strangStartSystem() {
+  const s0 = abschnitt.straenge?.[abschnitt.aktiv];
+  if (!s0) return;
+  const v = _strangSystemVorgabe(s0);
+  if (v !== sysMode) setSysMode(v);
+}
+// Bedienung: Strang wählen (Übersicht, Feld-Auswahl)
+function strangWaehlen(k) {
+  if (!_strangAktivieren(k)) return;
+  if (_abschnittSichtbar) renderAbschnitt();
+  else if (typeof refreshScaleViewIfActive === 'function') refreshScaleViewIfActive();
+  feldWahlAktualisieren();
+}
+
+// Rechenstand eines Strangs: gleiche Einstellungen, Masten, Messpunkte und gemeinsame Eingaben
+// JSON mit sortierten Schlüsseln: gleicher Inhalt → gleicher Text (Reihenfolge nach Laden egal)
+function _stabil(v) {
+  if (Array.isArray(v)) return '[' + v.map(_stabil).join(',') + ']';
+  if (v && typeof v === 'object') return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + _stabil(v[k])).join(',') + '}';
+  return JSON.stringify(v ?? null);
+}
+function _strangSchluessel(s) {
+  return _stabil([_strangVersion, s.zustand, s.mp, s.masten, document.getElementById('temp2')?.value,
+    lastfaelleAktiv, lastfallEinst, minClearance]);
+}
+function _strangGueltig(k) {
+  const s = abschnitt.straenge[k], c = _strangErg.get(_strangSchl(k));
+  return !!c && c.schluessel === _strangSchluessel(s);
+}
+// Ergebnisse aller Stränge: aktiver frisch, die übrigen aus dem Zwischenspeicher (oder null)
+function _straengeErgebnisse(ergAktiv) {
+  _straengeSichern();
+  return abschnitt.straenge.map((s, k) => ({ s, k,
+    erg: k === abschnitt.aktiv ? ergAktiv : (_strangGueltig(k) ? _strangErg.get(_strangSchl(k)).erg : null) }));
+}
+// Übrige Stränge im Hintergrund rechnen (kurz aktivieren, rechnen, zurück)
+function _straengeNachrechnenPlanen() {
+  clearTimeout(_strangTimer);
+  _strangTimer = setTimeout(_straengeNachrechnen, 300);
+}
+function _straengeNachrechnen() {
+  if (_straengeRechnenLaeuft || !_abschnittSichtbar) return;
+  const A = abschnitt;
+  _straengeSichern();
+  const offenK = A.straenge.map((_, k) => k).filter(k => k !== A.aktiv && !_strangGueltig(k));
+  if (!offenK.length) return;
+  const zurueck = A.aktiv, offenZurueck = A.offen, y = window.scrollY;
+  const fokus = document.activeElement;
+  _straengeRechnenLaeuft = true;
+  _abschnittSichtbar = false;          // während des Durchlaufs nicht neu zeichnen
+  try {
+    for (const k of offenK) {
+      if (!_strangAktivieren(k, { feld: false, offen: null })) continue;
+      const s = abschnitt.straenge[k];
+      const erg = abschnittRechnen();
+      s.zustand = _strangZustandLesen();
+      _strangErg.set(_strangSchl(k), { schluessel: _strangSchluessel(s), erg });
+    }
+  } finally {
+    _strangAktivieren(zurueck, { feld: false, offen: offenZurueck });
+    _abschnittSichtbar = true;
+    _straengeRechnenLaeuft = false;
+  }
+  abschnittAktualisieren();
+  window.scrollTo(0, y);
+  if (fokus && fokus !== document.body && document.contains(fokus)) fokus.focus({ preventScroll: true });
+}
+
+// ── Stränge bearbeiten ──
+function strangSichtbar(k, an) {
+  _straengeSichern();
+  if (k === abschnitt.aktiv) an = true;      // der aktive Strang bleibt sichtbar
+  abschnitt.straenge[k].sichtbar = !!an;
+  abschnittAktualisieren();
+}
+function strangFarbe(k, farbe) {
+  _straengeSichern();
+  if (/^#[0-9a-f]{6}$/i.test(farbe)) abschnitt.straenge[k].farbe = farbe;
+  abschnittAktualisieren();
+}
+function strangKennung(k, wert) {
+  _straengeSichern();
+  const alt = _strangSchl(k);
+  abschnitt.straenge[k].kennung = String(wert).trim().slice(0, 24);
+  _strangErg.delete(alt);
+  renderAbschnitt();
+}
+function strangRolle(k, rolle) {
+  _straengeSichern();
+  if (STRANG_ROLLEN.includes(rolle)) abschnitt.straenge[k].rolle = rolle;
+  abschnittAktualisieren();
+}
+function strangHinzu() {
+  const S = _straengeSichern();
+  if (S.length >= STRANG_MAX) return;
+  const namen = new Set(S.map(s => s.kennung));
+  let n = S.length + 1; while (namen.has(`S${n}`)) n++;
+  if (S.length === 1 && !S[0].kennung) S[0].kennung = 'S1';
+  S.push(_neuerStrang(`S${n}`, abschnitt.masten.map(m => ({ ...m })), S.length, 'speiseleiter'));
+  strangWaehlen(S.length - 1);
+  meldung(t('abs.str.neu').replace('{k}', `S${n}`), 'info');
+}
+async function strangWeg(k) {
+  const S = _straengeSichern();
+  if (S.length < 2) return;
+  if (!await frageBestaetigung(t('abs.str.weg.frage').replace('{k}', _strangName(S[k], k)).replace('{n}', S[k].masten.length), { ok: t('rf.loeschen') })) return;
+  if (k === abschnitt.aktiv) _strangAktivieren(k === 0 ? 1 : 0);
+  const A = abschnitt;
+  const aktivS = A.straenge[A.aktiv];
+  A.straenge.splice(k, 1);
+  A.aktiv = A.straenge.indexOf(aktivS);
+  _strangErg.clear();
+  renderAbschnitt();
+}
+// Masten des Strangs mit den meisten Masten (Stationierung, Auswahl Teilabschnitt)
+function _basisMasten() {
+  const S = _straengeSichern();
+  return S.reduce((a, s) => (s.masten.length > a.length ? s.masten : a), abschnitt.masten);
+}
+// Teilabschnitt nur für Anzeige und Export (Mastnamen; null = ganzer Abschnitt)
+function teilSetzen(von, bis) {
+  _straengeSichern();
+  const b = _basisMasten(), ix = n => b.findIndex(m => m.name === n);
+  let iv = von ? ix(von) : 0, ib = bis ? ix(bis) : b.length - 1;
+  if (iv < 0) iv = 0; if (ib < 0) ib = b.length - 1;
+  if (iv > ib) [iv, ib] = [ib, iv];
+  if (ib - iv < 1) { ib = Math.min(b.length - 1, iv + 1); iv = Math.max(0, ib - 1); }
+  abschnitt.teil = { von: iv > 0 ? b[iv].name : null, bis: ib < b.length - 1 ? b[ib].name : null };
+  renderAbschnitt();
+}
+// Felder i des Strangs im Teilabschnitt
+function _teilFeld(masten, i) {
+  const T = abschnitt.teil || {};
+  const iv = T.von ? masten.findIndex(m => m.name === T.von) : 0;
+  const ib = T.bis ? masten.findIndex(m => m.name === T.bis) : masten.length - 1;
+  return i >= (iv < 0 ? 0 : iv) && i + 1 <= (ib < 0 ? masten.length - 1 : ib);
 }
 
 // ── Ansicht ein-/ausblenden ──
@@ -12625,9 +12885,16 @@ const _ABS_SPALTEN = [
 function abschnittMastWert(i, k, wert) {
   const m = abschnitt.masten[i];
   if (!m) return;
+  const alterName = m.name;
   if (k === 'name' || k === 'km') m[k] = String(wert).trim();
   else { const v = parseFloat(String(wert).replace(',', '.')); m[k] = Number.isFinite(v) ? v : null; }
-  abschnittAktualisieren();
+  // Masteigenschaften gelten für alle Stränge an diesem Mast
+  if (['name', 'z', 'delta', 'km'].includes(k)) {
+    _straengeSichern().forEach(s => { if (s.masten !== abschnitt.masten) s.masten.forEach(x => { if (x.name === alterName) x[k] = m[k]; }); });
+    if (k === 'name') { const T = abschnitt.teil; if (T.von === alterName) T.von = m.name; if (T.bis === alterName) T.bis = m.name; }
+  }
+  _strangVersion++;
+  if (k === 'name') renderAbschnitt(); else abschnittAktualisieren();
 }
 function abschnittMastHinzu() {
   const m = abschnitt.masten, letzter = m[m.length - 1];
@@ -12648,6 +12915,7 @@ async function abschnittAlleLoeschen() {
   if (!abschnitt.masten.length) return;
   if (!await frageBestaetigung(t('abs.loeschen.frage').replace('{n}', abschnitt.masten.length), { ok: t('rf.loeschen') })) return;
   abschnitt = { masten: [], offen: null, mp: {} };
+  _strangErg.clear(); _strangVersion++;
   renderAbschnitt(); renderObstacleList(); berechnen();
 }
 
@@ -12672,26 +12940,44 @@ async function abschnittCsvGewaehlt(input) {
   if (!erg.masten.length) { meldung(t('abs.csv.fehler'), 'fehler'); return; }
   if (abschnitt.masten.length && !await frageBestaetigung(
       t('abs.csv.ersetzen').replace('{n}', abschnitt.masten.length).replace('{m}', erg.masten.length), { ok: t('abs.csv.import') })) return;
-  abschnitt = { masten: erg.masten, offen: null, mp: {} };
-  const hinweise = [t('abs.csv.gelesen').replace('{n}', erg.masten.length)];
+  // Mit Spalte «Strang»: ein Strang je Kennung (gemeinsame Masten)
+  const { straenge: gruppen, abweichungen } = straengeAusMasten(erg.masten);
+  const liste = gruppen.slice(0, STRANG_MAX);
+  abschnitt = { masten: liste[0].masten, offen: null, mp: {}, aktiv: 0, teil: { von: null, bis: null },
+    straenge: liste.map((g, i) => _neuerStrang(g.kennung, g.masten, i, i === 0 && !g.kennung ? (sysMode === 'el' ? 'speiseleiter' : 'fahrleitung') : null)) };
+  _strangErg.clear(); _strangVersion++;
+  const hinweise = [liste.length > 1
+    ? t('abs.csv.straenge').replace('{n}', liste.length).replace('{k}', liste.map(g => g.kennung).join(', '))
+    : t('abs.csv.gelesen').replace('{n}', erg.masten.length)];
+  if (gruppen.length > STRANG_MAX) hinweise.push(t('abs.csv.zuviele').replace('{n}', STRANG_MAX));
+  if (abweichungen.length) hinweise.push(t('abs.csv.abweichung').replace('{m}', abweichungen.slice(0, 5).join(', ')));
+  if (liste.length > 1) _strangStartSystem();
   const ohneH = erg.warnungen.filter(w => w.startsWith('h:')).length;
   if (ohneH) hinweise.push(t('abs.csv.warn.h').replace('{n}', ohneH));
   erg.warnungen.filter(w => w.startsWith('spalte:')).forEach(w => hinweise.push(t('abs.csv.warn.spalte').replace('{s}', w.slice(7).toUpperCase())));
-  meldung(hinweise.join(' '), ohneH ? 'warnung' : 'info');
+  meldung(hinweise.join(' '), ohneH || abweichungen.length ? 'warnung' : 'info');
   renderAbschnitt(); renderObstacleList();
 }
 function abschnittCsvExport() {
-  _dateiHerunterladen(csvSchreiben(abschnitt.masten), 'abschnitt_masten.csv', 'text/csv;charset=utf-8');
+  const S = _straengeSichern();
+  const inhalt = S.length > 1 || S[0].kennung
+    ? csvSchreibenStraenge(S.map((s, k) => ({ kennung: s.kennung || `S${k + 1}`, masten: s.masten })))
+    : csvSchreiben(abschnitt.masten);
+  _dateiHerunterladen(inhalt, 'abschnitt_masten.csv', 'text/csv;charset=utf-8');
 }
 function abschnittCsvVorlage() {
   _dateiHerunterladen(csvVorlage(), 'vorlage_masten.csv', 'text/csv;charset=utf-8');
 }
 // Beispiel zum Ausprobieren: 5 Masten mit Koordinaten (Leiter und Lastfall wie links eingestellt)
 async function abschnittBeispiel() {
-  const masten = beispielMasten();
+  const bsp = beispielStraenge();
+  const masten = bsp[0].masten;
   if (abschnitt.masten.length && !await frageBestaetigung(
       t('abs.beispiel.ersetzen').replace('{n}', abschnitt.masten.length), { ok: t('abs.beispiel') })) return;
-  abschnitt = { masten, offen: null, mp: {} };
+  abschnitt = { masten, offen: null, mp: {}, aktiv: 0, teil: { von: null, bis: null },
+    straenge: bsp.map((b, i) => _neuerStrang(b.kennung, b.masten, i, b.rolle)) };
+  _strangErg.clear(); _strangVersion++;
+  _strangStartSystem();
   meldung(t('abs.beispiel.geladen').replace('{n}', masten.length), 'info');
   renderAbschnitt(); renderObstacleList();
 }
@@ -12768,22 +13054,29 @@ function feldWahlAktualisieren() {
   const n = m.length >= 2 ? abschnittFelderAnzahl() : 0;
   zeigeElement(box, n > 0 && !window._fotoTabActive);
   if (!n) return;
-  const texte = Array.from({ length: n }, (_, i) =>
-    `${i + 1} · ${m[i].name || '?'}–${m[i + 1].name || '?'}${m[i].km ? ` · KM ${m[i].km}` : ''}`);
-  const schluessel = currentLang + '|' + texte.join('|');
+  const S = _straengeSichern(), mehrere = S.length > 1;
+  const texte = ms => Array.from({ length: Math.max(0, ms.length - 1) }, (_, i) =>
+    `${i + 1} · ${ms[i].name || '?'}–${ms[i + 1].name || '?'}${ms[i].km ? ` · KM ${ms[i].km}` : ''}`);
+  // Werte «Strang:Feld»; mit mehreren Strängen je Strang eine Gruppe (Wahl wechselt den Strang)
+  const gruppen = S.map((st, k) => ({ k, name: _strangName(st, k), texte: texte(st.masten) }));
+  const schluessel = currentLang + '|' + JSON.stringify(gruppen);
   if (schluessel !== _feldWahlSchluessel) {
     _feldWahlSchluessel = schluessel;
+    const opts = g => g.texte.map((tx, i) => `<option value="${g.k}:${i}">${mehrere ? escHtml(g.name) + ' · ' : ''}${escHtml(t('abs.feldwahl'))} ${escHtml(tx)}</option>`).join('');
     sel.innerHTML = `<option value="-1" disabled>${escHtml(t('abs.feldwahl.leer'))}</option>`
-      + texte.map((tx, i) => `<option value="${i}">${escHtml(t('abs.feldwahl'))} ${escHtml(tx)}</option>`).join('');
+      + (mehrere ? gruppen.map(g => `<optgroup label="${escHtml(g.name)}">${opts(g)}</optgroup>`).join('') : opts(gruppen[0]));
   }
   const offen = abschnittOffenesFeld();
-  sel.value = String(offen ?? -1);
+  sel.value = offen === null ? '-1' : `${abschnitt.aktiv}:${offen}`;
   sel.title = offen !== null ? sel.options[sel.selectedIndex]?.textContent || '' : t('abs.feldwahl.leer');
   document.getElementById('feld-vor').disabled = offen === null || offen <= 0;
   document.getElementById('feld-nach').disabled = offen !== null && offen >= n - 1;
 }
-function feldWaehlen(i) {
+function feldWaehlen(wert) {
+  let k = abschnitt.aktiv, i = wert;
+  if (typeof wert === 'string') { const t2 = wert.split(':'); if (t2.length === 2) { k = +t2[0]; i = +t2[1]; } else i = +wert; }
   if (!Number.isInteger(i) || i < 0) return;
+  if (Number.isInteger(k) && k !== abschnitt.aktiv) _strangAktivieren(k, { feld: false, offen: null });
   abschnittFeldOeffnen(i, { ansicht: false });
   if (_abschnittSichtbar) renderAbschnitt();
   else if (typeof refreshScaleViewIfActive === 'function') refreshScaleViewIfActive();
@@ -12794,6 +13087,45 @@ function feldSchritt(d) {
   const n = abschnittFelderAnzahl();
   const ziel = offen === null ? (d > 0 ? 0 : n - 1) : offen + d;
   if (ziel >= 0 && ziel < n) feldWaehlen(ziel);
+}
+
+// Übersicht der Stränge (Sichtbarkeit, Farbe, Kennung, Rolle, System, Wählen) und Teilabschnitt
+function _straengeHtml() {
+  const S = _straengeSichern(), A = abschnitt, knopf = 'abs-knopf';
+  const basis = _basisMasten();
+  const opt = sel => basis.map(x => `<option value="${escHtml(x.name)}"${x.name === sel ? ' selected' : ''}>${escHtml(x.name)}</option>`).join('');
+  let h = `<div class="abs-str"><p class="abs-h4">${t('abs.straenge')}</p>
+    <div class="abs-scroll"><table class="abs-tab abs-str-tab"><thead><tr>
+      <th>${t('abs.str.sichtbar')}</th><th>${t('abs.str.farbe')}</th><th>${t('abs.strang')}</th><th>${t('abs.str.rolle')}</th>
+      <th>${t('abs.str.leiter')}</th><th>${t('abs.str.masten')}</th><th>${t('abs.str.laenge')}</th><th>${t('abs.sp.hind')}</th>
+      <th><span class="nur-vorlesen">${t('abs.str.waehlen')}</span></th><th><span class="nur-vorlesen">${t('ui.loeschen')}</span></th></tr></thead><tbody>`;
+  S.forEach((s, k) => {
+    const aktiv = k === A.aktiv, name = escHtml(_strangName(s, k));
+    const L = feldLaengen(s.masten).reduce((a, f) => a + (f.L > 0 ? f.L : 0), 0);
+    h += `<tr${aktiv ? ' class="offen"' : ''}>
+      <td><input type="checkbox" class="auswahl" ${s.sichtbar || aktiv ? 'checked' : ''} ${aktiv ? 'disabled' : ''} onchange="strangSichtbar(${k},this.checked)" aria-label="${escHtml(t('abs.str.sichtbar'))} ${name}"></td>
+      <td><input type="color" class="abs-farbe" value="${s.farbe}" onchange="strangFarbe(${k},this.value)" aria-label="${escHtml(t('abs.str.farbe'))} ${name}"></td>
+      <td><input class="abs-inp" style="width:5.5rem" value="${escHtml(s.kennung)}" placeholder="${name}" onchange="strangKennung(${k},this.value)" aria-label="${escHtml(t('abs.strang'))} ${k + 1}"></td>
+      <td><select class="abs-inp" onchange="strangRolle(${k},this.value)" aria-label="${escHtml(t('abs.str.rolle'))} ${name}">${
+        STRANG_ROLLEN.map(r => `<option value="${r}"${r === s.rolle ? ' selected' : ''}>${escHtml(t('rolle.' + r))}</option>`).join('')}</select></td>
+      <td id="abs-str-sys-${k}" class="abs-str-sys">…</td>
+      <td>${s.masten.length ? `${escHtml(s.masten[0].name)}–${escHtml(s.masten[s.masten.length - 1].name)}` : '—'}</td>
+      <td>${L > 0 ? fN(L, 0) + ' m' : '—'}</td>
+      <td id="abs-str-nw-${k}">…</td>
+      <td>${aktiv ? `<span class="abs-str-aktiv">${t('abs.str.aktiv')}</span>` : `<button class="${knopf} klein" onclick="strangWaehlen(${k})">${t('abs.str.waehlen')}</button>`}</td>
+      <td>${S.length > 1 ? `<button class="obs-rm-btn" onclick="strangWeg(${k})" aria-label="${escHtml(t('ui.loeschen'))} ${name}">✕</button>` : ''}</td></tr>`;
+  });
+  const T = A.teil || {};
+  h += `</tbody></table></div>
+    <div class="abs-leiste">
+      <button class="${knopf}" onclick="strangHinzu()" ${S.length >= STRANG_MAX ? 'disabled' : ''}>${t('abs.str.hinzu')}</button>
+      <span class="abs-trenner"></span>
+      ${basis.length > 2 ? `<span class="abs-teil">${t('abs.teil')}:
+        <label>${t('abs.teil.von')} <select class="abs-inp" id="abs-teil-von" onchange="teilSetzen(this.value, document.getElementById('abs-teil-bis').value)">${opt(T.von ?? basis[0].name)}</select></label>
+        <label>${t('abs.teil.bis')} <select class="abs-inp" id="abs-teil-bis" onchange="teilSetzen(document.getElementById('abs-teil-von').value, this.value)">${opt(T.bis ?? basis[basis.length - 1].name)}</select></label>
+        ${T.von || T.bis ? `<button class="${knopf} klein leise" onclick="teilSetzen(null, null)">${t('abs.teil.alle')}</button>` : ''}</span>` : ''}
+    </div></div>`;
+  return h;
 }
 
 // ── Darstellung ──
@@ -12821,9 +13153,11 @@ function renderAbschnitt() {
       <button class="${knopf}" onclick="abschnittExport('dxf')" ${m.length > 1 ? '' : 'disabled'}>${t('abs.dxf')}</button>
     </div>
     <p class="abs-hinweis">${t('abs.hinweis')}</p>`;
+  if (m.length) html += _straengeHtml();
   if (!m.length) {
     html += `<p class="abs-leer">${t('abs.leer')}</p>`;
   } else {
+    if (_mehrereStraenge()) html += `<p class="abs-h4">${t('abs.str.masten')} — ${escHtml(_strangName(abschnitt.straenge[abschnitt.aktiv], abschnitt.aktiv))}</p>`;
     html += `<div class="abs-scroll"><table class="abs-tab abs-masten"><thead><tr><th>#</th>${
       _ABS_SPALTEN.map(([, k]) => `<th>${t(k)}</th>`).join('')}<th>${t('abs.sp.L')}</th><th><span class="nur-vorlesen">${t('ui.loeschen')}</span></th></tr></thead><tbody>`;
     m.forEach((mast, i) => {
@@ -12862,16 +13196,32 @@ function abschnittAktualisieren() {
   if (!felderBox) return;
   const erg = abschnittRechnen();
   if (!erg) { felderBox.innerHTML = ''; if (profilBox) profilBox.innerHTML = ''; return; }
+  // Aktiver Strang: Einstellungen und Ergebnis merken; übrige aus dem Zwischenspeicher
+  const S = _straengeSichern(), sA = S[abschnitt.aktiv];
+  sA.zustand = _strangZustandLesen();
+  _strangErg.set(_strangSchl(abschnitt.aktiv), { schluessel: _strangSchluessel(sA), erg });
+  const alle = _straengeErgebnisse(erg);
+  alle.forEach(({ s, k, erg: e }) => {
+    const sys = document.getElementById(`abs-str-sys-${k}`), nw = document.getElementById(`abs-str-nw-${k}`);
+    if (sys) sys.textContent = s.zustand ? `${sysName(s.zustand.sysMode)} · ${s.zustand.leiter || '—'}` : '…';
+    if (!nw) return;
+    if (!e) { nw.textContent = '…'; return; }
+    const best = e.felder.filter(f => !f.fehler && _teilFeld(s.masten, f.i)).flatMap(f => f.nachweis.filter(x => x.best));
+    const min = best.reduce((a, x) => (!a || x.best.abstand < a.best.abstand ? x : a), null);
+    nw.innerHTML = !min ? '—' : `<span class="${min.ok ? 'abs-ok' : 'abs-nok'}">${min.ok ? '✓' : '✗'} ${fN(min.best.abstand, 2)} m</span>`;
+  });
+  if (alle.some(x => !x.erg)) _straengeNachrechnenPlanen();
   const absolut = m.every(x => mastSok(x) !== null);
   const einh = absolut ? t('bp.mum.abbrev') : `m ${t('dyn.ueber.sok')}`;
   const lmTxt = erg.starr ? t('abs.starr') : sysMode === 'rfl' ? t('abs.rfl')
     : erg.Lm ? t('abs.lm').replace('{lm}', fN(erg.Lm, 2)).replace('{formel}', lmFormula === 'arith' ? t('lm.arith') : t('lm.ruling')) : '';
-  let html = `<p class="abs-h4">${t('abs.felder')} <span class="abs-lm">${lmTxt}</span></p>
+  let html = `<p class="abs-h4">${t('abs.felder')}${_mehrereStraenge() ? ` — ${escHtml(_strangName(sA, abschnitt.aktiv))}` : ''} <span class="abs-lm">${lmTxt}</span></p>
     <div class="abs-scroll"><table class="abs-tab abs-erg"><thead><tr>
       <th>${t('abs.sp.feld')}</th><th>L [m]</th><th>${t('abs.sp.f')}</th><th>${t('abs.sp.H')}</th>
       <th>${t('abs.sp.tief')} [${einh}]</th>${sysMode !== 'el' ? `<th>${t('abs.sp.fd')} [${einh}]</th>` : ''}
       <th>${t('abs.sp.hind')}</th><th><span class="nur-vorlesen">${t('abs.oeffnen')}</span></th></tr></thead><tbody>`;
   erg.felder.forEach(f => {
+    if (!_teilFeld(m, f.i)) return;          // Teilabschnitt: nur Anzeige
     const offen = abschnittOffenesFeld() === f.i;
     const name = `${f.i + 1} · ${escHtml(f.a.name)}–${escHtml(f.b.name)}`;
     if (f.fehler) {
@@ -12896,7 +13246,7 @@ function abschnittAktualisieren() {
   if (!absolut && m.some(x => mastSok(x) !== null)) html += `<p class="abs-hinweis">${t('abs.ohne.sok')}</p>`;
   felderBox.innerHTML = html;
   if (profilBox) {
-    profilBox.innerHTML = _abschnittProfil(erg, absolut);
+    profilBox.innerHTML = _abschnittProfil(alle, absolut);
     // Breites Profil: offenes Feld in den sichtbaren Bereich schieben
     const box = profilBox.querySelector('.abs-profil-scroll'), feld = box?.querySelector('.abs-feld.offen');
     if (box && feld && box.scrollWidth > box.clientWidth) {
@@ -12911,75 +13261,113 @@ function _ukProfilPunkte(f, h, absolut) {
   return hindernisPunkte(h.punkte).map(p => ({ x: p.x, h: (absolut || !f.hatSok) ? p.h : p.h - f.sokFn(Math.max(0, Math.min(f.L, p.x))) }));
 }
 
-// Längsprofil als SVG: Leiter bei T2, Fahrdraht, SOK, Masten, Hindernisse
-function _abschnittProfil(erg, absolut) {
-  const F = erg.felder;
-  if (F.some(f => f.fehler)) return `<p class="abs-hinweis">${t('abs.profil.fehlt')}</p>`;
-  const st = [0]; F.forEach(f => st.push(st[st.length - 1] + f.L));
-  const S = st[st.length - 1];
+// Längsprofil als SVG: alle sichtbaren Stränge übereinander (aktiver obenauf), Fahrdraht,
+// SOK, Masten, Hindernisse des aktiven Strangs; Teilabschnitt: nur dieser Bereich
+function _abschnittProfil(alle, absolut) {
+  const A = abschnitt;
+  const aktivE = alle.find(x => x.k === A.aktiv);
+  if (!aktivE?.erg || aktivE.erg.felder.some(f => f.fehler)) return `<p class="abs-hinweis">${t('abs.profil.fehlt')}</p>`;
+  const mehrere = A.straenge.length > 1;
+  // Stationierung je Mastname aus dem Strang mit den meisten Masten
+  const basis = _basisMasten(), fl = feldLaengen(basis);
+  const st = new Map(); let acc = 0;
+  basis.forEach((m, i) => { st.set(m.name, acc); if (i < fl.length) acc += fl[i].L > 0 ? fl[i].L : 0; });
+  const T = A.teil || {};
+  const x0 = T.von && st.has(T.von) ? st.get(T.von) : 0;
+  const x1 = T.bis && st.has(T.bis) ? st.get(T.bis) : acc;
+  const S = Math.max(x1 - x0, 1);
+  // Felder je sichtbarem Strang im Bereich (beide Masten in der Stationierung)
+  const lagen = alle.filter(e => e.erg && (e.k === A.aktiv || e.s.sichtbar)).map(e => ({ ...e,
+    F: e.erg.felder.filter(f => !f.fehler && st.has(f.a.name) && st.has(f.b.name)
+      && st.get(f.a.name) >= x0 - 1e-6 && st.get(f.b.name) <= x1 + 1e-6 && st.get(f.b.name) > st.get(f.a.name))
+      .map(f => ({ f, s0: st.get(f.a.name), s1: st.get(f.b.name) })) }));
+  const aktivL = lagen.find(e => e.k === A.aktiv), FA = aktivL?.F || [];
+  if (!FA.length) return `<p class="abs-hinweis">${t('abs.profil.fehlt')}</p>`;
   const hoehe = (f, x, y) => y + (absolut && f.sokFn ? f.sokFn(x) : 0);
   const sok = (f, x) => absolut && f.sokFn ? f.sokFn(x) : 0;
-  // Wertebereich
   let yMin = Infinity, yMax = -Infinity;
-  F.forEach(f => {
-    for (let k = 0; k <= 40; k++) {
-      const x = f.L * k / 40;
+  lagen.forEach(({ F, k }) => F.forEach(({ f }) => {
+    for (let j = 0; j <= 40; j++) {
+      const x = f.L * j / 40;
       yMin = Math.min(yMin, sok(f, x), hoehe(f, x, f.fdY ? f.fdY(x) : kettenY(f.oben, x)));
       yMax = Math.max(yMax, hoehe(f, x, kettenY(f.oben, x)));
     }
     yMax = Math.max(yMax, hoehe(f, 0, f.a.h), hoehe(f, f.L, f.b.h));
-    f.nachweis.forEach(n => { if (n.best) _ukProfilPunkte(f, n.h, absolut).forEach(p => { yMax = Math.max(yMax, p.h); }); });
-  });
+    if (k === A.aktiv) f.nachweis.forEach(n => { if (n.best) _ukProfilPunkte(f, n.h, absolut).forEach(p => { yMax = Math.max(yMax, p.h); }); });
+  }));
   // Viele Felder (Nachspannlänge bis ~650 m, 50+ Felder): das Profil wird breiter
-  // statt enger, damit das kürzeste Feld mindestens 60 Einheiten hat; die Box
-  // lässt sich dann seitlich schieben. Bis ca. 12 Felder passt alles wie bisher.
+  // statt enger (kürzestes Feld mind. 60 Einheiten), die Box lässt sich seitlich
+  // schieben. Nie schmaler als 1000 (sonst würden Schrift und Linien vergrössert).
   const H = 300, pl = 48, pr = 30, pt = 30, pb = 30;
-  const Lmin = Math.min(...F.map(f => f.L));
-  // Nie schmaler als 1000 (sonst wird das Profil beim Einpassen vergrössert: Schrift und Linien zu gross)
-  const W = Math.max(1000, Math.round(Math.min(pl + pr + S * 60 / Math.max(Lmin, 1), pl + pr + 90 * F.length)));
+  const Lmin = Math.min(...FA.map(x => x.s1 - x.s0));
+  const W = Math.max(1000, Math.round(Math.min(pl + pr + S * 60 / Math.max(Lmin, 1), pl + pr + 90 * FA.length)));
   const breit = W > 1000;
-  const sx = x => pl + (W - pl - pr) * x / S;
+  const sx = x => pl + (W - pl - pr) * (x - x0) / S;
   const sy = y => pt + (H - pt - pb) * (1 - (y - yMin) / Math.max(0.5, yMax - yMin));
-  // Leiter in der Temperaturfarbe wie im Diagramm (R-FL: Akzentfarbe, Temperatur wirkt nicht)
+  // Ein Strang: Leiter in der Temperaturfarbe wie im Diagramm; mehrere: Farbe je Strang
   const T2 = parseFloat(document.getElementById('temp2')?.value);
-  const leiterClr = sysMode === 'rfl' || !Number.isFinite(T2) ? 'var(--primary)' : t2TempColor(T2);
+  const tempClr = sysMode === 'rfl' || !Number.isFinite(T2) ? 'var(--primary)' : t2TempColor(T2);
+  const farbe = e => mehrere ? e.s.farbe : tempClr;
   let svg = `<svg viewBox="0 0 ${W} ${H}" class="abs-svg" role="img" aria-label="${escHtml(t('abs.profil'))}"${breit ? ` style="width:${W}px;max-width:none"` : ''}>`;
-  // Raster + Beschriftung Höhe
   for (let k = 0; k <= 4; k++) {
     const y = yMin + (yMax - yMin) * k / 4;
     svg += `<line x1="${pl}" x2="${W - pr}" y1="${sy(y)}" y2="${sy(y)}" class="abs-raster"/>
       <text x="${pl - 5}" y="${sy(y) + 3.5}" class="abs-achse" text-anchor="end">${y.toFixed(1)}</text>`;
   }
   svg += `<text x="${pl}" y="14" class="abs-achse">${absolut ? t('canvas.y.mum') : t('canvas.y.sok')}</text>`;
-  F.forEach((f, i) => {
-    const x0 = st[i];
-    const pfad = fn => Array.from({ length: 61 }, (_, k) => { const x = f.L * k / 60; return `${k ? 'L' : 'M'}${sx(x0 + x).toFixed(1)},${sy(hoehe(f, x, fn(x))).toFixed(1)}`; }).join('');
-    svg += `<rect x="${sx(x0)}" y="${pt}" width="${sx(x0 + f.L) - sx(x0)}" height="${H - pt - pb}" class="abs-feld${abschnittOffenesFeld() === i ? ' offen' : ''}"
-      onclick="abschnittFeldOeffnen(${i})"><title>${t('abs.sp.feld')} ${i + 1}: ${escHtml(f.a.name)}–${escHtml(f.b.name)} · L = ${fN(f.L, 2)} m</title></rect>`;
-    if (absolut) svg += `<line x1="${sx(x0)}" y1="${sy(sok(f, 0))}" x2="${sx(x0 + f.L)}" y2="${sy(sok(f, f.L))}" class="abs-sok"/>`;
-    if (f.fdY) svg += `<path d="${pfad(f.fdY)}" class="abs-fd"/>`;
-    svg += `<path d="${pfad(x => kettenY(f.oben, x))}" class="abs-leiter" style="stroke:${leiterClr}"/>`;
-    f.nachweis.forEach(n => {
-      if (!n.best) return;
-      const P = _ukProfilPunkte(f, n.h, absolut).filter(p => p.x >= 0 && p.x <= f.L);
-      const titel = `<title>${escHtml(n.h.name || t('hind.titel'))}: a = ${fN(n.best.abstand, 2)} m</title>`;
-      if (n.h.verbinden && P.length > 1)
-        svg += `<polyline points="${P.map(p => `${sx(x0 + p.x).toFixed(1)},${sy(p.h).toFixed(1)}`).join(' ')}" fill="none" class="abs-hind ${n.ok ? 'ok' : 'nok'}">${titel}</polyline>`;
-      else P.forEach(p => { svg += `<circle cx="${sx(x0 + p.x).toFixed(1)}" cy="${sy(p.h).toFixed(1)}" r="4" class="abs-hind-pkt ${n.ok ? 'ok' : 'nok'}">${titel}</circle>`; });
-    });
-    svg += `<text x="${sx(x0 + f.L / 2)}" y="${H - 8}" class="abs-achse" text-anchor="middle">${fN(f.L, 1)} m</text>`;
+  const pfad = (f, s0, s1, fn) => Array.from({ length: 61 }, (_, j) => { const x = f.L * j / 60;
+    return `${j ? 'L' : 'M'}${sx(s0 + (s1 - s0) * x / f.L).toFixed(1)},${sy(hoehe(f, x, fn(x))).toFixed(1)}`; }).join('');
+  // Felder des aktiven Strangs: Klickfläche, SOK, Feldlänge
+  FA.forEach(({ f, s0, s1 }) => {
+    svg += `<rect x="${sx(s0)}" y="${pt}" width="${sx(s1) - sx(s0)}" height="${H - pt - pb}" class="abs-feld${abschnittOffenesFeld() === f.i ? ' offen' : ''}"
+      onclick="abschnittFeldOeffnen(${f.i})"><title>${t('abs.sp.feld')} ${f.i + 1}: ${escHtml(f.a.name)}–${escHtml(f.b.name)} · L = ${fN(f.L, 2)} m</title></rect>`;
+    if (absolut) svg += `<line x1="${sx(s0)}" y1="${sy(sok(f, 0))}" x2="${sx(s1)}" y2="${sy(sok(f, f.L))}" class="abs-sok"/>`;
+    svg += `<text x="${sx((s0 + s1) / 2)}" y="${H - 8}" class="abs-achse" text-anchor="middle">${fN(f.L, 1)} m</text>`;
   });
-  // Masten
-  abschnitt.masten.forEach((mast, i) => {
-    const f = F[Math.min(i, F.length - 1)], x = i < F.length ? 0 : f.L;
-    const unten = sok(f, x), oben = hoehe(f, x, mast.h);
-    svg += `<line x1="${sx(st[i])}" x2="${sx(st[i])}" y1="${sy(unten)}" y2="${sy(oben)}" class="abs-mast"/>
-      <text x="${sx(st[i])}" y="${sy(oben) - 6}" class="abs-mastname" text-anchor="middle">${escHtml(mast.name)}</text>`;
+  // Leiter: übrige Stränge zuerst, der aktive obenauf
+  [...lagen.filter(e => e.k !== A.aktiv), aktivL].forEach(e => {
+    const clr = farbe(e), ak = e.k === A.aktiv;
+    e.F.forEach(({ f, s0, s1 }) => {
+      if (f.fdY) svg += ak ? `<path d="${pfad(f, s0, s1, f.fdY)}" class="abs-fd"/>`
+        : `<path d="${pfad(f, s0, s1, f.fdY)}" class="abs-fd" style="stroke:${clr};opacity:.55;stroke-dasharray:4 3"/>`;
+      svg += `<path d="${pfad(f, s0, s1, x => kettenY(f.oben, x))}" class="abs-leiter" style="stroke:${clr}${ak ? '' : ';stroke-width:1.6;opacity:.9'}"><title>${escHtml(_strangName(e.s, e.k))}</title></path>`;
+    });
+  });
+  // Hindernisse des aktiven Strangs
+  FA.forEach(({ f, s0, s1 }) => f.nachweis.forEach(n => {
+    if (!n.best) return;
+    const P = _ukProfilPunkte(f, n.h, absolut).filter(p => p.x >= 0 && p.x <= f.L);
+    const px = x => sx(s0 + (s1 - s0) * x / f.L).toFixed(1);
+    const titel = `<title>${escHtml(n.h.name || t('hind.titel'))}: a = ${fN(n.best.abstand, 2)} m</title>`;
+    if (n.h.verbinden && P.length > 1)
+      svg += `<polyline points="${P.map(p => `${px(p.x)},${sy(p.h).toFixed(1)}`).join(' ')}" fill="none" class="abs-hind ${n.ok ? 'ok' : 'nok'}">${titel}</polyline>`;
+    else P.forEach(p => { svg += `<circle cx="${px(p.x)}" cy="${sy(p.h).toFixed(1)}" r="4" class="abs-hind-pkt ${n.ok ? 'ok' : 'nok'}">${titel}</circle>`; });
+  }));
+  // Masten (Basis) im Bereich: bis zum höchsten Aufhängepunkt aller Stränge
+  basis.forEach(mast => {
+    const x = st.get(mast.name);
+    if (x < x0 - 1e-6 || x > x1 + 1e-6) return;
+    let unten = null, oben = -Infinity;
+    lagen.forEach(({ F }) => F.forEach(({ f }) => {
+      if (f.a.name === mast.name) { oben = Math.max(oben, hoehe(f, 0, f.a.h)); unten ??= sok(f, 0); }
+      if (f.b.name === mast.name) { oben = Math.max(oben, hoehe(f, f.L, f.b.h)); unten ??= sok(f, f.L); }
+    }));
+    if (unten === null || !Number.isFinite(oben)) return;
+    svg += `<line x1="${sx(x)}" x2="${sx(x)}" y1="${sy(unten)}" y2="${sy(oben)}" class="abs-mast"/>
+      <text x="${sx(x)}" y="${sy(oben) - 6}" class="abs-mastname" text-anchor="middle">${escHtml(mast.name)}</text>`;
   });
   svg += '</svg>';
-  const leiterTxt = sysMode === 'el' ? t('leg.leiter2') : t('leg.ts2');
-  const legende = `<span class="abs-leg"><span class="abs-leg-linie" style="background:${leiterClr}"></span><span>${leiterTxt}${Number.isFinite(T2) && sysMode !== 'rfl' ? ` = ${fN(T2, 0)} °C` : ''}</span></span>`
-    + (F.some(f => f.fdY) ? `<span class="abs-leg"><span class="abs-leg-linie fd"></span><span>${t('leg.fd2')}</span></span>` : '');
+  const t2Txt = Number.isFinite(T2) ? ` = ${fN(T2, 0)} °C` : '';
+  let legende;
+  if (mehrere) {
+    legende = lagen.map(e => `<span class="abs-leg${e.k === A.aktiv ? ' aktiv' : ''}"><span class="abs-leg-linie" style="background:${e.s.farbe}"></span><span>${escHtml(_strangName(e.s, e.k))}</span></span>`).join('')
+      + alle.filter(e => !e.erg && e.s.sichtbar && e.k !== A.aktiv).map(e => `<span class="abs-leg leise"><span class="abs-leg-linie" style="background:${e.s.farbe}"></span><span>${escHtml(_strangName(e.s, e.k))} …</span></span>`).join('')
+      + `<span class="abs-leg leise"><span>T<sub>2</sub>${t2Txt}</span></span>`;
+  } else {
+    const leiterTxt = sysMode === 'el' ? t('leg.leiter2') : t('leg.ts2');
+    legende = `<span class="abs-leg"><span class="abs-leg-linie" style="background:${tempClr}"></span><span>${leiterTxt}${sysMode !== 'rfl' ? t2Txt : ''}</span></span>`
+      + (FA.some(({ f }) => f.fdY) ? `<span class="abs-leg"><span class="abs-leg-linie fd"></span><span>${t('leg.fd2')}</span></span>` : '');
+  }
   return `<div class="abs-profil-kopf"><p class="abs-h4">${t('abs.profil')}</p>${legende}${breit ? `<span class="abs-leg leise">${t('abs.profil.schieben')}</span>` : ''}</div>`
     + `<div class="abs-profil-scroll" tabindex="0" role="region" aria-label="${escHtml(t('abs.profil'))}">${svg}</div>`;
 }
@@ -12990,40 +13378,68 @@ function _abschnittProfil(erg, absolut) {
 function abschnittExport(art) {
   const erg = abschnittRechnen();
   if (!erg || erg.felder.some(f => f.fehler)) { meldung(t('abs.exp.unvollstaendig'), 'fehler'); return; }
-  const m = abschnitt.masten;
-  const mitKoord = m.every(x => Number.isFinite(x.e) && Number.isFinite(x.n));
-  if (mitKoord && !m.every(x => mastSok(x) !== null)) { meldung(t('exp.geo.sok.fehlt'), 'fehler'); return; }
+  const S = _straengeSichern(), A = abschnitt, mehrere = S.length > 1;
+  // Exportiert werden der aktive und alle sichtbaren Stränge (Teilabschnitt beachtet)
+  const liste = [A.aktiv, ...S.map((_, k) => k).filter(k => k !== A.aktiv && S[k].sichtbar)];
+  const mitKoord = liste.every(k => S[k].masten.every(x => Number.isFinite(x.e) && Number.isFinite(x.n)));
+  if (mitKoord && !liste.every(k => S[k].masten.every(x => mastSok(x) !== null))) { meldung(t('exp.geo.sok.fehlt'), 'fehler'); return; }
+  // Stationierung ohne Koordinaten: nach Mastname aus dem Strang mit den meisten Masten
+  const basis = _basisMasten(), fl = feldLaengen(basis), stat = new Map();
+  { let acc = 0; basis.forEach((m, i) => { stat.set(m.name, acc); if (i < fl.length) acc += fl[i].L > 0 ? fl[i].L : 0; }); }
+  const GEMEINSAM = [t('exp.p.t2'), t('exp.p.hoehen'), t('exp.p.crs'), t('exp.p.quelle')];
+  const FELDBEZOGEN = [t('exp.p.spannweite'), t('exp.p.mast.li'), t('exp.p.mast.re'), t('exp.p.km.li'), t('exp.p.km.re')];
   const sicherung = JSON.parse(JSON.stringify(getProjectState()));
   const warSichtbar = _abschnittSichtbar;
   _abschnittAusblenden();   // während des Durchlaufs nicht bei jeder Rechnung neu zeichnen
-  const leiter = [];
-  let gemeinsam = null, station = 0, fehler = null;
+  const leiter = [], systeme = [];
+  let gemeinsam = null, fehler = null, lmEig = null;
+  let mVon = null, mBis = null;
   try {
-    for (const f of erg.felder) {
-      abschnittFeldOeffnen(f.i, { ansicht: false, koord: mitKoord });
-      const r = modell3d(art === 'ifc' ? 80 : 200);
-      if (r.fehler) { fehler = r.fehler; break; }
-      const praefix = `${t('abs.sp.feld')} ${f.i + 1} (${f.a.name}–${f.b.name}) · `;
-      r.modell.leiter.forEach(l => {
-        l.name = praefix + l.name;
-        if (!mitKoord) l.punkte = l.punkte.map(p => [p[0] + station, p[1], p[2]]);
-        l.eigenschaften = [{ name: t('abs.sp.feld'), typ: 'text', wert: `${f.i + 1} (${f.a.name}–${f.b.name})` },
-                           { name: t('exp.p.spannweite'), typ: 'laenge', wert: +f.L.toFixed(3) }, ...(l.eigenschaften || [])];
-        leiter.push(l);
-      });
-      if (!gemeinsam) gemeinsam = r.modell.eigenschaften.filter(e =>
-        ![t('exp.p.spannweite'), t('exp.p.mast.li'), t('exp.p.mast.re'), t('exp.p.km.li'), t('exp.p.km.re')].includes(e.name));
-      station += f.L;
+    for (const k of liste) {
+      if (k !== abschnitt.aktiv && !_strangAktivieren(k, { feld: false, offen: null })) continue;
+      const s = abschnitt.straenge[k], name = _strangName(s, k);
+      const e = abschnittRechnen();
+      if (!e || e.felder.some(f => f.fehler)) { fehler = `${t('abs.exp.unvollstaendig')} (${name})`; break; }
+      systeme.push(sysName(sysMode));
+      let strangEig = null;
+      for (const f of e.felder) {
+        if (!_teilFeld(abschnitt.masten, f.i)) continue;
+        mVon ??= f.a.name; mBis = f.b.name;
+        abschnittFeldOeffnen(f.i, { ansicht: false, koord: mitKoord });
+        const r = modell3d(art === 'ifc' ? 80 : 200);
+        if (r.fehler) { fehler = r.fehler; break; }
+        if (!strangEig) {
+          const eig = r.modell.eigenschaften.filter(x => !FELDBEZOGEN.includes(x.name));
+          if (!gemeinsam) gemeinsam = mehrere ? eig.filter(x => GEMEINSAM.includes(x.name)) : eig;
+          strangEig = mehrere ? [{ name: t('exp.p.strang'), typ: 'text', wert: name }, { name: t('exp.p.rolle'), typ: 'text', wert: t('rolle.' + s.rolle) },
+            ...eig.filter(x => !GEMEINSAM.includes(x.name))] : [];
+          if (!e.starr && sysMode !== 'rfl' && e.Lm) (mehrere ? strangEig : (lmEig = lmEig || [])).push({ name: 'Lm', typ: 'laenge', wert: +e.Lm.toFixed(3) });
+        }
+        const feldTxt = `${f.i + 1} (${f.a.name}–${f.b.name})`;
+        const praefix = `${mehrere ? name + ' · ' : ''}${t('abs.sp.feld')} ${feldTxt} · `;
+        const station = stat.get(f.a.name) ?? 0;
+        r.modell.leiter.forEach(l => {
+          l.name = praefix + l.name;
+          if (!mitKoord) l.punkte = l.punkte.map(p => [p[0] + station, p[1], p[2]]);
+          l.eigenschaften = [...strangEig, { name: t('abs.sp.feld'), typ: 'text', wert: feldTxt },
+                             { name: t('exp.p.spannweite'), typ: 'laenge', wert: +f.L.toFixed(3) }, ...(l.eigenschaften || [])];
+          if (mehrere) { l.layerPraefix = s.kennung || `S${k + 1}`; l.gruppe = `${t('exp.p.strang')} ${name}`; }
+          leiter.push(l);
+        });
+      }
+      if (fehler) break;
     }
   } finally {
     setProjectState(sicherung);
     if (warSichtbar) abschnittAnsicht();
   }
   if (fehler) { meldung(fehler, 'fehler'); return; }
-  const titel = `${t('abs.titel')} ${m[0].name}–${m[m.length - 1].name}`;
-  if (!erg.starr && sysMode !== 'rfl' && erg.Lm) gemeinsam.push({ name: 'Lm', typ: 'laenge', wert: +erg.Lm.toFixed(3) });
-  const modell = { name: `${sysName(sysMode)} · ${titel}`, geo: mitKoord ? { epsg: 2056 } : null, leiter, eigenschaften: gemeinsam,
-    dateiname: `durchhang_abschnitt_${sysName(sysMode)}_${m[0].name}-${m[m.length - 1].name}`.replace(/[^\w.\-]+/g, '_') };
+  if (!leiter.length) { meldung(t('abs.exp.unvollstaendig'), 'fehler'); return; }
+  if (lmEig) gemeinsam.push(...lmEig);
+  const titel = `${t('abs.titel')} ${mVon}–${mBis}`;
+  const sysTxt = [...new Set(systeme)].join(' + ');
+  const modell = { name: `${sysTxt} · ${titel}`, geo: mitKoord ? { epsg: 2056 } : null, leiter, eigenschaften: gemeinsam || [],
+    dateiname: `durchhang_abschnitt_${mehrere ? 'straenge' : sysTxt}_${mVon}-${mBis}`.replace(/[^\w.\-]+/g, '_') };
   if (art === 'ifc') {
     let inhalt;
     try { inhalt = ifcErzeugen(modell, { programm: `Durchhang ${APP_VERSION}` }); }
@@ -14475,6 +14891,33 @@ const LANG = {
     'abs.csv.export': 'CSV exportieren',
     'abs.csv.vorlage': 'CSV-Vorlage',
     'abs.beispiel': 'Beispiel laden',
+    'abs.strang': 'Strang',
+    'abs.straenge': 'Stränge',
+    'abs.str.sichtbar': 'Sichtbar',
+    'abs.str.farbe': 'Farbe',
+    'abs.str.rolle': 'Rolle',
+    'abs.str.leiter': 'System · Leiter',
+    'abs.str.masten': 'Masten',
+    'abs.str.laenge': 'Länge',
+    'abs.str.waehlen': 'Wählen',
+    'abs.str.aktiv': 'aktiv',
+    'abs.str.hinzu': '+ Strang',
+    'abs.str.neu': 'Strang {k} angelegt (Masten kopiert). Aufhängepunkte E/N und h anpassen, links System und Leiter wählen.',
+    'abs.str.weg.frage': 'Strang «{k}» mit {n} Masten entfernen?',
+    'rolle.fahrleitung': 'Fahrleitung',
+    'rolle.speiseleiter': 'Speiseleiter',
+    'rolle.rueckleiter': 'Rückleiter',
+    'rolle.erdseil': 'Erdseil / Schutzleiter',
+    'rolle.andere': 'Andere',
+    'abs.teil': 'Anzeige und Export',
+    'abs.teil.von': 'von Mast',
+    'abs.teil.bis': 'bis',
+    'abs.teil.alle': 'ganzer Abschnitt',
+    'abs.csv.straenge': '{n} Stränge gelesen: {k}. System und Leiter je Strang: Strang wählen, dann links wie gewohnt einstellen.',
+    'abs.csv.zuviele': 'Höchstens {n} Stränge — weitere wurden nicht übernommen.',
+    'abs.csv.abweichung': 'Z / Δ / KM weichen zwischen den Strängen ab bei Mast {m} — bitte prüfen.',
+    'exp.p.strang': 'Strang',
+    'exp.p.rolle': 'Rolle',
     'abs.feldwahl': 'Feld',
     'abs.feldwahl.leer': 'Feld wählen …',
     'abs.feld.vor': 'Vorheriges Feld',
@@ -15311,6 +15754,33 @@ const LANG = {
     'abs.csv.export': 'Exporter CSV',
     'abs.csv.vorlage': 'Modèle CSV',
     'abs.beispiel': 'Charger un exemple',
+    'abs.strang': 'Ligne',
+    'abs.straenge': 'Lignes',
+    'abs.str.sichtbar': 'Visible',
+    'abs.str.farbe': 'Couleur',
+    'abs.str.rolle': 'Rôle',
+    'abs.str.leiter': 'Système · conducteur',
+    'abs.str.masten': 'Mâts',
+    'abs.str.laenge': 'Longueur',
+    'abs.str.waehlen': 'Choisir',
+    'abs.str.aktiv': 'active',
+    'abs.str.hinzu': '+ Ligne',
+    'abs.str.neu': 'Ligne {k} créée (mâts copiés). Adapter les points de suspension E/N et h, choisir système et conducteur à gauche.',
+    'abs.str.weg.frage': 'Supprimer la ligne «{k}» avec {n} mâts ?',
+    'rolle.fahrleitung': 'Ligne de contact',
+    'rolle.speiseleiter': 'Feeder',
+    'rolle.rueckleiter': 'Conducteur de retour',
+    'rolle.erdseil': 'Câble de terre / de protection',
+    'rolle.andere': 'Autre',
+    'abs.teil': 'Affichage et export',
+    'abs.teil.von': 'du mât',
+    'abs.teil.bis': 'au',
+    'abs.teil.alle': 'canton entier',
+    'abs.csv.straenge': '{n} lignes lues : {k}. Système et conducteur par ligne : choisir la ligne, puis régler à gauche comme d’habitude.',
+    'abs.csv.zuviele': 'Au maximum {n} lignes — les autres n’ont pas été reprises.',
+    'abs.csv.abweichung': 'Z / Δ / PK diffèrent entre les lignes au mât {m} — à vérifier.',
+    'exp.p.strang': 'Ligne',
+    'exp.p.rolle': 'Rôle',
     'abs.feldwahl': 'Portée',
     'abs.feldwahl.leer': 'Choisir une portée …',
     'abs.feld.vor': 'Portée précédente',
@@ -16147,6 +16617,33 @@ const LANG = {
     'abs.csv.export': 'Esporta CSV',
     'abs.csv.vorlage': 'Modello CSV',
     'abs.beispiel': 'Carica esempio',
+    'abs.strang': 'Linea',
+    'abs.straenge': 'Linee',
+    'abs.str.sichtbar': 'Visibile',
+    'abs.str.farbe': 'Colore',
+    'abs.str.rolle': 'Ruolo',
+    'abs.str.leiter': 'Sistema · conduttore',
+    'abs.str.masten': 'Pali',
+    'abs.str.laenge': 'Lunghezza',
+    'abs.str.waehlen': 'Scegli',
+    'abs.str.aktiv': 'attiva',
+    'abs.str.hinzu': '+ Linea',
+    'abs.str.neu': 'Linea {k} creata (pali copiati). Adattare i punti di sospensione E/N e h, scegliere sistema e conduttore a sinistra.',
+    'abs.str.weg.frage': 'Rimuovere la linea «{k}» con {n} pali?',
+    'rolle.fahrleitung': 'Linea di contatto',
+    'rolle.speiseleiter': 'Alimentatore',
+    'rolle.rueckleiter': 'Conduttore di ritorno',
+    'rolle.erdseil': 'Fune di terra / di protezione',
+    'rolle.andere': 'Altro',
+    'abs.teil': 'Visualizzazione ed export',
+    'abs.teil.von': 'dal palo',
+    'abs.teil.bis': 'al',
+    'abs.teil.alle': 'tratta intera',
+    'abs.csv.straenge': '{n} linee lette: {k}. Sistema e conduttore per linea: scegliere la linea, poi impostare a sinistra come di consueto.',
+    'abs.csv.zuviele': 'Al massimo {n} linee — le altre non sono state riprese.',
+    'abs.csv.abweichung': 'Z / Δ / km differiscono tra le linee al palo {m} — da verificare.',
+    'exp.p.strang': 'Linea',
+    'exp.p.rolle': 'Ruolo',
     'abs.feldwahl': 'Campata',
     'abs.feldwahl.leer': 'Scegliere una campata …',
     'abs.feld.vor': 'Campata precedente',
@@ -17112,7 +17609,7 @@ renderObstacleList();
           <li>Rechengang geprüft an 27 verifizierten SBB-Referenzbeispielen (Kap. 3)</li>
           <li>Berechnungsart <em>ausgleichend</em> / <em>starr</em> für N-FL und Einzelleiter (6.8); Fahrdraht neu / abgenutzt; Eislast</li>
           <li>Messpunkte, 3-Punkte-Messung, SOK-Bezug (6.1–6.3); H-Punkte H1–H4 bei den Messpunkten: Abstand zu Hindernissen oberhalb über alle Lastfälle, Schloss je Messpunkt (6.1, 6.12)</li>
-          <li>Abspannabschnitt mit Masttabelle, CSV-Import und Längsprofil (6.11)</li>
+          <li>Abspannabschnitt mit Masttabelle, CSV-Import, mehreren Strängen und Längsprofil (6.11)</li>
           <li>Fahrdrahthöhe hf_min / hf_max nach AB-EBV, eigene Ansicht (6.14)</li>
           <li>Koordinaten LV95, Export IFC4 und 3D-DXF (6.10); PDF-Berechnungsprotokoll und massstäbliche Zeichnung</li>
           <li>Hell-/Dunkelmodus, Ergebnisleiste auf dem Tablet, DE / FR / IT, offline nutzbar (6.13)</li>
@@ -17132,7 +17629,7 @@ renderObstacleList();
           <li>Méthode de calcul vérifiée sur 27 exemples de référence CFF validés (chap. 3)</li>
           <li>Mode de calcul <em>compensé</em> / <em>rigide</em> pour LC N et conducteur simple (6.8) ; fil de contact neuf / usé ; charge de glace</li>
           <li>Points de mesure, mesure 3 points, référence DRS (6.1–6.3) ; points H H1–H4 aux points de mesure : distance aux obstacles au-dessus pour tous les cas de charge, cadenas par point de mesure (6.1, 6.12)</li>
-          <li>Canton de pose avec tableau des mâts, import CSV et profil en long (6.11)</li>
+          <li>Canton de pose avec tableau des mâts, import CSV, plusieurs lignes et profil en long (6.11)</li>
           <li>Hauteur du fil de contact hf_min / hf_max selon DE-OCF, vue séparée (6.14)</li>
           <li>Coordonnées MN95, export IFC4 et DXF 3D (6.10) ; protocole de calcul PDF et dessin à l’échelle</li>
           <li>Mode clair / sombre, barre de résultats sur tablette, DE / FR / IT, utilisable hors ligne (6.13)</li>
@@ -17152,7 +17649,7 @@ renderObstacleList();
           <li>Metodo di calcolo verificato su 27 esempi di riferimento FFS convalidati (cap. 3)</li>
           <li>Modalità di calcolo <em>compensato</em> / <em>rigido</em> per LC N e conduttore singolo (6.8); filo di contatto nuovo / usurato; carico di ghiaccio</li>
           <li>Punti di misura, misura 3 punti, riferimento PRF (6.1–6.3); punti H H1–H4 ai punti di misura: distanza da ostacoli sopra per tutti i casi di carico, lucchetto per punto di misura (6.1, 6.12)</li>
-          <li>Tratta di regolazione con tabella dei pali, importazione CSV e profilo longitudinale (6.11)</li>
+          <li>Tratta di regolazione con tabella dei pali, importazione CSV, più linee e profilo longitudinale (6.11)</li>
           <li>Altezza del filo di contatto hf_min / hf_max secondo DE-OFerr, vista separata (6.14)</li>
           <li>Coordinate MN95, esportazione IFC4 e DXF 3D (6.10); protocollo di calcolo PDF e disegno in scala</li>
           <li>Modalità chiara / scura, barra dei risultati su tablet, DE / FR / IT, utilizzabile offline (6.13)</li>
@@ -17951,7 +18448,7 @@ renderObstacleList();
           <li><strong>IFC / 3D-DXF Abschnitt</strong> exportiert alle Felder in einer Datei (mit Koordinaten georeferenziert).</li>
         </ul>
         <p style="font-weight:600;margin:.6rem 0 .2rem">Beispiel: Ablauf vom Mastbild zum BIM-Modell</p>
-        <p style="font-size:.8rem;color:var(--muted);margin:0 0 .3rem">Zum Ausprobieren setzt <strong>«Beispiel laden»</strong> fünf Masten mit Koordinaten ein (fiktive Lage).</p>
+        <p style="font-size:.8rem;color:var(--muted);margin:0 0 .3rem">Zum Ausprobieren setzt <strong>«Beispiel laden»</strong> fünf Masten mit Koordinaten und zwei Strängen ein (Fahrleitung FL1 und Speiseleitung SPL, fiktive Lage).</p>
         <ol style="margin:.2rem 0 .5rem 1.2rem">
           <li><strong>Mastliste vorbereiten</strong> — «CSV-Vorlage» herunterladen und aus Vermessung oder Mastbild füllen, z. B.:
             <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Mast;E;N;Z_Mastfuss;Delta_Mastfuss_SOK;h_ueber_SOK;KM;L_bis_naechster
@@ -17973,6 +18470,20 @@ renderObstacleList();
           <li><strong>CAD</strong>: 3D-DXF für Querprofile, Längenschnitte und Pläne; Ablage zusammen mit dem Berechnungs-PDF je Feld in der Projektablage (CDE).</li>
           <li><strong>Grenzen</strong>: im Modell nur die Leiter (keine Masten, Ausleger, Fundamente); ein Export zeigt einen Lastfall (T<sub>2</sub>).</li>
         </ul>
+        <p style="font-weight:600;margin:.6rem 0 .2rem">Mehrere Stränge an denselben Masten</p>
+        <p>Ein Abschnitt kann bis zu fünf (höchstens acht) <strong>Stränge</strong> enthalten, z. B. Fahrleitung, Speiseleitung, Rückleiter und Erdseil an denselben Masten. Jeder Strang hat eigene Aufhängepunkte (E, N, h) und ein eigenes Leitersystem; die Masten (Name, Z Mastfuss, Δ, KM) sind gemeinsam.</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>CSV mit Kennung</strong>: zusätzliche Spalte <em>Strang</em> vor <em>Mast</em>; jede Zeile ist ein Aufhängepunkt. Die CSV-Vorlage enthält zwei Stränge (FL1, SPL). Ohne Spalte Strang wird wie bisher ein einzelner Strang eingelesen. Weichen Z / Δ / KM beim gleichen Mast zwischen den Strängen ab, meldet die App die Masten.
+            <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Strang;Mast;E;N;Z_Mastfuss;Delta_Mastfuss_SOK;h_ueber_SOK;KM
+FL1;101;2600000.000;1200000.000;540.000;0.35;7.60;12.300
+FL1;102;2600049.980;1200001.400;540.380;0.30;7.60;12.350
+SPL;101;2600000.050;1199998.000;540.000;0.35;9.20;12.300
+SPL;102;2600050.030;1199999.400;540.380;0.30;9.20;12.350</pre></li>
+          <li><strong>Übersicht «Stränge»</strong>: je Strang Sichtbarkeit (Schalter), <strong>Farbe</strong>, Kennung, Rolle (Fahrleitung, Speiseleiter, Rückleiter, Erdseil / Schutzleiter, Andere), Leitersystem, Masten von–bis, Länge und Abstandsprüfung. «Wählen» macht einen Strang aktiv: Eingaben links, Masttabelle, Feldtabelle und Feld-Auswahl gelten dann für diesen Strang. System, Leiter, Zugkraft usw. merkt sich die App je Strang; T<sub>2</sub> und die Lastfälle gelten für alle. «+ Strang» fügt einen Strang mit denselben Masten hinzu.</li>
+          <li><strong>Längsprofil</strong>: alle sichtbaren Stränge übereinander, jeder in seiner Farbe; der aktive Strang ist kräftiger gezeichnet (mit nur einem Strang: Temperaturfarbe von T<sub>2</sub>). Die übrigen Stränge rechnet die App im Hintergrund nach. Die Feld-Auswahl oben listet die Felder je Strang; eine Wahl wechselt auch den Strang.</li>
+          <li><strong>Teilabschnitt</strong> (Mast von – bis): schränkt nur Anzeige und Export ein; die Berechnung (z. B. L<sub>m</sub>) nutzt immer den ganzen Abschnitt.</li>
+          <li><strong>Export</strong>: IFC und 3D-DXF enthalten alle sichtbaren Stränge (im Teilabschnitt). IFC: je Strang eine Gruppe (IfcGroup «Strang FL1» …), Eigenschaften mit Strang und Rolle. DXF: eigene Layer je Strang, z. B. FL1_TRAGSEIL, SPL_LEITER.</li>
+        </ul>
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Abstandsprüfung zu Hindernissen oberhalb</p>
         <p>Unter den Messpunkten M1–M4 steht die Zeile <strong>H1–H4</strong>: je Messpunkt die Höhe eines Hindernisses oberhalb (z. B. Unterkante Brücke / Bauwerk) in <em>m ü. M.</em>. Die Prüfung braucht die SOK m ü. M. unter <em>Mastangaben</em> — direkt oder aus den Koordinaten; fehlt sie, erscheint ein Hinweis und es wird nicht geprüft. Mit dem Schalter <strong>Punkte verbinden</strong> bilden die H-Punkte eine Unterkante (Linie durch die nach x sortierten Punkte, auch schräg oder geknickt); ausgeschaltet wird jeder H-Punkt einzeln geprüft. Die App prüft den obersten Leiter (Tragseil bzw. Einzelleiter) in allen <strong>Lastfällen</strong> und zeigt den massgebenden Abstand mit Lastfall und Stelle sowie den kleinsten Abstand je H-Punkt; mit Mindestabstand a grün ✓ oder rot ✗. Beim <strong>Einzelleiter</strong> darf das Hindernis auch <em>unter</em> dem Leiter liegen (Leiter führt darüber hinweg): liegen alle H-Punkte im Feld unter dem Leiter, erkennt die App das automatisch und prüft den Abstand Leiter − Oberkante nach unten (massgebend ist dann die tiefste Lage, z. B. Wärme oder Eis); die Schraffur liegt unter der Linie. Der Schalter <strong>Alle Lastfälle</strong> unter dem Diagramm schaltet die Lastfälle aus — dann wird nur der aktuelle Zustand T<sub>2</sub> geprüft. Im Diagramm zeigt ein leichtes graues Band den Bereich aller Lastfälle (höchste bis tiefste Leiterlage) und eine Masslinie die massgebende Stelle mit dem Abstand a (grün ✓ / rot ✗). Diagramm, Zeichnung/PDF, Längsprofil und DXF zeigen die H-Punkte. Projekte mit der früheren Hindernisliste werden beim Laden übernommen (höchstens 4 Punkte je Feld, die tiefsten).</p>
         <p style="font-size:.8rem;color:var(--muted)">Lastfälle je Leitersystem unter «Lastfälle …»: Temperaturen (Vorgabe −20 °C und +80 °C), Eislast Z<sub>L</sub> nur bei −5 °C (Vorgabe 15 N/m, Wert überschreibbar) und Fahrdraht neu/abgenutzt. Bei R-FL wirkt die Temperatur nicht (Nachspannung).</p>
@@ -17988,7 +18499,7 @@ renderObstacleList();
           <li><strong>IFC / DXF 3D canton</strong> exporte toutes les portées dans un fichier (géoréférencé avec coordonnées).</li>
         </ul>
         <p style="font-weight:600;margin:.6rem 0 .2rem">Exemple : du plan des mâts au modèle BIM</p>
-        <p style="font-size:.8rem;color:var(--muted);margin:0 0 .3rem">Pour essayer, <strong>«Charger un exemple»</strong> insère cinq mâts avec coordonnées (situation fictive).</p>
+        <p style="font-size:.8rem;color:var(--muted);margin:0 0 .3rem">Pour essayer, <strong>«Charger un exemple»</strong> insère cinq mâts avec coordonnées et deux lignes (ligne de contact FL1 et feeder SPL, situation fictive).</p>
         <ol style="margin:.2rem 0 .5rem 1.2rem">
           <li><strong>Préparer la liste des mâts</strong> — télécharger le «Modèle CSV» et le remplir à partir du levé ou du plan des mâts, p. ex. :
             <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Mast;E;N;Z_Mastfuss;Delta_Mastfuss_SOK;h_ueber_SOK;KM;L_bis_naechster
@@ -18010,6 +18521,20 @@ renderObstacleList();
           <li><strong>DAO</strong> : DXF 3D pour profils en travers, profils en long et plans ; archivage avec le protocole de calcul PDF de chaque portée dans l’environnement commun de données (CDE).</li>
           <li><strong>Limites</strong> : seulement les conducteurs dans le modèle (pas de mâts, consoles, fondations) ; un export montre un cas de charge (T<sub>2</sub>).</li>
         </ul>
+        <p style="font-weight:600;margin:.6rem 0 .2rem">Plusieurs lignes sur les mêmes mâts</p>
+        <p>Un canton peut contenir jusqu’à cinq (au plus huit) <strong>lignes</strong>, p. ex. ligne de contact, feeder, conducteur de retour et câble de terre sur les mêmes mâts. Chaque ligne a ses propres points de suspension (E, N, h) et son propre système de conducteur ; les mâts (nom, Z pied de mât, Δ, PK) sont communs.</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>CSV avec identifiant</strong> : colonne supplémentaire <em>Strang</em> avant <em>Mast</em> ; chaque ligne est un point de suspension. Le modèle CSV contient deux lignes (FL1, SPL). Sans colonne Strang, une seule ligne est importée comme jusqu’ici. Si Z / Δ / PK diffèrent entre les lignes au même mât, l’application signale les mâts.
+            <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Strang;Mast;E;N;Z_Mastfuss;Delta_Mastfuss_SOK;h_ueber_SOK;KM
+FL1;101;2600000.000;1200000.000;540.000;0.35;7.60;12.300
+FL1;102;2600049.980;1200001.400;540.380;0.30;7.60;12.350
+SPL;101;2600000.050;1199998.000;540.000;0.35;9.20;12.300
+SPL;102;2600050.030;1199999.400;540.380;0.30;9.20;12.350</pre></li>
+          <li><strong>Aperçu «Lignes»</strong> : par ligne visibilité (interrupteur), <strong>couleur</strong>, identifiant, rôle (ligne de contact, feeder, conducteur de retour, câble de terre / de protection, autre), système de conducteur, mâts de–à, longueur et vérification des distances. «Choisir» rend une ligne active : la saisie à gauche, le tableau des mâts, le tableau des portées et la sélection de portée concernent alors cette ligne. Système, conducteur, traction, etc. sont mémorisés par ligne ; T<sub>2</sub> et les cas de charge valent pour toutes. «+ Ligne» ajoute une ligne avec les mêmes mâts.</li>
+          <li><strong>Profil en long</strong> : toutes les lignes visibles superposées, chacune dans sa couleur ; la ligne active est dessinée plus épaisse (avec une seule ligne : couleur de température de T<sub>2</sub>). Les autres lignes sont recalculées en arrière-plan. La sélection de portée en haut liste les portées par ligne ; un choix change aussi de ligne.</li>
+          <li><strong>Tronçon partiel</strong> (mât de – à) : limite seulement l’affichage et l’export ; le calcul (p. ex. L<sub>m</sub>) utilise toujours le canton entier.</li>
+          <li><strong>Export</strong> : IFC et DXF 3D contiennent toutes les lignes visibles (dans le tronçon partiel). IFC : un groupe par ligne (IfcGroup «Strang FL1» …), propriétés avec ligne et rôle. DXF : calques propres par ligne, p. ex. FL1_TRAGSEIL, SPL_LEITER.</li>
+        </ul>
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Vérification des distances aux obstacles au-dessus</p>
         <p>Sous les points de mesure M1–M4 se trouve la ligne <strong>H1–H4</strong> : pour chaque point de mesure, la hauteur d’un obstacle au-dessus (p. ex. sous-face pont / ouvrage) en <em>m s.n.m.</em>. La vérification nécessite le DRS m s.n.m. sous <em>Données des mâts</em> — directement ou via les coordonnées ; s’il manque, une remarque apparaît et aucune vérification n’a lieu. Avec l’interrupteur <strong>Relier les points</strong>, les points H forment une sous-face (ligne passant par les points triés selon x, aussi inclinée ou brisée) ; désactivé, chaque point H est vérifié séparément. L’application vérifie le conducteur le plus haut (câble porteur resp. conducteur simple) dans tous les <strong>cas de charge</strong> et affiche la distance déterminante avec cas de charge et position ainsi que la plus petite distance par point H ; avec distance minimale a en vert ✓ ou rouge ✗. Pour le <strong>conducteur simple</strong>, l’obstacle peut aussi se trouver <em>sous</em> le conducteur (le conducteur passe au-dessus) : si tous les points H de la portée sont sous le conducteur, l’app le détecte automatiquement et vérifie la distance conducteur − arête supérieure vers le bas (déterminante : la position la plus basse, p. ex. chaleur ou glace) ; les hachures sont sous la ligne. L’interrupteur <strong>Tous les cas de charge</strong> sous le diagramme désactive les cas de charge — seul l’état actuel T<sub>2</sub> est alors vérifié. Dans le diagramme, une bande grise légère montre la plage de tous les cas de charge et une ligne de cote l’endroit déterminant avec la distance a (vert ✓ / rouge ✗). Diagramme, dessin/PDF, profil en long et DXF montrent les points H. Les projets avec l’ancienne liste d’obstacles sont repris au chargement (au plus 4 points par portée, les plus bas).</p>
         <p style="font-size:.8rem;color:var(--muted)">Cas de charge par système sous «Cas de charge …» : températures (par défaut −20 °C et +80 °C), charge de glace Z<sub>L</sub> uniquement à −5 °C (par défaut 15 N/m, valeur modifiable) et fil de contact neuf/usé. En LC R, la température n’a pas d’effet (tension automatique).</p>
@@ -18025,7 +18550,7 @@ renderObstacleList();
           <li><strong>IFC / DXF 3D tratta</strong> esporta tutte le campate in un unico file (georeferenziato con coordinate).</li>
         </ul>
         <p style="font-weight:600;margin:.6rem 0 .2rem">Esempio: dal piano dei pali al modello BIM</p>
-        <p style="font-size:.8rem;color:var(--muted);margin:0 0 .3rem">Per provare, <strong>«Carica esempio»</strong> inserisce cinque pali con coordinate (posizione fittizia).</p>
+        <p style="font-size:.8rem;color:var(--muted);margin:0 0 .3rem">Per provare, <strong>«Carica esempio»</strong> inserisce cinque pali con coordinate e due linee (linea di contatto FL1 e alimentatore SPL, posizione fittizia).</p>
         <ol style="margin:.2rem 0 .5rem 1.2rem">
           <li><strong>Preparare l’elenco dei pali</strong> — scaricare il «Modello CSV» e compilarlo dal rilievo o dal piano dei pali, p. es.:
             <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Mast;E;N;Z_Mastfuss;Delta_Mastfuss_SOK;h_ueber_SOK;KM;L_bis_naechster
@@ -18046,6 +18571,20 @@ renderObstacleList();
           <li><strong>Analisi sull’oggetto</strong>: filtrare o colorare secondo le proprietà (p. es. tutte le campate con f &gt; 1.0 m); lunghezze dei conduttori e pendini per computo e ordinazione.</li>
           <li><strong>CAD</strong>: DXF 3D per sezioni trasversali, profili longitudinali e piani; archiviazione con il protocollo di calcolo PDF di ogni campata nell’ambiente di condivisione dei dati (CDE).</li>
           <li><strong>Limiti</strong>: nel modello solo i conduttori (niente pali, mensole, fondazioni); un export mostra un caso di carico (T<sub>2</sub>).</li>
+        </ul>
+        <p style="font-weight:600;margin:.6rem 0 .2rem">Più linee sugli stessi pali</p>
+        <p>Una tratta può contenere fino a cinque (al massimo otto) <strong>linee</strong>, p. es. linea di contatto, alimentatore, conduttore di ritorno e fune di terra sugli stessi pali. Ogni linea ha i propri punti di sospensione (E, N, h) e il proprio sistema di conduttori; i pali (nome, Z piede del palo, Δ, km) sono comuni.</p>
+        <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+          <li><strong>CSV con identificativo</strong>: colonna aggiuntiva <em>Strang</em> prima di <em>Mast</em>; ogni riga è un punto di sospensione. Il modello CSV contiene due linee (FL1, SPL). Senza colonna Strang viene importata una sola linea come finora. Se Z / Δ / km differiscono tra le linee allo stesso palo, l’app segnala i pali.
+            <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Strang;Mast;E;N;Z_Mastfuss;Delta_Mastfuss_SOK;h_ueber_SOK;KM
+FL1;101;2600000.000;1200000.000;540.000;0.35;7.60;12.300
+FL1;102;2600049.980;1200001.400;540.380;0.30;7.60;12.350
+SPL;101;2600000.050;1199998.000;540.000;0.35;9.20;12.300
+SPL;102;2600050.030;1199999.400;540.380;0.30;9.20;12.350</pre></li>
+          <li><strong>Panoramica «Linee»</strong>: per linea visibilità (interruttore), <strong>colore</strong>, identificativo, ruolo (linea di contatto, alimentatore, conduttore di ritorno, fune di terra / di protezione, altro), sistema di conduttori, pali da–a, lunghezza e verifica delle distanze. «Scegli» rende attiva una linea: i dati a sinistra, la tabella dei pali, la tabella delle campate e la selezione della campata valgono allora per questa linea. Sistema, conduttore, tiro ecc. sono memorizzati per linea; T<sub>2</sub> e i casi di carico valgono per tutte. «+ Linea» aggiunge una linea con gli stessi pali.</li>
+          <li><strong>Profilo longitudinale</strong>: tutte le linee visibili sovrapposte, ognuna nel suo colore; la linea attiva è disegnata più spessa (con una sola linea: colore di temperatura di T<sub>2</sub>). Le altre linee vengono ricalcolate in background. La selezione della campata in alto elenca le campate per linea; una scelta cambia anche la linea.</li>
+          <li><strong>Tratta parziale</strong> (palo da – a): limita solo visualizzazione ed export; il calcolo (p. es. L<sub>m</sub>) usa sempre la tratta intera.</li>
+          <li><strong>Export</strong>: IFC e DXF 3D contengono tutte le linee visibili (nella tratta parziale). IFC: un gruppo per linea (IfcGroup «Strang FL1» …), proprietà con linea e ruolo. DXF: layer propri per linea, p. es. FL1_TRAGSEIL, SPL_LEITER.</li>
         </ul>
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Verifica delle distanze da ostacoli sopra</p>
         <p>Sotto i punti di misura M1–M4 si trova la riga <strong>H1–H4</strong>: per ogni punto di misura l’altezza di un ostacolo sopra (p. es. intradosso ponte / opera) in <em>m s.l.m.</em>. La verifica richiede il PRF m s.l.m. sotto <em>Dati dei pali</em> — direttamente o tramite le coordinate; se manca, appare un avviso e non viene eseguita alcuna verifica. Con l’interruttore <strong>Collega i punti</strong> i punti H formano un intradosso (linea attraverso i punti ordinati secondo x, anche inclinata o spezzata); disattivato, ogni punto H viene verificato singolarmente. L’applicazione verifica il conduttore più alto (filo portante risp. conduttore singolo) in tutti i <strong>casi di carico</strong> e mostra la distanza determinante con caso di carico e posizione nonché la distanza minima per punto H; con distanza minima a in verde ✓ o rosso ✗. Per il <strong>conduttore singolo</strong> l’ostacolo può trovarsi anche <em>sotto</em> il conduttore (il conduttore passa sopra): se tutti i punti H della campata sono sotto il conduttore, l’app lo riconosce automaticamente e verifica la distanza conduttore − spigolo superiore verso il basso (determinante la posizione più bassa, p. es. caldo o ghiaccio); il tratteggio è sotto la linea. L’interruttore <strong>Tutti i casi di carico</strong> sotto il diagramma disattiva i casi di carico — viene verificato solo lo stato attuale T<sub>2</sub>. Nel diagramma una banda grigia leggera mostra il campo di tutti i casi di carico e una linea di quota il punto determinante con la distanza a (verde ✓ / rosso ✗). Diagramma, disegno/PDF, profilo longitudinale e DXF mostrano i punti H. I progetti con la precedente lista degli ostacoli vengono ripresi al caricamento (al massimo 4 punti per campata, i più bassi).</p>
