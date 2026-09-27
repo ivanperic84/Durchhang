@@ -684,48 +684,47 @@ test('Wechsel Diagramm / Zeichnung / Abschnitt / Foto: Höhe gleitet, Inhalt ble
   await kontext.close();
 });
 
-test('hf: zulässige Anschlusshöhe und Systemhöhe, Rückfrage mit Anschlusshöhe zuerst', async () => {
+test('hf: zulässige Anschlusshöhe, Rückfrage nur mit Anschlusshöhe; Systemhöhe bleibt; Prüfzeile zuoberst nur mit Schalter', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   const r = await seite.evaluate(async () => {
-    const hw = document.getElementById('sh-hf-hw'), hh = document.getElementById('h-hf-hw'), sh = document.getElementById('sh');
+    const hh = document.getElementById('h-hf-hw'), sh = document.getElementById('sh');
     const h1 = document.getElementById('h1'), h2 = document.getElementById('h2');
+    const pz = document.getElementById('hf-pruefzeile');
     const warte = () => new Promise(r => setTimeout(r, 50));
-    const vorher = hw.getClientRects().length > 0 || hh.getClientRects().length > 0;   // hf noch nicht aktiv
-    // h1 = h2 = 7.00, sh 2.40, hf 4.965 … 5.995 → h zulässig 7.37 … 8.39 m, sh 1.01 … 2.03 m
+    const vorher = hh.getClientRects().length > 0 || pz.getClientRects().length > 0;
+    const zuoberst = pz.nextElementSibling?.id === 'results';
+    // h1 = h2 = 7.00, sh 2.40, hf 4.965 … 5.995 → h zulässig 7.37 … 8.39 m
     const cb = document.getElementById('diagramm-hf');
     cb.checked = true; cb.dispatchEvent(new Event('change')); await warte();
     const dialog = document.getElementById('rf-text').textContent;
-    const knoepfe = ['rf-ok', 'rf-alt', 'rf-abbrechen'].map(id => document.getElementById(id).textContent);
+    const knoepfe = ['rf-ok', 'rf-alt', 'rf-abbrechen'].filter(id => document.getElementById(id).getClientRects().length).map(id => document.getElementById(id).textContent);
     document.getElementById('rf-abbrechen').click(); await warte();          // «So lassen»
     const gelassen = [h1.value, h2.value, sh.value];
     const infoH = { nok: hh.classList.contains('nok'), text: hh.textContent.replace(/\s+/g, ' ').trim() };
-    const infoSh = { nok: hw.classList.contains('nok'), text: hw.textContent.replace(/\s+/g, ' ').trim() };
-    hw.querySelector('button').click();                                     // sh → 2.03 übernehmen
-    const nachSh = sh.value;
-    // Rückfrage: Systemhöhe anpassen (dritter Knopf)
-    sh.value = '2.40'; berechnen();
+    const pzAn = pz.getClientRects().length > 0;
+    hh.querySelector('button').click();                                     // h → 7.37 übernehmen
+    const nachKnopf = [h1.value, h2.value, sh.value, hh.classList.contains('nok')];
+    // Rückfrage bestätigen
+    h1.value = '8.80'; h2.value = '7.00'; berechnen();
     cb.checked = false; cb.dispatchEvent(new Event('change'));
-    cb.checked = true; cb.dispatchEvent(new Event('change')); await warte();
-    document.getElementById('rf-alt').click(); await warte();
-    const altSh = sh.value;
-    // Rückfrage: Anschlusshöhe anpassen (Hauptknopf) — sh 0.80 → h zulässig 5.77 … 6.79
-    sh.value = '0.80'; berechnen();
-    cb.checked = false; cb.dispatchEvent(new Event('change'));
+    const pzAus = pz.getClientRects().length > 0;
     cb.checked = true; cb.dispatchEvent(new Event('change')); await warte();
     document.getElementById('rf-ok').click(); await warte();
-    return { vorher, dialog, knoepfe, gelassen, infoH, infoSh, nachSh, altSh, hNeu: [h1.value, h2.value], hOk: !hh.classList.contains('nok') };
+    return { vorher, zuoberst, dialog, knoepfe, gelassen, infoH, pzAn, nachKnopf, pzAus, bestaetigt: [h1.value, h2.value, sh.value],
+      shHinweis: !!document.getElementById('sh-hf-hw') };
   });
   assert.equal(r.vorher, false);
+  assert.equal(r.zuoberst, true, 'Prüfzeile vor den Ergebnissen');
   assert.match(r.dialog, /Anschlusshöhe h₁ 7\.00 → 7\.37 m, h₂ 7\.00 → 7\.37 m/);
-  assert.match(r.dialog, /Systemhöhe sh 2\.40 → 2\.03 m/);
-  assert.deepEqual(r.knoepfe, ['Anschlusshöhe anpassen', 'Systemhöhe anpassen', 'So lassen']);
+  assert.doesNotMatch(r.dialog, /Systemhöhe sh 2/);
+  assert.deepEqual(r.knoepfe, ['Anschlusshöhe anpassen', 'So lassen']);
   assert.deepEqual(r.gelassen, ['7.00', '7.00', '2.4']);
   assert.deepEqual(r.infoH, { nok: true, text: 'Anschlusshöhe h zulässig 7.37 … 8.39 m über SOK (aus hf)→ h₁ = 7.37 m, h₂ = 7.37 m übernehmen' });
-  assert.deepEqual(r.infoSh, { nok: true, text: 'zulässig 1.01 … 2.03 m→ 2.03 m übernehmen' });
-  assert.equal(r.nachSh, '2.03');
-  assert.equal(r.altSh, '2.03');
-  assert.deepEqual(r.hNeu, ['6.79', '6.79']);
-  assert.equal(r.hOk, true);
+  assert.equal(r.pzAn, true);
+  assert.deepEqual(r.nachKnopf, ['7.37', '7.37', '2.4', false]);
+  assert.equal(r.pzAus, false, 'Prüfzeile aus mit dem Schalter');
+  assert.deepEqual(r.bestaetigt, ['8.39', '7.37', '2.4'], 'jede Seite auf den nächsten zulässigen Wert, sh bleibt');
+  assert.equal(r.shHinweis, false);
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
@@ -742,7 +741,7 @@ test('Exporte mit hf: Berechnungs-PDF mit Prüfung, Zeichnungs-PDF mit Version, 
   });
   assert.match(dxf, /\nHF_MIN\n/); assert.match(dxf, /\nHF_MAX\n/);
   assert.match(r[0], /Fahrdraht Soll an den Stützpunkten/);
-  assert.match(r[0], /zulässig 1\.01 … 2\.03 m/);
+  assert.match(r[0], /Anschlusshöhe h zulässig 7\.37 … 8\.39 m/);
   assert.match(r[1], new RegExp('Durchhang ' + (await seite.evaluate(() => APP_VERSION)).replace(/\./g, '\\.')));
   assert.deepEqual(fehler, []);
   await kontext.close();
@@ -801,6 +800,17 @@ test('PDF im hellen App-Design: Inter, Logo, Diagramm nach den Eingabewerten mit
   assert.ok(iEin > 0 && iEin < iS1, 'Diagramm direkt nach den Eingabewerten');
   assert.match(ber, /<div class="legende">.*Fahrdraht Soll \(h − sh\).*hf<sub>min<\/sub> … hf<sub>max<\/sub>/s);
   assert.doesNotMatch(ber, /Ts bei T<sub>1<\/sub> T<sub>1<\/sub>/, 'keine doppelte Beschriftung');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Zeichnung startet mit Überhöhung 5×; Link «SOK m ü. M. eintragen» ohne Pfeil', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => ({
+    vex: Ansicht.zeichnungVEx, auswahl: document.getElementById('vex-select').value,
+    link: document.getElementById('probe-sok-link').textContent.trim(),
+  }));
+  assert.deepEqual(r, { vex: 5, auswahl: '5', link: 'SOK m ü. M. eintragen' });
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
