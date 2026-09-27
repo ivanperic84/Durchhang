@@ -403,3 +403,24 @@ test('Bereich «H-Punkte» nur in der Ansicht Diagramm und nur mit SOK m ü. M.'
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Fenstergrösse ändern / Handy drehen: Diagramm wird ohne Eingabe neu gezeichnet', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { viewport: { width: 1280, height: 800 } });
+  const masse = () => seite.evaluate(() => {
+    const cv = document.getElementById('main-canvas');
+    return { css: cv.offsetWidth, puffer: cv.width / (window.devicePixelRatio || 1) };
+  });
+  const vorher = await masse();
+  assert.equal(vorher.puffer, vorher.css);
+  for (const [w, h] of [[820, 1000], [390, 844], [844, 390]]) {
+    await seite.setViewportSize({ width: w, height: h });
+    await seite.waitForFunction(() => {
+      const cv = document.getElementById('main-canvas');
+      return cv.width === cv.offsetWidth * (window.devicePixelRatio || 1);
+    }, null, { timeout: 2000 });
+    const m = await masse();
+    assert.equal(m.puffer, m.css, `Diagramm bei ${w}×${h} verzerrt`);
+  }
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
