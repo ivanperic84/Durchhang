@@ -193,20 +193,28 @@ test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', asy
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   await fensterAbfangen(seite);
   const r = await seite.evaluate(() => {
+    // In der Excel gespeicherter Fall (hfmin_v11_D / hfmax_v11_D): N-FL StCu 50 + Cu 107, c = L_m = 30 m,
+    // Ts unbelastet 1700 N bei 10 °C, H_Fd 8500 N — diese Werte kommen fest aus der Durchhang-Berechnung
+    document.getElementById('span').value = '30'; document.getElementById('temp1').value = '10';
+    updateH_Ts_ubFromT1(); berechnen();
     document.getElementById('hf-btn').click();
     const offen = document.getElementById('hf-modal').classList.contains('open');
-    const hauptKnopf = document.getElementById('hf-uebernehmen').classList.contains('haupt');
-    // In der Excel gespeicherter Fall (hfmin_v11_D / hfmax_v11_D)
-    Object.assign(hfEingabe, { typ: 'nfl', c: 30, v: 141, bue: false, kombi: 'stcu50_cu107', Lm: 30, H_ub: 1700,
-      T_montage: 10, H_Fd: 8500, un: 15, schotter: false, ebv: 2, f: 0, H: 0, Tmin: -5, zlMin: 7, lrp: false, Tmax: -5, zlMax: 7 });
+    const fest = { kombi: hfEingabe.kombi, Lm: hfEingabe.Lm, c: hfEingabe.c, H_ub: hfEingabe.H_ub, T_montage: hfEingabe.T_montage, H_Fd: hfEingabe.H_Fd };
+    const keineFelder = ['hf-kombi', 'hf-Lm', 'hf-H_ub', 'hf-T_montage', 'hf-H_Fd', 'hf-typ-nfl', 'hf-uebernehmen'].every(id => !document.getElementById(id));
+    const zusammenfassung = document.getElementById('hf-fest').textContent.replace(/\s+/g, ' ');
+    Object.assign(hfEingabe, { v: 141, bue: false, un: 15, schotter: false, ebv: 2, f: 0, H: 0, Tmin: -5, zlMin: 7, lrp: false, Tmax: -5, zlMax: 7 });
     renderHf();
     const werte = () => [document.getElementById('hf-wert-min').innerText, document.getElementById('hf-wert-max').innerText];
     const excel = werte();
     // Zusatzlast nur bei −5 °C: Temperatur ändern setzt sie auf 0 und sperrt das Feld
     hfWert('Tmax', '-20');
     const zlGesperrt = document.getElementById('hf-zlMax').disabled && hfEingabe.zlMax === 0;
-    // R-FL: Fallprüfung sichtbar, Ergebnis vorhanden
-    hfWert('typ', 'rfl');
+    // c anders wählen als L, dann zurück; L ändern → c folgt
+    hfWert('c', '40'); const cFrei = hfEingabe.cManuell === true && hfEingabe.c === 40;
+    hfEingabe.cManuell = false; closeHf(); document.getElementById('span').value = '33.4'; berechnen(); openHf();
+    const cAusL = hfEingabe.c === 34;
+    // R-FL (in der Durchhang-Berechnung gewählt): Fallprüfung sichtbar, Ergebnis vorhanden
+    closeHf(); setSysMode('rfl'); openHf();
     const rfl = !!document.getElementById('hf-p11') && werte()[0].includes('mm');
     const grafiken = document.querySelectorAll('#hf-modal .hf-grafiken svg').length;
     const texte = {};
@@ -217,10 +225,14 @@ test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', asy
     hfEingabe = null; setProjectState(zustand);
     const geladen = hfEingabe && hfEingabe.typ === 'rfl' && hfEingabe.Tmax === -20;
     closeHf();
-    return { offen, hauptKnopf, excel, zlGesperrt, rfl, grafiken, texte, pdf, geladen };
+    return { offen, fest, keineFelder, zusammenfassung, excel, zlGesperrt, cFrei, cAusL, rfl, grafiken, texte, pdf, geladen };
   });
   assert.equal(r.offen, true);
-  assert.equal(r.hauptKnopf, true, '«Aus Durchhang übernehmen» farblich abgesetzt');
+  assert.deepEqual(r.fest, { kombi: 'stcu50_cu107', Lm: 30, c: 30, H_ub: 1700, T_montage: 10, H_Fd: 8500 });
+  assert.equal(r.keineFelder, true, 'feste Werte nicht separat eingebbar');
+  assert.match(r.zusammenfassung, /Aus der Durchhang-Berechnung \(fest\): N-FL · L = 30.00 m · StCu 50 \+ Cu 107 · Lm = 30.00 m · Ts unbelastet \(Montage\) 1'700 N bei T1 = \+10 °C · HFd 8'500 N/);
+  assert.equal(r.cFrei, true);
+  assert.equal(r.cAusL, true, 'c folgt L (33.4 m → 34 m)');
   assert.deepEqual(r.excel.map(s => s.split(' mm')[0]), ["4'928", "6'104"]);
   assert.equal(r.zlGesperrt, true);
   assert.equal(r.rfl, true);
@@ -426,7 +438,7 @@ test('Fenstergrösse ändern / Handy drehen: Diagramm wird ohne Eingabe neu geze
   await kontext.close();
 });
 
-test('Systemwechsel sanft (Hauptansicht und hf), ohne Einfluss auf die Rechnung; hf-Grafik beschriftet', async () => {
+test('Systemwechsel sanft (Hauptansicht), ohne Einfluss auf die Rechnung; hf-Grafik beschriftet', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   const r = await seite.evaluate(() => {
     const erg = [];
@@ -439,23 +451,21 @@ test('Systemwechsel sanft (Hauptansicht und hf), ohne Einfluss auf die Rechnung;
       erg.push({ m, anim: anim > 0, gleich: calcState.c2.sag === sagWahl, aktiv: document.getElementById('seg-' + m).classList.contains('active') });
     }
     openHf(); hfZuruecksetzen();
-    hfWert('typ', 'rfl');
-    const hfAnim = document.getAnimations().filter(a => a.constructor === Animation).length > 0;
-    document.getAnimations().forEach(a => a.finish());
-    const rflFeld = !document.getElementById('hf-kombi');
-    hfWert('typ', 'nfl'); document.getAnimations().forEach(a => a.finish());
     const svg = document.querySelector('#hf-erg .hf-svg').innerHTML;
-    const zeile = document.querySelector('.hf-anteile').textContent;
+    const zeile = [...document.querySelectorAll('.hf-zus-tab td')].map(td => td.textContent.replace(/\s+/g, ' '));
     const titel = document.querySelectorAll('#hf-erg .hf-svg title').length;
     closeHf();
-    return { erg, hfAnim, rflFeld, be: svg.includes('b<tspan font-size="7" dy="2">e</tspan>'), zeile, titel };
+    return { erg, be: svg.includes('b<tspan font-size="7" dy="2">e</tspan>'), zeile, titel };
   });
   for (const x of r.erg) assert.deepEqual(x, { m: x.m, anim: true, gleich: true, aktiv: true });
-  assert.equal(r.hfAnim, true);
-  assert.equal(r.rflFeld, true);
   assert.equal(r.be, true, 'b_e in der Höhenleiter');
-  assert.match(r.zeile, /hfmin 4'965/);
-  assert.match(r.zeile, /6'200 − tho 10 − fudo 39.6 − fh 75 − fFD,min 80.2 = hfmax 5'995.2/);
+  // Box «Zusammensetzung»: je Grösse Formel mit allen Anteilen, darunter Zahlen
+  assert.deepEqual(r.zeile, [
+    '= GfA + k + be + f + H + (fg + thu + fud + fuv + fFD,max,ZL + fFD,max)',
+    "= 4'670 + 0 + 150 + 0 + 0 + (60 + 10 + 49.5 + 0 + 0 + 25.5) = 4'965 mm",
+    '= hfmax,abs − (tho + fudo + fuv + fh + fFD,min)',
+    "= 6'200 − (10 + 39.6 + 0 + 75 + 80.2) = 5'995.2 mm",
+  ]);
   assert.ok(r.titel >= 8, 'Tooltips an den Streifen');
   assert.deepEqual(fehler, []);
   await kontext.close();
@@ -465,7 +475,7 @@ test('«Bewegung reduzieren»: Systemwechsel ohne Animation', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url, { reducedMotion: 'reduce' });
   const n = await seite.evaluate(() => {
     const eigene = () => document.getAnimations().filter(a => a.constructor === Animation).length;   // ohne CSS-Farbübergänge
-    sysWaehlen('rfl'); const a = eigene(); openHf(); hfWert('typ', 'rfl'); return a + eigene();
+    sysWaehlen('rfl'); document.getElementById('view-seg-zeichnung').click(); return eigene();
   });
   assert.equal(n, 0);
   assert.deepEqual(fehler, []);
@@ -560,7 +570,7 @@ test('Zeichnung: hf-Beschriftungen überlagern sich nicht; Höhenleiter erklärt
     const texte = [...document.querySelectorAll('#scale-svg-container svg text')].filter(t => /^hf(min|max) = /.test(t.textContent));
     const [a, b] = texte.map(t => t.getBoundingClientRect());
     const getrennt = a && b && (a.bottom <= b.top + 0.5 || b.bottom <= a.top + 0.5);
-    const pruef = [...document.querySelectorAll('#scale-svg-container svg text')].find(t => /hf(min|max)/.test(t.textContent) && /Fd T2/.test(t.textContent));
+    const pruef = [...document.querySelectorAll('#scale-svg-container svg text')].find(t => /Solllage/.test(t.textContent) && /Soll 4\.60 \/ 4\.60 m · Ist T2/.test(t.textContent));
     setCanvasView('diagramm');
     openHf();
     const svg = document.querySelector('#hf-erg .hf-svg').textContent;
@@ -581,6 +591,95 @@ test('Fusszeile: ohne «Statikteam», Version aus APP_VERSION', async () => {
   }));
   assert.equal(r.fuss, `Fachentwicklung FS · © 2026 · ${r.version}`);
   assert.equal(r.irgendwo, false);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Schalter: Knopf bleibt im Schalter (Maus und Touch, ein und aus)', async () => {
+  for (const opt of [{}, { viewport: { width: 820, height: 1180 }, isMobile: true, hasTouch: true }]) {
+    const { seite, fehler, kontext } = await appOeffnen(browser, url, opt);
+    const r = await seite.evaluate(() => {
+      // Übergänge aus, damit die Endlage gemessen wird
+      document.head.insertAdjacentHTML('beforeend', '<style>*,*::after{transition:none!important}</style>');
+      openHf();
+      const el = document.getElementById('hf-bue');
+      const lage = () => {
+        const a = getComputedStyle(el, '::after'), m = new DOMMatrix(a.transform === 'none' ? undefined : a.transform);
+        const links = parseFloat(a.left) + m.m41, rechts = links + parseFloat(a.width);
+        return { links, rechts, breite: parseFloat(getComputedStyle(el).width) };
+      };
+      el.checked = false; const aus = lage();
+      el.checked = true; const ein = lage();
+      closeHf();
+      return { aus, ein };
+    });
+    for (const z of [r.aus, r.ein]) assert.ok(z.links >= 0 && z.rechts <= z.breite, `Knopf ausserhalb: ${JSON.stringify(z)}`);
+    assert.ok(r.ein.links > r.aus.links + 5, 'Knopf bewegt sich');
+    assert.deepEqual(fehler, []);
+    await kontext.close();
+  }
+});
+
+test('hf-Prüfung: Soll-Fahrdrahthöhe an den Stützpunkten (h − sh), Ist bei T2 nur Info', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    setDiagrammHf(true);
+    const zeile = () => document.getElementById('hf-pruefzeile');
+    // h1 = h2 = 7.40, sh 2.40 → Soll 5.00 m: innerhalb 4.965 … 5.995; Ist bei T2 (−20 °C) liegt höher
+    document.getElementById('h1').value = '7.40'; document.getElementById('h2').value = '7.40'; berechnen();
+    const a = { klasse: zeile().className, text: zeile().textContent.replace(/\s+/g, ' ') };
+    // Ungleiche Höhen: rechts 8.50 → Soll 6.10 m > hf_max
+    document.getElementById('h2').value = '8.50'; berechnen();
+    const b = { klasse: zeile().className, text: zeile().textContent.replace(/\s+/g, ' ') };
+    return { a, b };
+  });
+  assert.equal(r.a.klasse, 'hf-pruefzeile ok');
+  assert.match(r.a.text, /Fahrdraht Soll an den Stützpunkten \(h − sh\) 5\.00 \/ 5\.00 m über SOK — innerhalb/);
+  assert.match(r.a.text, /Ist-Lage bei T2: .* \(Info/);
+  assert.equal(r.b.klasse, 'hf-pruefzeile nok');
+  assert.match(r.b.text, /5\.00 \/ 6\.10 m über SOK — über hfmax/);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('«H Ts» gesperrt, solange die Reglage der Kombination gilt; ohne Reglage frei', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    const el = document.getElementById('tension'), hw = document.getElementById('tension-reglage-hw');
+    const zustand = () => ({ gesperrt: el.readOnly, hinweis: hw.getClientRects().length > 0 });
+    const out = { nfl: zustand() };
+    setSysMode('rfl'); out.rfl = zustand();
+    setSysMode('nfl');
+    document.getElementById('preset-select').value = ''; activePresetRef = null; activePresetP = null; berechnen(); out.frei = zustand();
+    toggle3pt(); out.dreiPunkte = zustand(); toggle3pt();
+    out.hwText = hw.textContent;
+    return out;
+  });
+  assert.deepEqual(r.nfl, { gesperrt: true, hinweis: true });
+  assert.deepEqual(r.rfl, { gesperrt: true, hinweis: true });
+  assert.deepEqual(r.frei, { gesperrt: false, hinweis: false });
+  assert.deepEqual(r.dreiPunkte, { gesperrt: true, hinweis: false });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Wechsel Diagramm / Zeichnung / Abschnitt / Foto: Höhe gleitet, Inhalt blendet ein', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    const eigene = () => document.getAnimations().filter(a => a.constructor === Animation);
+    const karte = document.querySelector('.canvas-card');
+    document.getElementById('view-seg-zeichnung').click();
+    const z = { anim: eigene().length, hoehe: eigene().some(a => a.effect?.target === karte), aktiv: document.getElementById('view-seg-zeichnung').classList.contains('active') };
+    eigene().forEach(a => a.finish());
+    document.getElementById('view-seg-diagramm').click();
+    const d = { anim: eigene().length > 0, aktiv: document.getElementById('view-seg-diagramm').classList.contains('active') };
+    eigene().forEach(a => a.finish());
+    return { z, d };
+  });
+  assert.ok(r.z.anim >= 2);
+  assert.equal(r.z.hoehe, true);
+  assert.equal(r.z.aktiv, true);
+  assert.deepEqual(r.d, { anim: true, aktiv: true });
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
