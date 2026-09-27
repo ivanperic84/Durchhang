@@ -42,19 +42,20 @@ test('Temperaturliste aus Text', () => {
   assert.deepEqual(A.temperaturenLesen('abc; 10'), [10]);
 });
 
-test('Abstand zu Hindernis oberhalb: kleinster Abstand im Bereich', () => {
+test('Abstand zu waagrechter Unterkante von–bis: kleinster Abstand im Bereich', () => {
+  const waagrecht = (hoehe, von, bis, uk, L) => A.abstandHindernis(hoehe, [{ x: von, h: uk }, { x: bis, h: uk }], true, L);
   // Parabel mit Tiefpunkt in der Mitte: höchste Leiterlage an den Rändern
   const hoehe = x => 7 - 0.002 * x * (40 - x);
-  const r = A.abstandOberhalb(hoehe, 0, 10, 8, 40);
+  const r = waagrecht(hoehe, 0, 10, 8, 40);
   nahe(r.abstand, 1, 1e-9, 'am Mast');
   assert.equal(r.x, 0);
-  const m = A.abstandOberhalb(hoehe, 15, 25, 8, 40);
+  const m = waagrecht(hoehe, 15, 25, 8, 40);
   nahe(m.abstand, 8 - hoehe(15), 1e-9, 'Bereichsrand massgebend');
   // Bereich ausserhalb des Felds wird abgeschnitten
-  nahe(A.abstandOberhalb(hoehe, -5, 2, 8, 40).x, 0, 1e-9, 'links begrenzt');
-  assert.equal(A.abstandOberhalb(hoehe, 50, 60, 8, 40), null);
+  nahe(waagrecht(hoehe, -5, 2, 8, 40).x, 0, 1e-9, 'links begrenzt');
+  assert.equal(waagrecht(hoehe, 50, 60, 8, 40), null);
   // von/bis vertauscht
-  nahe(A.abstandOberhalb(hoehe, 10, 0, 8, 40).abstand, 1, 1e-9, 'vertauscht');
+  nahe(waagrecht(hoehe, 10, 0, 8, 40).abstand, 1, 1e-9, 'vertauscht');
 });
 
 test('Hindernis aus Punkten: Reihenfolge egal, verbunden nach x sortiert', () => {

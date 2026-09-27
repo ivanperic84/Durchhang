@@ -116,11 +116,6 @@ function abstandHindernis(hoehe, punkte, verbinden, L) {
   return best;
 }
 
-// Kurzform für eine waagrechte Unterkante von–bis (frühere Eingabe)
-function abstandOberhalb(hoehe, von, bis, uk, L) {
-  return abstandHindernis(hoehe, [{ x: von, h: uk }, { x: bis, h: uk }], true, L);
-}
-
 // Frühere Formen eines Hindernisses in die Punktform überführen
 function hindernisNormieren(h) {
   if (!h || typeof h !== 'object') return null;
@@ -279,7 +274,7 @@ function csvVorlage() {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     LASTFALL_VORGABE, EISLAST_HOEHENLAGE, EIS_TEMPERATUR, lastfallEinstellung, lastfaelle, temperaturenLesen,
-    hindernisPunkte, unterkanteBei, abstandHindernis, abstandOberhalb, hindernisNormieren, kmInMeter, feldLaengen, mittelspannweite, mastSok,
+    hindernisPunkte, unterkanteBei, abstandHindernis, hindernisNormieren, kmInMeter, feldLaengen, mittelspannweite, mastSok,
     csvLesen, csvSchreiben, csvVorlage, CSV_KOPF,
   };
 }
