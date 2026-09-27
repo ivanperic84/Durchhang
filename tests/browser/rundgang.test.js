@@ -356,6 +356,69 @@ test('Zeichnung folgt dem Dunkelmodus, PDF bleibt hell, Texte übersetzt', async
   await kontext.close();
 });
 
+test('Handbuch: Kapitel links mit aktueller Stelle, Suche markiert und springt, Handy-Menü', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await seite.evaluate(() => openHandbuch());
+  const r = await seite.evaluate(async () => {
+    const warte = ms => new Promise(res => setTimeout(res, ms));
+    const aktiv = () => document.querySelector('#hb-nav a.aktiv .hb-nav-nr')?.textContent;
+    const nrn = _hbKapitel.map(k => k.nr);
+    const start = aktiv();
+    // Klick auf 6.12 scrollt den Text dorthin, Liste markiert 6.12, Kapitel 6 aufgeklappt
+    const text = document.getElementById('hb-text');
+    text.style.scrollBehavior = 'auto';
+    _hbKapitel.find(k => k.nr === '6.12').link.click();
+    await warte(700);
+    const nachKlick = { aktiv: aktiv(), offen: document.querySelector('.hb-nav-k.offen > a .hb-nav-nr')?.textContent };
+    // Suche
+    const feld = document.getElementById('hb-suche');
+    feld.value = 'Reglage'; hbSuchen();
+    const n = _hbTreffer.length, zahl = document.getElementById('hb-such-zahl').textContent;
+    const aktuell = document.querySelectorAll('mark.hb-treffer.aktuell').length;
+    hbTrefferGehe(1);
+    const zahl2 = document.getElementById('hb-such-zahl').textContent;
+    const badges = [...document.querySelectorAll('.hb-nav-zahl:not([hidden])')].length;
+    feld.value = 'xyzxyz'; hbSuchen();
+    const keine = document.getElementById('hb-such-zahl').textContent;
+    feld.value = ''; hbSuchen();
+    const rest = document.querySelectorAll('mark.hb-treffer').length;
+    // Sprache: Liste neu in FR
+    setLang('fr');
+    const fr = _hbKapitel.find(k => k.nr === '9')?.titel;
+    const ph = feld.placeholder;
+    setLang('de');
+    return { nrn, start, nachKlick, n, zahl, aktuell, zahl2, badges, keine, rest, fr, ph };
+  });
+  assert.ok(r.nrn.includes('1') && r.nrn.includes('6.14') && r.nrn.includes('9'), r.nrn.join(' '));
+  assert.equal(r.start, '1');
+  assert.deepEqual(r.nachKlick, { aktiv: '6.12', offen: '6' });
+  assert.ok(r.n > 3);
+  assert.equal(r.zahl, `1 / ${r.n}`);
+  assert.equal(r.aktuell, 1);
+  assert.equal(r.zahl2, `2 / ${r.n}`);
+  assert.ok(r.badges >= 2);
+  assert.equal(r.keine, 'Keine Treffer');
+  assert.equal(r.rest, 0, 'Markierungen entfernt');
+  assert.match(r.fr, /Glossaire/);
+  assert.match(r.ph, /Rechercher/);
+  // Handy: Aufklappmenü
+  await seite.setViewportSize({ width: 390, height: 800 });
+  const h = await seite.evaluate(() => {
+    const knopf = document.getElementById('hb-kapitel-knopf'), nav = document.getElementById('hb-nav');
+    const vorher = { knopf: getComputedStyle(knopf).display !== 'none', nav: getComputedStyle(nav).display };
+    knopf.click();
+    const auf = getComputedStyle(nav).display;
+    _hbKapitel[3].link.click();
+    return { vorher, auf, zu: getComputedStyle(nav).display, text: document.getElementById('hb-kapitel-aktuell').textContent };
+  });
+  assert.deepEqual(h.vorher, { knopf: true, nav: 'none' });
+  assert.equal(h.auf, 'block');
+  assert.equal(h.zu, 'none');
+  assert.ok(h.text.length > 0);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
 test('Wasserzeichen «BETA – nicht verifiziert»: Bildschirm in allen Sprachen, alle PDFs', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   await fensterAbfangen(seite);

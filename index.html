@@ -1244,6 +1244,59 @@ button.header-manual-link:disabled { opacity: .4; cursor: not-allowed; }
 
 /* ── Rückfrage-Dialog (ersetzt confirm/prompt) ── */
 #rueckfrage .modal-card { max-width: 26rem; }
+/* ── Handbuch: Seitenleiste mit Kapiteln (aktuelle Stelle) und Suche ── */
+#handbuch-modal { padding: 1rem; }
+.modal-card.hb-karte {
+  max-width: 1120px; height: min(1000px, calc(100dvh - 2rem)); max-height: none;
+  display: flex; flex-direction: column; overflow: hidden; padding: 1.1rem 1.25rem 0;
+}
+.hb-karte .modal-header { margin-bottom: .6rem; flex-shrink: 0; }
+.hb-rahmen { flex: 1; min-height: 0; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 1.1rem; }
+.hb-seite { min-height: 0; overflow-y: auto; border-right: 1px solid var(--border); padding: 0 .7rem 1rem 0;
+  display: flex; flex-direction: column; gap: .55rem; }
+.hb-text { min-height: 0; overflow-y: auto; padding: 0 .6rem 1.25rem 0; font-size: .85rem; line-height: 1.7; color: var(--text); outline: none; }
+.hb-text:focus-visible { box-shadow: inset 0 0 0 2px var(--primary); border-radius: 6px; }
+.hb-such { display: flex; flex-direction: column; gap: .3rem; position: sticky; top: 0; background: var(--card); padding-bottom: .3rem; z-index: 1; }
+.hb-such-feld { width: 100%; font: inherit; font-size: .8rem; padding: .42rem .6rem; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--s2); color: var(--text); }
+.hb-such-feld:focus { outline: 2px solid var(--primary); outline-offset: 0; border-color: transparent; }
+.hb-such-leiste { display: flex; align-items: center; gap: .25rem; min-height: 1.5rem; }
+.hb-such-zahl { flex: 1; font-size: .7rem; color: var(--muted); }
+.hb-such-knopf { width: 1.7rem; height: 1.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--s2);
+  color: var(--text2); cursor: pointer; font: inherit; font-size: .75rem; line-height: 1; }
+.hb-such-knopf:disabled { opacity: .4; cursor: default; }
+.hb-nav ul { list-style: none; margin: 0; padding: 0; }
+.hb-nav a { display: flex; align-items: baseline; gap: .35rem; padding: .22rem .45rem; border-radius: 6px;
+  color: var(--text2); text-decoration: none; font-size: .78rem; line-height: 1.35; }
+.hb-nav a:hover { background: var(--s2); color: var(--text); }
+.hb-nav a.aktiv { background: var(--acc-s); color: var(--primary); font-weight: 600; }
+.hb-nav .hb-nav-k > a { font-weight: 600; color: var(--text); margin-top: .1rem; }
+.hb-nav .hb-nav-k > a.aktiv { color: var(--primary); }
+.hb-nav .hb-nav-u { display: none; margin: .1rem 0 .25rem .55rem; border-left: 1px solid var(--border); padding-left: .3rem; }
+.hb-nav .hb-nav-k.offen > .hb-nav-u { display: block; }
+.hb-nav .hb-nav-u a { font-size: .74rem; }
+.hb-nav-nr { flex-shrink: 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+.hb-nav a.aktiv .hb-nav-nr { color: inherit; }
+.hb-nav-txt { flex: 1; min-width: 0; }
+.hb-nav-zahl { flex-shrink: 0; font-size: .64rem; font-weight: 600; padding: 0 .35rem; border-radius: 99px;
+  background: rgba(234,179,8,.25); color: var(--text); }
+.hb-kapitel-knopf { display: none; }
+mark.hb-treffer { background: rgba(250,204,21,.45); color: inherit; border-radius: 2px; padding: 0 1px; }
+mark.hb-treffer.aktuell { background: #f59e0b; color: #111218; box-shadow: 0 0 0 2px rgba(245,158,11,.45); }
+:root[data-thema="dunkel"] mark.hb-treffer { background: rgba(250,204,21,.3); }
+@media (max-width: 760px) {
+  #handbuch-modal { padding: .5rem; }
+  .modal-card.hb-karte { height: calc(100dvh - 1rem); padding: .9rem .9rem 0; }
+  .hb-rahmen { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: .5rem; }
+  .hb-seite { border-right: none; border-bottom: 1px solid var(--border); padding: 0 0 .5rem; overflow: visible; gap: .4rem; position: relative; }
+  .hb-such { position: static; padding: 0; }
+  .hb-kapitel-knopf { display: flex; align-items: center; gap: .45rem; width: 100%; text-align: left; font: inherit; font-size: .78rem;
+    padding: .4rem .6rem; border-radius: 8px; border: 1px solid var(--border); background: var(--s2); color: var(--text); cursor: pointer; }
+  #hb-kapitel-aktuell { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hb-nav { display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 5; max-height: 55vh; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: .4rem; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+  .hb-seite.offen .hb-nav { display: block; }
+}
 #abschnitt-view { padding: .8rem 1rem 1rem; }
 .hf-gruppe { border: 1px solid var(--border); border-radius: 10px; padding: .55rem .75rem .6rem; margin-bottom: .7rem; background: var(--s2); }
 .hf-gruppe .abs-h4 { margin-top: .1rem; }
@@ -2959,7 +3012,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v4.0.0';
+const APP_VERSION = 'v4.1.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -3538,17 +3591,211 @@ function translateHandbuch() {
   });
 
   // Language-specific body sections
+  _hbMarkenEntfernen();
   document.querySelectorAll('#handbuch-modal .hb-lang').forEach(el => {
     const show = el.classList.contains('hb-' + currentLang);
     zeigeElement(el, show);
   });
+  // Seitenleiste aus den Überschriften der Sprache, Suche neu (nur wenn offen)
+  _hbNavBauen();
+  if (document.getElementById('handbuch-modal')?.classList.contains('open')) hbSuchen();
 }
 
 function openHandbuch()  {
   document.getElementById('handbuch-modal').classList.add('open');
   translateHandbuch();
 }
-function closeHandbuch() { document.getElementById('handbuch-modal').classList.remove('open'); }
+function closeHandbuch() {
+  document.getElementById('handbuch-modal').classList.remove('open');
+  document.getElementById('hb-seite')?.classList.remove('offen');
+}
+
+// ── Handbuch: Kapitel links (aktuelle Stelle hervorgehoben) und Suche ──
+// Die Kapitel werden aus den sichtbaren Überschriften der gewählten Sprache
+// gelesen: h3 = Kapitel, fette Absätze «6.3 …» = Unterkapitel.
+let _hbKapitel = [];      // [{ el, nr, titel, haupt, link, li }]
+let _hbTreffer = [], _hbTrefferI = -1, _hbSuchTimer = null, _hbSpyRaf = 0;
+const _hbWeich = () => !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+function _hbNavBauen() {
+  const text = document.getElementById('hb-text'), nav = document.getElementById('hb-nav');
+  if (!text || !nav || !document.getElementById('handbuch-modal').classList.contains('open')) return;
+  text.querySelectorAll('[data-hb-kap]').forEach(el => { el.removeAttribute('data-hb-kap'); if (el.id.startsWith('hb-k-')) el.removeAttribute('id'); });
+  _hbKapitel = [];
+  text.querySelectorAll('h3[id^="hb-"], p, h4').forEach(el => {
+    if (!el.getClientRects().length) return;
+    const txt = el.textContent.replace(/\s+/g, ' ').trim();
+    const haupt = el.tagName === 'H3';
+    const m = haupt ? txt.match(/^(\d+)\s+(.+)$/) : txt.match(/^(\d+\.\d+)\s+(.+)$/);
+    if (!m || (!haupt && (txt.length > 160 || parseInt(getComputedStyle(el).fontWeight, 10) < 600))) return;
+    if (!haupt && !el.id) el.id = 'hb-k-' + m[1].replace('.', '-');
+    el.setAttribute('data-hb-kap', '');
+    _hbKapitel.push({ el, nr: m[1], titel: m[2], haupt });
+  });
+  let html = '<ul>', offen = false;
+  _hbKapitel.forEach((k, i) => {
+    const a = `<a href="#${k.el.id}" data-i="${i}"><span class="hb-nav-nr">${k.nr}</span><span class="hb-nav-txt">${escHtml(k.titel)}</span><span class="hb-nav-zahl" hidden></span></a>`;
+    if (k.haupt) {
+      if (offen) html += '</ul></li>';
+      html += `<li class="hb-nav-k">${a}<ul class="hb-nav-u">`;
+      offen = true;
+    } else html += `<li>${a}</li>`;
+  });
+  if (offen) html += '</ul></li>';
+  nav.innerHTML = html + '</ul>';
+  nav.querySelectorAll('a[data-i]').forEach(a => {
+    const k = _hbKapitel[+a.dataset.i];
+    k.link = a; k.li = a.closest('.hb-nav-k');
+    a.addEventListener('click', e => { e.preventDefault(); hbKapitelZeigen(+a.dataset.i); });
+  });
+  if (!text._hbSpy) {
+    text._hbSpy = true;
+    text.addEventListener('scroll', () => {
+      if (_hbSpyRaf) return;
+      _hbSpyRaf = requestAnimationFrame(() => { _hbSpyRaf = 0; _hbAktivSetzen(); });
+    }, { passive: true });
+  }
+  _hbAktivSetzen();
+}
+
+// Kapitel, in dem man sich gerade befindet: letzte Überschrift oberhalb der
+// Lesezeile (40 % der Höhe — ein angesprungener Treffer steht in der Mitte)
+function _hbAktivSetzen() {
+  const text = document.getElementById('hb-text');
+  if (!text || !_hbKapitel.length) return;
+  const oben = text.getBoundingClientRect().top + text.clientHeight * 0.4;
+  let ai = 0;
+  _hbKapitel.forEach((k, i) => { if (k.el.getBoundingClientRect().top <= oben) ai = i; });
+  if (text.scrollTop + text.clientHeight >= text.scrollHeight - 4) {
+    // Ganz unten: letzte Überschrift, die im Blick ist
+    const unten = text.getBoundingClientRect().bottom;
+    _hbKapitel.forEach((k, i) => { if (k.el.getBoundingClientRect().top < unten) ai = Math.max(ai, i); });
+  }
+  let hauptI = ai;
+  while (hauptI > 0 && !_hbKapitel[hauptI].haupt) hauptI--;
+  _hbKapitel.forEach((k, i) => {
+    k.link.classList.toggle('aktiv', i === ai);
+    if (k.link.classList.contains('aktiv')) k.link.setAttribute('aria-current', 'location'); else k.link.removeAttribute('aria-current');
+    if (k.haupt) k.li.classList.toggle('offen', i === hauptI);
+  });
+  const k = _hbKapitel[ai];
+  const akt = document.getElementById('hb-kapitel-aktuell');
+  if (akt) akt.textContent = `${k.nr} ${k.titel}`;
+  // Aktiven Eintrag in der Seitenleiste sichtbar halten (nur die Leiste scrollen)
+  const seite = document.getElementById('hb-seite');
+  if (seite && seite.scrollHeight > seite.clientHeight) {
+    const r = k.link.getBoundingClientRect(), sr = seite.getBoundingClientRect();
+    if (r.top < sr.top + 90) seite.scrollTop -= sr.top + 90 - r.top;
+    else if (r.bottom > sr.bottom - 10) seite.scrollTop += r.bottom - sr.bottom + 10;
+  }
+}
+
+function hbKapitelZeigen(i) {
+  const k = _hbKapitel[i], text = document.getElementById('hb-text');
+  if (!k || !text) return;
+  const ziel = text.scrollTop + k.el.getBoundingClientRect().top - text.getBoundingClientRect().top - 8;
+  text.scrollTo({ top: ziel, behavior: _hbWeich() ? 'smooth' : 'auto' });
+  document.getElementById('hb-seite')?.classList.remove('offen');
+  document.getElementById('hb-kapitel-knopf')?.setAttribute('aria-expanded', 'false');
+}
+
+function hbKapitelMenue() {
+  const seite = document.getElementById('hb-seite');
+  const auf = seite.classList.toggle('offen');
+  document.getElementById('hb-kapitel-knopf').setAttribute('aria-expanded', String(auf));
+  // Aktuelles Kapitel in der aufgeklappten Liste zeigen
+  const nav = document.getElementById('hb-nav'), a = nav?.querySelector('a.aktiv');
+  if (auf && a) nav.scrollTop = a.offsetTop - nav.clientHeight / 2;
+}
+
+// ── Suche: Treffer markieren, Anzahl je Kapitel, ↑/↓ bzw. Enter springen ──
+function _hbMarkenEntfernen() {
+  document.querySelectorAll('#hb-text mark.hb-treffer').forEach(m => {
+    const p = m.parentNode;
+    p.replaceChild(document.createTextNode(m.textContent), m);
+    p.normalize();
+  });
+}
+function hbSucheEingabe() {
+  clearTimeout(_hbSuchTimer);
+  _hbSuchTimer = setTimeout(hbSuchen, 180);
+}
+function hbSuchen() {
+  const text = document.getElementById('hb-text'), feld = document.getElementById('hb-suche');
+  if (!text || !feld) return;
+  _hbMarkenEntfernen();
+  _hbTreffer = []; _hbTrefferI = -1;
+  const q = feld.value.trim();
+  if (q.length >= 2) {
+    const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+    const knoten = [];
+    const w = document.createTreeWalker(text, NodeFilter.SHOW_TEXT, {
+      acceptNode: n => {
+        const el = n.parentElement;
+        if (!el || !n.nodeValue.trim() || el.closest('style, script') || !el.getClientRects().length) return NodeFilter.FILTER_REJECT;
+        re.lastIndex = 0;
+        return re.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      },
+    });
+    while (w.nextNode()) knoten.push(w.currentNode);
+    knoten.forEach(n => {
+      const frag = document.createDocumentFragment(), v = n.nodeValue;
+      let pos = 0, m;
+      re.lastIndex = 0;
+      while ((m = re.exec(v))) {
+        if (m.index > pos) frag.appendChild(document.createTextNode(v.slice(pos, m.index)));
+        const mk = document.createElement('mark');
+        mk.className = 'hb-treffer'; mk.textContent = m[0];
+        frag.appendChild(mk); _hbTreffer.push(mk);
+        pos = m.index + m[0].length;
+      }
+      if (pos < v.length) frag.appendChild(document.createTextNode(v.slice(pos)));
+      n.parentNode.replaceChild(frag, n);
+    });
+  }
+  // Anzahl je Hauptkapitel in der Seitenleiste
+  const haupt = _hbKapitel.filter(k => k.haupt);
+  const zahl = new Map(haupt.map(k => [k, 0]));
+  let hi = -1;
+  _hbTreffer.forEach(mk => {
+    while (hi + 1 < haupt.length && (haupt[hi + 1].el.compareDocumentPosition(mk) & Node.DOCUMENT_POSITION_FOLLOWING)) hi++;
+    if (hi >= 0) zahl.set(haupt[hi], zahl.get(haupt[hi]) + 1);
+  });
+  haupt.forEach(k => {
+    const b = k.link?.querySelector('.hb-nav-zahl');
+    if (!b) return;
+    const n = zahl.get(k);
+    b.textContent = n; b.hidden = !n;
+  });
+  _hbTrefferAnzeigen();
+  if (_hbTreffer.length) hbTrefferGehe(1);
+}
+function _hbTrefferAnzeigen() {
+  const z = document.getElementById('hb-such-zahl'), q = document.getElementById('hb-suche')?.value.trim() || '';
+  if (z) z.textContent = q.length < 2 ? '' : _hbTreffer.length
+    ? `${_hbTrefferI + 1} / ${_hbTreffer.length}` : t('hb.keine.treffer');
+  document.querySelectorAll('.hb-such-knopf').forEach(b => { b.disabled = _hbTreffer.length < 2; });
+}
+function hbTrefferGehe(d) {
+  if (!_hbTreffer.length) return;
+  _hbTreffer[_hbTrefferI]?.classList.remove('aktuell');
+  _hbTrefferI = (_hbTrefferI + d + _hbTreffer.length) % _hbTreffer.length;
+  const mk = _hbTreffer[_hbTrefferI];
+  mk.classList.add('aktuell');
+  mk.scrollIntoView({ block: 'center', behavior: _hbWeich() ? 'smooth' : 'auto' });
+  _hbTrefferAnzeigen();
+}
+function hbSucheTaste(e) {
+  if (e.key === 'Enter') { e.preventDefault(); clearTimeout(_hbSuchTimer); if (!_hbTreffer.length) hbSuchen(); else hbTrefferGehe(e.shiftKey ? -1 : 1); }
+  else if (e.key === 'Escape' && e.target.value) { e.preventDefault(); e.stopPropagation(); e.target.value = ''; hbSuchen(); }
+}
+// Strg/Cmd+F im offenen Handbuch: eigenes Suchfeld statt Browsersuche
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && document.getElementById('handbuch-modal')?.classList.contains('open')) {
+    e.preventDefault();
+    const f = document.getElementById('hb-suche'); f.focus(); f.select();
+  }
+});
 
 // ── EXIF GPS-Parser (kompakt, nur JPEG/EXIF, kein externer Dependency) ─────
 function _extractExifGps(buf) {
@@ -13645,6 +13892,11 @@ const LANG = {
     'hb.toc.5':  '5 Kettenwerke',   'hb.toc.6':  '6 Werkzeuge',
     'hb.toc.7':  '7 Beispielrechnung','hb.toc.8': '8 Quellen',
     'hb.toc.9':  '9 Glossar',
+    'hb.suche': 'Im Handbuch suchen',
+    'hb.inhalt': 'Inhalt',
+    'hb.vorher': 'Vorheriger Treffer',
+    'hb.naechster': 'Nächster Treffer',
+    'hb.keine.treffer': 'Keine Treffer',
     'hb.s1':     'Übersicht',
     'hb.s2':     'Eingabeparameter',
     'hb.s2.1':   '2.1  Geometrie & Aufhängung',
@@ -14468,6 +14720,11 @@ const LANG = {
     'hb.toc.5':  '5 Caténaires',      'hb.toc.6':  '6 Outils',
     'hb.toc.7':  '7 Exemple de calcul','hb.toc.8': '8 Sources',
     'hb.toc.9':  '9 Glossaire',
+    'hb.suche': 'Rechercher dans le manuel',
+    'hb.inhalt': 'Sommaire',
+    'hb.vorher': 'Résultat précédent',
+    'hb.naechster': 'Résultat suivant',
+    'hb.keine.treffer': 'Aucun résultat',
     'hb.s1':     'Aperçu',
     'hb.s2':     'Paramètres de saisie',
     'hb.s2.1':   '2.1  Géométrie & points d’appui',
@@ -15291,6 +15548,11 @@ const LANG = {
     'hb.toc.5':  '5 Catenarie',       'hb.toc.6':  '6 Strumenti',
     'hb.toc.7':  '7 Esempio di calcolo','hb.toc.8': '8 Fonti',
     'hb.toc.9':  '9 Glossario',
+    'hb.suche': 'Cerca nel manuale',
+    'hb.inhalt': 'Indice',
+    'hb.vorher': 'Risultato precedente',
+    'hb.naechster': 'Risultato successivo',
+    'hb.keine.treffer': 'Nessun risultato',
     'hb.s1':     'Panoramica',
     'hb.s2':     'Parametri di ingresso',
     'hb.s2.1':   '2.1  Geometria & punti d’aggancio',
@@ -15955,6 +16217,7 @@ function setLang(lang) {
   document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML   = t(el.dataset.i18nHtml); });
   document.querySelectorAll('[data-i18n-ph]').forEach(el   => { el.placeholder = t(el.dataset.i18nPh); });
   document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el  => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
 
   // Dynamisch erzeugte Inhalte neu aufbauen, damit sie die neue Sprache zeigen
   const _presetErste = document.querySelector('#preset-select option[value=""]');
@@ -16638,30 +16901,31 @@ renderObstacleList();
 </div>
 
 <!-- ── Modal: Handbuch ── -->
-<div class="modal-overlay" id="handbuch-modal" role="dialog" aria-modal="true" aria-labelledby="handbuch-modal-title" onclick="if(event.target===this)closeHandbuch()" style="align-items:flex-start;padding:2rem 1rem;overflow-y:auto">
-  <div class="modal-card" style="max-width:760px;width:100%;max-height:none">
+<div class="modal-overlay" id="handbuch-modal" role="dialog" aria-modal="true" aria-labelledby="handbuch-modal-title" onclick="if(event.target===this)closeHandbuch()">
+  <div class="modal-card hb-karte">
     <div class="modal-header">
       <h2 class="modal-title" id="handbuch-modal-title" style="margin:0">Handbuch — Kettenwerk Rechner N-FL / R-FL</h2>
       <button class="modal-close" onclick="closeHandbuch()" title="Schliessen" data-i18n-title="ui.schliessen">✕</button>
     </div>
-    <!-- Inhaltsverzeichnis -->
-    <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.6rem 1rem;margin:.75rem 1.25rem .25rem;font-size:.78rem;color:var(--text2)">
-      <strong>Inhalt:</strong>&nbsp;
-      <a href="#hb-uebersicht"   style="color:var(--text2);text-decoration:none">1 Übersicht</a> &nbsp;·&nbsp;
-      <a href="#hb-eingabe"      style="color:var(--text2);text-decoration:none">2 Eingabe</a> &nbsp;·&nbsp;
-      <a href="#hb-verfahren"    style="color:var(--text2);text-decoration:none">3 Verfahren</a> &nbsp;·&nbsp;
-      <a href="#hb-leiter"       style="color:var(--text2);text-decoration:none">4 Leiterkennwerte</a> &nbsp;·&nbsp;
-      <a href="#hb-kombinationen" style="color:var(--text2);text-decoration:none">5 Kettenwerke</a> &nbsp;·&nbsp;
-      <a href="#hb-werkzeuge"    style="color:var(--text2);text-decoration:none">6 Werkzeuge</a> &nbsp;·&nbsp;
-      <a href="#hb-spannweite"   style="color:var(--text2);text-decoration:none">6.7 Lm-Formel</a> &nbsp;·&nbsp;
-      <a href="#hb-berechnungsart" style="color:var(--text2);text-decoration:none">6.8 Berechnungsart</a> &nbsp;·&nbsp;
-      <a href="#hb-projekte"     style="color:var(--text2);text-decoration:none">6.9 Projekte</a> &nbsp;·&nbsp;
-      <a href="#hb-beispiel"     style="color:var(--text2);text-decoration:none">7 Beispielrechnung</a> &nbsp;·&nbsp;
-      <a href="#hb-quellen"      style="color:var(--text2);text-decoration:none">8 Quellen</a> &nbsp;·&nbsp;
-      <a href="#hb-glossar"      style="color:var(--text2);text-decoration:none">9 Glossar</a>
-    </div>
-
-    <div style="padding:0 1.25rem 1.25rem;font-size:.85rem;line-height:1.7;color:var(--text)">
+    <div class="hb-rahmen">
+      <!-- Seitenleiste: Suche + Kapitel (Handy: Aufklappmenü oben) -->
+      <div class="hb-seite" id="hb-seite">
+        <div class="hb-such">
+          <input type="search" id="hb-suche" class="hb-such-feld" autocomplete="off" spellcheck="false"
+            placeholder="Im Handbuch suchen" data-i18n-ph="hb.suche" aria-label="Im Handbuch suchen" data-i18n-aria="hb.suche"
+            oninput="hbSucheEingabe()" onkeydown="hbSucheTaste(event)">
+          <div class="hb-such-leiste">
+            <span id="hb-such-zahl" class="hb-such-zahl" aria-live="polite"></span>
+            <button type="button" class="hb-such-knopf" onclick="hbTrefferGehe(-1)" title="Vorheriger Treffer" data-i18n-title="hb.vorher" aria-label="Vorheriger Treffer" data-i18n-aria="hb.vorher">↑</button>
+            <button type="button" class="hb-such-knopf" onclick="hbTrefferGehe(1)" title="Nächster Treffer" data-i18n-title="hb.naechster" aria-label="Nächster Treffer" data-i18n-aria="hb.naechster">↓</button>
+          </div>
+        </div>
+        <button type="button" class="hb-kapitel-knopf" id="hb-kapitel-knopf" aria-expanded="false" aria-controls="hb-nav" onclick="hbKapitelMenue()">
+          <span aria-hidden="true">☰</span> <span id="hb-kapitel-aktuell"></span>
+        </button>
+        <nav id="hb-nav" class="hb-nav" aria-label="Inhalt" data-i18n-aria="hb.inhalt"></nav>
+      </div>
+    <div class="hb-text" id="hb-text" tabindex="0" role="region" aria-labelledby="handbuch-modal-title">
 
       <!-- ══ 1 Übersicht ══ -->
       <h3 id="hb-uebersicht" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.2rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem">1 &nbsp;<span id="hb-s1">Übersicht</span></h3>
@@ -17553,6 +17817,7 @@ renderObstacleList();
       <div class="hb-lang hb-de">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.13 &nbsp;Bedienung: Ansichten, Darstellung, Tablet</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
+          <li><strong>Handbuch</strong>: links die Kapitel — das aktuelle ist hervorgehoben, seine Unterkapitel klappen auf (Handy: Menü oben). Das <strong>Suchfeld</strong> markiert alle Treffer (ab 2 Zeichen), zeigt die Anzahl je Kapitel; <em>Enter</em> bzw. ↑/↓ springen zum nächsten/vorherigen Treffer, <em>Esc</em> leert die Suche, <em>Strg+F</em> setzt den Cursor ins Suchfeld.</li>
           <li><strong>Reiter</strong> über dem Diagramm: <em>Diagramm</em> (Berechnung), <em>Zeichnung</em> (massstäblich, PDF), <em>Abschnitt</em> (6.11) und <em>Foto</em>.</li>
           <li><strong>Zeichnung</strong>: Darstellung <em>bis SOK</em> oder nur <em>Kettenwerk</em> (Masten enden dann mit Bruchzeichen, SOK liegt darunter). Schalter <strong>hf<sub>min</sub> / hf<sub>max</sub></strong> (nur Kettenwerk): blendet die Werte aus der hf-Ansicht als Band über SOK ein und prüft die Soll-Fahrdrahthöhe an den Stützpunkten (h − sh), ausserhalb rot markiert — hf ist eine Auslegungshöhe, Durchhang und Anheben stecken bereits in den Zuschlägen; die Ist-Lage bei T<sub>2</sub> steht nur zur Information daneben; auch im PDF und im DXF (Layer HF_MIN / HF_MAX).</li>
           <li><strong>Foto</strong> ist bewusst zurückhaltend dargestellt: Die Foto-Auswertung ist <em>keine präzise Berechnung</em> und eignet sich nur zur Abschätzung des Durchhangs. Beim ersten Öffnen je App-Start erscheint ein Hinweis; im Foto-Ergebnis steht eine Warnzeile.</li>
@@ -17568,6 +17833,7 @@ renderObstacleList();
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.13 &nbsp;Utilisation : vues, affichage, tablette</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
+          <li><strong>Manuel</strong> : à gauche les chapitres — le chapitre actuel est mis en évidence et ses sous-chapitres s’ouvrent (téléphone : menu en haut). Le <strong>champ de recherche</strong> marque tous les résultats (dès 2 caractères) et affiche leur nombre par chapitre ; <em>Entrée</em> ou ↑/↓ passent au résultat suivant/précédent, <em>Échap</em> vide la recherche, <em>Ctrl+F</em> place le curseur dans le champ.</li>
           <li><strong>Onglets</strong> au-dessus du diagramme : <em>Diagramme</em> (calcul), <em>Dessin</em> (à l’échelle, PDF), <em>Canton</em> (6.11) et <em>Photo</em>.</li>
           <li><strong>Dessin</strong> : représentation <em>jusqu’au DRS</em> ou seulement <em>Caténaire</em> (les mâts se terminent alors par un symbole de coupure, le DRS est en dessous). Interrupteur <strong>hf<sub>min</sub> / hf<sub>max</sub></strong> (caténaire seulement) : affiche les valeurs de la vue hf comme bande au-dessus du DRS et vérifie la hauteur théorique du fil de contact aux supports (h − sh), hors plage en rouge — hf est une hauteur de dimensionnement, flèche et soulèvement sont déjà compris dans les suppléments ; la position réelle à T<sub>2</sub> n’est indiquée qu’à titre d’information ; aussi dans le PDF et le DXF (calques HF_MIN / HF_MAX).</li>
           <li><strong>Photo</strong> est volontairement discret : l’analyse photo n’est <em>pas un calcul précis</em> et ne convient qu’à estimer la flèche. Une remarque apparaît à la première ouverture après chaque démarrage ; le résultat photo porte une ligne d’avertissement.</li>
@@ -17583,6 +17849,7 @@ renderObstacleList();
       <div class="hb-lang hb-it" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.13 &nbsp;Utilizzo: viste, visualizzazione, tablet</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
+          <li><strong>Manuale</strong>: a sinistra i capitoli — quello attuale è evidenziato e i suoi sottocapitoli si aprono (telefono: menu in alto). Il <strong>campo di ricerca</strong> evidenzia tutti i risultati (da 2 caratteri) e ne mostra il numero per capitolo; <em>Invio</em> o ↑/↓ passano al risultato successivo/precedente, <em>Esc</em> svuota la ricerca, <em>Ctrl+F</em> porta il cursore nel campo.</li>
           <li><strong>Schede</strong> sopra il diagramma: <em>Diagramma</em> (calcolo), <em>Disegno</em> (in scala, PDF), <em>Tratta</em> (6.11) e <em>Foto</em>.</li>
           <li><strong>Disegno</strong>: rappresentazione <em>fino al PRF</em> o solo <em>Catenaria</em> (i pali terminano allora con un simbolo di interruzione, il PRF è sotto). Interruttore <strong>hf<sub>min</sub> / hf<sub>max</sub></strong> (solo catenaria): mostra i valori della vista hf come banda sopra il PRF e verifica l’altezza teorica del filo di contatto ai sostegni (h − sh), fuori campo in rosso — hf è un’altezza di progetto, freccia e sollevamento sono già compresi nei supplementi; la posizione reale a T<sub>2</sub> è indicata solo come informazione; anche nel PDF e nel DXF (layer HF_MIN / HF_MAX).</li>
           <li><strong>Foto</strong> è volutamente discreta: l’analisi foto <em>non è un calcolo preciso</em> ed è adatta solo per stimare la freccia. Alla prima apertura dopo ogni avvio appare un avviso; il risultato foto riporta una riga di avvertimento.</li>
@@ -17846,6 +18113,7 @@ renderObstacleList();
         Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; <span class="app-version"></span> &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
         Quelle Reglage: SBB 0161.1013.0001
       </p>
+    </div>
     </div>
   </div>
 </div>
