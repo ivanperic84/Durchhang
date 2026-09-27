@@ -1357,6 +1357,7 @@ input.feld-gesperrt { color: var(--muted) !important; cursor: default; backgroun
 .abs-leiste { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; margin-bottom: .4rem; }
 .abs-titel { font-size: .82rem; margin-right: .4rem; color: var(--text); }
 .abs-trenner { flex: 1; }
+.abs-leiste-lbl { font-size: .72rem; color: var(--muted); margin-right: .2rem; }
 .abs-knopf { font-size: .72rem; padding: .22rem .55rem; border-radius: 7px; border: 1px solid var(--border); background: var(--card);
   color: var(--text2); cursor: pointer; font-family: inherit; }
 .abs-knopf:hover:not(:disabled) { background: var(--s3); }
@@ -3019,7 +3020,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v4.2.1';
+const APP_VERSION = 'v4.2.2';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -12709,18 +12710,22 @@ function renderAbschnitt() {
   if (!box) return;
   const knopf = 'abs-knopf';
   const m = abschnitt.masten;
+  // Zeile 1: Masten erfassen (Eingabe), Zeile 2: Export
   let html = `<div class="abs-leiste">
       <strong class="abs-titel">${t('abs.titel')}</strong>
       <button class="${knopf}" onclick="abschnittMastHinzu()">${t('abs.mast.hinzu')}</button>
       <button class="${knopf}" onclick="abschnittCsvWaehlen()">${t('abs.csv.import')}</button>
       <input type="file" id="abs-csv-datei" accept=".csv,.txt,text/csv" style="display:none" onchange="abschnittCsvGewaehlt(this)">
-      <button class="${knopf}" onclick="abschnittCsvExport()" ${m.length ? '' : 'disabled'}>${t('abs.csv.export')}</button>
       <button class="${knopf}" onclick="abschnittCsvVorlage()">${t('abs.csv.vorlage')}</button>
       <button class="${knopf}" id="abs-beispiel" onclick="abschnittBeispiel()">${t('abs.beispiel')}</button>
       <span class="abs-trenner"></span>
+      ${m.length ? `<button class="${knopf} leise" onclick="abschnittAlleLoeschen()">${t('abs.alle.loeschen')}</button>` : ''}
+    </div>
+    <div class="abs-leiste abs-leiste-export" role="group" aria-labelledby="abs-export-lbl">
+      <span class="abs-leiste-lbl" id="abs-export-lbl">${t('ui.export')}</span>
+      <button class="${knopf}" onclick="abschnittCsvExport()" ${m.length ? '' : 'disabled'}>${t('abs.csv.export')}</button>
       <button class="${knopf}" onclick="abschnittExport('ifc')" ${m.length > 1 ? '' : 'disabled'}>${t('abs.ifc')}</button>
       <button class="${knopf}" onclick="abschnittExport('dxf')" ${m.length > 1 ? '' : 'disabled'}>${t('abs.dxf')}</button>
-      ${m.length ? `<button class="${knopf} leise" onclick="abschnittAlleLoeschen()">${t('abs.alle.loeschen')}</button>` : ''}
     </div>
     <p class="abs-hinweis">${t('abs.hinweis')}</p>`;
   if (!m.length) {
@@ -12837,7 +12842,8 @@ function _abschnittProfil(erg, absolut) {
   // lässt sich dann seitlich schieben. Bis ca. 12 Felder passt alles wie bisher.
   const H = 300, pl = 48, pr = 30, pt = 30, pb = 30;
   const Lmin = Math.min(...F.map(f => f.L));
-  const W = Math.round(Math.min(Math.max(1000, pl + pr + S * 60 / Math.max(Lmin, 1)), pl + pr + 90 * F.length));
+  // Nie schmaler als 1000 (sonst wird das Profil beim Einpassen vergrössert: Schrift und Linien zu gross)
+  const W = Math.max(1000, Math.round(Math.min(pl + pr + S * 60 / Math.max(Lmin, 1), pl + pr + 90 * F.length)));
   const breit = W > 1000;
   const sx = x => pl + (W - pl - pr) * x / S;
   const sy = y => pt + (H - pt - pb) * (1 - (y - yMin) / Math.max(0.5, yMax - yMin));

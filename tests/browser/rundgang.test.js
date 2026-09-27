@@ -508,7 +508,8 @@ test('Längsprofil: Leiter in Temperaturfarbe, 55 Felder rechenbar und seitlich 
     // Wenige Felder: kein Scrollen
     abschnitt = { masten: beispielMasten(), offen: null, mp: {} }; renderAbschnitt();
     const b2 = document.querySelector('.abs-profil-scroll');
-    const wenige = { scroll: b2.scrollWidth > b2.clientWidth + 1, hinweis: !!document.querySelector('.abs-leg.leise') };
+    const wenige = { scroll: b2.scrollWidth > b2.clientWidth + 1, hinweis: !!document.querySelector('.abs-leg.leise'),
+      viewBox: b2.querySelector('svg').getAttribute('viewBox') };
     setCanvasView('diagramm');
     return { viele, warm, kalt, kaltSoll: probe.style.color, legende, wenige };
   });
@@ -516,7 +517,8 @@ test('Längsprofil: Leiter in Temperaturfarbe, 55 Felder rechenbar und seitlich 
   assert.notEqual(r.warm, r.kalt, 'Farbe folgt T2');
   assert.equal(r.kalt, r.kaltSoll);
   assert.match(r.legende, /T2 = -20 °C|T₂ = -20 °C|T2 = −20 °C/);
-  assert.deepEqual(r.wenige, { scroll: false, hinweis: false });
+  // Wenige Felder: Standardgrösse 1000 × 300 (nicht vergrössert)
+  assert.deepEqual(r.wenige, { scroll: false, hinweis: false, viewBox: '0 0 1000 300' });
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
