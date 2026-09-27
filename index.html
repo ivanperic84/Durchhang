@@ -2387,7 +2387,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 
       <!-- Δ Mastfuss − SOK (optional): Mastfuss = SOK + Δ (Foto-Messung, Mastmodelle) -->
       <div style="margin-top:.6rem">
-        <label id="mast-delta-lbl" data-i18n="bp.delta.label" title="Δ positiv = Mastfuss liegt höher als SOK" data-i18n-title="koord.delta.titel" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.28rem">Δ Mastfuss − SOK (optional)</label>
+        <label id="mast-delta-lbl" data-i18n="bp.delta.label" title="Δ positiv = Mastfuss liegt höher als SOK, negativ = tiefer" data-i18n-title="koord.delta.titel" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.28rem">Δ Mastfuss − SOK (optional)</label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem">
           <div class="input-wrap">
             <input type="number" id="mast-delta-sok-left" step="0.01" autocomplete="off" placeholder="0.00" style="font-size:.78rem" aria-labelledby="mast-delta-lbl koord-lbl-li" oninput="berechnenEntprellt()" onchange="berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
@@ -2398,7 +2398,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
             <span class="input-unit" style="font-size:.7rem">m</span>
           </div>
         </div>
-        <p id="mast-delta-info" data-i18n="bp.delta.info" style="margin:.25rem 0 0;font-size:.68rem;color:var(--tertiary)">Mastfuss = SOK + Δ (positiv = Mastfuss höher). Für die Foto-Messung; die Berechnung braucht nur die SOK.</p>
+        <p id="mast-delta-info" data-i18n="bp.delta.info" style="margin:.25rem 0 0;font-size:.68rem;color:var(--tertiary)">Mastfuss = SOK + Δ (positiv = Mastfuss höher, negativ = tiefer). Für die Foto-Messung; die Berechnung braucht nur die SOK.</p>
       </div>
 
       <!-- Mastbezeichnung: Name/Nr. + KM -->
@@ -2416,10 +2416,10 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
           <span id="bp-km-li-lbl" data-i18n="bp.km.li" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM links</span>
           <span id="bp-km-re-lbl" data-i18n="bp.km.re" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM rechts</span>
           <input type="text" id="mast-km-left" placeholder="000.000"
-            oninput="_triggerDrawingRebuild()" onchange="_triggerDrawingRebuild()"
+            oninput="_triggerDrawingRebuild()" onchange="this.value=kmFormat(this.value);_triggerDrawingRebuild()"
             style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%;letter-spacing:.03em">
           <input type="text" id="mast-km-right" placeholder="000.000"
-            oninput="_triggerDrawingRebuild()" onchange="_triggerDrawingRebuild()"
+            oninput="_triggerDrawingRebuild()" onchange="this.value=kmFormat(this.value);_triggerDrawingRebuild()"
             style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%;letter-spacing:.03em">
         </div>
       </div>
@@ -3061,7 +3061,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v4.4.0';
+const APP_VERSION = 'v4.5.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -12594,7 +12594,7 @@ function _abschnittLaden(s) {
   const zahl = v => (typeof v === 'number' && Number.isFinite(v)) ? v : null;
   const text = v => (typeof v === 'string' || typeof v === 'number') ? String(v) : '';
   const mastenLesen = arr => Array.isArray(arr) ? arr.filter(x => x && typeof x === 'object')
-    .map(x => ({ name: text(x.name), e: zahl(x.e), n: zahl(x.n), z: zahl(x.z), delta: zahl(x.delta), h: zahl(x.h), km: text(x.km), L: zahl(x.L) })) : [];
+    .map(x => ({ name: text(x.name), e: zahl(x.e), n: zahl(x.n), z: zahl(x.z), delta: zahl(x.delta), h: zahl(x.h), km: kmFormat(text(x.km)), L: zahl(x.L) })) : [];
   const mpLesen = obj => {
     const mp = {};
     if (obj && typeof obj === 'object')
@@ -12887,8 +12887,9 @@ function abschnittMastWert(i, k, wert) {
   const m = abschnitt.masten[i];
   if (!m) return;
   const alterName = m.name;
-  if (k === 'name' || k === 'km') m[k] = String(wert).trim();
-  else { const v = parseFloat(String(wert).replace(',', '.')); m[k] = Number.isFinite(v) ? v : null; }
+  if (k === 'name') m.name = String(wert).trim();
+  else if (k === 'km') m.km = kmFormat(wert);
+  else { const v = parseFloat(String(wert).replace(',', '.').replace(/[−–]/g, '-')); m[k] = Number.isFinite(v) ? v : null; }
   // Masteigenschaften gelten für alle Stränge an diesem Mast
   if (['name', 'z', 'delta', 'km'].includes(k)) {
     _straengeSichern().forEach(s => { if (s.masten !== abschnitt.masten) s.masten.forEach(x => { if (x.name === alterName) x[k] = m[k]; }); });
@@ -13164,9 +13165,9 @@ function renderAbschnitt() {
       _ABS_SPALTEN.map(([, k]) => `<th>${t(k)}</th>`).join('')}<th>${t('abs.sp.L')}</th><th><span class="nur-vorlesen">${t('ui.loeschen')}</span></th></tr></thead><tbody>`;
     m.forEach((mast, i) => {
       html += `<tr><td class="abs-nr">${i + 1}</td>${_ABS_SPALTEN.map(([k, lbl, typ]) =>
-        `<td><input class="abs-inp${typ === 'zahl' ? ' zahl' : ''}" ${typ === 'zahl' ? 'inputmode="decimal"' : ''}
-          aria-label="${escHtml(t(lbl))} ${escHtml(mast.name || String(i + 1))}"
-          value="${escHtml(mast[k] ?? '')}" onchange="abschnittMastWert(${i},'${k}',this.value)"></td>`).join('')}
+        `<td><input class="abs-inp${typ === 'zahl' ? ' zahl' : ''}" ${typ === 'zahl' && k !== 'delta' ? 'inputmode="decimal"' : ''}
+          aria-label="${escHtml(t(lbl))} ${escHtml(mast.name || String(i + 1))}"${k === 'km' ? ' placeholder="000.000"' : ''}
+          value="${escHtml(mast[k] ?? '')}" onchange="abschnittMastWert(${i},'${k}',this.value)${k === 'km' ? ';this.value=abschnitt.masten[' + i + '].km' : ''}"></td>`).join('')}
         <td class="abs-L" id="abs-L-${i}"></td>
         <td><button class="obs-rm-btn" onclick="abschnittMastWeg(${i})" aria-label="${escHtml(t('ui.loeschen'))} ${escHtml(mast.name)}">✕</button></td></tr>`;
     });
@@ -13331,8 +13332,8 @@ function _abschnittProfil(alle, absolut) {
     const clr = farbe(e), ak = e.k === A.aktiv;
     e.F.forEach(({ f, s0, s1 }) => {
       if (f.fdY) svg += ak ? `<path d="${pfad(f, s0, s1, f.fdY)}" class="abs-fd"/>`
-        : `<path d="${pfad(f, s0, s1, f.fdY)}" class="abs-fd" style="stroke:${clr};opacity:.55;stroke-dasharray:4 3"/>`;
-      svg += `<path d="${pfad(f, s0, s1, x => kettenY(f.oben, x))}" class="abs-leiter" style="stroke:${clr}${ak ? '' : ';stroke-width:1.6;opacity:.9'}"><title>${escHtml(_strangName(e.s, e.k))}</title></path>`;
+        : `<path d="${pfad(f, s0, s1, f.fdY)}" class="abs-fd" style="stroke:${clr};opacity:.3;stroke-dasharray:4 3"/>`;
+      svg += `<path d="${pfad(f, s0, s1, x => kettenY(f.oben, x))}" class="abs-leiter" style="stroke:${clr}${ak ? '' : ';stroke-width:1.6;opacity:.45'}"><title>${escHtml(_strangName(e.s, e.k))}</title></path>`;
     });
   });
   // Hindernisse des aktiven Strangs
@@ -13362,7 +13363,7 @@ function _abschnittProfil(alle, absolut) {
   const t2Txt = Number.isFinite(T2) ? ` = ${fN(T2, 0)} °C` : '';
   let legende;
   if (mehrere) {
-    legende = lagen.map(e => `<span class="abs-leg${e.k === A.aktiv ? ' aktiv' : ''}"><span class="abs-leg-linie" style="background:${e.s.farbe}"></span><span>${escHtml(_strangName(e.s, e.k))}</span></span>`).join('')
+    legende = lagen.map(e => `<span class="abs-leg${e.k === A.aktiv ? ' aktiv' : ''}"><span class="abs-leg-linie" style="background:${e.s.farbe}${e.k === A.aktiv ? '' : ';opacity:.45'}"></span><span>${escHtml(_strangName(e.s, e.k))}</span></span>`).join('')
       + alle.filter(e => !e.erg && e.s.sichtbar && e.k !== A.aktiv).map(e => `<span class="abs-leg leise"><span class="abs-leg-linie" style="background:${e.s.farbe}"></span><span>${escHtml(_strangName(e.s, e.k))} …</span></span>`).join('')
       + `<span class="abs-leg leise"><span>T<sub>2</sub>${t2Txt}</span></span>`;
   } else {
@@ -14850,13 +14851,13 @@ const LANG = {
     'koord.schalter': 'Koordinaten LV95',
     'koord.hinweis': 'E/N [m] = Aufhängepunkt des Leiters (Ausleger/Joch). Die Spannweite L wird daraus berechnet; die Höhe (SOK m ü. M.) steht oben.',
     'bp.delta.label': 'Δ Mastfuss − SOK (optional)',
-    'bp.delta.info': 'Mastfuss = SOK + Δ (positiv = Mastfuss höher). Für die Foto-Messung; die Berechnung braucht nur die SOK.',
+    'bp.delta.info': 'Mastfuss = SOK + Δ (positiv = Mastfuss höher, negativ = tiefer). Für die Foto-Messung; die Berechnung braucht nur die SOK.',
     'koord.links': 'links',
     'koord.rechts': 'rechts',
     'koord.e': 'E',
     'koord.n': 'N',
     'koord.delta': 'Δ',
-    'koord.delta.titel': 'Δ positiv = Mastfuss liegt höher als SOK',
+    'koord.delta.titel': 'Δ positiv = Mastfuss liegt höher als SOK, negativ = tiefer',
     'koord.info.L': 'L = {L} m aus Koordinaten',
     'koord.fehlt': 'E und N links und rechts eingeben',
     'koord.unplausibel': 'Koordinaten liegen ausserhalb des LV95-Bereichs (E ≈ 2 600 000, N ≈ 1 200 000)',
@@ -14926,7 +14927,7 @@ const LANG = {
     'abs.feld.vor': 'Vorheriges Feld',
     'abs.feld.nach': 'Nächstes Feld',
     'abs.beispiel.ersetzen': 'Die {n} vorhandenen Masten durch das Beispiel ersetzen?',
-    'abs.beispiel.geladen': 'Beispiel mit {n} Masten geladen (LV95, fiktive Lage). Leiter und Lastfall gelten wie links eingestellt — Feld anklicken zum Öffnen, «IFC Abschnitt» für das BIM-Modell.',
+    'abs.beispiel.geladen': 'Beispiel mit {n} Masten und drei Strängen geladen (Kettenwerk FL1, Rückleiter RL, Speiseleitung SPL; LV95, fiktive Lage). Leiter und Lastfall gelten wie links eingestellt — Feld anklicken zum Öffnen, «IFC Abschnitt» für das BIM-Modell.',
     'abs.alle.loeschen': 'Alle löschen',
     'abs.ifc': 'IFC Abschnitt',
     'abs.dxf': '3D-DXF Abschnitt',
@@ -15714,13 +15715,13 @@ const LANG = {
     'koord.schalter': 'Coordonnées MN95',
     'koord.hinweis': 'E/N [m] = point d’appui du conducteur (console/portique). La portée L en est calculée ; la hauteur (DRS m s.n.m.) se trouve plus haut.',
     'bp.delta.label': 'Δ pied de mât − DRS (optionnel)',
-    'bp.delta.info': 'Pied de mât = DRS + Δ (positif = pied de mât plus haut). Pour la mesure photo ; le calcul n’a besoin que du DRS.',
+    'bp.delta.info': 'Pied de mât = DRS + Δ (positif = pied de mât plus haut, négatif = plus bas). Pour la mesure photo ; le calcul n’a besoin que du DRS.',
     'koord.links': 'gauche',
     'koord.rechts': 'droite',
     'koord.e': 'E',
     'koord.n': 'N',
     'koord.delta': 'Δ',
-    'koord.delta.titel': 'Δ positif = le pied du mât est plus haut que le DRS',
+    'koord.delta.titel': 'Δ positif = le pied du mât est plus haut que le DRS, négatif = plus bas',
     'koord.info.L': 'L = {L} m selon coordonnées',
     'koord.fehlt': 'Saisir E et N à gauche et à droite',
     'koord.unplausibel': 'Coordonnées hors du domaine MN95 (E ≈ 2 600 000, N ≈ 1 200 000)',
@@ -15790,7 +15791,7 @@ const LANG = {
     'abs.feld.vor': 'Portée précédente',
     'abs.feld.nach': 'Portée suivante',
     'abs.beispiel.ersetzen': 'Remplacer les {n} mâts existants par l’exemple ?',
-    'abs.beispiel.geladen': 'Exemple de {n} mâts chargé (MN95, situation fictive). Conducteur et cas de charge selon les réglages à gauche — cliquer sur une portée pour l’ouvrir, «IFC canton» pour le modèle BIM.',
+    'abs.beispiel.geladen': 'Exemple de {n} mâts et trois lignes chargé (caténaire FL1, conducteur de retour RL, feeder SPL ; MN95, situation fictive). Conducteur et cas de charge selon les réglages à gauche — cliquer sur une portée pour l’ouvrir, «IFC canton» pour le modèle BIM.',
     'abs.alle.loeschen': 'Tout supprimer',
     'abs.ifc': 'IFC canton',
     'abs.dxf': 'DXF 3D canton',
@@ -16578,13 +16579,13 @@ const LANG = {
     'koord.schalter': 'Coordinate MN95',
     'koord.hinweis': 'E/N [m] = punto d’aggancio del conduttore (mensola/portale). La campata L viene calcolata da questi valori; l’altezza (PRF m s.l.m.) si trova più in alto.',
     'bp.delta.label': 'Δ piede palo − PRF (opzionale)',
-    'bp.delta.info': 'Piede del palo = PRF + Δ (positivo = piede più alto). Per la misura foto; il calcolo richiede solo il PRF.',
+    'bp.delta.info': 'Piede del palo = PRF + Δ (positivo = piede più alto, negativo = più basso). Per la misura foto; il calcolo richiede solo il PRF.',
     'koord.links': 'sinistra',
     'koord.rechts': 'destra',
     'koord.e': 'E',
     'koord.n': 'N',
     'koord.delta': 'Δ',
-    'koord.delta.titel': 'Δ positivo = il piede del palo è più alto del PRF',
+    'koord.delta.titel': 'Δ positivo = il piede del palo è più alto del PRF, negativo = più basso',
     'koord.info.L': 'L = {L} m dalle coordinate',
     'koord.fehlt': 'Inserire E e N a sinistra e a destra',
     'koord.unplausibel': 'Coordinate fuori dal campo MN95 (E ≈ 2 600 000, N ≈ 1 200 000)',
@@ -16654,7 +16655,7 @@ const LANG = {
     'abs.feld.vor': 'Campata precedente',
     'abs.feld.nach': 'Campata successiva',
     'abs.beispiel.ersetzen': 'Sostituire i {n} pali esistenti con l’esempio?',
-    'abs.beispiel.geladen': 'Esempio con {n} pali caricato (MN95, posizione fittizia). Conduttore e caso di carico come impostati a sinistra — clic su una campata per aprirla, «IFC tratta» per il modello BIM.',
+    'abs.beispiel.geladen': 'Esempio con {n} pali e tre linee caricato (catenaria FL1, conduttore di ritorno RL, alimentatore SPL; MN95, posizione fittizia). Conduttore e caso di carico come impostati a sinistra — clic su una campata per aprirla, «IFC tratta» per il modello BIM.',
     'abs.alle.loeschen': 'Elimina tutti',
     'abs.ifc': 'IFC tratta',
     'abs.dxf': 'DXF 3D tratta',
@@ -18450,14 +18451,14 @@ renderObstacleList();
           <li><strong>IFC / 3D-DXF Abschnitt</strong> exportiert alle Felder in einer Datei (mit Koordinaten georeferenziert).</li>
         </ul>
         <p style="font-weight:600;margin:.6rem 0 .2rem">Beispiel: Ablauf vom Mastbild zum BIM-Modell</p>
-        <p style="font-size:.8rem;color:var(--muted);margin:0 0 .3rem">Zum Ausprobieren setzt <strong>«Beispiel laden»</strong> fünf Masten mit Koordinaten und zwei Strängen ein (Fahrleitung FL1 und Speiseleitung SPL, fiktive Lage).</p>
+        <p style="font-size:.8rem;color:var(--muted);margin:0 0 .3rem">Zum Ausprobieren setzt <strong>«Beispiel laden»</strong> fünf Masten mit Koordinaten und drei Strängen ein (fiktive Lage): Kettenwerk FL1 am Ausleger, Rückleiter RL am Mast (h 6.80 m) und Speiseleitung SPL an der Mastspitze (h 10.50 m).</p>
         <ol style="margin:.2rem 0 .5rem 1.2rem">
           <li><strong>Mastliste vorbereiten</strong> — «CSV-Vorlage» herunterladen und aus Vermessung oder Mastbild füllen, z. B.:
             <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Mast;E;N;Z_SOK;Delta_Mastfuss_SOK;h_ueber_SOK;KM;L_bis_naechster
-101;2600000.000;1200000.000;539.650;0.35;7.60;12.300;
-102;2600049.980;1200001.400;540.080;0.30;7.60;12.350;
-103;2600099.920;1200003.900;540.520;;7.70;12.400;</pre>
-            E/N = Aufhängepunkt (LV95), Z = SOK m ü. M., Δ = Mastfuss − SOK (darf leer bleiben), h = Aufhängehöhe über SOK; L darf leer bleiben (aus Koordinaten bzw. KM).</li>
+101;2600000.000;1200000.000;539.650;0.35;7.60;012.300;
+102;2600049.980;1200001.400;540.080;;7.60;012.350;
+103;2600099.920;1200003.900;540.520;-0.15;7.70;012.400;</pre>
+            E/N = Aufhängepunkt (LV95), Z = SOK m ü. M., Δ = Mastfuss − SOK (darf leer bleiben; negativ = Mastfuss tiefer), h = Aufhängehöhe über SOK, KM im Format 000.000 (Eingaben wie «12.3» oder «12+300» werden umgeformt); L darf leer bleiben (aus Koordinaten bzw. KM).</li>
           <li><strong>Einlesen</strong> — «CSV importieren» (oder Masten mit «+ Mast» von Hand erfassen).</li>
           <li><strong>Leiter und Lastfall</strong> links wie gewohnt einstellen (System, Kombination/Reglage, T<sub>1</sub>/T<sub>2</sub>, Eis, Abnutzung); L<sub>m</sub> rechnet die App aus allen Feldern.</li>
           <li><strong>Prüfen</strong> — Feldtabelle (Durchhang, Zugkraft, tiefster Punkt, Abstandsprüfung) und Längsprofil; ein Klick öffnet das Feld im Diagramm für Messpunkte, Hindernisse, hf-Prüfung und PDF.</li>
@@ -18475,14 +18476,16 @@ renderObstacleList();
         <p style="font-weight:600;margin:.6rem 0 .2rem">Mehrere Stränge an denselben Masten</p>
         <p>Ein Abschnitt kann bis zu fünf (höchstens acht) <strong>Stränge</strong> enthalten, z. B. Fahrleitung, Speiseleitung, Rückleiter und Erdseil an denselben Masten. Jeder Strang hat eigene Aufhängepunkte (E, N, h) und ein eigenes Leitersystem; die Masten (Name, Z = SOK, Δ, KM) sind gemeinsam.</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
-          <li><strong>CSV mit Kennung</strong>: zusätzliche Spalte <em>Strang</em> vor <em>Mast</em>; jede Zeile ist ein Aufhängepunkt. Die CSV-Vorlage enthält zwei Stränge (FL1, SPL). Ohne Spalte Strang wird wie bisher ein einzelner Strang eingelesen. Weichen Z / Δ / KM beim gleichen Mast zwischen den Strängen ab, meldet die App die Masten.
+          <li><strong>CSV mit Kennung</strong>: zusätzliche Spalte <em>Strang</em> vor <em>Mast</em>; jede Zeile ist ein Aufhängepunkt. Die CSV-Vorlage enthält drei Stränge (FL1, RL, SPL). Ohne Spalte Strang wird wie bisher ein einzelner Strang eingelesen. Weichen Z / Δ / KM beim gleichen Mast zwischen den Strängen ab, meldet die App die Masten.
             <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Strang;Mast;E;N;Z_SOK;Delta_Mastfuss_SOK;h_ueber_SOK;KM
-FL1;101;2600000.000;1200000.000;539.650;0.35;7.60;12.300
-FL1;102;2600049.980;1200001.400;540.080;0.30;7.60;12.350
-SPL;101;2600000.050;1199998.000;539.650;0.35;9.20;12.300
-SPL;102;2600050.030;1199999.400;540.080;0.30;9.20;12.350</pre></li>
+FL1;101;2600000.000;1200000.000;539.650;0.35;7.60;012.300
+FL1;102;2600049.980;1200001.400;540.080;0.30;7.60;012.350
+RL;101;2600000.000;1199997.200;539.650;0.35;6.80;012.300
+RL;102;2600049.980;1199998.600;540.080;0.30;6.80;012.350
+SPL;101;2600000.000;1199997.800;539.650;0.35;10.50;012.300
+SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
           <li><strong>Übersicht «Stränge»</strong>: je Strang Sichtbarkeit (Schalter), <strong>Farbe</strong>, Kennung, Rolle (Fahrleitung, Speiseleiter, Rückleiter, Erdseil / Schutzleiter, Andere), Leitersystem, Masten von–bis, Länge und Abstandsprüfung. «Wählen» macht einen Strang aktiv: Eingaben links, Masttabelle, Feldtabelle und Feld-Auswahl gelten dann für diesen Strang. System, Leiter, Zugkraft usw. merkt sich die App je Strang; T<sub>2</sub> und die Lastfälle gelten für alle. «+ Strang» fügt einen Strang mit denselben Masten hinzu.</li>
-          <li><strong>Längsprofil</strong>: alle sichtbaren Stränge übereinander, jeder in seiner Farbe; der aktive Strang ist kräftiger gezeichnet (mit nur einem Strang: Temperaturfarbe von T<sub>2</sub>). Die übrigen Stränge rechnet die App im Hintergrund nach. Die Feld-Auswahl oben listet die Felder je Strang; eine Wahl wechselt auch den Strang.</li>
+          <li><strong>Längsprofil</strong>: alle sichtbaren Stränge übereinander, jeder in seiner Farbe; der aktive Strang ist kräftig gezeichnet, die übrigen halb durchsichtig und dünner (mit nur einem Strang: Temperaturfarbe von T<sub>2</sub>). Die übrigen Stränge rechnet die App im Hintergrund nach. Die Feld-Auswahl oben listet die Felder je Strang; eine Wahl wechselt auch den Strang.</li>
           <li><strong>Teilabschnitt</strong> (Mast von – bis): schränkt nur Anzeige und Export ein; die Berechnung (z. B. L<sub>m</sub>) nutzt immer den ganzen Abschnitt.</li>
           <li><strong>Export</strong>: IFC und 3D-DXF enthalten alle sichtbaren Stränge (im Teilabschnitt). IFC: je Strang eine Gruppe (IfcGroup «Strang FL1» …), Eigenschaften mit Strang und Rolle. DXF: eigene Layer je Strang, z. B. FL1_TRAGSEIL, SPL_LEITER.</li>
         </ul>
@@ -18501,14 +18504,14 @@ SPL;102;2600050.030;1199999.400;540.080;0.30;9.20;12.350</pre></li>
           <li><strong>IFC / DXF 3D canton</strong> exporte toutes les portées dans un fichier (géoréférencé avec coordonnées).</li>
         </ul>
         <p style="font-weight:600;margin:.6rem 0 .2rem">Exemple : du plan des mâts au modèle BIM</p>
-        <p style="font-size:.8rem;color:var(--muted);margin:0 0 .3rem">Pour essayer, <strong>«Charger un exemple»</strong> insère cinq mâts avec coordonnées et deux lignes (ligne de contact FL1 et feeder SPL, situation fictive).</p>
+        <p style="font-size:.8rem;color:var(--muted);margin:0 0 .3rem">Pour essayer, <strong>«Charger un exemple»</strong> insère cinq mâts avec coordonnées et trois lignes (situation fictive) : caténaire FL1 à la console, conducteur de retour RL au mât (h 6.80 m) et feeder SPL au sommet du mât (h 10.50 m).</p>
         <ol style="margin:.2rem 0 .5rem 1.2rem">
           <li><strong>Préparer la liste des mâts</strong> — télécharger le «Modèle CSV» et le remplir à partir du levé ou du plan des mâts, p. ex. :
             <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Mast;E;N;Z_SOK;Delta_Mastfuss_SOK;h_ueber_SOK;KM;L_bis_naechster
-101;2600000.000;1200000.000;539.650;0.35;7.60;12.300;
-102;2600049.980;1200001.400;540.080;0.30;7.60;12.350;
-103;2600099.920;1200003.900;540.520;;7.70;12.400;</pre>
-            E/N = point de suspension (MN95), Z = DRS m s.n.m., Δ = pied de mât − DRS (peut rester vide), h = hauteur de suspension sur DRS ; L peut rester vide (depuis les coordonnées ou le PK).</li>
+101;2600000.000;1200000.000;539.650;0.35;7.60;012.300;
+102;2600049.980;1200001.400;540.080;;7.60;012.350;
+103;2600099.920;1200003.900;540.520;-0.15;7.70;012.400;</pre>
+            E/N = point de suspension (MN95), Z = DRS m s.n.m., Δ = pied de mât − DRS (peut rester vide ; négatif = pied de mât plus bas), h = hauteur de suspension sur DRS, PK au format 000.000 (les saisies comme «12.3» ou «12+300» sont converties) ; L peut rester vide (depuis les coordonnées ou le PK).</li>
           <li><strong>Importer</strong> — «Importer CSV» (ou saisir les mâts avec «+ Mât»).</li>
           <li><strong>Conducteur et cas de charge</strong> à gauche comme d’habitude (système, combinaison/réglage, T<sub>1</sub>/T<sub>2</sub>, glace, usure) ; l’application calcule L<sub>m</sub> à partir de toutes les portées.</li>
           <li><strong>Vérifier</strong> — tableau des portées (flèche, traction, point bas, vérification des distances) et profil en long ; un clic ouvre la portée dans le diagramme pour points de mesure, obstacles, vérification hf et PDF.</li>
@@ -18526,14 +18529,16 @@ SPL;102;2600050.030;1199999.400;540.080;0.30;9.20;12.350</pre></li>
         <p style="font-weight:600;margin:.6rem 0 .2rem">Plusieurs lignes sur les mêmes mâts</p>
         <p>Un canton peut contenir jusqu’à cinq (au plus huit) <strong>lignes</strong>, p. ex. ligne de contact, feeder, conducteur de retour et câble de terre sur les mêmes mâts. Chaque ligne a ses propres points de suspension (E, N, h) et son propre système de conducteur ; les mâts (nom, Z = DRS, Δ, PK) sont communs.</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
-          <li><strong>CSV avec identifiant</strong> : colonne supplémentaire <em>Strang</em> avant <em>Mast</em> ; chaque ligne est un point de suspension. Le modèle CSV contient deux lignes (FL1, SPL). Sans colonne Strang, une seule ligne est importée comme jusqu’ici. Si Z / Δ / PK diffèrent entre les lignes au même mât, l’application signale les mâts.
+          <li><strong>CSV avec identifiant</strong> : colonne supplémentaire <em>Strang</em> avant <em>Mast</em> ; chaque ligne est un point de suspension. Le modèle CSV contient trois lignes (FL1, RL, SPL). Sans colonne Strang, une seule ligne est importée comme jusqu’ici. Si Z / Δ / PK diffèrent entre les lignes au même mât, l’application signale les mâts.
             <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Strang;Mast;E;N;Z_SOK;Delta_Mastfuss_SOK;h_ueber_SOK;KM
-FL1;101;2600000.000;1200000.000;539.650;0.35;7.60;12.300
-FL1;102;2600049.980;1200001.400;540.080;0.30;7.60;12.350
-SPL;101;2600000.050;1199998.000;539.650;0.35;9.20;12.300
-SPL;102;2600050.030;1199999.400;540.080;0.30;9.20;12.350</pre></li>
+FL1;101;2600000.000;1200000.000;539.650;0.35;7.60;012.300
+FL1;102;2600049.980;1200001.400;540.080;0.30;7.60;012.350
+RL;101;2600000.000;1199997.200;539.650;0.35;6.80;012.300
+RL;102;2600049.980;1199998.600;540.080;0.30;6.80;012.350
+SPL;101;2600000.000;1199997.800;539.650;0.35;10.50;012.300
+SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
           <li><strong>Aperçu «Lignes»</strong> : par ligne visibilité (interrupteur), <strong>couleur</strong>, identifiant, rôle (ligne de contact, feeder, conducteur de retour, câble de terre / de protection, autre), système de conducteur, mâts de–à, longueur et vérification des distances. «Choisir» rend une ligne active : la saisie à gauche, le tableau des mâts, le tableau des portées et la sélection de portée concernent alors cette ligne. Système, conducteur, traction, etc. sont mémorisés par ligne ; T<sub>2</sub> et les cas de charge valent pour toutes. «+ Ligne» ajoute une ligne avec les mêmes mâts.</li>
-          <li><strong>Profil en long</strong> : toutes les lignes visibles superposées, chacune dans sa couleur ; la ligne active est dessinée plus épaisse (avec une seule ligne : couleur de température de T<sub>2</sub>). Les autres lignes sont recalculées en arrière-plan. La sélection de portée en haut liste les portées par ligne ; un choix change aussi de ligne.</li>
+          <li><strong>Profil en long</strong> : toutes les lignes visibles superposées, chacune dans sa couleur ; la ligne active est dessinée nettement, les autres semi-transparentes et plus fines (avec une seule ligne : couleur de température de T<sub>2</sub>). Les autres lignes sont recalculées en arrière-plan. La sélection de portée en haut liste les portées par ligne ; un choix change aussi de ligne.</li>
           <li><strong>Tronçon partiel</strong> (mât de – à) : limite seulement l’affichage et l’export ; le calcul (p. ex. L<sub>m</sub>) utilise toujours le canton entier.</li>
           <li><strong>Export</strong> : IFC et DXF 3D contiennent toutes les lignes visibles (dans le tronçon partiel). IFC : un groupe par ligne (IfcGroup «Strang FL1» …), propriétés avec ligne et rôle. DXF : calques propres par ligne, p. ex. FL1_TRAGSEIL, SPL_LEITER.</li>
         </ul>
@@ -18552,14 +18557,14 @@ SPL;102;2600050.030;1199999.400;540.080;0.30;9.20;12.350</pre></li>
           <li><strong>IFC / DXF 3D tratta</strong> esporta tutte le campate in un unico file (georeferenziato con coordinate).</li>
         </ul>
         <p style="font-weight:600;margin:.6rem 0 .2rem">Esempio: dal piano dei pali al modello BIM</p>
-        <p style="font-size:.8rem;color:var(--muted);margin:0 0 .3rem">Per provare, <strong>«Carica esempio»</strong> inserisce cinque pali con coordinate e due linee (linea di contatto FL1 e alimentatore SPL, posizione fittizia).</p>
+        <p style="font-size:.8rem;color:var(--muted);margin:0 0 .3rem">Per provare, <strong>«Carica esempio»</strong> inserisce cinque pali con coordinate e tre linee (posizione fittizia): catenaria FL1 alla mensola, conduttore di ritorno RL al palo (h 6.80 m) e alimentatore SPL in cima al palo (h 10.50 m).</p>
         <ol style="margin:.2rem 0 .5rem 1.2rem">
           <li><strong>Preparare l’elenco dei pali</strong> — scaricare il «Modello CSV» e compilarlo dal rilievo o dal piano dei pali, p. es.:
             <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Mast;E;N;Z_SOK;Delta_Mastfuss_SOK;h_ueber_SOK;KM;L_bis_naechster
-101;2600000.000;1200000.000;539.650;0.35;7.60;12.300;
-102;2600049.980;1200001.400;540.080;0.30;7.60;12.350;
-103;2600099.920;1200003.900;540.520;;7.70;12.400;</pre>
-            E/N = punto di sospensione (MN95), Z = PRF m s.l.m., Δ = piede del palo − PRF (può restare vuoto), h = altezza di sospensione sopra PRF; L può restare vuoto (dalle coordinate o dal km).</li>
+101;2600000.000;1200000.000;539.650;0.35;7.60;012.300;
+102;2600049.980;1200001.400;540.080;;7.60;012.350;
+103;2600099.920;1200003.900;540.520;-0.15;7.70;012.400;</pre>
+            E/N = punto di sospensione (MN95), Z = PRF m s.l.m., Δ = piede del palo − PRF (può restare vuoto; negativo = piede più basso), h = altezza di sospensione sopra PRF, km nel formato 000.000 (inserimenti come «12.3» o «12+300» vengono convertiti); L può restare vuoto (dalle coordinate o dal km).</li>
           <li><strong>Importare</strong> — «Importa CSV» (o inserire i pali con «+ Palo»).</li>
           <li><strong>Conduttore e caso di carico</strong> a sinistra come di consueto (sistema, combinazione/regolazione, T<sub>1</sub>/T<sub>2</sub>, ghiaccio, usura); L<sub>m</sub> viene calcolata da tutte le campate.</li>
           <li><strong>Verificare</strong> — tabella delle campate (freccia, tiro, punto più basso, verifica delle distanze) e profilo longitudinale; un clic apre la campata nel diagramma per punti di misura, ostacoli, verifica hf e PDF.</li>
@@ -18577,14 +18582,16 @@ SPL;102;2600050.030;1199999.400;540.080;0.30;9.20;12.350</pre></li>
         <p style="font-weight:600;margin:.6rem 0 .2rem">Più linee sugli stessi pali</p>
         <p>Una tratta può contenere fino a cinque (al massimo otto) <strong>linee</strong>, p. es. linea di contatto, alimentatore, conduttore di ritorno e fune di terra sugli stessi pali. Ogni linea ha i propri punti di sospensione (E, N, h) e il proprio sistema di conduttori; i pali (nome, Z = PRF, Δ, km) sono comuni.</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
-          <li><strong>CSV con identificativo</strong>: colonna aggiuntiva <em>Strang</em> prima di <em>Mast</em>; ogni riga è un punto di sospensione. Il modello CSV contiene due linee (FL1, SPL). Senza colonna Strang viene importata una sola linea come finora. Se Z / Δ / km differiscono tra le linee allo stesso palo, l’app segnala i pali.
+          <li><strong>CSV con identificativo</strong>: colonna aggiuntiva <em>Strang</em> prima di <em>Mast</em>; ogni riga è un punto di sospensione. Il modello CSV contiene tre linee (FL1, RL, SPL). Senza colonna Strang viene importata una sola linea come finora. Se Z / Δ / km differiscono tra le linee allo stesso palo, l’app segnala i pali.
             <pre style="font-size:.72rem;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.4rem .6rem;overflow-x:auto;margin:.3rem 0">Strang;Mast;E;N;Z_SOK;Delta_Mastfuss_SOK;h_ueber_SOK;KM
-FL1;101;2600000.000;1200000.000;539.650;0.35;7.60;12.300
-FL1;102;2600049.980;1200001.400;540.080;0.30;7.60;12.350
-SPL;101;2600000.050;1199998.000;539.650;0.35;9.20;12.300
-SPL;102;2600050.030;1199999.400;540.080;0.30;9.20;12.350</pre></li>
+FL1;101;2600000.000;1200000.000;539.650;0.35;7.60;012.300
+FL1;102;2600049.980;1200001.400;540.080;0.30;7.60;012.350
+RL;101;2600000.000;1199997.200;539.650;0.35;6.80;012.300
+RL;102;2600049.980;1199998.600;540.080;0.30;6.80;012.350
+SPL;101;2600000.000;1199997.800;539.650;0.35;10.50;012.300
+SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
           <li><strong>Panoramica «Linee»</strong>: per linea visibilità (interruttore), <strong>colore</strong>, identificativo, ruolo (linea di contatto, alimentatore, conduttore di ritorno, fune di terra / di protezione, altro), sistema di conduttori, pali da–a, lunghezza e verifica delle distanze. «Scegli» rende attiva una linea: i dati a sinistra, la tabella dei pali, la tabella delle campate e la selezione della campata valgono allora per questa linea. Sistema, conduttore, tiro ecc. sono memorizzati per linea; T<sub>2</sub> e i casi di carico valgono per tutte. «+ Linea» aggiunge una linea con gli stessi pali.</li>
-          <li><strong>Profilo longitudinale</strong>: tutte le linee visibili sovrapposte, ognuna nel suo colore; la linea attiva è disegnata più spessa (con una sola linea: colore di temperatura di T<sub>2</sub>). Le altre linee vengono ricalcolate in background. La selezione della campata in alto elenca le campate per linea; una scelta cambia anche la linea.</li>
+          <li><strong>Profilo longitudinale</strong>: tutte le linee visibili sovrapposte, ognuna nel suo colore; la linea attiva è disegnata marcata, le altre semitrasparenti e più sottili (con una sola linea: colore di temperatura di T<sub>2</sub>). Le altre linee vengono ricalcolate in background. La selezione della campata in alto elenca le campate per linea; una scelta cambia anche la linea.</li>
           <li><strong>Tratta parziale</strong> (palo da – a): limita solo visualizzazione ed export; il calcolo (p. es. L<sub>m</sub>) usa sempre la tratta intera.</li>
           <li><strong>Export</strong>: IFC e DXF 3D contengono tutte le linee visibili (nella tratta parziale). IFC: un gruppo per linea (IfcGroup «Strang FL1» …), proprietà con linea e ruolo. DXF: layer propri per linea, p. es. FL1_TRAGSEIL, SPL_LEITER.</li>
         </ul>
