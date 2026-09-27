@@ -178,6 +178,10 @@ body {
   grid-template-rows: auto auto;
   gap: 1.25rem;
 }
+/* Breit: erste Zeile nur so hoch wie die Ansicht (min-content). Mit «auto» verteilte
+   das Raster die Höhe der Eingabespalte auf beide Zeilen — bei kurzem Inhalt
+   (Reiter Abschnitt) liess sich die Seite weit ins Leere scrollen. */
+@media (min-width: 861px) { .layout { grid-template-rows: min-content auto; } }
 @media (max-width: 860px) {
   /* minmax(0, 1fr) statt 1fr: 1fr bedeutet minmax(auto, 1fr), und das «auto»
      verhindert, dass die Spalte unter die Mindestbreite ihres Inhalts schrumpft.
@@ -190,8 +194,11 @@ body {
 .sidebar {
   grid-row: 1 / 3;
   position: sticky;
-  top: 1.75rem;
-  max-height: calc(100vh - 3.5rem);
+  /* Unter der klebenden Kopfleiste (Höhe --kopf-h, per JS gemessen): sonst
+     verdeckt sie den oberen Teil der Spalte, und die Seite scrollt weit über
+     kurze Inhalte (Reiter Abschnitt) hinaus. */
+  top: calc(var(--kopf-h, 64px) + 1rem);
+  max-height: calc(100vh - var(--kopf-h, 64px) - 2.75rem);
   overflow: visible;   /* aside selbst clippt nichts → box-shadows bleiben sichtbar */
 }
 .sidebar::before,
@@ -544,6 +551,8 @@ body {
   flex: 1;
   min-height: 0;
 }
+/* Reiter Abschnitt im Vollbild: eigener Bildlauf (die Karte selbst ist fest) */
+.canvas-card.canvas-fullscreen #abschnitt-view { flex: 1; min-height: 0; overflow-y: auto; }
 .canvas-card.canvas-fullscreen #drawing-viewport {
   flex: 1;
   min-height: 0;
@@ -567,6 +576,13 @@ body {
   margin-bottom: 0;
   width: auto;
 }
+.feld-wahl { display: flex; align-items: center; gap: .25rem; min-width: 0; }
+.feld-wahl-liste { min-width: 0; max-width: 17rem; font: inherit; font-size: .74rem; padding: .32rem .45rem; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--s2); color: var(--text); text-overflow: ellipsis; cursor: pointer; }
+.feld-wahl-pfeil { width: 1.8rem; height: 1.8rem; flex-shrink: 0; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--s2); color: var(--text2); cursor: pointer; font-size: .62rem; line-height: 1; padding: 0; }
+.feld-wahl-pfeil:disabled { opacity: .35; cursor: default; }
+@media (max-width: 600px) { .canvas-header > div:first-child { flex-wrap: wrap; } .feld-wahl-liste { max-width: 12rem; } }
 .canvas-view-seg .seg-btn {
   font-size: .72rem;
   padding: .28rem .85rem;
@@ -2524,6 +2540,12 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
           <button class="seg-btn"        id="view-seg-abschnitt" data-i18n="abs.tab"  onclick="ansichtWechseln(abschnittAnsicht)">Abschnitt</button>
           <button class="seg-btn seg-neben" id="view-seg-foto" data-i18n="btn.foto" data-i18n-title="ui.foto.genau.kurz" title="Nur Abschätzung — keine präzise Berechnung" onclick="ansichtWechseln(() => setCanvasView('foto'))">Foto</button>
         </div>
+        <!-- Schnellauswahl Feld (nur mit Abspannabschnitt): ◀ Liste ▶ -->
+        <div class="feld-wahl" id="feld-wahl" style="display:none" role="group" aria-label="Feld" data-i18n-aria="abs.feldwahl">
+          <button type="button" class="feld-wahl-pfeil" id="feld-vor" onclick="feldSchritt(-1)" title="Vorheriges Feld" data-i18n-title="abs.feld.vor" aria-label="Vorheriges Feld" data-i18n-aria="abs.feld.vor">◀</button>
+          <select id="feld-select" class="feld-wahl-liste" onchange="feldWaehlen(+this.value)" aria-label="Feld" data-i18n-aria="abs.feldwahl"></select>
+          <button type="button" class="feld-wahl-pfeil" id="feld-nach" onclick="feldSchritt(1)" title="Nächstes Feld" data-i18n-title="abs.feld.nach" aria-label="Nächstes Feld" data-i18n-aria="abs.feld.nach">▶</button>
+        </div>
         <!-- Status-Info (nur im Foto-Tab sichtbar) -->
         <span id="foto-status" style="display:none;font-size:.71rem;color:var(--primary);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" data-i18n="ui.foto.laden.hinweis">Foto laden, dann Punkte klicken</span>
       </div>
@@ -3020,7 +3042,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v4.2.2';
+const APP_VERSION = 'v4.3.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -8775,6 +8797,7 @@ function berechnen() {
   hHfHinweis();
   _zugkraftSperre();
   if (_abschnittSichtbar) abschnittAktualisieren();
+  if (typeof feldWahlAktualisieren === 'function') feldWahlAktualisieren();
   updateAllMesspunkte();
   refreshScaleViewIfActive();
 }
@@ -9119,6 +9142,8 @@ function hfPruefzeile() {
 }
 
 function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null, c3 = null, cFdRef = null) {
+  // Textflächen der Hindernis-Beschriftung (a = …): Δh-Texte der Messpunkte weichen ihnen aus
+  const textBoxen = [];
   const DF = diagrammFarben();   // Farben je Thema (hell/dunkel)
   // ── SOK-Koordinatensystem ──────────────────────────────────────
   // h1/h2 sind immer "über SOK". Wenn SOK gesetzt, werden alle
@@ -9356,6 +9381,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     const tx = links ? bxp - 8 - tw : bxp + 8, ty = (yk + yl) / 2 + 3.5;
     ctx.textAlign = 'left'; ctx.lineWidth = 3; ctx.strokeStyle = DF.hg1; ctx.lineJoin = 'round';
     ctx.strokeText(txt, tx, ty); ctx.fillText(txt, tx, ty);
+    textBoxen.push({ x: tx - 2, y: ty - 11, w: tw + 4, h: 15 });
   });
 
   // ── Chord ──
@@ -9670,7 +9696,21 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
       ctx.lineTo(px - 3.5, refY - 6); ctx.lineTo(px + 3.5, refY - 6); ctx.closePath(); ctx.fill();
       ctx.fillStyle = dotColor; ctx.font = `bold 10px ${DIAGRAMM_SCHRIFT}`;
       ctx.textAlign = labelSide === 'left' ? 'right' : 'left';
-      ctx.fillText(`Δh = ${distH1.toFixed(2)} m`, px + (labelSide === 'left' ? -6 : 6), vmid + 4);
+      const dhTxt = `Δh = ${distH1.toFixed(2)} m`, dhW = ctx.measureText(dhTxt).width;
+      const dhX = px + (labelSide === 'left' ? -6 - dhW : 6);
+      // Überdeckt der Text eine Hindernis-Beschriftung, einen Δh-Text oder ein Messpunkt-Schild: Seite
+      // wechseln, sonst nach unten versetzen (innerhalb der Masslinie, max. 6 Schritte)
+      const trifft = (x, y) => [...textBoxen, ...drawnBoxes].some(b => x < b.x + b.w && x + dhW > b.x && y - 10 < b.y + b.h && y + 3 > b.y);
+      let tyDh = vmid + 4, txDh = dhX;
+      if (trifft(txDh, tyDh)) {
+        const xAnders = px + (labelSide === 'left' ? 6 : -6 - dhW);
+        if (!trifft(xAnders, tyDh)) txDh = xAnders;
+        else for (let k = 1; k <= 6 && trifft(txDh, tyDh); k++) tyDh = vmid + 4 + k * 13;
+      }
+      ctx.textAlign = 'left';
+      ctx.lineWidth = 3; ctx.strokeStyle = DF.hg1; ctx.lineJoin = 'round';
+      ctx.strokeText(dhTxt, txDh, tyDh); ctx.fillText(dhTxt, txDh, tyDh);
+      textBoxen.push({ x: txDh - 2, y: tyDh - 11, w: dhW + 4, h: 15 });
     }
 
     drawnBoxes.push({ x: bx, y: by, w: boxW, h: boxH });
@@ -11074,7 +11114,8 @@ function _zeichnungBauen(stripInSvg) {
   // Symbol scale: in interactive view divide by zoom so symbols stay constant size
   const symSc = stripInSvg ? 1 : (1 / (drawingZoom || 1));
   const isFs = !stripInSvg && !!document.querySelector('.canvas-card.canvas-fullscreen');
-  const lblSc = isFs ? 1.3 : 1.0;
+  // Beschriftung am Bildschirm grösser als im PDF (dort 1.0, massstäblicher Plan)
+  const lblSc = stripInSvg ? 1.0 : isFs ? 1.6 : 1.35;
   const fs = n => (n * lblSc).toFixed(2);
 
   // Drawing proper centred in available area
@@ -11120,7 +11161,9 @@ function _zeichnungBauen(stripInSvg) {
   // Strip dimensions — declared early so grid and spanDim can reference them
   const _probesEarlyCount = [probeX1, probeX2, probeX3, probeX4].filter(x => x !== null).length;
   const _stripRowH_early  = 5.5;
-  const _stripNRows_early = 2 + 1 + (c3data ? 1 : 0) + (hasSok ? 2 : 0) + (hasSok && c3data ? 1 : 0);
+  // H-Punkte (Hindernis) im Band: Kote H und Abstand a je Messpunkt (nur mit SOK)
+  const _hBand = hasSok && [probeX1, probeX2, probeX3, probeX4].some((x, i) => x !== null && probeHWerte[i] !== null);
+  const _stripNRows_early = 2 + 1 + (c3data ? 1 : 0) + (hasSok ? 2 : 0) + (hasSok && c3data ? 1 : 0) + (_hBand ? 2 : 0);
   const _stripH_early     = _stripNRows_early * _stripRowH_early + 0.5;
 
   // Grid lines
@@ -11343,6 +11386,7 @@ function _zeichnungBauen(stripInSvg) {
     ...(hasSok ? [`T2 [${MUM}]`] : []),
     ...(hasSok && c3data ? [`T3 [${MUM}]`] : []),
     ...(hasSok ? [`${SOK} [${MUM}]`] : []),
+    ...(_hBand ? [`H [${MUM}]`, 'a [m]'] : []),
   ];
   const stripNRows   = _stripNRows;
   const stripH       = _stripH;
@@ -11419,6 +11463,13 @@ function _zeichnungBauen(stripInSvg) {
       }
       if (hasSok) {
         cellVals.push([sokKote.toFixed(2), '2.0', '400', '#888']);
+      }
+      if (_hBand) {
+        const i = +badge.slice(1), hW = probeHWerte[i - 1];
+        const a = (_nachweis[0]?.jePunkt || []).find(p => p.m === i)?.abstand;
+        const aOk = Number.isFinite(a) && a >= (minClearance ?? 0);
+        cellVals.push([hW !== null ? hW.toFixed(2) : '—', '2.0', '400', Z.hindernis]);
+        cellVals.push([Number.isFinite(a) ? a.toFixed(2) : '—', '2.0', '600', Number.isFinite(a) ? (aOk ? Z.gut : Z.schlecht) : '#888']);
       }
 
       // SVG-Texte nur im PDF-Modus
@@ -12064,6 +12115,7 @@ function _syncHighlightFsVisibility() {
 
 function setCanvasView(view) {
   _abschnittAusblenden();
+  setTimeout(() => { if (typeof feldWahlAktualisieren === 'function') feldWahlAktualisieren(); }, 0);
   _ansichtDiagramm = view !== 'zeichnung' && view !== 'foto';
   _obsSichtbarkeit();
   const isScale   = view === 'zeichnung';
@@ -12704,12 +12756,53 @@ function abschnittFeldOeffnen(i, { ansicht = true, koord = null } = {}) {
   return true;
 }
 
+// ── Schnellauswahl Feld (oben neben der Ansicht) ──
+// Sichtbar, sobald ein Abspannabschnitt mit mindestens 2 Masten erfasst ist.
+// Wechselt das Feld und bleibt in der aktuellen Ansicht (Diagramm, Zeichnung, Abschnitt).
+let _feldWahlSchluessel = '';
+function feldWahlAktualisieren() {
+  const box = document.getElementById('feld-wahl'), sel = document.getElementById('feld-select');
+  if (!box || !sel) return;
+  let m = [];
+  try { m = abschnitt?.masten || []; } catch { return; }   // beim Laden evtl. noch nicht deklariert
+  const n = m.length >= 2 ? abschnittFelderAnzahl() : 0;
+  zeigeElement(box, n > 0 && !window._fotoTabActive);
+  if (!n) return;
+  const texte = Array.from({ length: n }, (_, i) =>
+    `${i + 1} · ${m[i].name || '?'}–${m[i + 1].name || '?'}${m[i].km ? ` · KM ${m[i].km}` : ''}`);
+  const schluessel = currentLang + '|' + texte.join('|');
+  if (schluessel !== _feldWahlSchluessel) {
+    _feldWahlSchluessel = schluessel;
+    sel.innerHTML = `<option value="-1" disabled>${escHtml(t('abs.feldwahl.leer'))}</option>`
+      + texte.map((tx, i) => `<option value="${i}">${escHtml(t('abs.feldwahl'))} ${escHtml(tx)}</option>`).join('');
+  }
+  const offen = abschnittOffenesFeld();
+  sel.value = String(offen ?? -1);
+  sel.title = offen !== null ? sel.options[sel.selectedIndex]?.textContent || '' : t('abs.feldwahl.leer');
+  document.getElementById('feld-vor').disabled = offen === null || offen <= 0;
+  document.getElementById('feld-nach').disabled = offen !== null && offen >= n - 1;
+}
+function feldWaehlen(i) {
+  if (!Number.isInteger(i) || i < 0) return;
+  abschnittFeldOeffnen(i, { ansicht: false });
+  if (_abschnittSichtbar) renderAbschnitt();
+  else if (typeof refreshScaleViewIfActive === 'function') refreshScaleViewIfActive();
+  feldWahlAktualisieren();
+}
+function feldSchritt(d) {
+  const offen = abschnittOffenesFeld();
+  const n = abschnittFelderAnzahl();
+  const ziel = offen === null ? (d > 0 ? 0 : n - 1) : offen + d;
+  if (ziel >= 0 && ziel < n) feldWaehlen(ziel);
+}
+
 // ── Darstellung ──
 function renderAbschnitt() {
   const box = document.getElementById('abschnitt-view');
   if (!box) return;
   const knopf = 'abs-knopf';
   const m = abschnitt.masten;
+  feldWahlAktualisieren();
   // Zeile 1: Masten erfassen (Eingabe), Zeile 2: Export
   let html = `<div class="abs-leiste">
       <strong class="abs-titel">${t('abs.titel')}</strong>
@@ -14382,6 +14475,10 @@ const LANG = {
     'abs.csv.export': 'CSV exportieren',
     'abs.csv.vorlage': 'CSV-Vorlage',
     'abs.beispiel': 'Beispiel laden',
+    'abs.feldwahl': 'Feld',
+    'abs.feldwahl.leer': 'Feld wählen …',
+    'abs.feld.vor': 'Vorheriges Feld',
+    'abs.feld.nach': 'Nächstes Feld',
     'abs.beispiel.ersetzen': 'Die {n} vorhandenen Masten durch das Beispiel ersetzen?',
     'abs.beispiel.geladen': 'Beispiel mit {n} Masten geladen (LV95, fiktive Lage). Leiter und Lastfall gelten wie links eingestellt — Feld anklicken zum Öffnen, «IFC Abschnitt» für das BIM-Modell.',
     'abs.alle.loeschen': 'Alle löschen',
@@ -15214,6 +15311,10 @@ const LANG = {
     'abs.csv.export': 'Exporter CSV',
     'abs.csv.vorlage': 'Modèle CSV',
     'abs.beispiel': 'Charger un exemple',
+    'abs.feldwahl': 'Portée',
+    'abs.feldwahl.leer': 'Choisir une portée …',
+    'abs.feld.vor': 'Portée précédente',
+    'abs.feld.nach': 'Portée suivante',
     'abs.beispiel.ersetzen': 'Remplacer les {n} mâts existants par l’exemple ?',
     'abs.beispiel.geladen': 'Exemple de {n} mâts chargé (MN95, situation fictive). Conducteur et cas de charge selon les réglages à gauche — cliquer sur une portée pour l’ouvrir, «IFC canton» pour le modèle BIM.',
     'abs.alle.loeschen': 'Tout supprimer',
@@ -16046,6 +16147,10 @@ const LANG = {
     'abs.csv.export': 'Esporta CSV',
     'abs.csv.vorlage': 'Modello CSV',
     'abs.beispiel': 'Carica esempio',
+    'abs.feldwahl': 'Campata',
+    'abs.feldwahl.leer': 'Scegliere una campata …',
+    'abs.feld.vor': 'Campata precedente',
+    'abs.feld.nach': 'Campata successiva',
     'abs.beispiel.ersetzen': 'Sostituire i {n} pali esistenti con l’esempio?',
     'abs.beispiel.geladen': 'Esempio con {n} pali caricato (MN95, posizione fittizia). Conduttore e caso di carico come impostati a sinistra — clic su una campata per aprirla, «IFC tratta» per il modello BIM.',
     'abs.alle.loeschen': 'Elimina tutti',
@@ -16513,6 +16618,15 @@ function wechsleThema() {
 }
 _dunkelAbfrage?.addEventListener?.('change', () => { if (_themaWahl() === 'auto') themaAnwenden('auto'); });
 themaAnwenden();
+
+// Höhe der klebenden Kopfleiste als CSS-Variable (für die Eingabespalte)
+(() => {
+  const kopf = document.querySelector('.header');
+  if (!kopf) return;
+  const setzen = () => document.documentElement.style.setProperty('--kopf-h', kopf.offsetHeight + 'px');
+  setzen();
+  if (window.ResizeObserver) new ResizeObserver(setzen).observe(kopf);
+})();
 
 // ── Service Worker: macht die Anwendung offline verfügbar ──────────────────
 // Nur über http/https — bei einer lokal geöffneten Datei (file://) gibt es
@@ -17833,7 +17947,7 @@ renderObstacleList();
           <li>Feldlänge L: aus den Koordinaten, sonst aus der KM-Differenz, sonst Eingabe.</li>
           <li>Berechnung wie im Einzelfeld: <em>ausgleichend</em> mit der Mittelspannweite Lm aller Felder (Formel wie unter Spannweite), <em>starr</em> je Feld mit eigener Länge, R-FL mit konstanter Zugkraft.</li>
           <li>Übersicht je Feld: L, Durchhang, Zugkraft, tiefster Punkt von Leiter und Fahrdraht, Abstandsprüfung. Dazu ein Längsprofil (Höhe überhöht; Leiter in der Temperaturfarbe von T<sub>2</sub>). Lange Nachspannlängen mit 50 und mehr Feldern sind möglich: das Profil wird dann breiter und lässt sich seitlich schieben.</li>
-          <li><strong>Öffnen</strong> (oder Klick ins Längsprofil) überträgt das Feld in die Eingaben: Diagramm, Zeichnung, PDF und Export zeigen dann genau dieses Feld.</li>
+          <li><strong>Öffnen</strong> (oder Klick ins Längsprofil) überträgt das Feld in die Eingaben: Diagramm, Zeichnung, PDF und Export zeigen dann genau dieses Feld. Schneller geht es mit der <strong>Feld-Auswahl</strong> oben neben Diagramm / Zeichnung (Liste «Feld 3 · 103–104 · KM 12.400», ◀ ▶ für das vorherige/nächste Feld) — die Ansicht bleibt dabei dieselbe.</li>
           <li><strong>IFC / 3D-DXF Abschnitt</strong> exportiert alle Felder in einer Datei (mit Koordinaten georeferenziert).</li>
         </ul>
         <p style="font-weight:600;margin:.6rem 0 .2rem">Beispiel: Ablauf vom Mastbild zum BIM-Modell</p>
@@ -17870,7 +17984,7 @@ renderObstacleList();
           <li>Longueur de portée L : selon les coordonnées, sinon la différence de KM, sinon saisie.</li>
           <li>Calcul comme pour la portée simple : <em>compensé</em> avec la portée moyenne Lm de toutes les portées, <em>rigide</em> par portée avec sa propre longueur, LC R avec force de traction constante.</li>
           <li>Aperçu par portée : L, flèche, force de traction, point le plus bas du conducteur et du fil de contact, vérification des distances ; en plus un profil en long (hauteur exagérée ; conducteur dans la couleur de température de T<sub>2</sub>). Les longs cantons de 50 portées et plus sont possibles : le profil devient alors plus large et se fait défiler latéralement.</li>
-          <li><strong>Ouvrir</strong> (ou clic dans le profil) transfère la portée dans la saisie : diagramme, dessin, PDF et export montrent alors cette portée.</li>
+          <li><strong>Ouvrir</strong> (ou clic dans le profil) transfère la portée dans la saisie : diagramme, dessin, PDF et export montrent alors cette portée. Plus rapide : la <strong>sélection de portée</strong> en haut à côté de Diagramme / Dessin (liste «Portée 3 · 103–104 · KM 12.400», ◀ ▶ pour la portée précédente/suivante) — la vue reste la même.</li>
           <li><strong>IFC / DXF 3D canton</strong> exporte toutes les portées dans un fichier (géoréférencé avec coordonnées).</li>
         </ul>
         <p style="font-weight:600;margin:.6rem 0 .2rem">Exemple : du plan des mâts au modèle BIM</p>
@@ -17907,7 +18021,7 @@ renderObstacleList();
           <li>Lunghezza della campata L: dalle coordinate, altrimenti dalla differenza di KM, altrimenti inserita.</li>
           <li>Calcolo come per la campata singola: <em>compensato</em> con la lunghezza media Lm di tutte le campate, <em>rigido</em> per campata con la propria lunghezza, LC R con forza di trazione costante.</li>
           <li>Panoramica per campata: L, freccia, forza di trazione, punto più basso del conduttore e del filo di contatto, verifica delle distanze; inoltre un profilo longitudinale (altezza esagerata; conduttore nel colore di temperatura di T<sub>2</sub>). Sono possibili lunghe tratte con 50 e più campate: il profilo diventa più largo e si scorre lateralmente.</li>
-          <li><strong>Apri</strong> (o clic nel profilo) trasferisce la campata nei dati: diagramma, disegno, PDF ed esportazione mostrano allora questa campata.</li>
+          <li><strong>Apri</strong> (o clic nel profilo) trasferisce la campata nei dati: diagramma, disegno, PDF ed esportazione mostrano allora questa campata. Più rapido: la <strong>selezione della campata</strong> in alto accanto a Diagramma / Disegno (elenco «Campata 3 · 103–104 · KM 12.400», ◀ ▶ per la campata precedente/successiva) — la vista resta la stessa.</li>
           <li><strong>IFC / DXF 3D tratta</strong> esporta tutte le campate in un unico file (georeferenziato con coordinate).</li>
         </ul>
         <p style="font-weight:600;margin:.6rem 0 .2rem">Esempio: dal piano dei pali al modello BIM</p>
