@@ -445,7 +445,7 @@ test('Systemwechsel sanft (Hauptansicht und hf), ohne Einfluss auf die Rechnung;
     const rflFeld = !document.getElementById('hf-kombi');
     hfWert('typ', 'nfl'); document.getAnimations().forEach(a => a.finish());
     const svg = document.querySelector('#hf-erg .hf-svg').innerHTML;
-    const zeile = document.querySelector('.hf-anteile').textContent;
+    const zeile = [...document.querySelectorAll('.hf-zus-tab td')].map(td => td.textContent.replace(/\s+/g, ' '));
     const titel = document.querySelectorAll('#hf-erg .hf-svg title').length;
     closeHf();
     return { erg, hfAnim, rflFeld, be: svg.includes('b<tspan font-size="7" dy="2">e</tspan>'), zeile, titel };
@@ -454,8 +454,13 @@ test('Systemwechsel sanft (Hauptansicht und hf), ohne Einfluss auf die Rechnung;
   assert.equal(r.hfAnim, true);
   assert.equal(r.rflFeld, true);
   assert.equal(r.be, true, 'b_e in der Höhenleiter');
-  assert.match(r.zeile, /hfmin 4'965/);
-  assert.match(r.zeile, /6'200 − tho 10 − fudo 39.6 − fh 75 − fFD,min 80.2 = hfmax 5'995.2/);
+  // Box «Zusammensetzung»: je Grösse Formel mit allen Anteilen, darunter Zahlen
+  assert.deepEqual(r.zeile, [
+    '= GfA + k + be + f + H + (fg + thu + fud + fuv + fFD,max,ZL + fFD,max)',
+    "= 4'670 + 0 + 150 + 0 + 0 + (60 + 10 + 49.5 + 0 + 0 + 25.5) = 4'965 mm",
+    '= hfmax,abs − (tho + fudo + fuv + fh + fFD,min)',
+    "= 6'200 − (10 + 39.6 + 0 + 75 + 80.2) = 5'995.2 mm",
+  ]);
   assert.ok(r.titel >= 8, 'Tooltips an den Streifen');
   assert.deepEqual(fehler, []);
   await kontext.close();
