@@ -2974,7 +2974,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.16.1';
+const APP_VERSION = 'v3.16.2';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -13057,12 +13057,12 @@ function renderHf() {
       <div class="hf-raster">
         ${_hfFeld(t('hf.un'), _hfSelect('un', [[15, '15 kV'], [25, '25 kV']], e.un))}
         ${_hfFeld(t('hf.ebv'), _hfSelect('ebv', [1, 2, 3, 4].map(n => [n, 'EBV ' + n]), e.ebv))}
-        <div class="hf-feld">${_hfHaken('schotter', e.schotter, t('hf.schotter'))}</div>
         ${_hfFeld(t('hf.f'), _hfZahlFeld('f', e.f, 'mm', '4.5rem'))}
         ${_hfFeld(t('hf.h'), _hfZahlFeld('H', e.H, 'mm', '4.5rem'))}
         ${_hfFeld(t('hf.tmin'), _hfSelect('Tmin', temps, e.Tmin))}
         ${_hfFeld(t('hf.zl'), _hfSelect('zlMin', zls, e.zlMin), t('hf.zl.hw'))}
       </div>
+      <div class="hf-raster"><div class="hf-feld">${_hfHaken('schotter', e.schotter, t('hf.schotter'))}</div></div>
       ${e.typ === 'rfl' ? `
       <p class="abs-hinweis" style="margin-bottom:.3rem">${t('hf.p.titel')}</p>
       <div class="hf-raster">
