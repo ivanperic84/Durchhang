@@ -383,3 +383,23 @@ test('Handy 390 px: keine seitliche Verschiebung, Kopfzeile vollständig sichtba
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Bereich «H-Punkte» nur in der Ansicht Diagramm und nur mit SOK m ü. M.', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    const sichtbar = () => document.getElementById('obs-section').offsetParent !== null;
+    document.getElementById('sok-mum-left').value = ''; document.getElementById('sok-mum-right').value = ''; berechnen();
+    const ohneSok = sichtbar();
+    document.getElementById('sok-mum-left').value = 500; onSokMumLeftInput();
+    const mitSok = sichtbar();
+    setCanvasView('zeichnung'); const zeichnung = sichtbar();
+    setCanvasView('foto'); document.getElementById('rf-ok')?.click(); const foto = sichtbar();
+    setCanvasView('diagramm'); const zurueck = sichtbar();
+    abschnittAnsicht(); const abschnittV = sichtbar();
+    setCanvasView('diagramm');
+    return { ohneSok, mitSok, zeichnung, foto, zurueck, abschnittV };
+  });
+  assert.deepEqual(r, { ohneSok: false, mitSok: true, zeichnung: false, foto: false, zurueck: true, abschnittV: false });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
