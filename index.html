@@ -2060,7 +2060,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
                   <span style="width:18px;height:18px;border-radius:50%;background:var(--primary);color:var(--on-acc);font-size:.65rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">i</span>
                   <span style="font-weight:600;color:var(--primary);font-size:.73rem">Hinweis / Remarque / Nota</span>
                 </div>
-                <p id="eis-popup-text" data-i18n-html="par.eislast.hint" style="margin:0;line-height:1.55;color:var(--text)">Zusatzlast durch Eisansatz [N/m] — aktiv bei N-FL und −20 °C ≤ T<sub>2</sub> ≤ −5 °C.</p>
+                <p id="eis-popup-text" data-i18n-html="par.eislast.hint" style="margin:0;line-height:1.55;color:var(--text)">Zusatzlast durch Eis/Schnee [N/m] — wird nur bei T<sub>2</sub> = −5 °C angerechnet.</p>
               </div>
             </span>
           </div>
@@ -2928,19 +2928,13 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
         <button class="seg-btn" id="lf-seg-el"  onclick="lastfallSystem('el')"  data-i18n="sys.el">Einzelleiter</button>
       </div>
       <label class="lf-zeile" for="lf-temps"><span data-i18n="lf.temps" style="min-width:9rem">Temperaturen [°C]</span>
-        <input type="text" id="lf-temps" autocomplete="off" style="flex:1;min-width:0" oninput="_lastfallAusFormular();_lastfallFormular()"></label>
+        <input type="text" id="lf-temps" autocomplete="off" style="flex:1;min-width:0" oninput="_lastfallAusFormular();_lastfallFormular(true)" onchange="_lastfallFormular()"></label>
       <p style="margin:-.3rem 0 .4rem 9.5rem;font-size:.66rem;color:var(--tertiary)" data-i18n="lf.temps.hinweis">getrennt durch ; oder Leerzeichen (−50 … +120)</p>
       <div class="lf-zeile">
         <label style="display:flex;align-items:center;gap:.4rem;min-width:9rem"><input type="checkbox" id="lf-eis" onchange="_lastfallAusFormular();_lastfallFormular()"> <span data-i18n="lf.eis">Eislast bei −5 °C</span></label>
         <label style="display:flex;align-items:center;gap:.35rem">Z<sub>L</sub> <input type="number" id="lf-zl" min="0" step="1" style="width:4.5rem" oninput="_lastfallAusFormular(true);_lastfallFormular()"> N/m</label>
       </div>
-      <div role="group" aria-labelledby="lf-hl-lbl" style="margin:.2rem 0 .5rem">
-        <div id="lf-hl-lbl" data-i18n="lf.hoehenlage" style="font-size:.8rem;margin-bottom:.3rem">Höhenlage der Strecke</div>
-        <div class="seg-ctrl" style="margin:0">
-          <button class="seg-btn" style="font-size:.74rem;white-space:nowrap;padding-left:.3rem;padding-right:.3rem" id="lf-hl-unter" onclick="lastfallHoehenlage('unter')" data-i18n="lf.hl.unter">unter 1000 m ü. M. · 7 N/m</button>
-          <button class="seg-btn" style="font-size:.74rem;white-space:nowrap;padding-left:.3rem;padding-right:.3rem" id="lf-hl-ueber" onclick="lastfallHoehenlage('ueber')" data-i18n="lf.hl.ueber">ab 1000 m ü. M. · 15 N/m</button>
-        </div>
-      </div>
+      <p style="margin:-.3rem 0 .5rem 9.5rem;font-size:.66rem;color:var(--tertiary)" data-i18n="lf.zl.hinweis">Zusatzlast wird nur bei −5 °C angerechnet, nicht bei den übrigen Temperaturen.</p>
       <div class="lf-zeile" id="lf-abn-zeile">
         <label style="display:flex;align-items:center;gap:.4rem"><input type="checkbox" id="lf-abn" onchange="_lastfallAusFormular();_lastfallFormular()"> <span data-i18n="lf.abnutzung">Fahrdraht neu und abgenutzt prüfen</span></label>
       </div>
@@ -2974,7 +2968,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.16.2';
+const APP_VERSION = 'v3.16.3';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -6214,7 +6208,7 @@ function updateT2Float(v, active) {
 
 function onT2SliderEnd() { updateT2Float(parseFloat(document.getElementById('temp2').value), false); }
 
-// Eislast-Feld dynamisch ein-/ausblenden (nur N-FL, -20°C ≤ T<sub>2</sub> ≤ -5°C)
+// Eislast-Feld dynamisch ein-/ausblenden (nur bei T₂ = −5 °C)
 function onT2Slider(val, active = false) {
   const v = Math.round(parseFloat(val));
   document.getElementById('temp2').value = v;
@@ -10093,19 +10087,20 @@ function openLastfaelle() {
   document.getElementById('lastfall-modal').classList.add('open');
 }
 function closeLastfaelle() { document.getElementById('lastfall-modal').classList.remove('open'); }
-function _lastfallFormular() {
+// tippen = true: Temperaturfeld nicht neu schreiben — sonst verschwindet ein
+// eben getipptes «-» (noch keine Zahl) sofort wieder.
+function _lastfallFormular(tippen = false) {
   const e = lastfallEinstellung(lastfallEinst, _lfSys);
   ['nfl', 'rfl', 'el'].forEach(s => document.getElementById(`lf-seg-${s}`)?.classList.toggle('active', s === _lfSys));
-  document.getElementById('lf-temps').value = e.temperaturen.join('; ');
+  if (!tippen) document.getElementById('lf-temps').value = e.temperaturen.join('; ');
   document.getElementById('lf-eis').checked = e.eis;
   document.getElementById('lf-zl').value = e.zl;
-  ['unter', 'ueber'].forEach(h => document.getElementById(`lf-hl-${h}`)?.classList.toggle('active', h === e.hoehenlage));
   document.getElementById('lf-abn').checked = e.abnutzung;
   zeigeElement(document.getElementById('lf-abn-zeile'), _lfSys !== 'el');
   document.getElementById('lf-anzahl').textContent = t('lf.anzahl').replace('{n}', lastfaelle(lastfallEinst, _lfSys).length);
 }
 // zlVonHand: Z_L wurde im Feld geändert → Wert übernehmen; sonst gilt der
-// Wert der gewählten Höhenlage (bzw. ein früher von Hand gesetzter Wert).
+// früher gesetzte Wert bzw. die Vorgabe 15 N/m.
 function _lastfallAusFormular(zlVonHand = false) {
   const einst = { ...(lastfallEinst || {}) };
   const alt = lastfallEinstellung(lastfallEinst, _lfSys);
@@ -10119,12 +10114,6 @@ function _lastfallAusFormular(zlVonHand = false) {
   };
   lastfallEinst = einst;
   try { localStorage.setItem('dh_lastfaelle', JSON.stringify(lastfallEinst)); } catch (e) { /* privat */ }
-}
-function lastfallHoehenlage(h) {
-  _lastfallAusFormular();
-  lastfallEinst[_lfSys] = { ...lastfallEinst[_lfSys], hoehenlage: h, zl: EISLAST_HOEHENLAGE[h] };
-  try { localStorage.setItem('dh_lastfaelle', JSON.stringify(lastfallEinst)); } catch (e) { /* privat */ }
-  _lastfallFormular();
 }
 function lastfallSystem(sys) { _lastfallAusFormular(); _lfSys = sys; _lastfallFormular(); }
 function lastfallVorgabe() {
@@ -13529,7 +13518,7 @@ const LANG = {
     'par.T2':               'Temperatur T<sub>2</sub>',
     'par.eislast':          'Eislast Z<sub>L</sub>',
     'par.eislast.sub':      '(bei T<sub>2</sub> = −5 °C)',
-    'par.eislast.hint':     'Zusatzlast durch Eisansatz [N/m] — aktiv bei N-FL und −20 °C ≤ T<sub>2</sub> ≤ −5 °C.',
+    'par.eislast.hint':     'Zusatzlast durch Eis/Schnee [N/m] — wird nur bei T<sub>2</sub> = −5 °C angerechnet.',
     // Buttons
     'btn.drawing':          'Zeichnung',
     // Canvas / Legend
@@ -14207,6 +14196,7 @@ const LANG = {
     'lf.temps': 'Temperaturen [°C]',
     'lf.temps.hinweis': 'getrennt durch ; oder Leerzeichen (−50 … +120)',
     'lf.eis': 'Eislast bei −5 °C',
+    'lf.zl.hinweis': 'Zusatzlast wird nur bei −5 °C angerechnet, nicht bei den übrigen Temperaturen.',
     'lf.abnutzung': 'Fahrdraht neu und abgenutzt prüfen',
     'lf.vorgabe': 'Vorgabe',
     'lf.uebernehmen': 'Übernehmen',
@@ -14214,9 +14204,6 @@ const LANG = {
     'lf.eis.kurz': 'Eis {zl} N/m',
     'lf.abgenutzt': 'abgenutzt',
     'lf.neu': 'neu',
-    'lf.hoehenlage': 'Höhenlage der Strecke',
-    'lf.hl.unter': 'unter 1000 m ü. M. · 7 N/m',
-    'lf.hl.ueber': 'ab 1000 m ü. M. · 15 N/m',
     'ui.foto.ablauf.modus': 'Ablauf (7-Klick Modus):',
     'ui.foto.ablauf.1': 'Mastspitze links → Mastfuss links',
     'ui.foto.ablauf.2': 'Mastspitze rechts → Mastfuss rechts',
@@ -14344,7 +14331,7 @@ const LANG = {
     'par.T2':               'Température T<sub>2</sub>',
     'par.eislast':          'Charge de glace Z<sub>L</sub>',
     'par.eislast.sub':      '(à T<sub>2</sub> = −5 °C)',
-    'par.eislast.hint':     'Charge additionnelle due au givre [N/m] — active pour LC N et −20 °C ≤ T<sub>2</sub> ≤ −5 °C.',
+    'par.eislast.hint':     'Charge additionnelle glace/neige [N/m] — prise en compte uniquement à T<sub>2</sub> = −5 °C.',
     // Buttons
     'btn.drawing':          'Dessin',
     // Canvas / Legend
@@ -15022,6 +15009,7 @@ const LANG = {
     'lf.temps': 'Températures [°C]',
     'lf.temps.hinweis': 'séparées par ; ou espace (−50 … +120)',
     'lf.eis': 'Charge de glace à −5 °C',
+    'lf.zl.hinweis': 'La charge additionnelle n’est prise en compte qu’à −5 °C, pas aux autres températures.',
     'lf.abnutzung': 'Vérifier fil de contact neuf et usé',
     'lf.vorgabe': 'Par défaut',
     'lf.uebernehmen': 'Appliquer',
@@ -15029,9 +15017,6 @@ const LANG = {
     'lf.eis.kurz': 'glace {zl} N/m',
     'lf.abgenutzt': 'usé',
     'lf.neu': 'neuf',
-    'lf.hoehenlage': 'Altitude de la ligne',
-    'lf.hl.unter': 'sous 1000 m s.n.m. · 7 N/m',
-    'lf.hl.ueber': 'dès 1000 m s.n.m. · 15 N/m',
     'ui.foto.ablauf.modus': 'Procédure (mode 7 clics) :',
     'ui.foto.ablauf.1': 'Sommet du mât gauche → pied du mât gauche',
     'ui.foto.ablauf.2': 'Sommet du mât droit → pied du mât droit',
@@ -15159,7 +15144,7 @@ const LANG = {
     'par.T2':               'Temperatura T<sub>2</sub>',
     'par.eislast':          'Carico di ghiaccio Z<sub>L</sub>',
     'par.eislast.sub':      '(a T<sub>2</sub> = −5 °C)',
-    'par.eislast.hint':     'Carico aggiuntivo da ghiaccio [N/m] — attivo per LC N e −20 °C ≤ T<sub>2</sub> ≤ −5 °C.',
+    'par.eislast.hint':     'Carico aggiuntivo ghiaccio/neve [N/m] — considerato solo a T<sub>2</sub> = −5 °C.',
     // Buttons
     'btn.drawing':          'Disegno',
     // Canvas / Legend
@@ -15837,6 +15822,7 @@ const LANG = {
     'lf.temps': 'Temperature [°C]',
     'lf.temps.hinweis': 'separate da ; o spazio (−50 … +120)',
     'lf.eis': 'Carico di ghiaccio a −5 °C',
+    'lf.zl.hinweis': 'Il carico aggiuntivo è considerato solo a −5 °C, non alle altre temperature.',
     'lf.abnutzung': 'Verificare filo di contatto nuovo e usurato',
     'lf.vorgabe': 'Predefinito',
     'lf.uebernehmen': 'Applica',
@@ -15844,9 +15830,6 @@ const LANG = {
     'lf.eis.kurz': 'ghiaccio {zl} N/m',
     'lf.abgenutzt': 'usurato',
     'lf.neu': 'nuovo',
-    'lf.hoehenlage': 'Altitudine della linea',
-    'lf.hl.unter': 'sotto 1000 m s.l.m. · 7 N/m',
-    'lf.hl.ueber': 'da 1000 m s.l.m. · 15 N/m',
     'ui.foto.ablauf.modus': 'Procedura (modalità 7 clic):',
     'ui.foto.ablauf.1': 'Cima del palo sinistro → piede del palo sinistro',
     'ui.foto.ablauf.2': 'Cima del palo destro → piede del palo destro',
@@ -17453,7 +17436,7 @@ renderObstacleList();
         </ul>
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Abstandsprüfung zu Hindernissen oberhalb</p>
         <p>Unter den Messpunkten M1–M4 steht die Zeile <strong>H1–H4</strong>: je Messpunkt die Höhe eines Hindernisses oberhalb (z. B. Unterkante Brücke / Bauwerk) in <em>m ü. M.</em>. Die Prüfung braucht die SOK m ü. M. unter <em>Mastangaben</em> — direkt oder aus den Koordinaten; fehlt sie, erscheint ein Hinweis und es wird nicht geprüft. Mit dem Schalter <strong>Punkte verbinden</strong> bilden die H-Punkte eine Unterkante (Linie durch die nach x sortierten Punkte, auch schräg oder geknickt); ausgeschaltet wird jeder H-Punkt einzeln geprüft. Die App prüft den obersten Leiter (Tragseil bzw. Einzelleiter) in allen <strong>Lastfällen</strong> und zeigt den massgebenden Abstand mit Lastfall und Stelle sowie den kleinsten Abstand je H-Punkt; mit Mindestabstand a grün ✓ oder rot ✗. Beim <strong>Einzelleiter</strong> darf das Hindernis auch <em>unter</em> dem Leiter liegen (Leiter führt darüber hinweg): liegen alle H-Punkte im Feld unter dem Leiter, erkennt die App das automatisch und prüft den Abstand Leiter − Oberkante nach unten (massgebend ist dann die tiefste Lage, z. B. Wärme oder Eis); die Schraffur liegt unter der Linie. Der Schalter <strong>Alle Lastfälle</strong> unter dem Diagramm schaltet die Lastfälle aus — dann wird nur der aktuelle Zustand T<sub>2</sub> geprüft. Im Diagramm zeigt ein leichtes graues Band den Bereich aller Lastfälle (höchste bis tiefste Leiterlage) und eine Masslinie die massgebende Stelle mit dem Abstand a (grün ✓ / rot ✗). Diagramm, Zeichnung/PDF, Längsprofil und DXF zeigen die H-Punkte. Projekte mit der früheren Hindernisliste werden beim Laden übernommen (höchstens 4 Punkte je Feld, die tiefsten).</p>
-        <p style="font-size:.8rem;color:var(--muted)">Lastfälle je Leitersystem unter «Lastfälle …»: Temperaturen (Vorgabe −20 °C und +80 °C), Eislast bei −5 °C nach Höhenlage der Strecke (unter 1000 m ü. M. 7 N/m, ab 1000 m ü. M. 15 N/m; Vorgabe 15 N/m, Wert überschreibbar) und Fahrdraht neu/abgenutzt. Bei R-FL wirkt die Temperatur nicht (Nachspannung).</p>
+        <p style="font-size:.8rem;color:var(--muted)">Lastfälle je Leitersystem unter «Lastfälle …»: Temperaturen (Vorgabe −20 °C und +80 °C), Eislast Z<sub>L</sub> nur bei −5 °C (Vorgabe 15 N/m, Wert überschreibbar) und Fahrdraht neu/abgenutzt. Bei R-FL wirkt die Temperatur nicht (Nachspannung).</p>
       </div><!-- /hb-de -->
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.11 &nbsp;Canton de pose (onglet «Canton»)</p>
@@ -17467,7 +17450,7 @@ renderObstacleList();
         </ul>
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Vérification des distances aux obstacles au-dessus</p>
         <p>Sous les points de mesure M1–M4 se trouve la ligne <strong>H1–H4</strong> : pour chaque point de mesure, la hauteur d’un obstacle au-dessus (p. ex. sous-face pont / ouvrage) en <em>m s.n.m.</em>. La vérification nécessite le DRS m s.n.m. sous <em>Données des mâts</em> — directement ou via les coordonnées ; s’il manque, une remarque apparaît et aucune vérification n’a lieu. Avec l’interrupteur <strong>Relier les points</strong>, les points H forment une sous-face (ligne passant par les points triés selon x, aussi inclinée ou brisée) ; désactivé, chaque point H est vérifié séparément. L’application vérifie le conducteur le plus haut (câble porteur resp. conducteur simple) dans tous les <strong>cas de charge</strong> et affiche la distance déterminante avec cas de charge et position ainsi que la plus petite distance par point H ; avec distance minimale a en vert ✓ ou rouge ✗. Pour le <strong>conducteur simple</strong>, l’obstacle peut aussi se trouver <em>sous</em> le conducteur (le conducteur passe au-dessus) : si tous les points H de la portée sont sous le conducteur, l’app le détecte automatiquement et vérifie la distance conducteur − arête supérieure vers le bas (déterminante : la position la plus basse, p. ex. chaleur ou glace) ; les hachures sont sous la ligne. L’interrupteur <strong>Tous les cas de charge</strong> sous le diagramme désactive les cas de charge — seul l’état actuel T<sub>2</sub> est alors vérifié. Dans le diagramme, une bande grise légère montre la plage de tous les cas de charge et une ligne de cote l’endroit déterminant avec la distance a (vert ✓ / rouge ✗). Diagramme, dessin/PDF, profil en long et DXF montrent les points H. Les projets avec l’ancienne liste d’obstacles sont repris au chargement (au plus 4 points par portée, les plus bas).</p>
-        <p style="font-size:.8rem;color:var(--muted)">Cas de charge par système sous «Cas de charge …» : températures (par défaut −20 °C et +80 °C), charge de glace à −5 °C selon l’altitude de la ligne (sous 1000 m s.n.m. 7 N/m, dès 1000 m s.n.m. 15 N/m ; par défaut 15 N/m, valeur modifiable) et fil de contact neuf/usé. En LC R, la température n’a pas d’effet (tension automatique).</p>
+        <p style="font-size:.8rem;color:var(--muted)">Cas de charge par système sous «Cas de charge …» : températures (par défaut −20 °C et +80 °C), charge de glace Z<sub>L</sub> uniquement à −5 °C (par défaut 15 N/m, valeur modifiable) et fil de contact neuf/usé. En LC R, la température n’a pas d’effet (tension automatique).</p>
       </div><!-- /hb-fr -->
       <div class="hb-lang hb-it" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.11 &nbsp;Tratta di regolazione (scheda «Tratta»)</p>
@@ -17481,7 +17464,7 @@ renderObstacleList();
         </ul>
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.12 &nbsp;Verifica delle distanze da ostacoli sopra</p>
         <p>Sotto i punti di misura M1–M4 si trova la riga <strong>H1–H4</strong>: per ogni punto di misura l’altezza di un ostacolo sopra (p. es. intradosso ponte / opera) in <em>m s.l.m.</em>. La verifica richiede il PRF m s.l.m. sotto <em>Dati dei pali</em> — direttamente o tramite le coordinate; se manca, appare un avviso e non viene eseguita alcuna verifica. Con l’interruttore <strong>Collega i punti</strong> i punti H formano un intradosso (linea attraverso i punti ordinati secondo x, anche inclinata o spezzata); disattivato, ogni punto H viene verificato singolarmente. L’applicazione verifica il conduttore più alto (filo portante risp. conduttore singolo) in tutti i <strong>casi di carico</strong> e mostra la distanza determinante con caso di carico e posizione nonché la distanza minima per punto H; con distanza minima a in verde ✓ o rosso ✗. Per il <strong>conduttore singolo</strong> l’ostacolo può trovarsi anche <em>sotto</em> il conduttore (il conduttore passa sopra): se tutti i punti H della campata sono sotto il conduttore, l’app lo riconosce automaticamente e verifica la distanza conduttore − spigolo superiore verso il basso (determinante la posizione più bassa, p. es. caldo o ghiaccio); il tratteggio è sotto la linea. L’interruttore <strong>Tutti i casi di carico</strong> sotto il diagramma disattiva i casi di carico — viene verificato solo lo stato attuale T<sub>2</sub>. Nel diagramma una banda grigia leggera mostra il campo di tutti i casi di carico e una linea di quota il punto determinante con la distanza a (verde ✓ / rosso ✗). Diagramma, disegno/PDF, profilo longitudinale e DXF mostrano i punti H. I progetti con la precedente lista degli ostacoli vengono ripresi al caricamento (al massimo 4 punti per campata, i più bassi).</p>
-        <p style="font-size:.8rem;color:var(--muted)">Casi di carico per sistema in «Casi di carico …»: temperature (predefinite −20 °C e +80 °C), carico di ghiaccio a −5 °C secondo l’altitudine della linea (sotto 1000 m s.l.m. 7 N/m, da 1000 m s.l.m. 15 N/m; predefinito 15 N/m, valore modificabile) e filo di contatto nuovo/usurato. Per LC R la temperatura non ha effetto (tensionamento automatico).</p>
+        <p style="font-size:.8rem;color:var(--muted)">Casi di carico per sistema in «Casi di carico …»: temperature (predefinite −20 °C e +80 °C), carico di ghiaccio Z<sub>L</sub> solo a −5 °C (predefinito 15 N/m, valore modificabile) e filo di contatto nuovo/usurato. Per LC R la temperatura non ha effetto (tensionamento automatico).</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 6.13 Bedienung ══ -->
@@ -17649,7 +17632,7 @@ renderObstacleList();
           <li>SBB 0161.1013.0001 — Technische Spezifikation N-FL (Reglagewerte, Materialien)</li>
           <li>SBB 0161.1013.0005.1 — Vorgabe zur Eingabe von c<sub>proj</sub> / c<sub>m</sub> (Mittelspannweite / Einzelspannweite)</li>
           <li>SBB 0161.1013.0003 — Reglagetabelle N-FL «starr»</li>
-          <li>SBB 0161.1013.0004 — Zusatzlast Schnee/Eis 7 N/m (gemäss Notiz im SBB-Excel); Strecken ab 1000 m ü. M.: 15 N/m (SBB-Vorgabe Fachentwicklung)</li>
+          <li>SBB 0161.1013.0004 — Zusatzlast Schnee/Eis 7 N/m (gemäss Notiz im SBB-Excel); Vorgabe in der App 15 N/m (SBB-Vorgabe Fachentwicklung)</li>
           <li>VEM Handbuch — Formel 7.53a (R-FL: Durchhang Tragseil mit Fahrdraht und Zusatzlast)</li>
           <li>Validierung: 27 mit der SBB-Excel verifizierte Beispielrechnungen (tests/beispiele_sbb.test.js)</li>
           <li>ISO 16739-1:2018 (IFC4), EPSG:2056 CH1903+ / LV95, Höhen LN02 — für Export und Georeferenz</li>
@@ -17663,7 +17646,7 @@ renderObstacleList();
           <li>SBB 0161.1013.0001 — Spécification technique LC N (valeurs de réglage, matériaux)</li>
           <li>SBB 0161.1013.0005.1 — Prescriptions pour la saisie de c<sub>proj</sub> / c<sub>m</sub> (portée moyenne / portée individuelle)</li>
           <li>CFF 0161.1013.0003 — Tableau de réglage LC N «rigide»</li>
-          <li>CFF 0161.1013.0004 — Charge additionnelle neige/glace 7 N/m (selon note de l’Excel CFF) ; lignes dès 1000 m s.n.m. : 15 N/m (prescription CFF)</li>
+          <li>CFF 0161.1013.0004 — Charge additionnelle neige/glace 7 N/m (selon note de l’Excel CFF) ; valeur par défaut dans l’application 15 N/m (prescription CFF)</li>
           <li>Manuel VEM — formule 7.53a (LC R : flèche du câble porteur avec fil de contact et charge additionnelle)</li>
           <li>Validation : 27 exemples de calcul vérifiés avec l’Excel CFF (tests/beispiele_sbb.test.js)</li>
           <li>ISO 16739-1:2018 (IFC4), EPSG:2056 CH1903+ / MN95, altitudes NF02 — pour l’export et le géoréférencement</li>
@@ -17677,7 +17660,7 @@ renderObstacleList();
           <li>SBB 0161.1013.0001 — Specifiche tecniche LC N (valori di regolazione, materiali)</li>
           <li>SBB 0161.1013.0005.1 — Prescrizioni per l'inserimento di c<sub>proj</sub> / c<sub>m</sub> (lunghezza media / campata singola)</li>
           <li>FFS 0161.1013.0003 — Tabella di regolazione LC N «rigido»</li>
-          <li>FFS 0161.1013.0004 — Carico aggiuntivo neve/ghiaccio 7 N/m (secondo nota dell’Excel FFS); linee da 1000 m s.l.m.: 15 N/m (prescrizione FFS)</li>
+          <li>FFS 0161.1013.0004 — Carico aggiuntivo neve/ghiaccio 7 N/m (secondo nota dell’Excel FFS); valore predefinito nell’app 15 N/m (prescrizione FFS)</li>
           <li>Manuale VEM — formula 7.53a (LC R: freccia del filo portante con filo di contatto e carico aggiuntivo)</li>
           <li>Validazione: 27 esempi di calcolo verificati con l’Excel FFS (tests/beispiele_sbb.test.js)</li>
           <li>ISO 16739-1:2018 (IFC4), EPSG:2056 CH1903+ / MN95, altezze RN02 — per esportazione e georeferenziazione</li>
