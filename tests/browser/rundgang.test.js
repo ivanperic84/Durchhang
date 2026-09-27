@@ -775,7 +775,7 @@ test('Projektliste: Auswahl als normale Box; Kopfleiste kompakt mit «Teilen»',
     closeShareMenu();
     return { auswahl, teilenImKopf: !!teilen, teilenImDiagramm: !!document.querySelector('.canvas-card #share-btn'), symbole, offen };
   });
-  assert.deepEqual(r.auswahl, { klasse: true, appearance: 'auto', quadratisch: true });
+  assert.deepEqual(r.auswahl, { klasse: true, appearance: 'none', quadratisch: true });
   assert.equal(r.teilenImKopf, true);
   assert.equal(r.teilenImDiagramm, false);
   assert.equal(r.symbole.length, 4);
@@ -1209,6 +1209,29 @@ test('KM im Format 000.000 (Tabelle, Einzelfeld); Δ Mastfuss negativ mit typogr
       tastatur: d.getAttribute('inputmode'), einzel: ein.value };
   });
   assert.deepEqual(r, { kmFeld: '012.350', km: '012.350', delta: -0.2, tastatur: null, einzel: '007.005' });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Stränge im Dunkelmodus: Neon-Töne statt Standardfarben, Auswahlkästchen im App-Design', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    abschnittAnsicht(); await abschnittBeispiel(); await new Promise(res => setTimeout(res, 300));
+    const hell = [...document.querySelectorAll('.abs-farbe')].map(e => e.value);
+    themaAnwenden('dunkel');
+    const dunkel = [...document.querySelectorAll('.abs-farbe')].map(e => e.value);
+    const vorschlag = [...document.querySelectorAll('#abs-farbvorschlag option')].map(o => o.value);
+    strangFarbe(1, STRANG_FARBEN_DUNKEL[3]);                 // Neon gewählt → helle Standardfarbe gespeichert
+    const gespeichert = abschnitt.straenge[1].farbe;
+    const kasten = getComputedStyle(document.querySelector('.abs-str-tab input.auswahl')).appearance;
+    themaAnwenden('hell'); setCanvasView('diagramm');
+    return { hell, dunkel, vorschlag: vorschlag.length, gespeichert, kasten };
+  });
+  assert.deepEqual(r.hell, ['#4a5cb8', '#d9822b', '#2f9e6e']);
+  assert.deepEqual(r.dunkel, ['#8c9bff', '#ffab5c', '#4fe3a5']);
+  assert.equal(r.vorschlag, 6);
+  assert.equal(r.gespeichert, '#b8457a');
+  assert.equal(r.kasten, 'none');
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
