@@ -571,3 +571,16 @@ test('Zeichnung: hf-Beschriftungen überlagern sich nicht; Höhenleiter erklärt
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Fusszeile: ohne «Statikteam», Version aus APP_VERSION', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => ({
+    fuss: document.querySelector('body > footer').textContent.replace(/\s+/g, ' ').trim(),
+    version: APP_VERSION,
+    irgendwo: document.documentElement.innerHTML.includes('Statikteam'),
+  }));
+  assert.equal(r.fuss, `Fachentwicklung FS · © 2026 · ${r.version}`);
+  assert.equal(r.irgendwo, false);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});

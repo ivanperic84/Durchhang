@@ -2952,6 +2952,9 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
 const APP_VERSION = 'v3.14.0';
+// Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
+document.addEventListener('DOMContentLoaded', () =>
+  document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
 
 // Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
 function sysName(mode) {
@@ -10461,7 +10464,7 @@ ${(() => {
 </div>`;
 })()}
 
-<footer>${t('pdf.footer')} &nbsp;·&nbsp; ${APP_VERSION} &nbsp;|&nbsp; ${new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE')} &nbsp;|&nbsp; Statikteam, Fachentwicklung FS &nbsp;|&nbsp; ${t('pdf.quelle')}</footer>`;
+<footer>${t('pdf.footer')} &nbsp;·&nbsp; ${APP_VERSION} &nbsp;|&nbsp; ${new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE')} &nbsp;|&nbsp; Fachentwicklung FS &nbsp;|&nbsp; ${t('pdf.quelle')}</footer>`;
   return bodyHtml;
 }
 
@@ -17420,7 +17423,7 @@ renderObstacleList();
       </table>
 
       <p style="font-size:.75rem;color:var(--tertiary);margin-top:1rem;border-top:1px solid var(--border);padding-top:.75rem">
-        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; v3.9.3 &nbsp;·&nbsp; Statikteam, Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
+        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; <span class="app-version"></span> &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
         Quelle Reglage: SBB 0161.1013.0001
       </p>
     </div>
@@ -17781,7 +17784,7 @@ renderObstacleList();
 </style>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
-  Statikteam &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span>v3.9.3</span>
+  Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span class="app-version"></span>
 </footer>
 
 </body>
