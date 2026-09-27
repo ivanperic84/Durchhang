@@ -1805,9 +1805,9 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
     <div class="card">
       <div class="card-title" id="card-title-sys" data-i18n="card.system">System</div>
       <div class="seg-ctrl">
-        <button class="seg-btn"        id="seg-el" data-i18n="sys.el"  onclick="setSysMode('el')">Einzelleiter</button>
-        <button class="seg-btn"        id="seg-rfl" onclick="setSysMode('rfl')" data-i18n="sys.rfl.kurz">R-FL</button>
-        <button class="seg-btn active" id="seg-nfl" onclick="setSysMode('nfl')" data-i18n="sys.nfl.kurz">N-FL</button>
+        <button class="seg-btn"        id="seg-el" data-i18n="sys.el"  onclick="sysWaehlen('el')">Einzelleiter</button>
+        <button class="seg-btn"        id="seg-rfl" onclick="sysWaehlen('rfl')" data-i18n="sys.rfl.kurz">R-FL</button>
+        <button class="seg-btn active" id="seg-nfl" onclick="sysWaehlen('nfl')" data-i18n="sys.nfl.kurz">N-FL</button>
       </div>
       <p id="sys-info" style="font-size:.72rem;color:var(--muted);margin-top:.35rem;margin-bottom:.75rem">
         Fixabgefangen — Zugkraft temperaturabhängig (Zustandsgleichung)
@@ -2936,7 +2936,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v3.13.7';
+const APP_VERSION = 'v3.13.8';
 
 // Kurzname des Systems in der aktuellen Sprache (N-FL / LC N …)
 function sysName(mode) {
@@ -6229,6 +6229,66 @@ function onT3Input(val) {
 }
 
 // System N-FL / R-FL / Einzelleiter umschalten
+// ── Sanfter Umbau beim Systemwechsel (FLIP) ─────────────────────────────
+// Blöcke, die ihre Lage ändern, gleiten an die neue Stelle; neu erscheinende
+// Blöcke blenden ein. Nur transform/opacity, ohne Einfluss auf die Rechnung.
+// Zuordnung vorher/nachher über das Element selbst oder — wenn der Inhalt neu
+// aufgebaut wird (hf-Ansicht) — über id, aria-labelledby, erste innere id oder Text.
+// Bei «Bewegung reduzieren» wird sofort umgeschaltet.
+const _UMBAU = { dauer: 220, kurve: 'cubic-bezier(.22,1,.3,1)', einblenden: 180 };
+function _umbauSchluessel(el) {
+  if (el.id) return '#' + el.id;
+  const lb = el.getAttribute('aria-labelledby');
+  if (lb) return '@' + lb;
+  const innen = el.querySelector('[id]');
+  if (innen) return '>' + innen.id;
+  return el.tagName + '.' + el.className + ':' + el.textContent.trim().slice(0, 60);
+}
+function sanftUmbauen(wurzel, selektor, aenderung) {
+  const aus = !wurzel || typeof wurzel.animate !== 'function'
+    || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  if (aus) { aenderung(); return; }
+  const sichtbar = el => el.getClientRects().length > 0;
+  const vorher = new Map(), vorherSchl = new Map();
+  for (const el of wurzel.querySelectorAll(selektor)) {
+    if (!sichtbar(el)) continue;
+    const y = el.getBoundingClientRect().top;
+    vorher.set(el, y);
+    const k = _umbauSchluessel(el);
+    if (!vorherSchl.has(k)) vorherSchl.set(k, y);
+  }
+  aenderung();
+  const hoehe = window.innerHeight, versatz = new Map(), neu = new Set();
+  for (const el of wurzel.querySelectorAll(selektor)) {
+    if (!sichtbar(el)) continue;
+    const r = el.getBoundingClientRect();
+    // Nächster Vorfahr im Satz: Bewegung relativ zu ihm, damit nichts doppelt gleitet
+    let v = el.parentElement, basis = 0, imNeuen = false;
+    for (; v && v !== wurzel; v = v.parentElement) {
+      if (versatz.has(v)) { basis = versatz.get(v); break; }
+      if (neu.has(v)) { imNeuen = true; break; }
+    }
+    const alt = vorher.has(el) ? vorher.get(el) : vorherSchl.get(_umbauSchluessel(el));
+    const imBild = r.bottom > 0 && r.top < hoehe;
+    if (alt === undefined) {
+      neu.add(el);
+      if (!imNeuen && imBild) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: _UMBAU.einblenden, easing: 'ease-out' });
+      continue;
+    }
+    const d = alt - r.top;
+    versatz.set(el, d);
+    if (imNeuen || !imBild || Math.abs(d - basis) < 1) continue;
+    el.animate([{ transform: `translateY(${(d - basis).toFixed(1)}px)` }, { transform: 'none' }],
+               { duration: _UMBAU.dauer, easing: _UMBAU.kurve });
+  }
+}
+
+// Systemwahl per Knopf: wie setSysMode, aber mit sanftem Umbau der Seitenleiste
+function sysWaehlen(mode) {
+  sanftUmbauen(document.querySelector('.sidebar-scroll'),
+    '.card, .card > *, .field-group > *, .field-row > *', () => setSysMode(mode));
+}
+
 function setSysMode(mode) {
   sysMode = mode;
   updateSysModeUI(mode);
@@ -12518,7 +12578,9 @@ function hfWert(k, roh) {
   if (k === 'Tmax' && e.Tmax !== HF_EIS_TEMPERATUR) e.zlMax = 0;
   if (k === 'p11' && e.p11) { e.p12 = false; e.cUebr = 0; }
   if (k === 'p12' && !e.p12) e.cUebr = 0;
-  if (k === 'typ') renderHf(); else hfAktualisieren();
+  if (k === 'typ') sanftUmbauen(document.getElementById('hf-inhalt'),
+    '#hf-inhalt > *, .hf-gruppe > *, .hf-raster > *, .hf-zwei > *, #hf-erg > *', renderHf);
+  else hfAktualisieren();
 }
 
 const _HF_SYM = {
@@ -12688,6 +12750,10 @@ const HF_FARBEN_PDF = {
   unten: '#4a5cb8', oben: '#9a7b1a', ok: '#2f9e54', okFlaeche: 'rgba(47,158,84,.12)', nok: '#dc2626', hinter: '#ffffff',
 };
 const _hfM = mm => (mm / 1000).toFixed(3);
+const _hfMm = v => fN(v, Math.abs(v - Math.round(v)) < 0.05 ? 0 : 1);
+// Symbol als SVG-Text (Index als tspan) bzw. als Klartext für <title>
+const _hfSvgSym = sym => (_HF_SYM[sym] || sym).replace(/<sub>(.*?)<\/sub>/g, '<tspan font-size="7" dy="2">$1</tspan>');
+const _hfTitel = z => `<title>${escHtml((_HF_SYM[z.sym] || z.sym).replace(/<\/?sub>/g, ''))} = ${_hfMm(z.wert)} mm – ${escHtml(t(z.schluessel).replace(/<[^>]+>/g, ''))}</title>`;
 
 // Höhenleiter: links von unten die Anteile bis hf_min, rechts von oben die
 // Zuschläge bis hf_max, dazwischen der zulässige Bereich der Fahrdrahthöhe.
@@ -12707,41 +12773,46 @@ function _hfSvgLeiter(r, e, F) {
   s += `<text x="12" y="${H / 2}" transform="rotate(-90 12 ${H / 2})" text-anchor="middle" font-size="10" fill="${F.leise}">${escHtml(t('hf.gr.achse'))}</text>`;
   // Spalte hf_min (links)
   const xl = xa + 14, bl = 96;
-  const segment = (x, b, von, bis, farbe, deckkraft, sym, gestrichelt = false) => {
+  // Streifen mit Kürzel (wo Platz ist) und Tooltip; alle Werte zusätzlich in der Zeile unter der Grafik
+  const segment = (x, b, von, bis, farbe, deckkraft, z, gestrichelt = false) => {
     const ya = sy(Math.max(von, bis)), yb = sy(Math.min(von, bis)), h = yb - ya;
-    let t_ = `<rect x="${x}" y="${ya.toFixed(1)}" width="${b}" height="${Math.max(h, .6).toFixed(1)}" fill="${farbe}" fill-opacity="${deckkraft}" stroke="${farbe}" stroke-width=".8"${gestrichelt ? ' stroke-dasharray="3 2"' : ''}/>`;
-    if (h >= 12 && sym) t_ += `<text x="${x + b / 2}" y="${(ya + h / 2 + 3.5).toFixed(1)}" text-anchor="middle" font-size="10" fill="${F.text}">${sym}</text>`;
-    return t_;
+    let t_ = `<g><rect x="${x}" y="${ya.toFixed(1)}" width="${b}" height="${Math.max(h, .6).toFixed(1)}" fill="${farbe}" fill-opacity="${deckkraft}" stroke="${farbe}" stroke-width=".8"${gestrichelt ? ' stroke-dasharray="3 2"' : ''}/>`;
+    if (h >= 11) t_ += `<text x="${x + b / 2}" y="${(ya + h / 2 + 3).toFixed(1)}" text-anchor="middle" font-size="9" fill="${F.text}">${_hfSvgSym(z.sym)}</text>`;
+    return t_ + _hfTitel(z) + '</g>';
   };
-  const SYM = { GfA: 'GfA', k: 'k', be: 'b', f: 'f', H: 'H', 'BÜ': 'BÜ 5.51' };
   let c = y0;
   basisMin.forEach((z, i) => {
     const von = i === 0 ? y0 : c, bis = i === 0 ? z.wert : c + z.wert;
-    s += `<rect x="${xl}" y="${sy(bis).toFixed(1)}" width="${bl}" height="${(sy(von) - sy(bis)).toFixed(1)}" fill="${F.basis}" stroke="${F.basisRand}" stroke-width=".8"/>`;
-    if (sy(von) - sy(bis) >= 12) s += `<text x="${xl + bl / 2}" y="${((sy(von) + sy(bis)) / 2 + 3.5).toFixed(1)}" text-anchor="middle" font-size="10" fill="${F.text}">${SYM[z.sym] || z.sym}</text>`;
+    s += `<g><rect x="${xl}" y="${sy(bis).toFixed(1)}" width="${bl}" height="${(sy(von) - sy(bis)).toFixed(1)}" fill="${F.basis}" stroke="${F.basisRand}" stroke-width=".8"/>`;
+    if (sy(von) - sy(bis) >= 11) s += `<text x="${xl + bl / 2}" y="${((sy(von) + sy(bis)) / 2 + 3.5).toFixed(1)}" text-anchor="middle" font-size="10" fill="${F.text}">${z.sym === 'BÜ' ? 'BÜ 5.51' : _hfSvgSym(z.sym)}</text>`;
+    s += (z.sym === 'BÜ' ? '' : _hfTitel(z)) + '</g>';
     c = bis;
   });
   // Bruchstelle unten (Achse beginnt nicht bei SOK)
   const yb = sy(y0) - 6;
   s += `<path d="M${xl - 4} ${yb + 4} l8 -6 M${xl + bl - 4} ${yb + 4} l8 -6" stroke="${F.leise}" stroke-width="1"/>`;
   const zMin = min.zeilen.filter(z => z.wert !== 0);
-  zMin.forEach(z => { s += segment(xl, bl, c, c + z.wert, F.unten, .28, ''); c += z.wert; });
+  zMin.forEach(z => { s += segment(xl, bl, c, c + z.wert, F.unten, .28, z); c += z.wert; });
   // Klammer Z_hf,min
   const zA = sy(min.wert), zB = sy(min.absolut);
   if (zB - zA > 3) s += `<path d="M${xl - 4} ${zA.toFixed(1)} h-4 V${zB.toFixed(1)} h4" fill="none" stroke="${F.unten}" stroke-width="1"/>`;
   // Spalte hf_max (rechts), von oben nach unten
   const br = 96, xr = W - 10 - br;
   s += `<line x1="${xr - 6}" x2="${xr + br + 6}" y1="${sy(max.absolut).toFixed(1)}" y2="${sy(max.absolut).toFixed(1)}" stroke="${F.oben}" stroke-width="1.6"/>`;
-  s += `<text x="${xr + br}" y="${(sy(max.absolut) - 5).toFixed(1)}" text-anchor="end" font-size="10" fill="${F.oben}">${max.bue ? 'BÜ' : 'hf<tspan font-size="7" dy="2">max,abs</tspan>'} ${max.bue ? '' : _hfM(max.absolut)}</text>`;
+  // Beschriftung der Grundlinie: hf_max,abs über der Linie; BÜ darunter (Zuschläge gehen nach oben)
+  s += max.bue
+    ? `<text x="${xr + br}" y="${(sy(max.absolut) + 12).toFixed(1)}" text-anchor="end" font-size="10" fill="${F.oben}">BÜ ${_hfM(max.absolut)}</text>`
+    : `<text x="${xr + br}" y="${(sy(max.absolut) - 5).toFixed(1)}" text-anchor="end" font-size="10" fill="${F.oben}">hf<tspan font-size="7" dy="2">max,abs</tspan><tspan dy="-2"> ${_hfM(max.absolut)}</tspan></text>`;
+  let kUnten = max.absolut, kOben = max.absolut;   // Ausdehnung der Spalte (für die Beschriftung von hf_max)
   if (!max.bue) {
     let k = max.absolut;
     const pos = max.zeilen.filter(z => z.wert > 0), neg = max.zeilen.filter(z => z.wert < 0);
-    pos.forEach(z => { s += segment(xr, br, k, k - z.wert, F.oben, .25, ''); k -= z.wert; });
-    neg.forEach(z => { s += segment(xr, br, k, k - z.wert, F.oben, .08, '', true); k -= z.wert; });
+    pos.forEach(z => { s += segment(xr, br, k, k - z.wert, F.oben, .25, z); k -= z.wert; kUnten = Math.min(kUnten, k); });
+    neg.forEach(z => { s += segment(xr, br, k, k - z.wert, F.oben, .08, z, true); k -= z.wert; });
   } else {
     // Bahnübergang: 5510 + Z nach oben (wie Excel)
     let k = max.absolut;
-    max.zeilen.filter(z => z.wert !== 0).forEach(z => { s += segment(xr, br, k, k + z.wert, F.oben, .25, '', z.wert < 0); k += z.wert; });
+    max.zeilen.filter(z => z.wert !== 0).forEach(z => { s += segment(xr, br, k, k + z.wert, F.oben, .25, z, z.wert < 0); k += z.wert; kOben = Math.max(kOben, k); });
   }
   // Zulässiger Bereich zwischen hf_min und hf_max
   const ok = max.wert >= min.wert;
@@ -12754,7 +12825,9 @@ function _hfSvgLeiter(r, e, F) {
   s += `<line x1="${xl - 8}" x2="${xr + br + 6}" y1="${sy(min.wert).toFixed(1)}" y2="${sy(min.wert).toFixed(1)}" stroke="${F.unten}" stroke-width="1.6"/>`;
   s += `<line x1="${xl - 8}" x2="${xr + br + 6}" y1="${sy(max.wert).toFixed(1)}" y2="${sy(max.wert).toFixed(1)}" stroke="${F.oben}" stroke-width="1.6"/>`;
   s += `<text x="${xl}" y="${(sy(min.wert) - 5).toFixed(1)}" font-size="11" font-weight="700" fill="${F.unten}">hf<tspan font-size="8" dy="2">min</tspan><tspan dy="-2"> ${_hfM(min.wert)}</tspan></text>`;
-  s += `<text x="${xr + br}" y="${(sy(max.wert) + 14).toFixed(1)}" text-anchor="end" font-size="11" font-weight="700" fill="${F.oben}">hf<tspan font-size="8" dy="2">max</tspan><tspan dy="-2"> ${_hfM(max.wert)}</tspan></text>`;
+  // hf_max unter der Spalte (nicht auf den Streifen); beim Bahnübergang darüber
+  const yMax = max.bue ? sy(Math.max(max.wert, kOben)) - 5 : sy(Math.min(max.wert, kUnten)) + 14;
+  s += `<text x="${xr + br}" y="${yMax.toFixed(1)}" text-anchor="end" font-size="11" font-weight="700" fill="${F.oben}">hf<tspan font-size="8" dy="2">max</tspan><tspan dy="-2"> ${_hfM(max.wert)}</tspan></text>`;
   s += `<text x="${xl + bl / 2}" y="${H - 8}" text-anchor="middle" font-size="10" fill="${F.leise}">${escHtml(t('hf.gr.anteile.min'))}</text>`;
   s += `<text x="${xr + br / 2}" y="${H - 8}" text-anchor="middle" font-size="10" fill="${F.leise}">${escHtml(t('hf.gr.anteile.max'))}</text>`;
   return s + '</svg>';
@@ -12796,9 +12869,16 @@ function _hfSvgSpannweite(r, e, F) {
   if (g) {
     s += `<line x1="${sx(g.c).toFixed(1)}" x2="${sx(g.c).toFixed(1)}" y1="${o}" y2="${H - u}" stroke="${F.text}" stroke-width="1" stroke-dasharray="4 3"/>`;
     s += `<circle cx="${sx(g.c).toFixed(1)}" cy="${sy(g.min).toFixed(1)}" r="4" fill="${F.unten}"/><circle cx="${sx(g.c).toFixed(1)}" cy="${sy(g.max).toFixed(1)}" r="4" fill="${F.oben}"/>`;
-    const rechts = g.c < 44, tx = sx(g.c) + (rechts ? 7 : -7), anker = rechts ? 'start' : 'end';
-    s += `<text x="${tx.toFixed(1)}" y="${(sy(g.min) + 14).toFixed(1)}" text-anchor="${anker}" font-size="10.5" font-weight="700" fill="${F.unten}">${_hfM(g.min)}</text>`;
-    s += `<text x="${tx.toFixed(1)}" y="${(sy(g.max) - 7).toFixed(1)}" text-anchor="${anker}" font-size="10.5" font-weight="700" fill="${F.oben}">${_hfM(g.max)}</text>`;
+    // Werte zwischen die Kurven (dort ist frei), auf der Seite, von der sich die
+    // Kurve wegbewegt; nur wenn es zu eng ist, ausserhalb wie bisher
+    const i = punkte.indexOf(g), li = punkte[Math.max(0, i - 1)], re = punkte[Math.min(punkte.length - 1, i + 1)];
+    const innen = sy(g.min) - sy(g.max) >= 40;
+    const rand = wunsch => (g.c > 52 ? false : g.c < 14 ? true : wunsch);
+    const minRechts = rand(innen ? re.min - g.min <= li.min - g.min : g.c < 44);
+    const maxRechts = rand(innen ? re.max - g.max >= li.max - g.max : g.c < 44);
+    const wert = (rechts, y, farbe, mm) => `<text x="${(sx(g.c) + (rechts ? 7 : -7)).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${rechts ? 'start' : 'end'}" font-size="10.5" font-weight="700" fill="${farbe}">${_hfM(mm)}</text>`;
+    s += wert(minRechts, innen ? sy(g.min) - 7 : sy(g.min) + 14, F.unten, g.min);
+    s += wert(maxRechts, innen ? sy(g.max) + 14 : sy(g.max) - 7, F.oben, g.max);
     s += `<text x="${sx(g.c).toFixed(1)}" y="${o - 5}" text-anchor="middle" font-size="10" fill="${F.text}">c = ${g.c} m</text>`;
   }
   // Legende
@@ -12809,9 +12889,23 @@ function _hfSvgSpannweite(r, e, F) {
   return s + '</svg>';
 }
 
+// Alle Anteile der Höhenleiter in einer Zeile (auch die zu schmalen Streifen)
+function _hfAnteile(r) {
+  const z = x => `${_HF_SYM[x.sym] || x.sym} ${_hfMm(Math.abs(x.wert))}`;
+  const min = r.min, max = r.max;
+  const unten = (min.bue ? [`BÜ ${_hfMm(min.absolut)}`] : min.basis.filter(x => x.wert !== 0).map(z))
+    .concat(min.zeilen.filter(x => x.wert !== 0).map(z)).join(' + ');
+  const ops = max.zeilen.filter(x => x.wert !== 0)
+    .map(x => ((x.wert > 0) !== max.bue ? ' − ' : ' + ') + z(x)).join('');
+  const basisMax = max.bue ? `BÜ ${_hfMm(max.absolut)}` : `hf<sub>max,abs</sub> ${_hfMm(max.absolut)}`;
+  return `${t('hf.gr.unten')}: ${unten} = <b>hf<sub>min</sub> ${_hfMm(min.wert)}</b> mm<br>`
+       + `${t('hf.gr.oben')}: ${basisMax}${ops} = <b>hf<sub>max</sub> ${_hfMm(max.wert)}</b> mm`;
+}
+
 function _hfGrafiken(r, e, F) {
   return `<div class="hf-zwei hf-grafiken">
-    <figure class="hf-karte"><figcaption class="hf-titel">${t('hf.gr.leiter')}</figcaption>${_hfSvgLeiter(r, e, F)}</figure>
+    <figure class="hf-karte"><figcaption class="hf-titel">${t('hf.gr.leiter')}</figcaption>${_hfSvgLeiter(r, e, F)}
+      <p class="abs-hinweis hf-anteile" style="margin:.2rem 0 0">${_hfAnteile(r)}</p></figure>
     <figure class="hf-karte"><figcaption class="hf-titel">${t('hf.gr.spannweite')}</figcaption>${_hfSvgSpannweite(r, e, F)}
       ${e.typ === 'nfl' ? `<p class="abs-hinweis" style="margin:.2rem 0 0">${t('hf.gr.lm').replace('{lm}', fN(e.Lm, 2))}</p>` : ''}</figure>
   </div>`;
@@ -12858,7 +12952,7 @@ ${r.nfl ? `<p class="sub">${document.getElementById('hf-nfl-zug')?.innerHTML || 
 <div class="step">${tab(r.max, 'max')}</div>
 <h2>${t('hf.gr.titel')}</h2>
 <div class="step" style="display:flex;gap:10px;page-break-inside:avoid">
-  <div style="flex:1;min-width:0"><p class="sub2" style="margin:0 0 3px">${t('hf.gr.leiter')}</p>${_hfSvgLeiter(r, e, HF_FARBEN_PDF)}</div>
+  <div style="flex:1;min-width:0"><p class="sub2" style="margin:0 0 3px">${t('hf.gr.leiter')}</p>${_hfSvgLeiter(r, e, HF_FARBEN_PDF)}<p class="sub2" style="margin:3px 0 0">${_hfAnteile(r)}</p></div>
   <div style="flex:1;min-width:0"><p class="sub2" style="margin:0 0 3px">${t('hf.gr.spannweite')}</p>${_hfSvgSpannweite(r, e, HF_FARBEN_PDF)}</div>
 </div>
 ${r.hinweise.length ? `<h2 class="warm">${t('hf.hinweise')}</h2><div class="step">${r.hinweise.map(k => `<p>${t(k)}</p>`).join('')}</div>` : ''}
@@ -13563,6 +13657,8 @@ const LANG = {
     'hf.gr.anteile.max': 'Zuschläge hf_max',
     'hf.gr.c': 'Spannweite c [m]',
     'hf.gr.lm': 'Übrige Eingaben wie gewählt; N-FL-Zugkräfte mit L<sub>m</sub> = {lm} m.',
+    'hf.gr.unten': 'Links von unten',
+    'hf.gr.oben': 'Rechts von oben',
     'hf.kurz': 'hf min/max',
     'hf.einleitung': 'Minimale und maximale Auslegungsfahrdrahthöhe nach AB-EBV 2024, Art. 5.2.1 und 5.2.2 — Nachbildung der SBB-Excel (Blätter hfmin / hfmax). Getrennt von der Durchhang-Berechnung; N-FL mit neuem Fahrdraht (ohne Abnutzung).',
     'hf.uebernehmen': 'Aus Durchhang übernehmen',
@@ -14346,6 +14442,8 @@ const LANG = {
     'hf.gr.anteile.max': 'Suppléments hf_max',
     'hf.gr.c': 'Portée c [m]',
     'hf.gr.lm': 'Autres données comme choisies ; tractions LC N avec L<sub>m</sub> = {lm} m.',
+    'hf.gr.unten': 'À gauche depuis le bas',
+    'hf.gr.oben': 'À droite depuis le haut',
     'hf.kurz': 'hf min/max',
     'hf.einleitung': 'Hauteur du fil de contact minimale et maximale de conception selon DE-OCF 2024, art. 5.2.1 et 5.2.2 — reproduction de l’Excel CFF (feuilles hfmin / hfmax). Séparée du calcul de flèche ; LC N avec fil de contact neuf (sans usure).',
     'hf.uebernehmen': 'Reprendre du calcul de flèche',
@@ -15129,6 +15227,8 @@ const LANG = {
     'hf.gr.anteile.max': 'Supplementi hf_max',
     'hf.gr.c': 'Campata c [m]',
     'hf.gr.lm': 'Altri dati come scelti; tiri LC N con L<sub>m</sub> = {lm} m.',
+    'hf.gr.unten': 'A sinistra dal basso',
+    'hf.gr.oben': 'A destra dall’alto',
     'hf.kurz': 'hf min/max',
     'hf.einleitung': 'Altezza minima e massima di progetto del filo di contatto secondo DE-OFerr 2024, art. 5.2.1 e 5.2.2 — riproduzione dell’Excel FFS (fogli hfmin / hfmax). Separata dal calcolo della freccia; LC N con filo di contatto nuovo (senza usura).',
     'hf.uebernehmen': 'Riprendi dal calcolo della freccia',

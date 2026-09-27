@@ -424,3 +424,49 @@ test('Fenstergrösse ändern / Handy drehen: Diagramm wird ohne Eingabe neu geze
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Systemwechsel sanft (Hauptansicht und hf), ohne Einfluss auf die Rechnung; hf-Grafik beschriftet', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    const erg = [];
+    for (const m of ['rfl', 'el', 'nfl']) {
+      sysWaehlen(m);
+      const anim = document.getAnimations().filter(a => a.constructor === Animation).length;
+      document.getAnimations().forEach(a => a.finish());
+      const sagWahl = calcState.c2.sag;
+      setSysMode(m);
+      erg.push({ m, anim: anim > 0, gleich: calcState.c2.sag === sagWahl, aktiv: document.getElementById('seg-' + m).classList.contains('active') });
+    }
+    openHf(); hfZuruecksetzen();
+    hfWert('typ', 'rfl');
+    const hfAnim = document.getAnimations().filter(a => a.constructor === Animation).length > 0;
+    document.getAnimations().forEach(a => a.finish());
+    const rflFeld = !document.getElementById('hf-kombi');
+    hfWert('typ', 'nfl'); document.getAnimations().forEach(a => a.finish());
+    const svg = document.querySelector('#hf-erg .hf-svg').innerHTML;
+    const zeile = document.querySelector('.hf-anteile').textContent;
+    const titel = document.querySelectorAll('#hf-erg .hf-svg title').length;
+    closeHf();
+    return { erg, hfAnim, rflFeld, be: svg.includes('b<tspan font-size="7" dy="2">e</tspan>'), zeile, titel };
+  });
+  for (const x of r.erg) assert.deepEqual(x, { m: x.m, anim: true, gleich: true, aktiv: true });
+  assert.equal(r.hfAnim, true);
+  assert.equal(r.rflFeld, true);
+  assert.equal(r.be, true, 'b_e in der Höhenleiter');
+  assert.match(r.zeile, /hfmin 4'965/);
+  assert.match(r.zeile, /6'200 − tho 10 − fudo 39.6 − fh 75 − fFD,min 80.2 = hfmax 5'995.2/);
+  assert.ok(r.titel >= 8, 'Tooltips an den Streifen');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('«Bewegung reduzieren»: Systemwechsel ohne Animation', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { reducedMotion: 'reduce' });
+  const n = await seite.evaluate(() => {
+    const eigene = () => document.getAnimations().filter(a => a.constructor === Animation).length;   // ohne CSS-Farbübergänge
+    sysWaehlen('rfl'); const a = eigene(); openHf(); hfWert('typ', 'rfl'); return a + eigene();
+  });
+  assert.equal(n, 0);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
