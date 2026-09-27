@@ -419,6 +419,44 @@ test('Handbuch: Kapitel links mit aktueller Stelle, Suche markiert und springt, 
   await kontext.close();
 });
 
+test('Kein Verweis auf das SBB-Excel in Handbuch, Hinweisen und PDFs; Schieber-Zahl in Temperaturfarbe', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await fensterAbfangen(seite);
+  const r = await seite.evaluate(() => {
+    const excel = /xlsm|SBB-Excel|Excel CFF|Excel FFS|\bVBA\b|Upro1|in der Excel|wie Excel|comme Excel|come Excel/i;
+    const funde = [];
+    openHandbuch();
+    for (const l of ['de', 'fr', 'it']) {
+      setLang(l);
+      const m = document.getElementById('hb-text').innerText.match(excel);
+      if (m) funde.push(`Handbuch ${l}: ${m[0]}`);
+      window.__fenster.length = 0; pdfExport();
+      const pm = (window.__fenster[0]?.html || '').replace(/<[^>]+>/g, ' ').match(excel);
+      if (pm) funde.push(`PDF ${l}: ${pm[0]}`);
+      for (const [k, v] of Object.entries(LANG[l])) if (typeof v === 'string' && excel.test(v)) funde.push(`${l} ${k}`);
+    }
+    setLang('de'); closeHandbuch();
+    // Schieber T2 beim Ziehen: hervorgehobene Zahl in derselben Farbe wie der Knopf
+    onT2Slider(50, true);
+    const lbl = [...document.querySelectorAll('.t2-lbl')].find(el => el.dataset.val === '50');
+    const knopf = document.getElementById('temp2-slider').style.getPropertyValue('--t2-clr');
+    // Gesetzter Farbwert (die Anzeige blendet mit einem kurzen Übergang über)
+    const probe = document.createElement('span'); probe.style.color = knopf;
+    const gleich = !!lbl.style.color && lbl.style.color === probe.style.color;
+    onT2Slider(45, true);
+    const nachbarn = [...document.querySelectorAll('.t2-lbl')].filter(el => ['40', '50'].includes(el.dataset.val)).map(el => el.style.color);
+    probe.style.color = document.getElementById('temp2-slider').style.getPropertyValue('--t2-clr');
+    const nachbarGleich = nachbarn.every(c => c === probe.style.color);
+    onT2Slider(40, false);
+    return { funde, gleich, nachbarGleich };
+  });
+  assert.deepEqual(r.funde, []);
+  assert.equal(r.gleich, true);
+  assert.equal(r.nachbarGleich, true);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
 test('Wasserzeichen «BETA – nicht verifiziert»: Bildschirm in allen Sprachen, alle PDFs', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   await fensterAbfangen(seite);

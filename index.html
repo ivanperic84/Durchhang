@@ -3012,7 +3012,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v4.1.0';
+const APP_VERSION = 'v4.1.1';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -6447,15 +6447,15 @@ function updateT2Float(v, active) {
     const lv = parseInt(el.dataset.val);
     if (active) {
       if (exactHit && lv === v) {
-        // Exakter Treffer: volles Rot, gross
+        // Exakter Treffer: gross, in der Temperaturfarbe (wie Knopf und Kurve)
         el.style.fontSize = '.95rem';
         el.style.fontWeight = '700';
-        el.style.color = 'var(--primary)';
+        el.style.color = clr;
       } else if (!exactHit && (lv === lowerVal || lv === upperVal)) {
-        // Zwischen zwei Labels: beide angrenzend in hellerem Rot
+        // Zwischen zwei Labels: beide angrenzend etwas kleiner, gleiche Farbe
         el.style.fontSize = '.75rem';
         el.style.fontWeight = '600';
-        el.style.color = 'var(--fail)';
+        el.style.color = clr;
       } else {
         el.style.fontSize = '.6rem';
         el.style.fontWeight = '400';
@@ -6554,9 +6554,9 @@ function updateT3Float(v, active) {
     const lv = parseInt(el.dataset.val);
     if (active) {
       if (exactHit && lv === v) {
-        el.style.fontSize = '.95rem'; el.style.fontWeight = '700'; el.style.color = 'var(--primary)';
+        el.style.fontSize = '.95rem'; el.style.fontWeight = '700'; el.style.color = clr;
       } else if (!exactHit && (lv === lowerVal || lv === upperVal)) {
-        el.style.fontSize = '.75rem'; el.style.fontWeight = '600'; el.style.color = 'var(--fail)';
+        el.style.fontSize = '.75rem'; el.style.fontWeight = '600'; el.style.color = clr;
       } else {
         el.style.fontSize = '.6rem'; el.style.fontWeight = '400'; el.style.color = 'var(--tertiary)';
       }
@@ -10730,7 +10730,7 @@ ${isNFL_ub ? `
 </div>` : ''}
 
 ${isNFL_xl ? `
-<!-- ── Schritt 1b: Bezugszustand 10 °C (wie SBB «Durchhang 2026.xlsm») ── -->
+<!-- ── Schritt 1b: Bezugszustand 10 °C ── -->
 <h2>${t('pdf.step1b')} &nbsp;—&nbsp; ${t('pdf.bezug.titel')}</h2>
 <div class="step">
   <p class="sub2">${t('pdf.bezug.text')}</p>
@@ -10810,7 +10810,7 @@ ${isNFL && flCombo ? `
 </div>
 <div class="step">
   <p><strong>${t('pdf.berechn.werte')}</strong></p>
-  <p class="sub">MFL = ${flCombo.MFL.toFixed(5)} N/m &nbsp;(Quelle: SBB Durchhang-Excel / VBA)</p>
+  <p class="sub">MFL = ${flCombo.MFL.toFixed(5)} N/m</p>
   <p class="sub">F<sub>0</sub> = ${fN(H_Ts,0)} N &nbsp;(Ts belastet bei 10 °C, Bezugszustand)</p>
   <p class="sub">H<sub>Ts,2</sub> = ${fN(c2.H,0)} N &nbsp;(Ts-Zug bei T<sub>2</sub> = ${T2} °C)</p>
   <p class="sub">H<sub>Fd</sub> = ${fN(H_Fd,0)} N &nbsp;(konstant)</p>
@@ -14181,10 +14181,10 @@ const LANG = {
     'par.ba.hint.starr': 'Zugkraft mit Projektspannweite c_proj des Feldes (SBB 0161.1013.0005.1)',
     'par.ba.hint.ausg': 'Zugkraft mit Mittelspannweite c_m, Durchhang je Feld (SBB 0161.1013.0005.1)',
     'pdf.bezug.titel': 'Bezugszustand: Ts belastet bei 10 °C',
-    'pdf.bezug.text': 'Wie SBB «Durchhang 2026.xlsm»: Bei 10 °C hängt der Fahrdraht waagrecht; sein Zug wirkt erst bei Abweichung davon. Die unbelastete Montagezugkraft H<sub>ub</sub> bei T<sub>1</sub> wird zuerst in den belasteten Zustand bei 10 °C umgerechnet (volles Gewicht, neuer Fahrdraht, ohne Fahrdrahtzug).',
-    'pdf.nfl.zustgl': 'Zustandsgleichung N-FL mit Fahrdrahtzug (VEM, Excel «Upro1»)',
-    'pdf.gerundet.10': 'gerundet auf 10 N wie Excel',
-    'pdf.gerundet.5': 'Ergebnis gerundet auf 5 N (mit Eislast 10 N) wie Excel',
+    'pdf.bezug.text': 'Bei 10 °C hängt der Fahrdraht waagrecht; sein Zug wirkt erst bei Abweichung davon. Die unbelastete Montagezugkraft H<sub>ub</sub> bei T<sub>1</sub> wird zuerst in den belasteten Zustand bei 10 °C umgerechnet (volles Gewicht, neuer Fahrdraht, ohne Fahrdrahtzug).',
+    'pdf.nfl.zustgl': 'Zustandsgleichung N-FL mit Fahrdrahtzug (VEM-Handbuch)',
+    'pdf.gerundet.10': 'gerundet auf 10 N',
+    'pdf.gerundet.5': 'Ergebnis gerundet auf 5 N (mit Eislast 10 N) wie die Reglagetabelle',
     'ui.t2.fix.eis': '(fixiert −5 °C für Eislast)',
     'ui.datei': 'Datei',
     'ui.reset.titel': 'Zurücksetzen auf Standardwerte',
@@ -14258,7 +14258,7 @@ const LANG = {
     'ui.rgl.hts.konst': 'H<sub>Ts</sub> konstant',
     'ui.rgl.nfl.note': 'H<sub>Ts</sub> belastet = mit Fahrdraht &nbsp;·&nbsp; H<sub>Ts</sub> unbelastet = ohne Fahrdraht &nbsp;·&nbsp; bei +10 °C &nbsp;·&nbsp; (SBB 0161.1013.0001)',
     'ui.rgl.rfl.note': 'H<sub>Ts</sub> konstant via Nachspannvorrichtung &nbsp;·&nbsp; temperaturunabhängig &nbsp;·&nbsp; (SBB 0161.1013.0001)',
-    'ui.rgl.el.note': 'Reglagezugkraft bei +10 °C, Lm = 45 m, Berechnungsart «Ausgleichend» &nbsp;·&nbsp; (SBB «Durchhang 2026.xlsm»)',
+    'ui.rgl.el.note': 'Reglagezugkraft bei +10 °C, Lm = 45 m, Berechnungsart «Ausgleichend»',
     'ui.reglage.bei': 'Reglage bei',
     'ui.export.csv': 'Export CSV',
     'ui.import.csv': 'Import CSV',
@@ -14415,7 +14415,7 @@ const LANG = {
     'hf.zus.titel': 'Zusammensetzung hf_min / hf_max',
     'hf.zus.hw': 'Werte in mm. Die Klammer fasst die Zuschläge Z<sub>hf,min</sub> bzw. Z<sub>hf,max</sub> zusammen; Vorzeichen wie in der Tabelle.',
     'hf.kurz': 'hf min/max',
-    'hf.einleitung': 'Minimale und maximale Auslegungsfahrdrahthöhe nach AB-EBV 2024, Art. 5.2.1 und 5.2.2 — Nachbildung der SBB-Excel (Blätter hfmin / hfmax). Getrennt von der Durchhang-Berechnung; N-FL mit neuem Fahrdraht (ohne Abnutzung).',
+    'hf.einleitung': 'Minimale und maximale Auslegungsfahrdrahthöhe nach AB-EBV 2024, Art. 5.2.1 und 5.2.2. Getrennt von der Durchhang-Berechnung; N-FL mit neuem Fahrdraht (ohne Abnutzung).',
     'hf.vorgabe': 'Vorgabewerte',
     'hf.pdf': 'PDF-Protokoll',
     'hf.g.fl': 'Fahrleitung und Strecke',
@@ -14428,8 +14428,8 @@ const LANG = {
     'hf.bue': 'Bahnübergang',
     'hf.hub': 'Ts unbelastet (Montage)',
     'hf.tm': 'Montagetemperatur',
-    'hf.nfl.zug': 'Zugkraft Ts belastet (wie Excel «NFL-Tab»): H<sub>t0</sub> = {h0} N bei +10 °C · hf_min: H<sub>Tx</sub> = {hmin} N ({tmin}) · hf_max: H<sub>Tx</sub> = {hmax} N ({tmax})',
-    'hf.rfl.zug': 'R-FL: Fahrdraht-Durchhang bei Eislast mit fest H<sub>Ts</sub> = 12 kN und H<sub>Fd</sub> = 10 kN (wie Excel).',
+    'hf.nfl.zug': 'Zugkraft Ts belastet: H<sub>t0</sub> = {h0} N bei +10 °C · hf_min: H<sub>Tx</sub> = {hmin} N ({tmin}) · hf_max: H<sub>Tx</sub> = {hmax} N ({tmax})',
+    'hf.rfl.zug': 'R-FL: Fahrdraht-Durchhang bei Eislast mit fest H<sub>Ts</sub> = 12 kN und H<sub>Fd</sub> = 10 kN.',
     'hf.rfl.zug.kurz': 'Zugkräfte Ts / Fd (fest)',
     'hf.un': 'Nennspannung',
     'hf.ebv': 'Grenzlinie',
@@ -14444,7 +14444,7 @@ const LANG = {
     'hf.cuebr': 'c_übr (überdeckt)',
     'hf.lrp.j': 'J — alle EBV: 6.05 m',
     'hf.lrp.n': 'N — EBV C: 6.20 m',
-    'hf.t.regel': 'Regel (0161.1010.0012, Bl. 6): höchste Leitertemperatur für hf_min (N-FL StCu 50 mm²: bis +56 °C), tiefste Umgebungstemperatur für hf_max (min. −20 °C). Temperaturen in 5-K-Schritten wie Excel.',
+    'hf.t.regel': 'Regel (0161.1010.0012, Bl. 6): höchste Leitertemperatur für hf_min (N-FL StCu 50 mm²: bis +56 °C), tiefste Umgebungstemperatur für hf_max (min. −20 °C). Temperaturen in 5-K-Schritten.',
     'hf.erg.min': 'Minimale Auslegungsfahrdrahthöhe hf_min',
     'hf.erg.max': 'Maximale Auslegungsfahrdrahthöhe hf_max',
     'hf.sp.sym': 'Grösse',
@@ -14471,13 +14471,13 @@ const LANG = {
     'hf.z.summe.max': 'Summe der Zuschläge nach oben',
     'hf.w.bue': 'Achtung: Bahnübergang ≥ 5.51 m!',
     'hf.w.buenfl': 'Bahnübergang bei N-FL situativ prüfen! (Längenprofil)',
-    'hf.w.buemax': 'hf_max beim Bahnübergang wie Excel: 5510 mm + Zuschläge nach oben — fachlich prüfen.',
+    'hf.w.buemax': 'hf_max beim Bahnübergang: 5510 mm + Zuschläge nach oben — fachlich prüfen.',
     'hf.w.p11': 'P1.1 / P1.3 = J: c_übr muss 0 und P1.2 = N sein.',
     'hf.w.p12j': 'P1.2 = J: c_übr muss grösser als 0 sein.',
-    'hf.w.p12n': 'P1.2 = N: c_übr muss 0 sein (sonst f_FD,max,ZL = 0 wie Excel).',
+    'hf.w.p12n': 'P1.2 = N: c_übr muss 0 sein (sonst f_FD,max,ZL = 0).',
     'hf.w.t56': 'N-FL: Die Leitertemperatur des StCu 50 mm² erreicht höchstens +56 °C.',
     'hf.err.typ': 'Nur für N-FL und R-FL.',
-    'hf.err.c': 'Spannweite c nur 60 … 26, 24, 20, 16, 12 oder 8 m (wie Excel).',
+    'hf.err.c': 'Spannweite c nur 60 … 26, 24, 20, 16, 12 oder 8 m.',
     'hf.err.v': 'Geschwindigkeit angeben.',
     'hf.err.t.min': 'Leitertemperatur: −20 … +80 °C in 5-K-Schritten.',
     'hf.err.t.max': 'Umgebungstemperatur: −20 … +80 °C in 5-K-Schritten.',
@@ -14490,7 +14490,7 @@ const LANG = {
     'hf.hinweise': 'Hinweise',
     'hf.ja': 'Ja',
     'hf.nein': 'Nein',
-    'hf.quelle': 'Quelle: SBB-Excel «Durchhang 2026», Blätter hfmin_v11_D / hfmax_v11_D (AB-EBV 2024); Regelungen 0161.1010.0011, 0161.1010.0012, 0161.1010.0201; Zeichnung 0162.1020.0006.',
+    'hf.quelle': 'Grundlagen: AB-EBV 2024, Art. 5.2.1 und 5.2.2; Regelungen 0161.1010.0011, 0161.1010.0012, 0161.1010.0201; Zeichnung 0162.1020.0006.',
     'hf.el.gesperrt': 'Einzelleiter: kein Fahrdraht — hf_min / hf_max nur bei N-FL oder R-FL.',
     'hf.msg.el': 'Einzelleiter: keine Fahrdrahthöhe — bitte N-FL oder R-FL wählen.',
     'hf.fest': 'Aus der Durchhang-Berechnung (fest):',
@@ -14499,8 +14499,8 @@ const LANG = {
     'hf.c.ausL': 'aus L = {L} m (nächster Tabellenwert)',
     'hf.c.frei': 'abweichend von L = {L} m gewählt',
     'hf.c.zurueck': 'auf L zurücksetzen',
-    'hf.err.kombi': 'Kombination nicht in der Excel-Tabelle (StCu 50 + Cu 107, StCu 92 + Cu 107, StCu 92 + Cu 150) — hf nicht berechenbar.',
-    'hf.msg.c.gross': 'Spannweite grösser als 60 m — nicht in der Excel-Tabelle.',
+    'hf.err.kombi': 'Kombination ohne hinterlegte hf-Werte (StCu 50 + Cu 107, StCu 92 + Cu 107, StCu 92 + Cu 150) — hf nicht berechenbar.',
+    'hf.msg.c.gross': 'Spannweite grösser als 60 m — ausserhalb des Tabellenbereichs.',
     'lf.titel': 'Lastfälle Abstandsprüfung',
     'lf.hinweis': 'Je Leitersystem getrennt einstellbar. Die App rechnet alle Lastfälle durch und zeigt den ungünstigsten (kleinster Abstand zum Hindernis). Nachweis erfüllt, wenn dieser Abstand den Mindestabstand a einhält (Feld «Mindestabstand a» unter dem Diagramm).',
     'lf.aktiv': 'Alle Lastfälle',
@@ -15009,10 +15009,10 @@ const LANG = {
     'par.ba.hint.starr': 'Force de traction avec la portée du projet c_proj du champ (SBB 0161.1013.0005.1)',
     'par.ba.hint.ausg': 'Force de traction avec la portée moyenne c_m, flèche par champ (SBB 0161.1013.0005.1)',
     'pdf.bezug.titel': 'État de référence : CP chargé à 10 °C',
-    'pdf.bezug.text': 'Comme SBB «Durchhang 2026.xlsm» : à 10 °C le fil de contact est horizontal ; sa traction n’agit qu’en cas d’écart. La traction de montage non chargée H<sub>ub</sub> à T<sub>1</sub> est d’abord convertie en état chargé à 10 °C (poids total, fil neuf, sans traction du fil de contact).',
-    'pdf.nfl.zustgl': 'Équation d’état LC N avec traction du fil de contact (VEM, Excel «Upro1»)',
-    'pdf.gerundet.10': 'arrondi à 10 N comme Excel',
-    'pdf.gerundet.5': 'résultat arrondi à 5 N (avec glace 10 N) comme Excel',
+    'pdf.bezug.text': 'À 10 °C le fil de contact est horizontal ; sa traction n’agit qu’en cas d’écart. La traction de montage non chargée H<sub>ub</sub> à T<sub>1</sub> est d’abord convertie en état chargé à 10 °C (poids total, fil neuf, sans traction du fil de contact).',
+    'pdf.nfl.zustgl': 'Équation d’état LC N avec traction du fil de contact (manuel VEM)',
+    'pdf.gerundet.10': 'arrondi à 10 N',
+    'pdf.gerundet.5': 'résultat arrondi à 5 N (avec glace 10 N) comme le tableau de réglage',
     'ui.t2.fix.eis': '(fixé à −5 °C pour la charge de glace)',
     'ui.datei': 'Fichier',
     'ui.reset.titel': 'Réinitialiser aux valeurs par défaut',
@@ -15086,7 +15086,7 @@ const LANG = {
     'ui.rgl.hts.konst': 'H<sub>CP</sub> constant',
     'ui.rgl.nfl.note': 'H<sub>CP</sub> chargé = avec fil de contact &nbsp;·&nbsp; H<sub>CP</sub> non chargé = sans fil de contact &nbsp;·&nbsp; à +10 °C &nbsp;·&nbsp; (SBB 0161.1013.0001)',
     'ui.rgl.rfl.note': 'H<sub>CP</sub> constant grâce au dispositif de tension &nbsp;·&nbsp; indépendant de la température &nbsp;·&nbsp; (SBB 0161.1013.0001)',
-    'ui.rgl.el.note': 'Force de réglage à +10 °C, Lm = 45 m, mode de calcul «compensé» &nbsp;·&nbsp; (SBB «Durchhang 2026.xlsm»)',
+    'ui.rgl.el.note': 'Force de réglage à +10 °C, Lm = 45 m, mode de calcul «compensé»',
     'ui.reglage.bei': 'Réglage à',
     'ui.export.csv': 'Exporter CSV',
     'ui.import.csv': 'Importer CSV',
@@ -15243,7 +15243,7 @@ const LANG = {
     'hf.zus.titel': 'Composition hf_min / hf_max',
     'hf.zus.hw': 'Valeurs en mm. La parenthèse regroupe les suppléments Z<sub>hf,min</sub> ou Z<sub>hf,max</sub> ; signes comme dans le tableau.',
     'hf.kurz': 'hf min/max',
-    'hf.einleitung': 'Hauteur du fil de contact minimale et maximale de conception selon DE-OCF 2024, art. 5.2.1 et 5.2.2 — reproduction de l’Excel CFF (feuilles hfmin / hfmax). Séparée du calcul de flèche ; LC N avec fil de contact neuf (sans usure).',
+    'hf.einleitung': 'Hauteur du fil de contact minimale et maximale de conception selon DE-OCF 2024, art. 5.2.1 et 5.2.2. Séparée du calcul de flèche ; LC N avec fil de contact neuf (sans usure).',
     'hf.vorgabe': 'Valeurs par défaut',
     'hf.pdf': 'Protocole PDF',
     'hf.g.fl': 'Ligne de contact et tronçon',
@@ -15256,8 +15256,8 @@ const LANG = {
     'hf.bue': 'Passage à niveau',
     'hf.hub': 'CP non chargé (montage)',
     'hf.tm': 'Température de montage',
-    'hf.nfl.zug': 'Traction CP chargé (comme Excel « NFL-Tab ») : H<sub>t0</sub> = {h0} N à +10 °C · hf_min : H<sub>Tx</sub> = {hmin} N ({tmin}) · hf_max : H<sub>Tx</sub> = {hmax} N ({tmax})',
-    'hf.rfl.zug': 'LC R : flèche du fil de contact sous charge de glace avec H<sub>CP</sub> = 12 kN et H<sub>FC</sub> = 10 kN fixes (comme Excel).',
+    'hf.nfl.zug': 'Traction CP chargé : H<sub>t0</sub> = {h0} N à +10 °C · hf_min : H<sub>Tx</sub> = {hmin} N ({tmin}) · hf_max : H<sub>Tx</sub> = {hmax} N ({tmax})',
+    'hf.rfl.zug': 'LC R : flèche du fil de contact sous charge de glace avec H<sub>CP</sub> = 12 kN et H<sub>FC</sub> = 10 kN fixes.',
     'hf.rfl.zug.kurz': 'Tractions CP / FC (fixes)',
     'hf.un': 'Tension nominale',
     'hf.ebv': 'Gabarit limite',
@@ -15272,7 +15272,7 @@ const LANG = {
     'hf.cuebr': 'c_übr (couverte)',
     'hf.lrp.j': 'J — tous OCF : 6.05 m',
     'hf.lrp.n': 'N — OCF C : 6.20 m',
-    'hf.t.regel': 'Règle (0161.1010.0012, F. 6) : température du conducteur maximale pour hf_min (LC N StCu 50 mm² : jusqu’à +56 °C), température ambiante minimale pour hf_max (min. −20 °C). Températures par pas de 5 K comme Excel.',
+    'hf.t.regel': 'Règle (0161.1010.0012, F. 6) : température du conducteur maximale pour hf_min (LC N StCu 50 mm² : jusqu’à +56 °C), température ambiante minimale pour hf_max (min. −20 °C). Températures par pas de 5 K.',
     'hf.erg.min': 'Hauteur du fc minimale de conception hf_min',
     'hf.erg.max': 'Hauteur du fc maximale de conception hf_max',
     'hf.sp.sym': 'Grandeur',
@@ -15299,13 +15299,13 @@ const LANG = {
     'hf.z.summe.max': 'Somme des suppléments vers le haut',
     'hf.w.bue': 'Attention : passage à niveau ≥ 5.51 m !',
     'hf.w.buenfl': 'Passage à niveau en LC N : vérifier selon la situation ! (profil en long)',
-    'hf.w.buemax': 'hf_max au passage à niveau comme Excel : 5510 mm + suppléments vers le haut — à vérifier.',
+    'hf.w.buemax': 'hf_max au passage à niveau : 5510 mm + suppléments vers le haut — à vérifier.',
     'hf.w.p11': 'P1.1 / P1.3 = J : c_übr doit être 0 et P1.2 = N.',
     'hf.w.p12j': 'P1.2 = J : c_übr doit être supérieur à 0.',
-    'hf.w.p12n': 'P1.2 = N : c_übr doit être 0 (sinon f_FD,max,ZL = 0 comme Excel).',
+    'hf.w.p12n': 'P1.2 = N : c_übr doit être 0 (sinon f_FD,max,ZL = 0).',
     'hf.w.t56': 'LC N : la température du conducteur StCu 50 mm² atteint au maximum +56 °C.',
     'hf.err.typ': 'Seulement pour LC N et LC R.',
-    'hf.err.c': 'Portée c seulement 60 … 26, 24, 20, 16, 12 ou 8 m (comme Excel).',
+    'hf.err.c': 'Portée c seulement 60 … 26, 24, 20, 16, 12 ou 8 m.',
     'hf.err.v': 'Indiquer la vitesse.',
     'hf.err.t.min': 'Température du conducteur : −20 … +80 °C par pas de 5 K.',
     'hf.err.t.max': 'Température ambiante : −20 … +80 °C par pas de 5 K.',
@@ -15318,7 +15318,7 @@ const LANG = {
     'hf.hinweise': 'Remarques',
     'hf.ja': 'Oui',
     'hf.nein': 'Non',
-    'hf.quelle': 'Source : Excel CFF « Durchhang 2026 », feuilles hfmin_v11_D / hfmax_v11_D (DE-OCF 2024) ; règlements 0161.1010.0011, 0161.1010.0012, 0161.1010.0201 ; plan 0162.1020.0006.',
+    'hf.quelle': 'Bases : DE-OCF 2024, art. 5.2.1 et 5.2.2 ; règlements 0161.1010.0011, 0161.1010.0012, 0161.1010.0201 ; plan 0162.1020.0006.',
     'hf.el.gesperrt': 'Conducteur simple : pas de fil de contact — hf_min / hf_max seulement en LC N ou LC R.',
     'hf.msg.el': 'Conducteur simple : pas de hauteur du fil de contact — choisir LC N ou LC R.',
     'hf.fest': 'Repris du calcul de flèche (fixe) :',
@@ -15327,8 +15327,8 @@ const LANG = {
     'hf.c.ausL': 'de L = {L} m (valeur de tableau suivante)',
     'hf.c.frei': 'choisie différemment de L = {L} m',
     'hf.c.zurueck': 'revenir à L',
-    'hf.err.kombi': 'Combinaison absente du tableau Excel (StCu 50 + Cu 107, StCu 92 + Cu 107, StCu 92 + Cu 150) — hf non calculable.',
-    'hf.msg.c.gross': 'Portée supérieure à 60 m — hors du tableau Excel.',
+    'hf.err.kombi': 'Combinaison sans valeurs hf enregistrées (StCu 50 + Cu 107, StCu 92 + Cu 107, StCu 92 + Cu 150) — hf non calculable.',
+    'hf.msg.c.gross': 'Portée supérieure à 60 m — hors du domaine du tableau.',
     'lf.titel': 'Cas de charge vérification des distances',
     'lf.hinweis': 'Réglable séparément pour chaque système. L’application calcule tous les cas de charge et affiche le plus défavorable (plus petite distance à l’obstacle). Vérification satisfaite si cette distance respecte la distance minimale a (champ «Distance minimale a» sous le diagramme).',
     'lf.aktiv': 'Tous les cas de charge',
@@ -15837,10 +15837,10 @@ const LANG = {
     'par.ba.hint.starr': 'Forza di trazione con la campata del progetto c_proj (SBB 0161.1013.0005.1)',
     'par.ba.hint.ausg': 'Forza di trazione con la lunghezza media c_m, freccia per campata (SBB 0161.1013.0005.1)',
     'pdf.bezug.titel': 'Stato di riferimento: FP caricato a 10 °C',
-    'pdf.bezug.text': 'Come SBB «Durchhang 2026.xlsm»: a 10 °C il filo di contatto è orizzontale; la sua trazione agisce solo in caso di scostamento. La trazione di montaggio non caricata H<sub>ub</sub> a T<sub>1</sub> viene prima convertita nello stato caricato a 10 °C (peso totale, filo nuovo, senza trazione del filo di contatto).',
-    'pdf.nfl.zustgl': 'Equazione di stato LC N con trazione del filo di contatto (VEM, Excel «Upro1»)',
-    'pdf.gerundet.10': 'arrotondato a 10 N come Excel',
-    'pdf.gerundet.5': 'risultato arrotondato a 5 N (con ghiaccio 10 N) come Excel',
+    'pdf.bezug.text': 'A 10 °C il filo di contatto è orizzontale; la sua trazione agisce solo in caso di scostamento. La trazione di montaggio non caricata H<sub>ub</sub> a T<sub>1</sub> viene prima convertita nello stato caricato a 10 °C (peso totale, filo nuovo, senza trazione del filo di contatto).',
+    'pdf.nfl.zustgl': 'Equazione di stato LC N con trazione del filo di contatto (manuale VEM)',
+    'pdf.gerundet.10': 'arrotondato a 10 N',
+    'pdf.gerundet.5': 'risultato arrotondato a 5 N (con ghiaccio 10 N) come la tabella di regolazione',
     'ui.t2.fix.eis': '(fissato a −5 °C per il carico di ghiaccio)',
     'ui.datei': 'File',
     'ui.reset.titel': 'Ripristina i valori predefiniti',
@@ -15914,7 +15914,7 @@ const LANG = {
     'ui.rgl.hts.konst': 'H<sub>FP</sub> costante',
     'ui.rgl.nfl.note': 'H<sub>FP</sub> caricato = con filo di contatto &nbsp;·&nbsp; H<sub>FP</sub> non caricato = senza filo di contatto &nbsp;·&nbsp; a +10 °C &nbsp;·&nbsp; (SBB 0161.1013.0001)',
     'ui.rgl.rfl.note': 'H<sub>FP</sub> costante tramite dispositivo di tensionamento &nbsp;·&nbsp; indipendente dalla temperatura &nbsp;·&nbsp; (SBB 0161.1013.0001)',
-    'ui.rgl.el.note': 'Forza di regolazione a +10 °C, Lm = 45 m, metodo di calcolo «compensato» &nbsp;·&nbsp; (SBB «Durchhang 2026.xlsm»)',
+    'ui.rgl.el.note': 'Forza di regolazione a +10 °C, Lm = 45 m, metodo di calcolo «compensato»',
     'ui.reglage.bei': 'Regolazione a',
     'ui.export.csv': 'Esporta CSV',
     'ui.import.csv': 'Importa CSV',
@@ -16071,7 +16071,7 @@ const LANG = {
     'hf.zus.titel': 'Composizione hf_min / hf_max',
     'hf.zus.hw': 'Valori in mm. La parentesi raggruppa i supplementi Z<sub>hf,min</sub> o Z<sub>hf,max</sub>; segni come nella tabella.',
     'hf.kurz': 'hf min/max',
-    'hf.einleitung': 'Altezza minima e massima di progetto del filo di contatto secondo DE-OFerr 2024, art. 5.2.1 e 5.2.2 — riproduzione dell’Excel FFS (fogli hfmin / hfmax). Separata dal calcolo della freccia; LC N con filo di contatto nuovo (senza usura).',
+    'hf.einleitung': 'Altezza minima e massima di progetto del filo di contatto secondo DE-OFerr 2024, art. 5.2.1 e 5.2.2. Separata dal calcolo della freccia; LC N con filo di contatto nuovo (senza usura).',
     'hf.vorgabe': 'Valori predefiniti',
     'hf.pdf': 'Protocollo PDF',
     'hf.g.fl': 'Linea di contatto e tratta',
@@ -16084,8 +16084,8 @@ const LANG = {
     'hf.bue': 'Passaggio a livello',
     'hf.hub': 'FP scarica (montaggio)',
     'hf.tm': 'Temperatura di montaggio',
-    'hf.nfl.zug': 'Tiro FP carica (come Excel «NFL-Tab»): H<sub>t0</sub> = {h0} N a +10 °C · hf_min: H<sub>Tx</sub> = {hmin} N ({tmin}) · hf_max: H<sub>Tx</sub> = {hmax} N ({tmax})',
-    'hf.rfl.zug': 'LC R: freccia del filo di contatto con carico di ghiaccio con H<sub>FP</sub> = 12 kN e H<sub>FC</sub> = 10 kN fissi (come Excel).',
+    'hf.nfl.zug': 'Tiro FP carica: H<sub>t0</sub> = {h0} N a +10 °C · hf_min: H<sub>Tx</sub> = {hmin} N ({tmin}) · hf_max: H<sub>Tx</sub> = {hmax} N ({tmax})',
+    'hf.rfl.zug': 'LC R: freccia del filo di contatto con carico di ghiaccio con H<sub>FP</sub> = 12 kN e H<sub>FC</sub> = 10 kN fissi.',
     'hf.rfl.zug.kurz': 'Tiri FP / FC (fissi)',
     'hf.un': 'Tensione nominale',
     'hf.ebv': 'Profilo limite',
@@ -16100,7 +16100,7 @@ const LANG = {
     'hf.cuebr': 'c_übr (coperta)',
     'hf.lrp.j': 'J — tutti OFerr: 6.05 m',
     'hf.lrp.n': 'N — OFerr C: 6.20 m',
-    'hf.t.regel': 'Regola (0161.1010.0012, F. 6): temperatura massima del conduttore per hf_min (LC N StCu 50 mm²: fino a +56 °C), temperatura ambiente minima per hf_max (min. −20 °C). Temperature a passi di 5 K come Excel.',
+    'hf.t.regel': 'Regola (0161.1010.0012, F. 6): temperatura massima del conduttore per hf_min (LC N StCu 50 mm²: fino a +56 °C), temperatura ambiente minima per hf_max (min. −20 °C). Temperature a passi di 5 K.',
     'hf.erg.min': 'Altezza minima di progetto del FC hf_min',
     'hf.erg.max': 'Altezza massima di progetto del FC hf_max',
     'hf.sp.sym': 'Grandezza',
@@ -16127,13 +16127,13 @@ const LANG = {
     'hf.z.summe.max': 'Somma dei supplementi verso l’alto',
     'hf.w.bue': 'Attenzione: passaggio a livello ≥ 5.51 m!',
     'hf.w.buenfl': 'Passaggio a livello con LC N: verificare secondo la situazione! (profilo longitudinale)',
-    'hf.w.buemax': 'hf_max al passaggio a livello come Excel: 5510 mm + supplementi verso l’alto — da verificare.',
+    'hf.w.buemax': 'hf_max al passaggio a livello: 5510 mm + supplementi verso l’alto — da verificare.',
     'hf.w.p11': 'P1.1 / P1.3 = J: c_übr deve essere 0 e P1.2 = N.',
     'hf.w.p12j': 'P1.2 = J: c_übr deve essere maggiore di 0.',
-    'hf.w.p12n': 'P1.2 = N: c_übr deve essere 0 (altrimenti f_FD,max,ZL = 0 come Excel).',
+    'hf.w.p12n': 'P1.2 = N: c_übr deve essere 0 (altrimenti f_FD,max,ZL = 0).',
     'hf.w.t56': 'LC N: la temperatura del conduttore StCu 50 mm² raggiunge al massimo +56 °C.',
     'hf.err.typ': 'Solo per LC N e LC R.',
-    'hf.err.c': 'Campata c solo 60 … 26, 24, 20, 16, 12 o 8 m (come Excel).',
+    'hf.err.c': 'Campata c solo 60 … 26, 24, 20, 16, 12 o 8 m.',
     'hf.err.v': 'Indicare la velocità.',
     'hf.err.t.min': 'Temperatura del conduttore: −20 … +80 °C a passi di 5 K.',
     'hf.err.t.max': 'Temperatura ambiente: −20 … +80 °C a passi di 5 K.',
@@ -16146,7 +16146,7 @@ const LANG = {
     'hf.hinweise': 'Note',
     'hf.ja': 'Sì',
     'hf.nein': 'No',
-    'hf.quelle': 'Fonte: Excel FFS «Durchhang 2026», fogli hfmin_v11_D / hfmax_v11_D (DE-OFerr 2024); regolamenti 0161.1010.0011, 0161.1010.0012, 0161.1010.0201; disegno 0162.1020.0006.',
+    'hf.quelle': 'Basi: DE-OFerr 2024, art. 5.2.1 e 5.2.2; regolamenti 0161.1010.0011, 0161.1010.0012, 0161.1010.0201; disegno 0162.1020.0006.',
     'hf.el.gesperrt': 'Conduttore singolo: nessun filo di contatto — hf_min / hf_max solo con LC N o LC R.',
     'hf.msg.el': 'Conduttore singolo: nessuna altezza del filo di contatto — scegliere LC N o LC R.',
     'hf.fest': 'Dal calcolo della freccia (fisso):',
@@ -16155,8 +16155,8 @@ const LANG = {
     'hf.c.ausL': 'da L = {L} m (valore di tabella successivo)',
     'hf.c.frei': 'scelta diversa da L = {L} m',
     'hf.c.zurueck': 'tornare a L',
-    'hf.err.kombi': 'Combinazione non presente nella tabella Excel (StCu 50 + Cu 107, StCu 92 + Cu 107, StCu 92 + Cu 150) — hf non calcolabile.',
-    'hf.msg.c.gross': 'Campata superiore a 60 m — fuori dalla tabella Excel.',
+    'hf.err.kombi': 'Combinazione senza valori hf registrati (StCu 50 + Cu 107, StCu 92 + Cu 107, StCu 92 + Cu 150) — hf non calcolabile.',
+    'hf.msg.c.gross': 'Campata superiore a 60 m — fuori dall’intervallo della tabella.',
     'lf.titel': 'Casi di carico verifica delle distanze',
     'lf.hinweis': 'Impostabile separatamente per ogni sistema. L’applicazione calcola tutti i casi di carico e mostra il più sfavorevole (distanza minima dall’ostacolo). Verifica soddisfatta se questa distanza rispetta la distanza minima a (campo «Distanza minima a» sotto il diagramma).',
     'lf.aktiv': 'Tutti i casi di carico',
@@ -16936,14 +16936,14 @@ renderObstacleList();
           <li><strong>R-FL</strong> — beweglich abgefangen (Nachspannvorrichtung): konstante Zugkraft, keine Temperaturkorrektur nötig</li>
           <li><strong>Einzelleiter</strong> — einfache Kettenlinienberechnung eines einzelnen Leiters (Speiseleiter, Rückleiter o. ä.) ohne Fahrdraht und Hänger</li>
         </ul>
-        <p>Das Berechnungsmodell entspricht dem SBB-Referenzmodell <em>Durchhang 2026.xlsm</em> (VBA Upro1 / DurchhangNFL) und verwendet für bekannte FL-Kombinationen die <strong>VEM Handbuch Formeln 7.82 + 7.66</strong> für den Fahrdraht-Durchhang (effektive Spannweite L<sub>T1</sub> bei Höhendifferenz).</p>
+        <p>Das Berechnungsmodell folgt dem SBB-Rechengang für Kettenwerke und verwendet für bekannte FL-Kombinationen die <strong>VEM Handbuch Formeln 7.82 + 7.66</strong> für den Fahrdraht-Durchhang (effektive Spannweite L<sub>T1</sub> bei Höhendifferenz).</p>
         <p style="font-weight:600;margin:.7rem 0 .2rem">Funktionen im Überblick</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
-          <li>Rechnung wie SBB <em>Durchhang 2026.xlsm</em>, geprüft an 27 verifizierten SBB-Beispielen (Kap. 3)</li>
+          <li>Rechengang geprüft an 27 verifizierten SBB-Referenzbeispielen (Kap. 3)</li>
           <li>Berechnungsart <em>ausgleichend</em> / <em>starr</em> für N-FL und Einzelleiter (6.8); Fahrdraht neu / abgenutzt; Eislast</li>
           <li>Messpunkte, 3-Punkte-Messung, SOK-Bezug (6.1–6.3); H-Punkte H1–H4 bei den Messpunkten: Abstand zu Hindernissen oberhalb über alle Lastfälle, Schloss je Messpunkt (6.1, 6.12)</li>
           <li>Abspannabschnitt mit Masttabelle, CSV-Import und Längsprofil (6.11)</li>
-          <li>Fahrdrahthöhe hf_min / hf_max nach AB-EBV wie SBB-Excel, eigene Ansicht (6.14)</li>
+          <li>Fahrdrahthöhe hf_min / hf_max nach AB-EBV, eigene Ansicht (6.14)</li>
           <li>Koordinaten LV95, Export IFC4 und 3D-DXF (6.10); PDF-Berechnungsprotokoll und massstäbliche Zeichnung</li>
           <li>Hell-/Dunkelmodus, Ergebnisleiste auf dem Tablet, DE / FR / IT, offline nutzbar (6.13)</li>
           <li>Foto-Auswertung — nur zur Abschätzung, keine präzise Berechnung (6.13)</li>
@@ -16956,14 +16956,14 @@ renderObstacleList();
           <li><strong>LC R</strong> — ancrage mobile (tendeur automatique)&nbsp;: force de traction constante, aucune correction thermique nécessaire</li>
           <li><strong>Conducteur simple</strong> — calcul caténaire simple d'un conducteur unique (câble d'alimentation, câble de retour, etc.) sans fil de contact ni suspensions</li>
         </ul>
-        <p>Le modèle de calcul correspond au modèle de référence SBB <em>Durchhang 2026.xlsm</em> (VBA Upro1 / DurchhangNFL) et utilise pour les combinaisons FL connues la <strong>formule VEM Manuel 7.66</strong> pour la flèche du fil de contact.</p>
+        <p>Le modèle de calcul suit la méthode de calcul CFF pour les caténaires et utilise pour les combinaisons FL connues la <strong>formule VEM Manuel 7.66</strong> pour la flèche du fil de contact.</p>
         <p style="font-weight:600;margin:.7rem 0 .2rem">Fonctions en bref</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
-          <li>Calcul comme SBB <em>Durchhang 2026.xlsm</em>, vérifié sur 27 exemples CFF validés (chap. 3)</li>
+          <li>Méthode de calcul vérifiée sur 27 exemples de référence CFF validés (chap. 3)</li>
           <li>Mode de calcul <em>compensé</em> / <em>rigide</em> pour LC N et conducteur simple (6.8) ; fil de contact neuf / usé ; charge de glace</li>
           <li>Points de mesure, mesure 3 points, référence DRS (6.1–6.3) ; points H H1–H4 aux points de mesure : distance aux obstacles au-dessus pour tous les cas de charge, cadenas par point de mesure (6.1, 6.12)</li>
           <li>Canton de pose avec tableau des mâts, import CSV et profil en long (6.11)</li>
-          <li>Hauteur du fil de contact hf_min / hf_max selon DE-OCF comme l’Excel CFF, vue séparée (6.14)</li>
+          <li>Hauteur du fil de contact hf_min / hf_max selon DE-OCF, vue séparée (6.14)</li>
           <li>Coordonnées MN95, export IFC4 et DXF 3D (6.10) ; protocole de calcul PDF et dessin à l’échelle</li>
           <li>Mode clair / sombre, barre de résultats sur tablette, DE / FR / IT, utilisable hors ligne (6.13)</li>
           <li>Analyse photo — estimation seulement, pas de calcul précis (6.13)</li>
@@ -16976,14 +16976,14 @@ renderObstacleList();
           <li><strong>LC R</strong> — ancoraggio mobile (tendifilo automatico): forza di trazione costante, nessuna correzione termica necessaria</li>
           <li><strong>Conduttore singolo</strong> — calcolo semplice della catenaria di un singolo conduttore (cavo di alimentazione, cavo di ritorno, ecc.) senza filo di contatto né ballerine</li>
         </ul>
-        <p>Il modello di calcolo corrisponde al modello di riferimento FFS <em>Durchhang 2026.xlsm</em> (VBA Upro1 / DurchhangNFL) e utilizza per le combinazioni FL note la <strong>formula VEM Manuale 7.66</strong> per la freccia del filo di contatto.</p>
+        <p>Il modello di calcolo segue il metodo di calcolo FFS per le catenarie e utilizza per le combinazioni FL note la <strong>formula VEM Manuale 7.66</strong> per la freccia del filo di contatto.</p>
         <p style="font-weight:600;margin:.7rem 0 .2rem">Funzioni in breve</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
-          <li>Calcolo come FFS <em>Durchhang 2026.xlsm</em>, verificato su 27 esempi FFS convalidati (cap. 3)</li>
+          <li>Metodo di calcolo verificato su 27 esempi di riferimento FFS convalidati (cap. 3)</li>
           <li>Modalità di calcolo <em>compensato</em> / <em>rigido</em> per LC N e conduttore singolo (6.8); filo di contatto nuovo / usurato; carico di ghiaccio</li>
           <li>Punti di misura, misura 3 punti, riferimento PRF (6.1–6.3); punti H H1–H4 ai punti di misura: distanza da ostacoli sopra per tutti i casi di carico, lucchetto per punto di misura (6.1, 6.12)</li>
           <li>Tratta di regolazione con tabella dei pali, importazione CSV e profilo longitudinale (6.11)</li>
-          <li>Altezza del filo di contatto hf_min / hf_max secondo DE-OFerr come l’Excel FFS, vista separata (6.14)</li>
+          <li>Altezza del filo di contatto hf_min / hf_max secondo DE-OFerr, vista separata (6.14)</li>
           <li>Coordinate MN95, esportazione IFC4 e DXF 3D (6.10); protocollo di calcolo PDF e disegno in scala</li>
           <li>Modalità chiara / scura, barra dei risultati su tablet, DE / FR / IT, utilizzabile offline (6.13)</li>
           <li>Analisi foto — solo stima, nessun calcolo preciso (6.13)</li>
@@ -17087,114 +17087,114 @@ renderObstacleList();
       <div class="hb-lang hb-de">
         <p style="font-weight:600;margin-top:.5rem">Schritt 1 &nbsp;—&nbsp; Verteilte Gesamtlast</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>ges</sub> = q<sub>Ts</sub> + q<sub>Fd</sub> + q<sub>Hänger</sub> &nbsp;[N/m]</p>
-        <p style="color:var(--muted);font-size:.8rem">Hänger: 0.020 kg/m × 9.81 m/s² = 0.196 N/m. Bei bekannter FL-Kombination: q<sub>ges</sub> = MFL (exakterer VBA-Wert inkl. Klemmen).</p>
+        <p style="color:var(--muted);font-size:.8rem">Hänger: 0.020 kg/m × 9.81 m/s² = 0.196 N/m. Bei bekannter FL-Kombination: q<sub>ges</sub> = MFL (genauerer Wert inkl. Klemmen).</p>
 
         <p style="font-weight:600;margin-top:.7rem">Schritt 2 &nbsp;—&nbsp; Bezugszustand: Ts belastet bei 10 °C (N-FL)</p>
-        <p>Die Montagezugkraft H<sub>ub</sub> (Ts unbelastet, bei der Montagetemperatur T<sub>1</sub>) wird wie im SBB-Excel mit der Zustandsgleichung in den <strong>Bezugszustand</strong> umgerechnet: Ts belastet mit Fahrdraht und Hängern (MFL statt MTS) bei <strong>10 °C</strong>, noch ohne Fahrdrahtzug. Bei 10 °C hängt der Fahrdraht waagrecht; sein Zug wirkt erst bei einer Temperaturabweichung. Grundform (ohne Temperaturglied):</p>
+        <p>Die Montagezugkraft H<sub>ub</sub> (Ts unbelastet, bei der Montagetemperatur T<sub>1</sub>) wird mit der Zustandsgleichung in den <strong>Bezugszustand</strong> umgerechnet: Ts belastet mit Fahrdraht und Hängern (MFL statt MTS) bei <strong>10 °C</strong>, noch ohne Fahrdrahtzug. Bei 10 °C hängt der Fahrdraht waagrecht; sein Zug wirkt erst bei einer Temperaturabweichung. Grundform (ohne Temperaturglied):</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q²<sub>ges</sub>·Lm² / (24·H²<sub>b</sub>) − H<sub>b</sub>/(E·A)<sub>Ts</sub> = q²<sub>Ts</sub>·Lm² / (24·H²<sub>ub</sub>) − H<sub>ub</sub>/(E·A)<sub>Ts</sub></p>
-        <p style="color:var(--muted);font-size:.8rem">Lösung mit Newton-Raphson (E·A des Tragseils bzw. der Kombination; VBA-konform), bei T<sub>1</sub> ≠ 10 °C mit Temperaturglied α·(10 °C − T<sub>1</sub>). Ergebnis: F₀ = H<sub>Ts,belastet</sub> bei 10 °C, <strong>gerundet auf 10 N</strong> wie im Excel.</p>
+        <p style="color:var(--muted);font-size:.8rem">Lösung mit Newton-Raphson (E·A des Tragseils bzw. der Kombination), bei T<sub>1</sub> ≠ 10 °C mit Temperaturglied α·(10 °C − T<sub>1</sub>). Ergebnis: F₀ = H<sub>Ts,belastet</sub> bei 10 °C, <strong>gerundet auf 10 N</strong>.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Schritt 3 &nbsp;—&nbsp; Kettenlinie Ausgangszustand (T<sub>1</sub>)</p>
         <p>Das Ts wird als exakte Kettenlinie modelliert mit Kettenlinienparameter <em>a = H/q</em>:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">y(x) = a · cosh((x − x₀) / a) + C₀</p>
         <p style="color:var(--muted);font-size:.8rem">Tiefpunkt x₀ und Konstante C₀ aus Randbedingungen h<sub>1</sub>, h<sub>2</sub> bestimmt (exakte Lösung, keine Parabelannäherung).</p>
 
-        <p style="font-weight:600;margin-top:.7rem">Schritt 4 &nbsp;—&nbsp; Stufe 2 Zustandsgleichung: Temperaturänderung (N-FL, VBA-konform)</p>
-        <p>Für bekannte FL-Kombinationen nach VEM Handbuch / VBA Upro1:</p>
+        <p style="font-weight:600;margin-top:.7rem">Schritt 4 &nbsp;—&nbsp; Stufe 2 Zustandsgleichung: Temperaturänderung (N-FL)</p>
+        <p>Für bekannte FL-Kombinationen nach VEM-Handbuch:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">((MFL + Z<sub>L</sub> + MFL·H<sub>Fd</sub>/F₀) / (H<sub>Fd</sub> + x))² − (MFL/F₀)² − G·(α·ΔT + (x−F₀)/(E·A)) = 0</p>
-        <p style="color:var(--muted);font-size:.8rem">F₀ = H<sub>Ts</sub> belastet bei 10 °C (Schritt 2), ΔT = T − 10 °C. G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = Eislast [N/m] (nur bei −5 °C). Newton-Raphson → H<sub>Ts,2</sub>, <strong>gerundet auf 5 N</strong> (mit Eislast auf 10 N) wie die Reglagetabelle. Der Ausgangszustand bei T<sub>1</sub> wird auf dieselbe Weise aus F₀ bestimmt. Abnutzung: MFL wird um den Gewichtsverlust des Fahrdrahts vermindert (Excel, Blatt Daten); sie wirkt ab 10 °C.</p>
+        <p style="color:var(--muted);font-size:.8rem">F₀ = H<sub>Ts</sub> belastet bei 10 °C (Schritt 2), ΔT = T − 10 °C. G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = Eislast [N/m] (nur bei −5 °C). Newton-Raphson → H<sub>Ts,2</sub>, <strong>gerundet auf 5 N</strong> (mit Eislast auf 10 N) wie die Reglagetabelle. Der Ausgangszustand bei T<sub>1</sub> wird auf dieselbe Weise aus F₀ bestimmt. Abnutzung: MFL wird um den Gewichtsverlust des Fahrdrahts vermindert (Kennwerte der Kombination); sie wirkt ab 10 °C.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Schritt 5 &nbsp;—&nbsp; Kombinierte Kettenlinie &amp; Durchhang (VEM Handbuch Formeln 7.82 + 7.66)</p>
         <p>Massgebender Durchhang für Kontrollmessungen — kombiniertes Ts+Fd-System:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>Fd</sub>/F₀) + Z<sub>L</sub> &nbsp;&nbsp;[F₀ = H<sub>Ts</sub> belastet bei 10 °C]</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">L<sub>T1</sub> = L + 2·<strong>|Δh|</strong>·(H<sub>Ts,2</sub>+H<sub>Fd</sub>) / (L·q<sub>vem</sub>) &nbsp;&nbsp;[Formel 7.82, |Δh| = |h<sub>2</sub>−h<sub>1</sub>| ≥ 0]</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">f<sub>Fd</sub> = L<sub>T1</sub>² / 8 · q<sub>vem</sub> / (H<sub>Ts,2</sub> + H<sub>Fd</sub>) &nbsp;&nbsp;[Formel 7.66 mit L<sub>T1</sub>]</p>
-        <p style="color:var(--muted);font-size:.8rem">Entspricht Zellenformeln P12/P14 in SBB Durchhang 2026.xlsm (NFL-Re Sheet). L<sub>T1</sub> ≥ L immer (Absolutwert |Δh| — symmetrisch für h<sub>1</sub>&gt;h<sub>2</sub> und h<sub>2</sub>&gt;h<sub>1</sub>). Gilt für T<sub>1</sub> und T<sub>2</sub>.</p>
+        <p style="color:var(--muted);font-size:.8rem">L<sub>T1</sub> ≥ L immer (Absolutwert |Δh| — symmetrisch für h<sub>1</sub>&gt;h<sub>2</sub> und h<sub>2</sub>&gt;h<sub>1</sub>). Gilt für T<sub>1</sub> und T<sub>2</sub>.</p>
         <p style="margin-top:.5rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Darstellung im Diagramm:</strong> Die angezeigte Ts-Kurve bei T<sub>2</sub> entspricht der kombinierten Kettenlinie des Ts+Fd-Systems mit den Parametern q<sub>vem</sub> und H<sub>Ts,2</sub>+H<sub>Fd</sub>. Diese stimmt mit der VEM-Parabel überein (Abweichung &lt; 5 mm für übliche Spannweiten). Messpunkte (M1–M4) zeigen die Höhe auf dieser kombinierten Kurve.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Berechnungsart, R-FL und Einzelleiter</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
           <li><strong>Ausgleichend</strong>: Zugkraft mit der Mittelspannweite c<sub>m</sub> (Lm) aller Felder; Durchhang je Feld mit seiner Länge (SBB 0161.1013.0005.1). <strong>Starr</strong>: jedes Feld mit seiner Projektspannweite c<sub>proj</sub>; N-FL mit den Reglagewerten «starr» (SBB 0161.1013.0003), Einzelleiter mit L<sub>ref</sub> = 25 m (siehe 6.8).</li>
           <li><strong>R-FL</strong>: Tragseil und Fahrdraht nachgespannt — konstante Zugkraft, die Temperatur wirkt nicht. Eislast und Abnutzung teilen sich auf Ts und Fd auf: q = MFL + (Z<sub>L</sub> − q<sub>Abn</sub>)·H<sub>Ts</sub>/(H<sub>Ts</sub>+H<sub>Fd</sub>). Der Fahrdraht liegt in der Solllage und folgt dem Tragseil nur bei Eislast bzw. Abnutzung (VEM 7.53a): Absenkung ≈ L²/8 · Z<sub>L</sub>/(H<sub>Ts</sub>+H<sub>Fd</sub>).</li>
-          <li><strong>Einzelleiter</strong>: Zustandsgleichung mit α und E·A des Leiters, Reglagezugkraft aus der Tabelle (6.5); Eislast bei −5 °C mit eisfreiem Ausgangszustand wie im Excel.</li>
+          <li><strong>Einzelleiter</strong>: Zustandsgleichung mit α und E·A des Leiters, Reglagezugkraft aus der Tabelle (6.5); Eislast bei −5 °C mit eisfreiem Ausgangszustand.</li>
         </ul>
-        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Verifikation:</strong> 27 mit der SBB-Excel verifizierte Beispielrechnungen (N-FL normal und starr, R-FL, Einzelleiter, mit Eis und Abnutzung) sind als automatische Tests hinterlegt und werden bei jeder Änderung nachgerechnet (Toleranz 7.5 mm), zusammen mit 288 weiteren eingefrorenen Rechenfällen.</p>
+        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Verifikation:</strong> 27 verifizierte SBB-Referenzbeispiele (N-FL normal und starr, R-FL, Einzelleiter, mit Eis und Abnutzung) sind als automatische Tests hinterlegt und werden bei jeder Änderung nachgerechnet (Toleranz 7.5 mm), zusammen mit 288 weiteren eingefrorenen Rechenfällen.</p>
       </div><!-- /hb-de -->
 
       <!-- FR -->
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;margin-top:.5rem">Étape 1 &nbsp;—&nbsp; Charge totale distribuée</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>tot</sub> = q<sub>CP</sub> + q<sub>FC</sub> + q<sub>suspension</sub> &nbsp;[N/m]</p>
-        <p style="color:var(--muted);font-size:.8rem">Suspension: 0.020 kg/m × 9.81 m/s² = 0.196 N/m. Pour combinaison FL connue: q<sub>tot</sub> = MFL (valeur VBA exacte incl. pinces).</p>
+        <p style="color:var(--muted);font-size:.8rem">Suspension: 0.020 kg/m × 9.81 m/s² = 0.196 N/m. Pour combinaison FL connue: q<sub>tot</sub> = MFL (valeur plus précise incl. pinces).</p>
 
         <p style="font-weight:600;margin-top:.7rem">Étape 2 &nbsp;—&nbsp; État de référence : CP chargé à 10 °C (LC N)</p>
-        <p>La force de montage H<sub>nch</sub> (CP non chargé, à la température de pose T<sub>1</sub>) est convertie comme dans l’Excel CFF, par l’équation d’état, en <strong>état de référence</strong> : CP chargé avec fil de contact et suspensions (MFL au lieu de MTS) à <strong>10 °C</strong>, encore sans traction du fil de contact. À 10 °C, le fil de contact est horizontal ; sa traction n’agit qu’en cas d’écart de température. Forme de base (sans terme de température) :</p>
+        <p>La force de montage H<sub>nch</sub> (CP non chargé, à la température de pose T<sub>1</sub>) est convertie, par l’équation d’état, en <strong>état de référence</strong> : CP chargé avec fil de contact et suspensions (MFL au lieu de MTS) à <strong>10 °C</strong>, encore sans traction du fil de contact. À 10 °C, le fil de contact est horizontal ; sa traction n’agit qu’en cas d’écart de température. Forme de base (sans terme de température) :</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q²<sub>tot</sub>·Lm² / (24·H²<sub>ch</sub>) − H<sub>ch</sub>/(E·A)<sub>CP</sub> = q²<sub>CP</sub>·Lm² / (24·H²<sub>nch</sub>) − H<sub>nch</sub>/(E·A)<sub>CP</sub></p>
-        <p style="color:var(--muted);font-size:.8rem">Résolution Newton-Raphson (E·A du câble porteur resp. de la combinaison ; conforme VBA), si T<sub>1</sub> ≠ 10 °C avec le terme α·(10 °C − T<sub>1</sub>). Résultat : F₀ = H<sub>CP,chargé</sub> à 10 °C, <strong>arrondi à 10 N</strong> comme dans l’Excel.</p>
+        <p style="color:var(--muted);font-size:.8rem">Résolution Newton-Raphson (E·A du câble porteur resp. de la combinaison), si T<sub>1</sub> ≠ 10 °C avec le terme α·(10 °C − T<sub>1</sub>). Résultat : F₀ = H<sub>CP,chargé</sub> à 10 °C, <strong>arrondi à 10 N</strong>.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Étape 3 &nbsp;—&nbsp; Caténaire état initial (T<sub>1</sub>)</p>
         <p>Le CP est modélisé comme caténaire exacte avec paramètre caténaire <em>a = H/q</em>:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">y(x) = a · cosh((x − x₀) / a) + C₀</p>
         <p style="color:var(--muted);font-size:.8rem">Point le plus bas x₀ et constante C₀ déterminés à partir des conditions aux limites h<sub>1</sub>, h<sub>2</sub> (solution exacte, pas d'approximation parabolique).</p>
 
-        <p style="font-weight:600;margin-top:.7rem">Étape 4 &nbsp;—&nbsp; Équation d'état niveau 2: variation de température (LC N, conforme VBA)</p>
-        <p>Pour combinaisons FL connues selon VEM Manuel / VBA Upro1:</p>
+        <p style="font-weight:600;margin-top:.7rem">Étape 4 &nbsp;—&nbsp; Équation d'état niveau 2: variation de température (LC N)</p>
+        <p>Pour combinaisons FL connues selon le manuel VEM :</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">((MFL + Z<sub>L</sub> + MFL·H<sub>FC</sub>/F₀) / (H<sub>FC</sub> + x))² − (MFL/F₀)² − G·(α·ΔT + (x−F₀)/(E·A)) = 0</p>
-        <p style="color:var(--muted);font-size:.8rem">F₀ = H<sub>CP</sub> chargé à 10 °C (étape 2), ΔT = T − 10 °C. G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = charge de glace [N/m] (seulement à −5 °C). Newton-Raphson → H<sub>CP,2</sub>, <strong>arrondi à 5 N</strong> (avec glace à 10 N) comme le tableau de réglage. L’état initial à T<sub>1</sub> est déterminé de la même manière à partir de F₀. Usure : MFL est diminué de la perte de poids du fil de contact (Excel, feuille Daten) ; elle agit dès 10 °C.</p>
+        <p style="color:var(--muted);font-size:.8rem">F₀ = H<sub>CP</sub> chargé à 10 °C (étape 2), ΔT = T − 10 °C. G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = charge de glace [N/m] (seulement à −5 °C). Newton-Raphson → H<sub>CP,2</sub>, <strong>arrondi à 5 N</strong> (avec glace à 10 N) comme le tableau de réglage. L’état initial à T<sub>1</sub> est déterminé de la même manière à partir de F₀. Usure : MFL est diminué de la perte de poids du fil de contact (valeurs de la combinaison) ; elle agit dès 10 °C.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Étape 5 &nbsp;—&nbsp; Caténaire combinée &amp; flèche (VEM Manuel formules 7.82 + 7.66)</p>
         <p>Flèche déterminante pour les mesures de contrôle — système combiné CP+FC:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>FC</sub>/F₀) + Z<sub>L</sub> &nbsp;&nbsp;[F₀ = H<sub>CP</sub> chargé à 10 °C]</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">L<sub>T1</sub> = L + 2·<strong>|Δh|</strong>·(H<sub>CP,2</sub>+H<sub>FC</sub>) / (L·q<sub>vem</sub>) &nbsp;&nbsp;[Formule 7.82, |Δh|=|h<sub>2</sub>−h<sub>1</sub>| ≥ 0]</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">f<sub>FC</sub> = L<sub>T1</sub>² / 8 · q<sub>vem</sub> / (H<sub>CP,2</sub> + H<sub>FC</sub>) &nbsp;&nbsp;[Formule 7.66]</p>
-        <p style="color:var(--muted);font-size:.8rem">Correspond aux formules P12/P14 dans SBB Durchhang 2026.xlsm (feuille NFL-Re). L<sub>T1</sub> ≥ L toujours (valeur absolue |Δh| — symétrique). Valable pour T<sub>1</sub> et T<sub>2</sub>.</p>
+        <p style="color:var(--muted);font-size:.8rem">L<sub>T1</sub> ≥ L toujours (valeur absolue |Δh| — symétrique). Valable pour T<sub>1</sub> et T<sub>2</sub>.</p>
         <p style="margin-top:.5rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Affichage dans le diagramme:</strong> La courbe CP affichée à T<sub>2</sub> correspond à la caténaire combinée du système CP+FC avec les paramètres q<sub>vem</sub> et H<sub>CP,2</sub>+H<sub>FC</sub>. Les points de mesure (M1–M4) indiquent la hauteur sur cette courbe combinée.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Mode de calcul, LC R et conducteur simple</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
           <li><strong>Compensé</strong> : force de traction avec la portée moyenne c<sub>m</sub> (Lm) de toutes les portées ; flèche par portée avec sa longueur (CFF 0161.1013.0005.1). <strong>Rigide</strong> : chaque portée avec sa portée du projet c<sub>proj</sub> ; LC N avec les valeurs de réglage «rigide» (CFF 0161.1013.0003), conducteur simple avec L<sub>réf</sub> = 25 m (voir 6.8).</li>
           <li><strong>LC R</strong> : câble porteur et fil de contact tendus automatiquement — force de traction constante, la température n’a pas d’effet. Charge de glace et usure se répartissent sur CP et FC : q = MFL + (Z<sub>L</sub> − q<sub>usure</sub>)·H<sub>CP</sub>/(H<sub>CP</sub>+H<sub>FC</sub>). Le fil de contact est en position nominale et ne suit le câble porteur qu’en cas de glace resp. d’usure (VEM 7.53a) : abaissement ≈ L²/8 · Z<sub>L</sub>/(H<sub>CP</sub>+H<sub>FC</sub>).</li>
-          <li><strong>Conducteur simple</strong> : équation d’état avec α et E·A du conducteur, force de réglage selon le tableau (6.5) ; charge de glace à −5 °C avec état initial sans glace comme dans l’Excel.</li>
+          <li><strong>Conducteur simple</strong> : équation d’état avec α et E·A du conducteur, force de réglage selon le tableau (6.5) ; charge de glace à −5 °C avec état initial sans glace.</li>
         </ul>
-        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Vérification :</strong> 27 exemples de calcul validés avec l’Excel CFF (LC N normale et rigide, LC R, conducteur simple, avec glace et usure) sont enregistrés comme tests automatiques et recalculés à chaque modification (tolérance 7.5 mm), avec 288 autres cas de calcul figés.</p>
+        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Vérification :</strong> 27 exemples de référence CFF validés (LC N normale et rigide, LC R, conducteur simple, avec glace et usure) sont enregistrés comme tests automatiques et recalculés à chaque modification (tolérance 7.5 mm), avec 288 autres cas de calcul figés.</p>
       </div><!-- /hb-fr -->
 
       <!-- IT -->
       <div class="hb-lang hb-it" style="display:none">
         <p style="font-weight:600;margin-top:.5rem">Passo 1 &nbsp;—&nbsp; Carico totale distribuito</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>tot</sub> = q<sub>FP</sub> + q<sub>FC</sub> + q<sub>ballerina</sub> &nbsp;[N/m]</p>
-        <p style="color:var(--muted);font-size:.8rem">Ballerina: 0.020 kg/m × 9.81 m/s² = 0.196 N/m. Per combinazione FL nota: q<sub>tot</sub> = MFL (valore VBA esatto incl. morsetti).</p>
+        <p style="color:var(--muted);font-size:.8rem">Ballerina: 0.020 kg/m × 9.81 m/s² = 0.196 N/m. Per combinazione FL nota: q<sub>tot</sub> = MFL (valore più preciso incl. morsetti).</p>
 
         <p style="font-weight:600;margin-top:.7rem">Passo 2 &nbsp;—&nbsp; Stato di riferimento: FP caricato a 10 °C (LC N)</p>
-        <p>La forza di montaggio H<sub>nc</sub> (FP non caricato, alla temperatura di posa T<sub>1</sub>) viene convertita come nell’Excel FFS, con l’equazione di stato, nello <strong>stato di riferimento</strong>: FP caricato con filo di contatto e ballerine (MFL invece di MTS) a <strong>10 °C</strong>, ancora senza trazione del filo di contatto. A 10 °C il filo di contatto è orizzontale; la sua trazione agisce solo in caso di scostamento di temperatura. Forma di base (senza termine di temperatura):</p>
+        <p>La forza di montaggio H<sub>nc</sub> (FP non caricato, alla temperatura di posa T<sub>1</sub>) viene convertita, con l’equazione di stato, nello <strong>stato di riferimento</strong>: FP caricato con filo di contatto e ballerine (MFL invece di MTS) a <strong>10 °C</strong>, ancora senza trazione del filo di contatto. A 10 °C il filo di contatto è orizzontale; la sua trazione agisce solo in caso di scostamento di temperatura. Forma di base (senza termine di temperatura):</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q²<sub>tot</sub>·Lm² / (24·H²<sub>c</sub>) − H<sub>c</sub>/(E·A)<sub>FP</sub> = q²<sub>FP</sub>·Lm² / (24·H²<sub>nc</sub>) − H<sub>nc</sub>/(E·A)<sub>FP</sub></p>
-        <p style="color:var(--muted);font-size:.8rem">Soluzione Newton-Raphson (E·A del filo portante risp. della combinazione; conforme VBA), se T<sub>1</sub> ≠ 10 °C con il termine α·(10 °C − T<sub>1</sub>). Risultato: F₀ = H<sub>FP,caricato</sub> a 10 °C, <strong>arrotondato a 10 N</strong> come nell’Excel.</p>
+        <p style="color:var(--muted);font-size:.8rem">Soluzione Newton-Raphson (E·A del filo portante risp. della combinazione), se T<sub>1</sub> ≠ 10 °C con il termine α·(10 °C − T<sub>1</sub>). Risultato: F₀ = H<sub>FP,caricato</sub> a 10 °C, <strong>arrotondato a 10 N</strong>.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Passo 3 &nbsp;—&nbsp; Catenaria stato iniziale (T<sub>1</sub>)</p>
         <p>Il FP è modellato come catenaria esatta con parametro catenaria <em>a = H/q</em>:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">y(x) = a · cosh((x − x₀) / a) + C₀</p>
         <p style="color:var(--muted);font-size:.8rem">Punto più basso x₀ e costante C₀ determinati dalle condizioni al contorno h<sub>1</sub>, h<sub>2</sub> (soluzione esatta, nessuna approssimazione parabolica).</p>
 
-        <p style="font-weight:600;margin-top:.7rem">Passo 4 &nbsp;—&nbsp; Equazione di stato livello 2: variazione di temperatura (LC N, conforme VBA)</p>
-        <p>Per combinazioni FL note secondo VEM Manuale / VBA Upro1:</p>
+        <p style="font-weight:600;margin-top:.7rem">Passo 4 &nbsp;—&nbsp; Equazione di stato livello 2: variazione di temperatura (LC N)</p>
+        <p>Per combinazioni FL note secondo il manuale VEM:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">((MFL + Z<sub>L</sub> + MFL·H<sub>FC</sub>/F₀) / (H<sub>FC</sub> + x))² − (MFL/F₀)² − G·(α·ΔT + (x−F₀)/(E·A)) = 0</p>
-        <p style="color:var(--muted);font-size:.8rem">F₀ = H<sub>FP</sub> caricato a 10 °C (passo 2), ΔT = T − 10 °C. G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = carico di ghiaccio [N/m] (solo a −5 °C). Newton-Raphson → H<sub>FP,2</sub>, <strong>arrotondato a 5 N</strong> (con ghiaccio a 10 N) come la tabella di regolazione. Lo stato iniziale a T<sub>1</sub> viene determinato allo stesso modo da F₀. Usura: MFL viene ridotto della perdita di peso del filo di contatto (Excel, foglio Daten); agisce da 10 °C.</p>
+        <p style="color:var(--muted);font-size:.8rem">F₀ = H<sub>FP</sub> caricato a 10 °C (passo 2), ΔT = T − 10 °C. G = 24/Lm² + (MFL/F₀)². Z<sub>L</sub> = carico di ghiaccio [N/m] (solo a −5 °C). Newton-Raphson → H<sub>FP,2</sub>, <strong>arrotondato a 5 N</strong> (con ghiaccio a 10 N) come la tabella di regolazione. Lo stato iniziale a T<sub>1</sub> viene determinato allo stesso modo da F₀. Usura: MFL viene ridotto della perdita di peso del filo di contatto (valori della combinazione); agisce da 10 °C.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Passo 5 &nbsp;—&nbsp; Catenaria combinata &amp; freccia (VEM Manuale formule 7.82 + 7.66)</p>
         <p>Freccia determinante per le misure di controllo — sistema combinato FP+FC:</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>FC</sub>/F₀) + Z<sub>L</sub> &nbsp;&nbsp;[F₀ = H<sub>FP</sub> caricato a 10 °C]</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">L<sub>T1</sub> = L + 2·<strong>|Δh|</strong>·(H<sub>FP,2</sub>+H<sub>FC</sub>) / (L·q<sub>vem</sub>) &nbsp;&nbsp;[Formula 7.82, |Δh|=|h<sub>2</sub>−h<sub>1</sub>| ≥ 0]</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">f<sub>FC</sub> = L<sub>T1</sub>² / 8 · q<sub>vem</sub> / (H<sub>FP,2</sub> + H<sub>FC</sub>) &nbsp;&nbsp;[Formula 7.66]</p>
-        <p style="color:var(--muted);font-size:.8rem">Corrisponde alle formule P12/P14 in SBB Durchhang 2026.xlsm (foglio NFL-Re). L<sub>T1</sub> ≥ L sempre (valore assoluto |Δh| — simmetrico). Valido per T<sub>1</sub> e T<sub>2</sub>.</p>
+        <p style="color:var(--muted);font-size:.8rem">L<sub>T1</sub> ≥ L sempre (valore assoluto |Δh| — simmetrico). Valido per T<sub>1</sub> e T<sub>2</sub>.</p>
         <p style="margin-top:.5rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Visualizzazione nel diagramma:</strong> La curva FP visualizzata a T<sub>2</sub> corrisponde alla catenaria combinata del sistema FP+FC con i parametri q<sub>vem</sub> e H<sub>FP,2</sub>+H<sub>FC</sub>. I punti di misura (M1–M4) indicano l'altezza su questa curva combinata.</p>
 
         <p style="font-weight:600;margin-top:.7rem">Modalità di calcolo, LC R e conduttore singolo</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
           <li><strong>Compensato</strong>: forza di trazione con la lunghezza media c<sub>m</sub> (Lm) di tutte le campate; freccia per campata con la sua lunghezza (FFS 0161.1013.0005.1). <strong>Rigido</strong>: ogni campata con la sua campata del progetto c<sub>proj</sub>; LC N con i valori di regolazione «rigido» (FFS 0161.1013.0003), conduttore singolo con L<sub>rif</sub> = 25 m (vedi 6.8).</li>
           <li><strong>LC R</strong>: filo portante e filo di contatto tensionati automaticamente — forza di trazione costante, la temperatura non ha effetto. Carico di ghiaccio e usura si ripartiscono su FP e FC: q = MFL + (Z<sub>L</sub> − q<sub>usura</sub>)·H<sub>FP</sub>/(H<sub>FP</sub>+H<sub>FC</sub>). Il filo di contatto è in posizione nominale e segue il filo portante solo con ghiaccio risp. usura (VEM 7.53a): abbassamento ≈ L²/8 · Z<sub>L</sub>/(H<sub>FP</sub>+H<sub>FC</sub>).</li>
-          <li><strong>Conduttore singolo</strong>: equazione di stato con α ed E·A del conduttore, forza di regolazione dalla tabella (6.5); carico di ghiaccio a −5 °C con stato iniziale senza ghiaccio come nell’Excel.</li>
+          <li><strong>Conduttore singolo</strong>: equazione di stato con α ed E·A del conduttore, forza di regolazione dalla tabella (6.5); carico di ghiaccio a −5 °C con stato iniziale senza ghiaccio.</li>
         </ul>
-        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Verifica:</strong> 27 esempi di calcolo convalidati con l’Excel FFS (LC N normale e rigida, LC R, conduttore singolo, con ghiaccio e usura) sono registrati come test automatici e ricalcolati a ogni modifica (tolleranza 7.5 mm), insieme ad altri 288 casi di calcolo congelati.</p>
+        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Verifica:</strong> 27 esempi di riferimento FFS convalidati (LC N normale e rigida, LC R, conduttore singolo, con ghiaccio e usura) sono registrati come test automatici e ricalcolati a ogni modifica (tolleranza 7.5 mm), insieme ad altri 288 casi di calcolo congelati.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 4 Leiterkennwerte ══ -->
@@ -17272,12 +17272,12 @@ renderObstacleList();
         <p>L'applicazione contiene catenarie predefinite per LC N e LC R. Inoltre, è possibile registrare le proprie catenarie tramite il <strong>pulsante ＋</strong> (memoria locale del browser). Le catenarie personalizzate permettono l'inserimento libero di MFL, E, α, A nonché sh, forze di trazione e valore limite di usura.</p>
       </div>
 
-      <div class="hb-lang hb-de"><p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .25rem">5.1 &nbsp;N-FL — Kombinationskennwerte (VBA-Quelle: SBB Durchhang 2026.xlsm)</p>
-      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.35rem">MFL = Gesamtlast (Ts + Fd + Klemmen) belastet. MTS = q<sub>Ts</sub>. E·A und α = kombinierte Werte des Tragseils (VBA-konform).</p></div>
-      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .25rem">5.1 &nbsp;LC N — Valeurs de combinaison (source VBA: SBB Durchhang 2026.xlsm)</p>
-      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.35rem">MFL = charge totale (CP + FC + pinces) chargé. MTS = q<sub>CP</sub>. E·A et α = valeurs combinées du câble porteur (conforme VBA).</p></div>
-      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .25rem">5.1 &nbsp;LC N — Valori di combinazione (fonte VBA: SBB Durchhang 2026.xlsm)</p>
-      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.35rem">MFL = carico totale (FP + FC + morsetti) caricato. MTS = q<sub>FP</sub>. E·A e α = valori combinati del filo portante (conforme VBA).</p></div>
+      <div class="hb-lang hb-de"><p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .25rem">5.1 &nbsp;N-FL — Kombinationskennwerte</p>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.35rem">MFL = Gesamtlast (Ts + Fd + Klemmen) belastet. MTS = q<sub>Ts</sub>. E·A und α = kombinierte Werte des Tragseils.</p></div>
+      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .25rem">5.1 &nbsp;LC N — Valeurs de combinaison</p>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.35rem">MFL = charge totale (CP + FC + pinces) chargé. MTS = q<sub>CP</sub>. E·A et α = valeurs combinées du câble porteur.</p></div>
+      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.5rem 0 .25rem">5.1 &nbsp;LC N — Valori di combinazione</p>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.35rem">MFL = carico totale (FP + FC + morsetti) caricato. MTS = q<sub>FP</sub>. E·A e α = valori combinati del filo portante.</p></div>
       <table style="width:100%;border-collapse:collapse;font-size:.8rem">
         <tr style="background:var(--text2);color:white">
           <td style="padding:4px 8px;font-weight:600">Kombination</td>
@@ -17823,7 +17823,7 @@ renderObstacleList();
           <li><strong>Foto</strong> ist bewusst zurückhaltend dargestellt: Die Foto-Auswertung ist <em>keine präzise Berechnung</em> und eignet sich nur zur Abschätzung des Durchhangs. Beim ersten Öffnen je App-Start erscheint ein Hinweis; im Foto-Ergebnis steht eine Warnzeile.</li>
           <li><strong>Hell / Dunkel</strong>: Symbol im Kopf wechselt zwischen automatisch (wie das Gerät), hell und dunkel. PDF und Zeichnung werden immer hell ausgegeben.</li>
           <li><strong>Ergebnisleiste</strong> (Tablet hochkant): Sobald Diagramm und Ergebniskarte aus dem Bild scrollen, zeigt eine Leiste unten Durchhang, Zugkraft und Höhe bei T<sub>2</sub> (und den T<sub>3</sub>-Vergleich). Antippen springt zum Diagramm; bei ungültiger Eingabe steht «Eingabe prüfen».</li>
-          <li><strong>Sprache</strong> DE / FR / IT oben rechts; Fachbegriffe wie im SBB-Excel (Glossar, Kap. 9).</li>
+          <li><strong>Sprache</strong> DE / FR / IT oben rechts; Fachbegriffe nach SBB-Glossar (Kap. 9).</li>
           <li><strong>Offline</strong>: Die App funktioniert nach dem ersten Laden ohne Internet und lässt sich installieren. Nach einer Aktualisierung erscheint «Eine neue Version ist verfügbar» — «Jetzt laden» wählen oder die Seite neu laden.</li>
           <li><strong>Schalter</strong> statt Kästchen: Ein-/Aus-Optionen sind überall als Schalter dargestellt.</li>
           <li><strong>Wasserzeichen «BETA – nicht verifiziert»</strong>: Die App ist in der Beta-Phase, die Ergebnisse sind nicht verifiziert. Das Wasserzeichen liegt blass über dem Bildschirm und steht auch auf PDF-Protokollen und Zeichnung.</li>
@@ -17839,7 +17839,7 @@ renderObstacleList();
           <li><strong>Photo</strong> est volontairement discret : l’analyse photo n’est <em>pas un calcul précis</em> et ne convient qu’à estimer la flèche. Une remarque apparaît à la première ouverture après chaque démarrage ; le résultat photo porte une ligne d’avertissement.</li>
           <li><strong>Clair / sombre</strong> : le symbole dans l’en-tête alterne entre automatique (comme l’appareil), clair et sombre. PDF et dessin sont toujours clairs.</li>
           <li><strong>Barre de résultats</strong> (tablette en portrait) : dès que diagramme et carte de résultats sortent de l’écran, une barre en bas affiche flèche, force de traction et hauteur à T<sub>2</sub> (et la comparaison T<sub>3</sub>). Un appui ramène au diagramme ; en cas de saisie invalide : «Vérifier la saisie».</li>
-          <li><strong>Langue</strong> DE / FR / IT en haut à droite ; termes techniques comme dans l’Excel CFF (glossaire, chap. 9).</li>
+          <li><strong>Langue</strong> DE / FR / IT en haut à droite ; termes techniques selon le glossaire CFF (chap. 9).</li>
           <li><strong>Hors ligne</strong> : après le premier chargement, l’application fonctionne sans Internet et peut être installée. Après une mise à jour apparaît «Une nouvelle version est disponible» — choisir «Charger maintenant» ou recharger la page.</li>
           <li><strong>Interrupteurs</strong> au lieu de cases à cocher : les options oui/non sont partout représentées par des interrupteurs.</li>
           <li><strong>Filigrane «BÊTA – non vérifié»</strong> : l’application est en phase bêta, les résultats ne sont pas vérifiés. Le filigrane apparaît en transparence sur l’écran ainsi que sur les protocoles PDF et le dessin.</li>
@@ -17855,7 +17855,7 @@ renderObstacleList();
           <li><strong>Foto</strong> è volutamente discreta: l’analisi foto <em>non è un calcolo preciso</em> ed è adatta solo per stimare la freccia. Alla prima apertura dopo ogni avvio appare un avviso; il risultato foto riporta una riga di avvertimento.</li>
           <li><strong>Chiaro / scuro</strong>: il simbolo nell’intestazione alterna tra automatico (come il dispositivo), chiaro e scuro. PDF e disegno sono sempre chiari.</li>
           <li><strong>Barra dei risultati</strong> (tablet verticale): quando diagramma e scheda dei risultati escono dallo schermo, una barra in basso mostra freccia, forza di trazione e altezza a T<sub>2</sub> (e il confronto T<sub>3</sub>). Un tocco riporta al diagramma; con dati non validi: «Controllare i dati inseriti».</li>
-          <li><strong>Lingua</strong> DE / FR / IT in alto a destra; termini tecnici come nell’Excel FFS (glossario, cap. 9).</li>
+          <li><strong>Lingua</strong> DE / FR / IT in alto a destra; termini tecnici secondo il glossario FFS (cap. 9).</li>
           <li><strong>Offline</strong>: dopo il primo caricamento l’applicazione funziona senza Internet e può essere installata. Dopo un aggiornamento appare «È disponibile una nuova versione» — scegliere «Carica ora» o ricaricare la pagina.</li>
           <li><strong>Interruttori</strong> al posto delle caselle: le opzioni sì/no sono ovunque rappresentate da interruttori.</li>
           <li><strong>Filigrana «BETA – non verificato»</strong>: l’applicazione è in fase beta, i risultati non sono verificati. La filigrana appare in trasparenza sullo schermo e anche sui protocolli PDF e sul disegno.</li>
@@ -17866,42 +17866,42 @@ renderObstacleList();
       <!-- ══ 6.14 Fahrdrahthöhe hf_min / hf_max ══ -->
       <div class="hb-lang hb-de">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.14 &nbsp;Fahrdrahthöhe hf_min / hf_max</p>
-        <p>Eigene Berechnung, getrennt vom Durchhang: Knopf <strong>«hf min/max»</strong> im Kopf. Nachbildung der SBB-Excel (Blätter hfmin_v11_D / hfmax_v11_D, AB-EBV 2024, Art. 5.2.1 und 5.2.2), alle Werte in mm:</p>
+        <p>Eigene Berechnung, getrennt vom Durchhang: Knopf <strong>«hf min/max»</strong> im Kopf. Nach AB-EBV 2024, Art. 5.2.1 und 5.2.2, alle Werte in mm:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>hf<sub>min</sub></strong> = GfA + k + b<sub>e</sub> + f + H + Z<sub>hf,min</sub> mit Z<sub>hf,min</sub> = f<sub>g</sub> + t<sub>hu</sub> + f<sub>ud</sub> + f<sub>uv</sub> + f<sub>FD,max,ZL</sub> + f<sub>FD,max</sub>.</li>
           <li><strong>hf<sub>max</sub></strong> = 6050 (LRP J) bzw. 6200 (EBV C) − Z<sub>hf,max</sub> mit Z<sub>hf,max</sub> = t<sub>ho</sub> + f<sub>udo</sub> − f<sub>uv</sub> + f<sub>h</sub> − f<sub>FD,min</sub>.</li>
-          <li><strong>Bahnübergang</strong>: 5510 + Zuschläge (ohne Gleishebung und Schwingung), mit Hinweisen; bei hf<sub>max</sub> wie Excel — fachlich prüfen.</li>
-          <li><strong>N-FL</strong>: Fahrdraht-Durchhang f = c²/8 · (g'k + Z<sub>L</sub> − g'k · H<sub>Tx</sub>/H<sub>t0</sub>) / (H<sub>Fd</sub> + H<sub>Tx</sub>) (VEM Gl. 7.67). H<sub>t0</sub> (10 °C) und H<sub>Tx</sub> rechnet die App aus Kombination, L<sub>m</sub> und Montagezugkraft — gleiche Werte wie Excel «NFL-Tab»; neuer Fahrdraht.</li>
+          <li><strong>Bahnübergang</strong>: 5510 + Zuschläge (ohne Gleishebung und Schwingung), mit Hinweisen; bei hf<sub>max</sub> — fachlich prüfen.</li>
+          <li><strong>N-FL</strong>: Fahrdraht-Durchhang f = c²/8 · (g'k + Z<sub>L</sub> − g'k · H<sub>Tx</sub>/H<sub>t0</sub>) / (H<sub>Fd</sub> + H<sub>Tx</sub>) (VEM Gl. 7.67). H<sub>t0</sub> (10 °C) und H<sub>Tx</sub> rechnet die App aus Kombination, L<sub>m</sub> und Montagezugkraft; neuer Fahrdraht.</li>
           <li><strong>R-FL</strong>: Eislast-Durchhang mit fest 12 kN + 10 kN, Fallprüfung P1.1–P1.3 und überdeckte Spannweite c<sub>übr</sub>; Vordurchhang 50 mm (c ≥ 42 m) bzw. 30 mm nur bis 140 km/h.</li>
-          <li>Wie Excel: Spannweite c nur 60 … 26, 24, 20, 16, 12, 8 m; Temperaturen −20 … +80 °C in 5-K-Schritten; Zusatzlast 0 / 7 / 15 N/m nur bei −5 °C.</li>
+          <li>Spannweite c nur 60 … 26, 24, 20, 16, 12, 8 m; Temperaturen −20 … +80 °C in 5-K-Schritten; Zusatzlast 0 / 7 / 15 N/m nur bei −5 °C.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)">FL-Typ, Kombination, L<sub>m</sub>, Ts unbelastet (Reglagetabelle bei T<sub>1</sub>), T<sub>1</sub> und H<sub>Fd</sub> kommen immer aus der Durchhang-Berechnung und stehen als Zusammenfassung oben — geändert werden sie dort. Die Spannweite c folgt L (nächster Tabellenwert nach oben) und lässt sich zum Vergleich anders wählen. Die Tabelle zeigt jeden Zuschlag mit Quelle. Zwei Grafiken: die <em>Höhenleiter ab SOK</em> (links die Anteile bis hf<sub>min</sub>, rechts die Zuschläge ab 6.05 bzw. 6.20 m bis hf<sub>max</sub>, dazwischen der zulässige Bereich) und <em>hf<sub>min</sub> / hf<sub>max</sub> über die Spannweite</em> (alle Tabellenwerte von c, gewählte Spannweite markiert). <em>PDF-Protokoll</em> druckt Berechnung und Grafiken. In der Zeichnung lassen sich hf<sub>min</sub> / hf<sub>max</sub> als Band einblenden (6.13), im Diagramm mit dem Schalter <em>Fahrdraht Soll/Ist + hf<sub>min</sub>/hf<sub>max</sub></em> in der Legende. Zuoberst im Ergebnis zeigt dann (solange der Schalter an ist) eine Prüfzeile, ob die Soll-Fahrdrahthöhe an den Stützpunkten (h − sh) zwischen hf<sub>min</sub> und hf<sub>max</sub> liegt; die Ist-Lage bei T<sub>2</sub> steht als Information darunter. Unter der Höheneingabe erscheint die zulässige <em>Anschlusshöhe</em> (hf<sub>min</sub> + sh ≤ h ≤ hf<sub>max</sub> + sh, auf cm nach innen gerundet); liegt h ausserhalb, übernimmt ein Knopf je Seite den nächsten zulässigen Wert, und beim Einschalten des hf-Schalters im Diagramm oder in der Zeichnung fragt die App nach. Die Systemhöhe sh bleibt unverändert — sie ist ein Wert der Fahrleitungsbauart. In der Höhenleiter wird die linke Säule von unten aufgebaut (↑ ab GfA), die rechte von oben abgezogen (↓ ab 6.05 bzw. 6.20 m); die Box <em>Zusammensetzung</em> unter den Grafiken schreibt hf<sub>min</sub> und hf<sub>max</sub> einmal als Formel mit allen Anteilen und einmal mit Zahlen aus. Kontrolle: der in der Excel gespeicherte Fall (N-FL 50+107, c = 30 m, −5 °C mit 7 N/m) ergibt hf<sub>min</sub> = 4928 mm und hf<sub>max</sub> = 6104 mm wie in der Excel. Zusätzlich wurden 480 Fälle (N-FL / R-FL, alle Spannweiten, Geschwindigkeiten, Bahnübergang, EBV 1–4, 15 / 25 kV, Schotter, LRP, Temperaturen, Eis, f / H, Fallprüfung P1.1–P1.3 mit c<sub>übr</sub>) in der Excel nachgerechnet: hf<sub>min</sub>, hf<sub>max</sub> und jeder Zuschlag stimmen mit der App überein; die Fälle laufen als automatischer Test mit.</p>
+        <p style="font-size:.8rem;color:var(--muted)">FL-Typ, Kombination, L<sub>m</sub>, Ts unbelastet (Reglagetabelle bei T<sub>1</sub>), T<sub>1</sub> und H<sub>Fd</sub> kommen immer aus der Durchhang-Berechnung und stehen als Zusammenfassung oben — geändert werden sie dort. Die Spannweite c folgt L (nächster Tabellenwert nach oben) und lässt sich zum Vergleich anders wählen. Die Tabelle zeigt jeden Zuschlag mit Quelle. Zwei Grafiken: die <em>Höhenleiter ab SOK</em> (links die Anteile bis hf<sub>min</sub>, rechts die Zuschläge ab 6.05 bzw. 6.20 m bis hf<sub>max</sub>, dazwischen der zulässige Bereich) und <em>hf<sub>min</sub> / hf<sub>max</sub> über die Spannweite</em> (alle Tabellenwerte von c, gewählte Spannweite markiert). <em>PDF-Protokoll</em> druckt Berechnung und Grafiken. In der Zeichnung lassen sich hf<sub>min</sub> / hf<sub>max</sub> als Band einblenden (6.13), im Diagramm mit dem Schalter <em>Fahrdraht Soll/Ist + hf<sub>min</sub>/hf<sub>max</sub></em> in der Legende. Zuoberst im Ergebnis zeigt dann (solange der Schalter an ist) eine Prüfzeile, ob die Soll-Fahrdrahthöhe an den Stützpunkten (h − sh) zwischen hf<sub>min</sub> und hf<sub>max</sub> liegt; die Ist-Lage bei T<sub>2</sub> steht als Information darunter. Unter der Höheneingabe erscheint die zulässige <em>Anschlusshöhe</em> (hf<sub>min</sub> + sh ≤ h ≤ hf<sub>max</sub> + sh, auf cm nach innen gerundet); liegt h ausserhalb, übernimmt ein Knopf je Seite den nächsten zulässigen Wert, und beim Einschalten des hf-Schalters im Diagramm oder in der Zeichnung fragt die App nach. Die Systemhöhe sh bleibt unverändert — sie ist ein Wert der Fahrleitungsbauart. In der Höhenleiter wird die linke Säule von unten aufgebaut (↑ ab GfA), die rechte von oben abgezogen (↓ ab 6.05 bzw. 6.20 m); die Box <em>Zusammensetzung</em> unter den Grafiken schreibt hf<sub>min</sub> und hf<sub>max</sub> einmal als Formel mit allen Anteilen und einmal mit Zahlen aus. Kontrolle: 481 Referenzfälle (N-FL / R-FL, alle Spannweiten, Geschwindigkeiten, Bahnübergang, EBV 1–4, 15 / 25 kV, Schotter, LRP, Temperaturen, Eis, f / H, Fallprüfung P1.1–P1.3 mit c<sub>übr</sub>) wurden unabhängig nachgerechnet, z. B. N-FL 50+107, c = 30 m, −5 °C mit 7 N/m: hf<sub>min</sub> = 4928 mm, hf<sub>max</sub> = 6104 mm. hf<sub>min</sub>, hf<sub>max</sub> und jeder Zuschlag stimmen überein; die Fälle laufen als automatischer Test mit.</p>
       </div><!-- /hb-de -->
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.14 &nbsp;Hauteur du fil de contact hf_min / hf_max</p>
-        <p>Calcul séparé de la flèche : bouton <strong>«hf min/max»</strong> dans l’en-tête. Reproduction de l’Excel CFF (feuilles hfmin_v11_D / hfmax_v11_D, DE-OCF 2024, art. 5.2.1 et 5.2.2), toutes les valeurs en mm :</p>
+        <p>Calcul séparé de la flèche : bouton <strong>«hf min/max»</strong> dans l’en-tête. Selon DE-OCF 2024, art. 5.2.1 et 5.2.2, toutes les valeurs en mm :</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>hf<sub>min</sub></strong> = GfA + k + b<sub>e</sub> + f + H + Z<sub>hf,min</sub> avec Z<sub>hf,min</sub> = f<sub>g</sub> + t<sub>hu</sub> + f<sub>ud</sub> + f<sub>uv</sub> + f<sub>FD,max,ZL</sub> + f<sub>FD,max</sub>.</li>
           <li><strong>hf<sub>max</sub></strong> = 6050 (LRP J) resp. 6200 (OCF C) − Z<sub>hf,max</sub> avec Z<sub>hf,max</sub> = t<sub>ho</sub> + f<sub>udo</sub> − f<sub>uv</sub> + f<sub>h</sub> − f<sub>FD,min</sub>.</li>
-          <li><strong>Passage à niveau</strong> : 5510 + suppléments (sans relèvement de voie ni oscillation), avec remarques ; pour hf<sub>max</sub> comme Excel — à vérifier.</li>
-          <li><strong>LC N</strong> : flèche du fil de contact f = c²/8 · (g'k + Z<sub>L</sub> − g'k · H<sub>Tx</sub>/H<sub>t0</sub>) / (H<sub>FC</sub> + H<sub>Tx</sub>) (VEM éq. 7.67). H<sub>t0</sub> (10 °C) et H<sub>Tx</sub> sont calculés à partir de la combinaison, de L<sub>m</sub> et de la traction de montage — mêmes valeurs que l’Excel « NFL-Tab » ; fil de contact neuf.</li>
+          <li><strong>Passage à niveau</strong> : 5510 + suppléments (sans relèvement de voie ni oscillation), avec remarques ; pour hf<sub>max</sub> — à vérifier.</li>
+          <li><strong>LC N</strong> : flèche du fil de contact f = c²/8 · (g'k + Z<sub>L</sub> − g'k · H<sub>Tx</sub>/H<sub>t0</sub>) / (H<sub>FC</sub> + H<sub>Tx</sub>) (VEM éq. 7.67). H<sub>t0</sub> (10 °C) et H<sub>Tx</sub> sont calculés à partir de la combinaison, de L<sub>m</sub> et de la traction de montage ; fil de contact neuf.</li>
           <li><strong>LC R</strong> : flèche sous glace avec 12 kN + 10 kN fixes, essai de cas P1.1–P1.3 et portée couverte c<sub>übr</sub> ; pré-flèche 50 mm (c ≥ 42 m) resp. 30 mm seulement jusqu’à 140 km/h.</li>
-          <li>Comme Excel : portée c seulement 60 … 26, 24, 20, 16, 12, 8 m ; températures −20 … +80 °C par pas de 5 K ; charge add. 0 / 7 / 15 N/m seulement à −5 °C.</li>
+          <li>Portée c seulement 60 … 26, 24, 20, 16, 12, 8 m ; températures −20 … +80 °C par pas de 5 K ; charge add. 0 / 7 / 15 N/m seulement à −5 °C.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)">Type de LC, combinaison, L<sub>m</sub>, CP non chargé (tableau de réglage à T<sub>1</sub>), T<sub>1</sub> et H<sub>FC</sub> proviennent toujours du calcul de flèche et sont résumés en haut — ils se modifient là-bas. La portée c suit L (valeur de tableau supérieure) et peut être choisie autrement pour comparaison. Le tableau montre chaque supplément avec sa source. Deux graphiques : l’<em>échelle des hauteurs depuis le DRS</em> (à gauche les parts jusqu’à hf<sub>min</sub>, à droite les suppléments depuis 6.05 resp. 6.20 m jusqu’à hf<sub>max</sub>, entre les deux la plage admissible) et <em>hf<sub>min</sub> / hf<sub>max</sub> selon la portée</em> (toutes les valeurs de c du tableau, portée choisie marquée). <em>Protocole PDF</em> imprime calcul et graphiques. Dans le dessin, hf<sub>min</sub> / hf<sub>max</sub> peuvent être affichés comme bande (6.13), dans le diagramme avec l’interrupteur <em>Fil de contact théorique/réel + hf<sub>min</sub>/hf<sub>max</sub></em> de la légende. En tête des résultats, une ligne de contrôle indique alors (tant que l’interrupteur est activé) si la hauteur théorique du fil de contact aux supports (h − sh) se trouve entre hf<sub>min</sub> et hf<sub>max</sub> ; la position réelle à T<sub>2</sub> figure en dessous à titre d’information. Sous la saisie des hauteurs apparaît la <em>hauteur d’accrochage</em> admissible (hf<sub>min</sub> + sh ≤ h ≤ hf<sub>max</sub> + sh, arrondie au cm vers l’intérieur) ; si h est hors plage, un bouton reprend la valeur admissible la plus proche de chaque côté, et l’app le demande à l’activation de l’interrupteur hf dans le diagramme ou le dessin. La hauteur du système sh reste inchangée — c’est une valeur du type de caténaire. Dans l’échelle des hauteurs, la colonne gauche est additionnée depuis le bas (↑ depuis GfA), la droite déduite depuis le haut (↓ depuis 6.05 ou 6.20 m) ; l’encadré <em>Composition</em> sous les graphiques écrit hf<sub>min</sub> et hf<sub>max</sub> une fois en formule avec toutes les parts et une fois en chiffres. Contrôle : le cas enregistré dans l’Excel (LC N 50+107, c = 30 m, −5 °C avec 7 N/m) donne hf<sub>min</sub> = 4928 mm et hf<sub>max</sub> = 6104 mm comme l’Excel. En plus, 480 cas (LC N / LC R, toutes les portées, vitesses, passage à niveau, OCF 1–4, 15 / 25 kV, ballast, LRP, températures, glace, f / H, essai de cas P1.1–P1.3 avec c<sub>übr</sub>) ont été recalculés dans l’Excel : hf<sub>min</sub>, hf<sub>max</sub> et chaque supplément concordent avec l’application ; les cas font partie des tests automatiques.</p>
+        <p style="font-size:.8rem;color:var(--muted)">Type de LC, combinaison, L<sub>m</sub>, CP non chargé (tableau de réglage à T<sub>1</sub>), T<sub>1</sub> et H<sub>FC</sub> proviennent toujours du calcul de flèche et sont résumés en haut — ils se modifient là-bas. La portée c suit L (valeur de tableau supérieure) et peut être choisie autrement pour comparaison. Le tableau montre chaque supplément avec sa source. Deux graphiques : l’<em>échelle des hauteurs depuis le DRS</em> (à gauche les parts jusqu’à hf<sub>min</sub>, à droite les suppléments depuis 6.05 resp. 6.20 m jusqu’à hf<sub>max</sub>, entre les deux la plage admissible) et <em>hf<sub>min</sub> / hf<sub>max</sub> selon la portée</em> (toutes les valeurs de c du tableau, portée choisie marquée). <em>Protocole PDF</em> imprime calcul et graphiques. Dans le dessin, hf<sub>min</sub> / hf<sub>max</sub> peuvent être affichés comme bande (6.13), dans le diagramme avec l’interrupteur <em>Fil de contact théorique/réel + hf<sub>min</sub>/hf<sub>max</sub></em> de la légende. En tête des résultats, une ligne de contrôle indique alors (tant que l’interrupteur est activé) si la hauteur théorique du fil de contact aux supports (h − sh) se trouve entre hf<sub>min</sub> et hf<sub>max</sub> ; la position réelle à T<sub>2</sub> figure en dessous à titre d’information. Sous la saisie des hauteurs apparaît la <em>hauteur d’accrochage</em> admissible (hf<sub>min</sub> + sh ≤ h ≤ hf<sub>max</sub> + sh, arrondie au cm vers l’intérieur) ; si h est hors plage, un bouton reprend la valeur admissible la plus proche de chaque côté, et l’app le demande à l’activation de l’interrupteur hf dans le diagramme ou le dessin. La hauteur du système sh reste inchangée — c’est une valeur du type de caténaire. Dans l’échelle des hauteurs, la colonne gauche est additionnée depuis le bas (↑ depuis GfA), la droite déduite depuis le haut (↓ depuis 6.05 ou 6.20 m) ; l’encadré <em>Composition</em> sous les graphiques écrit hf<sub>min</sub> et hf<sub>max</sub> une fois en formule avec toutes les parts et une fois en chiffres. Contrôle : 481 cas de référence (LC N / LC R, toutes les portées, vitesses, passage à niveau, OCF 1–4, 15 / 25 kV, ballast, LRP, températures, glace, f / H, essai de cas P1.1–P1.3 avec c<sub>übr</sub>) ont été recalculés de manière indépendante, p. ex. LC N 50+107, c = 30 m, −5 °C avec 7 N/m : hf<sub>min</sub> = 4928 mm, hf<sub>max</sub> = 6104 mm. hf<sub>min</sub>, hf<sub>max</sub> et chaque supplément concordent ; les cas font partie des tests automatiques.</p>
       </div><!-- /hb-fr -->
       <div class="hb-lang hb-it" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.9rem 0 .2rem">6.14 &nbsp;Altezza del filo di contatto hf_min / hf_max</p>
-        <p>Calcolo separato dalla freccia: pulsante <strong>«hf min/max»</strong> nell’intestazione. Riproduzione dell’Excel FFS (fogli hfmin_v11_D / hfmax_v11_D, DE-OFerr 2024, art. 5.2.1 e 5.2.2), tutti i valori in mm:</p>
+        <p>Calcolo separato dalla freccia: pulsante <strong>«hf min/max»</strong> nell’intestazione. Secondo DE-OFerr 2024, art. 5.2.1 e 5.2.2, tutti i valori in mm:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>hf<sub>min</sub></strong> = GfA + k + b<sub>e</sub> + f + H + Z<sub>hf,min</sub> con Z<sub>hf,min</sub> = f<sub>g</sub> + t<sub>hu</sub> + f<sub>ud</sub> + f<sub>uv</sub> + f<sub>FD,max,ZL</sub> + f<sub>FD,max</sub>.</li>
           <li><strong>hf<sub>max</sub></strong> = 6050 (LRP J) risp. 6200 (OFerr C) − Z<sub>hf,max</sub> con Z<sub>hf,max</sub> = t<sub>ho</sub> + f<sub>udo</sub> − f<sub>uv</sub> + f<sub>h</sub> − f<sub>FD,min</sub>.</li>
-          <li><strong>Passaggio a livello</strong>: 5510 + supplementi (senza sollevamento del binario né oscillazione), con avvisi; per hf<sub>max</sub> come Excel — da verificare.</li>
-          <li><strong>LC N</strong>: freccia del filo di contatto f = c²/8 · (g'k + Z<sub>L</sub> − g'k · H<sub>Tx</sub>/H<sub>t0</sub>) / (H<sub>FC</sub> + H<sub>Tx</sub>) (VEM eq. 7.67). H<sub>t0</sub> (10 °C) e H<sub>Tx</sub> sono calcolati da combinazione, L<sub>m</sub> e tiro di montaggio — stessi valori dell’Excel «NFL-Tab»; filo di contatto nuovo.</li>
+          <li><strong>Passaggio a livello</strong>: 5510 + supplementi (senza sollevamento del binario né oscillazione), con avvisi; per hf<sub>max</sub> — da verificare.</li>
+          <li><strong>LC N</strong>: freccia del filo di contatto f = c²/8 · (g'k + Z<sub>L</sub> − g'k · H<sub>Tx</sub>/H<sub>t0</sub>) / (H<sub>FC</sub> + H<sub>Tx</sub>) (VEM eq. 7.67). H<sub>t0</sub> (10 °C) e H<sub>Tx</sub> sono calcolati da combinazione, L<sub>m</sub> e tiro di montaggio; filo di contatto nuovo.</li>
           <li><strong>LC R</strong>: freccia con ghiaccio con 12 kN + 10 kN fissi, verifica dei casi P1.1–P1.3 e campata coperta c<sub>übr</sub>; pre-freccia 50 mm (c ≥ 42 m) risp. 30 mm solo fino a 140 km/h.</li>
-          <li>Come Excel: campata c solo 60 … 26, 24, 20, 16, 12, 8 m; temperature −20 … +80 °C a passi di 5 K; carico add. 0 / 7 / 15 N/m solo a −5 °C.</li>
+          <li>Campata c solo 60 … 26, 24, 20, 16, 12, 8 m; temperature −20 … +80 °C a passi di 5 K; carico add. 0 / 7 / 15 N/m solo a −5 °C.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)">Tipo di LC, combinazione, L<sub>m</sub>, FP scarica (tabella di regolazione a T<sub>1</sub>), T<sub>1</sub> e H<sub>FC</sub> provengono sempre dal calcolo della freccia e sono riassunti in alto — si modificano lì. La campata c segue L (valore di tabella superiore) e può essere scelta diversamente per confronto. La tabella mostra ogni supplemento con la fonte. Due grafici: la <em>scala delle altezze dal PRF</em> (a sinistra le quote fino a hf<sub>min</sub>, a destra i supplementi da 6.05 risp. 6.20 m fino a hf<sub>max</sub>, in mezzo il campo ammissibile) e <em>hf<sub>min</sub> / hf<sub>max</sub> in funzione della campata</em> (tutti i valori di c della tabella, campata scelta evidenziata). <em>Protocollo PDF</em> stampa calcolo e grafici. Nel disegno hf<sub>min</sub> / hf<sub>max</sub> possono essere mostrati come banda (6.13), nel diagramma con l’interruttore <em>Filo di contatto teorico/reale + hf<sub>min</sub>/hf<sub>max</sub></em> nella legenda. In testa ai risultati una riga di controllo indica allora (finché l’interruttore è attivo) se l’altezza teorica del filo di contatto ai sostegni (h − sh) si trova tra hf<sub>min</sub> e hf<sub>max</sub>; la posizione reale a T<sub>2</sub> è indicata sotto come informazione. Sotto l’immissione delle altezze appare l’<em>altezza di attacco</em> ammessa (hf<sub>min</sub> + sh ≤ h ≤ hf<sub>max</sub> + sh, arrotondata al cm verso l’interno); se h è fuori campo, un pulsante riprende per ogni lato il valore ammesso più vicino, e l’app lo chiede all’attivazione dell’interruttore hf nel diagramma o nel disegno. L’altezza del sistema sh resta invariata — è un valore del tipo di catenaria. Nella scala delle altezze la colonna sinistra è sommata dal basso (↑ da GfA), la destra dedotta dall’alto (↓ da 6.05 o 6.20 m); il riquadro <em>Composizione</em> sotto i grafici scrive hf<sub>min</sub> e hf<sub>max</sub> una volta come formula con tutte le quote e una volta con i numeri. Controllo: il caso salvato nell’Excel (LC N 50+107, c = 30 m, −5 °C con 7 N/m) dà hf<sub>min</sub> = 4928 mm e hf<sub>max</sub> = 6104 mm come l’Excel. Inoltre 480 casi (LC N / LC R, tutte le campate, velocità, passaggio a livello, OFerr 1–4, 15 / 25 kV, ballast, LRP, temperature, ghiaccio, f / H, verifica dei casi P1.1–P1.3 con c<sub>übr</sub>) sono stati ricalcolati nell’Excel: hf<sub>min</sub>, hf<sub>max</sub> e ogni supplemento concordano con l’applicazione; i casi fanno parte dei test automatici.</p>
+        <p style="font-size:.8rem;color:var(--muted)">Tipo di LC, combinazione, L<sub>m</sub>, FP scarica (tabella di regolazione a T<sub>1</sub>), T<sub>1</sub> e H<sub>FC</sub> provengono sempre dal calcolo della freccia e sono riassunti in alto — si modificano lì. La campata c segue L (valore di tabella superiore) e può essere scelta diversamente per confronto. La tabella mostra ogni supplemento con la fonte. Due grafici: la <em>scala delle altezze dal PRF</em> (a sinistra le quote fino a hf<sub>min</sub>, a destra i supplementi da 6.05 risp. 6.20 m fino a hf<sub>max</sub>, in mezzo il campo ammissibile) e <em>hf<sub>min</sub> / hf<sub>max</sub> in funzione della campata</em> (tutti i valori di c della tabella, campata scelta evidenziata). <em>Protocollo PDF</em> stampa calcolo e grafici. Nel disegno hf<sub>min</sub> / hf<sub>max</sub> possono essere mostrati come banda (6.13), nel diagramma con l’interruttore <em>Filo di contatto teorico/reale + hf<sub>min</sub>/hf<sub>max</sub></em> nella legenda. In testa ai risultati una riga di controllo indica allora (finché l’interruttore è attivo) se l’altezza teorica del filo di contatto ai sostegni (h − sh) si trova tra hf<sub>min</sub> e hf<sub>max</sub>; la posizione reale a T<sub>2</sub> è indicata sotto come informazione. Sotto l’immissione delle altezze appare l’<em>altezza di attacco</em> ammessa (hf<sub>min</sub> + sh ≤ h ≤ hf<sub>max</sub> + sh, arrotondata al cm verso l’interno); se h è fuori campo, un pulsante riprende per ogni lato il valore ammesso più vicino, e l’app lo chiede all’attivazione dell’interruttore hf nel diagramma o nel disegno. L’altezza del sistema sh resta invariata — è un valore del tipo di catenaria. Nella scala delle altezze la colonna sinistra è sommata dal basso (↑ da GfA), la destra dedotta dall’alto (↓ da 6.05 o 6.20 m); il riquadro <em>Composizione</em> sotto i grafici scrive hf<sub>min</sub> e hf<sub>max</sub> una volta come formula con tutte le quote e una volta con i numeri. Controllo: 481 casi di riferimento (LC N / LC R, tutte le campate, velocità, passaggio a livello, OFerr 1–4, 15 / 25 kV, ballast, LRP, temperature, ghiaccio, f / H, verifica dei casi P1.1–P1.3 con c<sub>übr</sub>) sono stati ricalcolati in modo indipendente, p. es. LC N 50+107, c = 30 m, −5 °C con 7 N/m: hf<sub>min</sub> = 4928 mm, hf<sub>max</sub> = 6104 mm. hf<sub>min</sub>, hf<sub>max</sub> e ogni supplemento concordano; i casi fanno parte dei test automatici.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 7 Beispielberechnung ══ -->
@@ -17914,7 +17914,7 @@ renderObstacleList();
           <strong>Feld:</strong> L = Lm = 50 m (Einzelspannweite) &nbsp;|&nbsp; h<sub>1</sub> = h<sub>2</sub> = 7.80 m ü. SOK &nbsp;|&nbsp; sh = 2.40 m<br>
           <strong>Zugkräfte:</strong> H<sub>Ts,ub</sub> = 1 700 N (Montage) &nbsp;|&nbsp; H<sub>Fd</sub> = 8 500 N &nbsp;|&nbsp; <strong>Temperaturen:</strong> T<sub>1</sub> = +10 °C → T<sub>2</sub> = +40 °C
         </p>
-        <p style="font-weight:600;margin-top:.7rem">Schritt 1 — Kennwerte der Kombination (Excel, Blatt Daten)</p>
+        <p style="font-weight:600;margin-top:.7rem">Schritt 1 — Kennwerte der Kombination (Kap. 5.1)</p>
         <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">MFL = 13.876 N/m (Ts + Fd + Hänger/Klemmen) &nbsp;|&nbsp; MTS = 4.011 N/m (Ts allein) &nbsp;|&nbsp; E·A = 159 GPa × 49.45 mm² = 7.863 MN &nbsp;|&nbsp; α = 11.5·10⁻⁶ /K</p>
         <p style="font-weight:600;margin-top:.7rem">Schritt 2 — Bezugszustand: Ts belastet bei 10 °C</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">C·F₀³ + K·F₀² − G = 0 &nbsp;mit&nbsp; G = (MFL·Lm)²/24 = 20 058 N², C = 1/E·A = 1.272·10⁻⁷ 1/N,<br>K = (MTS·Lm)²/(24·H<sub>ub</sub>²) − H<sub>ub</sub>/E·A = 5.799·10⁻⁴ − 2.162·10⁻⁴ = 3.636·10⁻⁴ 1/N</p>
@@ -17922,11 +17922,11 @@ renderObstacleList();
         <p style="font-weight:600;margin-top:.7rem">Schritt 3 — Durchhang bei T<sub>1</sub> = +10 °C (VEM 7.66)</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>Fd</sub>/F₀) = 13.876 × (1 + 8 500/4 600) = 39.52 N/m<br>f<sub>1</sub> = L²/8 · q<sub>vem</sub>/(H<sub>Ts,1</sub> + H<sub>Fd</sub>) = 312.5 × 39.52 / 13 100 = <strong>0.943 m</strong></p>
         <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">Bei 10 °C hängt der Fahrdraht waagrecht in der Solllage h − sh = 5.40 m; Hänger in Feldmitte = sh − f<sub>1</sub> = 1.457 m.</p>
-        <p style="font-weight:600;margin-top:.7rem">Schritt 4 — Zugkraft bei T<sub>2</sub> = +40 °C (Zustandsgleichung VEM / Excel Upro1, ΔT = +30 K)</p>
+        <p style="font-weight:600;margin-top:.7rem">Schritt 4 — Zugkraft bei T<sub>2</sub> = +40 °C (Zustandsgleichung VEM, ΔT = +30 K)</p>
         <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">gk₀ = MFL/F₀ = 3.017·10⁻³ 1/m &nbsp;|&nbsp; G = 24/Lm² + gk₀² = 9.609·10⁻³ &nbsp;|&nbsp; α·ΔT = 3.45·10⁻⁴ &nbsp;→ Newton-Raphson → <strong>H<sub>Ts,2</sub> = 3 425 N</strong> (auf 5 N gerundet)</p>
         <p style="font-weight:600;margin-top:.7rem">Schritt 5 — Durchhang und Höhen bei T<sub>2</sub></p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">f<sub>2</sub> = 312.5 × 39.52 / (3 425 + 8 500) = <strong>1.036 m</strong><br>Ts in Feldmitte = 7.80 − 1.036 = <strong>6.76 m ü. SOK</strong><br>Fd in Feldmitte = 5.40 − (1.036 − 0.943) = <strong>5.31 m ü. SOK</strong> (Fahrdraht folgt dem Tragseil, Hänger fest)</p>
-        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Nachrechnen:</strong> Mit diesen Eingaben zeigt die App dieselben Werte (Ergebniskarte, Messpunkt M1 bei x = 25 m). Das PDF-Berechnungsprotokoll enthält alle Zwischenschritte. Die Rechnung entspricht SBB <em>Durchhang 2026.xlsm</em>.</p>
+        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Nachrechnen:</strong> Mit diesen Eingaben zeigt die App dieselben Werte (Ergebniskarte, Messpunkt M1 bei x = 25 m). Das PDF-Berechnungsprotokoll enthält alle Zwischenschritte.</p>
       </div><!-- /hb-de -->
 
       <div class="hb-lang hb-fr" style="display:none">
@@ -17936,7 +17936,7 @@ renderObstacleList();
           <strong>Portée :</strong> L = Lm = 50 m (portée simple) &nbsp;|&nbsp; h<sub>1</sub> = h<sub>2</sub> = 7.80 m s. DRS &nbsp;|&nbsp; sh = 2.40 m<br>
           <strong>Forces :</strong> H<sub>CP,nch</sub> = 1 700 N (pose) &nbsp;|&nbsp; H<sub>FC</sub> = 8 500 N &nbsp;|&nbsp; <strong>Températures :</strong> T<sub>1</sub> = +10 °C → T<sub>2</sub> = +40 °C
         </p>
-        <p style="font-weight:600;margin-top:.7rem">Étape 1 — Valeurs de la combinaison (Excel, feuille Daten)</p>
+        <p style="font-weight:600;margin-top:.7rem">Étape 1 — Valeurs de la combinaison (chap. 5.1)</p>
         <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">MFL = 13.876 N/m (CP + FC + suspensions/pinces) &nbsp;|&nbsp; MTS = 4.011 N/m (CP seul) &nbsp;|&nbsp; E·A = 159 GPa × 49.45 mm² = 7.863 MN &nbsp;|&nbsp; α = 11.5·10⁻⁶ /K</p>
         <p style="font-weight:600;margin-top:.7rem">Étape 2 — État de référence : CP chargé à 10 °C</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">C·F₀³ + K·F₀² − G = 0 &nbsp;avec&nbsp; G = (MFL·Lm)²/24 = 20 058 N², C = 1/E·A = 1.272·10⁻⁷ 1/N,<br>K = (MTS·Lm)²/(24·H<sub>nch</sub>²) − H<sub>nch</sub>/E·A = 5.799·10⁻⁴ − 2.162·10⁻⁴ = 3.636·10⁻⁴ 1/N</p>
@@ -17944,11 +17944,11 @@ renderObstacleList();
         <p style="font-weight:600;margin-top:.7rem">Étape 3 — Flèche à T<sub>1</sub> = +10 °C (VEM 7.66)</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>FC</sub>/F₀) = 13.876 × (1 + 8 500/4 600) = 39.52 N/m<br>f<sub>1</sub> = L²/8 · q<sub>vem</sub>/(H<sub>CP,1</sub> + H<sub>FC</sub>) = 312.5 × 39.52 / 13 100 = <strong>0.943 m</strong></p>
         <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">À 10 °C, le fil de contact est horizontal en position nominale h − sh = 5.40 m ; suspension au milieu = sh − f<sub>1</sub> = 1.457 m.</p>
-        <p style="font-weight:600;margin-top:.7rem">Étape 4 — Force de traction à T<sub>2</sub> = +40 °C (équation d’état VEM / Excel Upro1, ΔT = +30 K)</p>
+        <p style="font-weight:600;margin-top:.7rem">Étape 4 — Force de traction à T<sub>2</sub> = +40 °C (équation d’état VEM, ΔT = +30 K)</p>
         <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">gk₀ = MFL/F₀ = 3.017·10⁻³ 1/m &nbsp;|&nbsp; G = 24/Lm² + gk₀² = 9.609·10⁻³ &nbsp;|&nbsp; α·ΔT = 3.45·10⁻⁴ &nbsp;→ Newton-Raphson → <strong>H<sub>CP,2</sub> = 3 425 N</strong> (arrondi à 5 N)</p>
         <p style="font-weight:600;margin-top:.7rem">Étape 5 — Flèche et hauteurs à T<sub>2</sub></p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">f<sub>2</sub> = 312.5 × 39.52 / (3 425 + 8 500) = <strong>1.036 m</strong><br>CP au milieu = 7.80 − 1.036 = <strong>6.76 m s. DRS</strong><br>FC au milieu = 5.40 − (1.036 − 0.943) = <strong>5.31 m s. DRS</strong> (le fil de contact suit le câble porteur, suspensions fixes)</p>
-        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Vérifier :</strong> avec ces saisies, l’application affiche les mêmes valeurs (carte de résultats, point de mesure M1 à x = 25 m). Le protocole de calcul PDF contient toutes les étapes. Le calcul correspond à l’Excel CFF <em>Durchhang 2026.xlsm</em>.</p>
+        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Vérifier :</strong> avec ces saisies, l’application affiche les mêmes valeurs (carte de résultats, point de mesure M1 à x = 25 m). Le protocole de calcul PDF contient toutes les étapes.</p>
       </div><!-- /hb-fr -->
 
       <div class="hb-lang hb-it" style="display:none">
@@ -17958,7 +17958,7 @@ renderObstacleList();
           <strong>Campata:</strong> L = Lm = 50 m (campata singola) &nbsp;|&nbsp; h<sub>1</sub> = h<sub>2</sub> = 7.80 m s. PRF &nbsp;|&nbsp; sh = 2.40 m<br>
           <strong>Forze:</strong> H<sub>FP,nc</sub> = 1 700 N (montaggio) &nbsp;|&nbsp; H<sub>FC</sub> = 8 500 N &nbsp;|&nbsp; <strong>Temperature:</strong> T<sub>1</sub> = +10 °C → T<sub>2</sub> = +40 °C
         </p>
-        <p style="font-weight:600;margin-top:.7rem">Passo 1 — Valori della combinazione (Excel, foglio Daten)</p>
+        <p style="font-weight:600;margin-top:.7rem">Passo 1 — Valori della combinazione (cap. 5.1)</p>
         <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">MFL = 13.876 N/m (FP + FC + ballerine/morsetti) &nbsp;|&nbsp; MTS = 4.011 N/m (solo FP) &nbsp;|&nbsp; E·A = 159 GPa × 49.45 mm² = 7.863 MN &nbsp;|&nbsp; α = 11.5·10⁻⁶ /K</p>
         <p style="font-weight:600;margin-top:.7rem">Passo 2 — Stato di riferimento: FP caricato a 10 °C</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">C·F₀³ + K·F₀² − G = 0 &nbsp;con&nbsp; G = (MFL·Lm)²/24 = 20 058 N², C = 1/E·A = 1.272·10⁻⁷ 1/N,<br>K = (MTS·Lm)²/(24·H<sub>nc</sub>²) − H<sub>nc</sub>/E·A = 5.799·10⁻⁴ − 2.162·10⁻⁴ = 3.636·10⁻⁴ 1/N</p>
@@ -17966,24 +17966,23 @@ renderObstacleList();
         <p style="font-weight:600;margin-top:.7rem">Passo 3 — Freccia a T<sub>1</sub> = +10 °C (VEM 7.66)</p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">q<sub>vem</sub> = MFL·(1 + H<sub>FC</sub>/F₀) = 13.876 × (1 + 8 500/4 600) = 39.52 N/m<br>f<sub>1</sub> = L²/8 · q<sub>vem</sub>/(H<sub>FP,1</sub> + H<sub>FC</sub>) = 312.5 × 39.52 / 13 100 = <strong>0.943 m</strong></p>
         <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">A 10 °C il filo di contatto è orizzontale nella posizione nominale h − sh = 5.40 m; ballerina a metà campata = sh − f<sub>1</sub> = 1.457 m.</p>
-        <p style="font-weight:600;margin-top:.7rem">Passo 4 — Forza di trazione a T<sub>2</sub> = +40 °C (equazione di stato VEM / Excel Upro1, ΔT = +30 K)</p>
+        <p style="font-weight:600;margin-top:.7rem">Passo 4 — Forza di trazione a T<sub>2</sub> = +40 °C (equazione di stato VEM, ΔT = +30 K)</p>
         <p style="margin:.1rem 0;font-size:.8rem;color:var(--muted)">gk₀ = MFL/F₀ = 3.017·10⁻³ 1/m &nbsp;|&nbsp; G = 24/Lm² + gk₀² = 9.609·10⁻³ &nbsp;|&nbsp; α·ΔT = 3.45·10⁻⁴ &nbsp;→ Newton-Raphson → <strong>H<sub>FP,2</sub> = 3 425 N</strong> (arrotondato a 5 N)</p>
         <p style="font-weight:600;margin-top:.7rem">Passo 5 — Freccia e altezze a T<sub>2</sub></p>
         <p style="font-family:monospace;background:var(--s3);padding:4px 8px;border-radius:4px;margin:.25rem 0">f<sub>2</sub> = 312.5 × 39.52 / (3 425 + 8 500) = <strong>1.036 m</strong><br>FP a metà campata = 7.80 − 1.036 = <strong>6.76 m s. PRF</strong><br>FC a metà campata = 5.40 − (1.036 − 0.943) = <strong>5.31 m s. PRF</strong> (il filo di contatto segue il filo portante, ballerine fisse)</p>
-        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Verifica:</strong> con questi dati l’applicazione mostra gli stessi valori (scheda risultati, punto di misura M1 a x = 25 m). Il protocollo di calcolo PDF contiene tutti i passaggi. Il calcolo corrisponde all’Excel FFS <em>Durchhang 2026.xlsm</em>.</p>
+        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Verifica:</strong> con questi dati l’applicazione mostra gli stessi valori (scheda risultati, punto di misura M1 a x = 25 m). Il protocollo di calcolo PDF contiene tutti i passaggi.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 8 Quellen ══ -->
       <h3 id="hb-quellen" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.2rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem">8 &nbsp;<span id="hb-s8">Quellenangaben</span></h3>
       <div class="hb-lang hb-de">
         <ul style="margin:.4rem 0 .4rem 1.2rem;font-size:.82rem;color:var(--muted)">
-          <li>SBB Durchhang 2026.xlsm — VBA-Berechnungsmodell (Upro1, DurchhangNFL); NFL-Re!P14 = VEM 7.66</li>
           <li>SBB 0161.1013.0001 — Technische Spezifikation N-FL (Reglagewerte, Materialien)</li>
           <li>SBB 0161.1013.0005.1 — Vorgabe zur Eingabe von c<sub>proj</sub> / c<sub>m</sub> (Mittelspannweite / Einzelspannweite)</li>
           <li>SBB 0161.1013.0003 — Reglagetabelle N-FL «starr»</li>
-          <li>SBB 0161.1013.0004 — Zusatzlast Schnee/Eis 7 N/m (gemäss Notiz im SBB-Excel); Vorgabe in der App 15 N/m (SBB-Vorgabe Fachentwicklung)</li>
+          <li>SBB 0161.1013.0004 — Zusatzlast Schnee/Eis 7 N/m; Vorgabe in der App 15 N/m (SBB-Vorgabe Fachentwicklung)</li>
           <li>VEM Handbuch — Formel 7.53a (R-FL: Durchhang Tragseil mit Fahrdraht und Zusatzlast)</li>
-          <li>Validierung: 27 mit der SBB-Excel verifizierte Beispielrechnungen (tests/beispiele_sbb.test.js)</li>
+          <li>Validierung: 27 verifizierte SBB-Referenzbeispiele als automatische Tests</li>
           <li>ISO 16739-1:2018 (IFC4), EPSG:2056 CH1903+ / LV95, Höhen LN02 — für Export und Georeferenz</li>
           <li>VEM Handbuch Freileitungen — Formel 7.66 / 7.82; kombiniertes TS+Fd-System</li>
           <li>Bronštejn/Semendjajev — Mathematisches Handbuch (exakte Kettenlinienformeln)</li>
@@ -17991,13 +17990,12 @@ renderObstacleList();
       </div>
       <div class="hb-lang hb-fr" style="display:none">
         <ul style="margin:.4rem 0 .4rem 1.2rem;font-size:.82rem;color:var(--muted)">
-          <li>SBB Durchhang 2026.xlsm — Modèle de calcul VBA (Upro1, DurchhangNFL); NFL-Re!P14 = VEM 7.66</li>
           <li>SBB 0161.1013.0001 — Spécification technique LC N (valeurs de réglage, matériaux)</li>
           <li>SBB 0161.1013.0005.1 — Prescriptions pour la saisie de c<sub>proj</sub> / c<sub>m</sub> (portée moyenne / portée individuelle)</li>
           <li>CFF 0161.1013.0003 — Tableau de réglage LC N «rigide»</li>
-          <li>CFF 0161.1013.0004 — Charge additionnelle neige/glace 7 N/m (selon note de l’Excel CFF) ; valeur par défaut dans l’application 15 N/m (prescription CFF)</li>
+          <li>CFF 0161.1013.0004 — Charge additionnelle neige/glace 7 N/m ; valeur par défaut dans l’application 15 N/m (prescription CFF)</li>
           <li>Manuel VEM — formule 7.53a (LC R : flèche du câble porteur avec fil de contact et charge additionnelle)</li>
-          <li>Validation : 27 exemples de calcul vérifiés avec l’Excel CFF (tests/beispiele_sbb.test.js)</li>
+          <li>Validation : 27 exemples de référence CFF vérifiés, sous forme de tests automatiques</li>
           <li>ISO 16739-1:2018 (IFC4), EPSG:2056 CH1903+ / MN95, altitudes NF02 — pour l’export et le géoréférencement</li>
           <li>VEM Manuel des lignes aériennes — formule 7.66 / 7.82; système combiné CP+FC</li>
           <li>Bronštejn/Semendjajev — Manuel de mathématiques (formules caténaires exactes)</li>
@@ -18005,13 +18003,12 @@ renderObstacleList();
       </div>
       <div class="hb-lang hb-it" style="display:none">
         <ul style="margin:.4rem 0 .4rem 1.2rem;font-size:.82rem;color:var(--muted)">
-          <li>SBB Durchhang 2026.xlsm — Modello di calcolo VBA (Upro1, DurchhangNFL); NFL-Re!P14 = VEM 7.66</li>
           <li>SBB 0161.1013.0001 — Specifiche tecniche LC N (valori di regolazione, materiali)</li>
           <li>SBB 0161.1013.0005.1 — Prescrizioni per l'inserimento di c<sub>proj</sub> / c<sub>m</sub> (lunghezza media / campata singola)</li>
           <li>FFS 0161.1013.0003 — Tabella di regolazione LC N «rigido»</li>
-          <li>FFS 0161.1013.0004 — Carico aggiuntivo neve/ghiaccio 7 N/m (secondo nota dell’Excel FFS); valore predefinito nell’app 15 N/m (prescrizione FFS)</li>
+          <li>FFS 0161.1013.0004 — Carico aggiuntivo neve/ghiaccio 7 N/m; valore predefinito nell’app 15 N/m (prescrizione FFS)</li>
           <li>Manuale VEM — formula 7.53a (LC R: freccia del filo portante con filo di contatto e carico aggiuntivo)</li>
-          <li>Validazione: 27 esempi di calcolo verificati con l’Excel FFS (tests/beispiele_sbb.test.js)</li>
+          <li>Validazione: 27 esempi di riferimento FFS verificati, come test automatici</li>
           <li>ISO 16739-1:2018 (IFC4), EPSG:2056 CH1903+ / MN95, altezze RN02 — per esportazione e georeferenziazione</li>
           <li>VEM Manuale delle linee aeree — formula 7.66 / 7.82; sistema combinato FP+FC</li>
           <li>Bronštejn/Semendjajev — Manuale di matematica (formule caténarie esatte)</li>
@@ -18436,7 +18433,7 @@ renderObstacleList();
           </div>
         </div>
         <div id="rgl-el-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
-        <p class="rgl-note" id="rgl-el-note" data-i18n-html="ui.rgl.el.note">Reglagezugkraft bei +10 °C, Lm = 45 m, Berechnungsart «Ausgleichend» &nbsp;·&nbsp; (SBB «Durchhang 2026.xlsm»)</p>
+        <p class="rgl-note" id="rgl-el-note" data-i18n-html="ui.rgl.el.note">Reglagezugkraft bei +10 °C, Lm = 45 m, Berechnungsart «Ausgleichend»</p>
       </div>
 
     </div>
