@@ -523,6 +523,49 @@ test('Längsprofil: Leiter in Temperaturfarbe, 55 Felder rechenbar und seitlich 
   await kontext.close();
 });
 
+test('Feld-Schnellauswahl, H/a im Zeichnungsband, Abschnitt-Scroll (normal und Vollbild)', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await seite.setViewportSize({ width: 1600, height: 1000 });
+  const r = await seite.evaluate(async () => {
+    const warte = ms => new Promise(res => setTimeout(res, ms));
+    const box = document.getElementById('feld-wahl');
+    const ohne = getComputedStyle(box).display;
+    abschnittAnsicht(); await abschnittBeispiel(); await warte(200);
+    // Seite nicht weit über den Inhalt scrollbar: höchstens Eingabespalte + Fuss
+    const seitenH = document.documentElement.scrollHeight;
+    const spalteUnten = document.querySelector('.sidebar').getBoundingClientRect().bottom + scrollY;
+    // Vollbild: Abschnitt scrollt in sich
+    abschnitt = { masten: [...beispielMasten(), ...beispielMasten().map((m, i) => ({ ...m, name: String(200 + i), e: m.e + 300, km: (12.6 + i * 0.05).toFixed(3) }))], offen: null, mp: {} };
+    renderAbschnitt(); toggleCanvasFullscreen(); await warte(100);
+    const v = document.getElementById('abschnitt-view'); v.scrollTop = 99999;
+    const vollbild = v.scrollTop > 0;
+    toggleCanvasFullscreen();
+    // Schnellauswahl: sichtbar, Wechsel bleibt in der Zeichnung
+    abschnitt = { masten: beispielMasten(), offen: null, mp: {} }; renderAbschnitt();
+    setCanvasView('zeichnung'); await warte(50);
+    const mit = getComputedStyle(box).display !== 'none';
+    feldSchritt(1); feldSchritt(1);
+    const nachSchritt = { offen: abschnittOffenesFeld(), zeichnung: document.getElementById('view-seg-zeichnung').classList.contains('active'),
+      wert: document.getElementById('feld-select').value, text: document.getElementById('feld-select').selectedOptions[0].textContent };
+    // H-Punkte im Band der Zeichnung
+    for (const [id, v2] of [['probe-x1', '11.7'], ['probe-x2', '18.9']]) { const e = document.getElementById(id); e.value = v2; e.dispatchEvent(new Event('input')); }
+    setProbeH(1, '548.5'); setProbeH(2, '548.5'); await warte(300);
+    refreshScaleViewIfActive(); await warte(300);
+    const zeilen = [...document.querySelectorAll('#scale-data-strip .strip-label')].map(e => e.textContent);
+    setCanvasView('diagramm');
+    return { ohne, seitenH, spalteUnten, vollbild, mit, nachSchritt, zeilen };
+  });
+  assert.equal(r.ohne, 'none', 'ohne Abschnitt keine Schnellauswahl');
+  assert.ok(r.seitenH <= r.spalteUnten + 200, `Seite ${r.seitenH} vs. Spalte ${r.spalteUnten}`);
+  assert.equal(r.vollbild, true, 'Abschnitt im Vollbild scrollbar');
+  assert.equal(r.mit, true);
+  assert.deepEqual({ offen: r.nachSchritt.offen, zeichnung: r.nachSchritt.zeichnung, wert: r.nachSchritt.wert }, { offen: 1, zeichnung: true, wert: '1' });
+  assert.match(r.nachSchritt.text, /Feld 2 · 102–103 · KM 12\.350/);
+  assert.ok(r.zeilen.includes('H [m ü.M.]') && r.zeilen.includes('a [m]'), r.zeilen.join(' | '));
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
 test('Wasserzeichen «BETA – nicht verifiziert»: Bildschirm in allen Sprachen, alle PDFs', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   await fensterAbfangen(seite);
