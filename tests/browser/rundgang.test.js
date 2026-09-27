@@ -484,6 +484,43 @@ test('Abschnitt: «Beispiel laden» setzt 5 Masten, IFC georeferenziert, Handbuc
   await kontext.close();
 });
 
+test('Längsprofil: Leiter in Temperaturfarbe, 55 Felder rechenbar und seitlich scrollbar', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    abschnittAnsicht();
+    // Nachspannlänge ~970 m mit 55 Feldern 10–25 m
+    const m = []; let e = 2600000, z = 500, km = 12000;
+    for (let i = 0; i < 56; i++) {
+      m.push({ name: String(101 + i), e, n: 1200000 + i * 0.2, z, delta: 0.3, h: 7.6, km: (km / 1000).toFixed(3), L: null });
+      const L = 10 + ((i * 7) % 16); e += L; z += 0.05; km += L;
+    }
+    abschnitt = { masten: m, offen: null, mp: {} }; renderAbschnitt();
+    const erg = abschnittRechnen();
+    const box = document.querySelector('.abs-profil-scroll');
+    const viele = { felder: erg.felder.length, fehler: erg.felder.filter(f => f.fehler).length,
+      scroll: box.scrollWidth > box.clientWidth + 100, hinweis: !!document.querySelector('.abs-leg.leise') };
+    document.getElementById('temp2').value = '50'; onT2Input('50');
+    const warm = document.querySelector('.abs-leiter').style.stroke;
+    document.getElementById('temp2').value = '-20'; onT2Input('-20');
+    const kalt = document.querySelector('.abs-leiter').style.stroke;
+    const probe = document.createElement('span'); probe.style.color = t2TempColor(-20);
+    const legende = document.querySelector('.abs-leg').innerText;
+    // Wenige Felder: kein Scrollen
+    abschnitt = { masten: beispielMasten(), offen: null, mp: {} }; renderAbschnitt();
+    const b2 = document.querySelector('.abs-profil-scroll');
+    const wenige = { scroll: b2.scrollWidth > b2.clientWidth + 1, hinweis: !!document.querySelector('.abs-leg.leise') };
+    setCanvasView('diagramm');
+    return { viele, warm, kalt, kaltSoll: probe.style.color, legende, wenige };
+  });
+  assert.deepEqual(r.viele, { felder: 55, fehler: 0, scroll: true, hinweis: true });
+  assert.notEqual(r.warm, r.kalt, 'Farbe folgt T2');
+  assert.equal(r.kalt, r.kaltSoll);
+  assert.match(r.legende, /T2 = -20 °C|T₂ = -20 °C|T2 = −20 °C/);
+  assert.deepEqual(r.wenige, { scroll: false, hinweis: false });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
 test('Wasserzeichen «BETA – nicht verifiziert»: Bildschirm in allen Sprachen, alle PDFs', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   await fensterAbfangen(seite);
