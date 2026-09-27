@@ -268,7 +268,8 @@ test('Alle Checkboxen erscheinen als Schalter', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   const r = await seite.evaluate(() => {
     openLastfaelle();
-    const kaesten = [...document.querySelectorAll('input[type=checkbox]')].filter(el => el.offsetParent !== null);
+    // Ausnahme: Auswahlboxen in Listen (.auswahl) bleiben normale Kästchen
+    const kaesten = [...document.querySelectorAll('input[type=checkbox]:not(.auswahl)')].filter(el => el.offsetParent !== null);
     const falsch = kaesten.filter(el => {
       const st = getComputedStyle(el);
       // Schalter: eigener Stil (appearance none, breiter als hoch) oder versteckt mit .schalter daneben
@@ -421,6 +422,165 @@ test('Fenstergrösse ändern / Handy drehen: Diagramm wird ohne Eingabe neu geze
     const m = await masse();
     assert.equal(m.puffer, m.css, `Diagramm bei ${w}×${h} verzerrt`);
   }
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Systemwechsel sanft (Hauptansicht und hf), ohne Einfluss auf die Rechnung; hf-Grafik beschriftet', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    const erg = [];
+    for (const m of ['rfl', 'el', 'nfl']) {
+      sysWaehlen(m);
+      const anim = document.getAnimations().filter(a => a.constructor === Animation).length;
+      document.getAnimations().forEach(a => a.finish());
+      const sagWahl = calcState.c2.sag;
+      setSysMode(m);
+      erg.push({ m, anim: anim > 0, gleich: calcState.c2.sag === sagWahl, aktiv: document.getElementById('seg-' + m).classList.contains('active') });
+    }
+    openHf(); hfZuruecksetzen();
+    hfWert('typ', 'rfl');
+    const hfAnim = document.getAnimations().filter(a => a.constructor === Animation).length > 0;
+    document.getAnimations().forEach(a => a.finish());
+    const rflFeld = !document.getElementById('hf-kombi');
+    hfWert('typ', 'nfl'); document.getAnimations().forEach(a => a.finish());
+    const svg = document.querySelector('#hf-erg .hf-svg').innerHTML;
+    const zeile = document.querySelector('.hf-anteile').textContent;
+    const titel = document.querySelectorAll('#hf-erg .hf-svg title').length;
+    closeHf();
+    return { erg, hfAnim, rflFeld, be: svg.includes('b<tspan font-size="7" dy="2">e</tspan>'), zeile, titel };
+  });
+  for (const x of r.erg) assert.deepEqual(x, { m: x.m, anim: true, gleich: true, aktiv: true });
+  assert.equal(r.hfAnim, true);
+  assert.equal(r.rflFeld, true);
+  assert.equal(r.be, true, 'b_e in der Höhenleiter');
+  assert.match(r.zeile, /hfmin 4'965/);
+  assert.match(r.zeile, /6'200 − tho 10 − fudo 39.6 − fh 75 − fFD,min 80.2 = hfmax 5'995.2/);
+  assert.ok(r.titel >= 8, 'Tooltips an den Streifen');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('«Bewegung reduzieren»: Systemwechsel ohne Animation', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { reducedMotion: 'reduce' });
+  const n = await seite.evaluate(() => {
+    const eigene = () => document.getAnimations().filter(a => a.constructor === Animation).length;   // ohne CSS-Farbübergänge
+    sysWaehlen('rfl'); const a = eigene(); openHf(); hfWert('typ', 'rfl'); return a + eigene();
+  });
+  assert.equal(n, 0);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Projektliste: Auswahl als normale Box; Kopfleiste kompakt mit «Teilen»', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    openProjectsModal(); saveCurrentCalc(); renderProjectList();
+    const box = document.querySelector('.proj-check');
+    const st = box && getComputedStyle(box);
+    const auswahl = box ? { klasse: box.classList.contains('auswahl'), appearance: st.appearance, quadratisch: Math.abs(parseFloat(st.width) - parseFloat(st.height)) < 1 } : null;
+    closeProjectsModal();
+    const kopf = document.querySelector('.header');
+    const teilen = kopf.querySelector('#share-btn');
+    const symbole = [...kopf.querySelectorAll('.header-symbol')].map(b => ({ titel: !!b.title, text: b.textContent.trim() }));
+    teilen.click();
+    const menu = document.getElementById('share-menu');
+    const m = menu.getBoundingClientRect();
+    const offen = getComputedStyle(menu).display !== 'none' && m.left >= 0 && m.right <= document.documentElement.clientWidth;
+    closeShareMenu();
+    return { auswahl, teilenImKopf: !!teilen, teilenImDiagramm: !!document.querySelector('.canvas-card #share-btn'), symbole, offen };
+  });
+  assert.deepEqual(r.auswahl, { klasse: true, appearance: 'auto', quadratisch: true });
+  assert.equal(r.teilenImKopf, true);
+  assert.equal(r.teilenImDiagramm, false);
+  assert.equal(r.symbole.length, 4);
+  for (const b of r.symbole) assert.deepEqual(b, { titel: true, text: '' });
+  assert.equal(r.offen, true, 'Menü «Teilen» offen und im Bild');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Handy: Menü «Teilen» bleibt im Bild; im Vollbild erreichbar', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const r = await seite.evaluate(() => {
+    document.getElementById('share-btn').click();
+    const m = document.getElementById('share-menu').getBoundingClientRect();
+    const handy = m.left >= 0 && m.right <= document.documentElement.clientWidth;
+    closeShareMenu();
+    toggleCanvasFullscreen();
+    const fs = document.getElementById('share-btn-fs');
+    const sichtbar = fs.getClientRects().length > 0;
+    fs.click();
+    const menu = document.getElementById('share-menu');
+    const oben = parseInt(getComputedStyle(menu).zIndex, 10) > 1000 && getComputedStyle(menu).display !== 'none';
+    closeShareMenu(); toggleCanvasFullscreen();
+    return { handy, sichtbar, oben, breite: document.documentElement.scrollWidth, W: document.documentElement.clientWidth };
+  });
+  assert.deepEqual(r, { handy: true, sichtbar: true, oben: true, breite: r.W, W: r.W });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Diagramm: Schalter «Fahrdraht + hf», Prüfzeile im Ergebnis, Speichern', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    const zeile = () => { const el = document.getElementById('hf-pruefzeile'); return el.getClientRects().length ? el.className : 'aus'; };
+    const vorher = zeile();
+    const yHi0 = view.yHi, sc0 = view.scaleY;
+    setDiagrammHf(true);
+    const erweitert = view.scaleY < sc0;                    // Ausschnitt reicht jetzt bis zum Fahrdraht
+    // Aufhängung 7.40 m, sh 2.40 → Fahrdraht um 5.0 m: innerhalb 4.965 … 5.995
+    document.getElementById('h1').value = '7.40'; document.getElementById('h2').value = '7.40'; berechnen();
+    const ok = zeile();
+    document.getElementById('h1').value = '7.00'; document.getElementById('h2').value = '7.00'; berechnen();
+    const nok = zeile(), text = document.getElementById('hf-pruefzeile').textContent;
+    const stand = getProjectState();
+    setDiagrammHf(false);
+    const legEl = (sysWaehlen('el'), document.getElementById('leg-hf-item').getClientRects().length > 0);
+    const zeileEl = zeile();
+    setSysMode('nfl');
+    return { vorher, erweitert, ok, nok, unter: /unter hf/.test(text), gespeichert: stand.diagrammHf, legEl, zeileEl };
+  });
+  assert.equal(r.vorher, 'aus');
+  assert.equal(r.erweitert, true);
+  assert.equal(r.ok, 'hf-pruefzeile ok');
+  assert.equal(r.nok, 'hf-pruefzeile nok');
+  assert.equal(r.unter, true);
+  assert.equal(r.gespeichert, true);
+  assert.equal(r.legEl, false, 'Einzelleiter: kein Schalter');
+  assert.equal(r.zeileEl, 'aus');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Zeichnung: hf-Beschriftungen überlagern sich nicht; Höhenleiter erklärt die Leserichtung', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    setCanvasView('zeichnung'); setDrawingHf(true);
+    const texte = [...document.querySelectorAll('#scale-svg-container svg text')].filter(t => /^hf(min|max) = /.test(t.textContent));
+    const [a, b] = texte.map(t => t.getBoundingClientRect());
+    const getrennt = a && b && (a.bottom <= b.top + 0.5 || b.bottom <= a.top + 0.5);
+    const pruef = [...document.querySelectorAll('#scale-svg-container svg text')].find(t => /hf(min|max)/.test(t.textContent) && /Fd T2/.test(t.textContent));
+    setCanvasView('diagramm');
+    openHf();
+    const svg = document.querySelector('#hf-erg .hf-svg').textContent;
+    closeHf();
+    return { anzahl: texte.length, getrennt, pruef: !!pruef, auf: /↑ aufgebaut ab GfA/.test(svg), ab: /↓ abgezogen von 6.200 m/.test(svg) };
+  });
+  assert.deepEqual(r, { anzahl: 2, getrennt: true, pruef: true, auf: true, ab: true });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Fusszeile: ohne «Statikteam», Version aus APP_VERSION', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => ({
+    fuss: document.querySelector('body > footer').textContent.replace(/\s+/g, ' ').trim(),
+    version: APP_VERSION,
+    irgendwo: document.documentElement.innerHTML.includes('Statikteam'),
+  }));
+  assert.equal(r.fuss, `Fachentwicklung FS · © 2026 · ${r.version}`);
+  assert.equal(r.irgendwo, false);
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
