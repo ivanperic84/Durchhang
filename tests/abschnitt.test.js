@@ -141,3 +141,28 @@ test('CSV ohne Kopfzeile: feste Reihenfolge wie Vorlage', () => {
   const { masten } = A.csvLesen('1,2600000,1200000,500,0.3,7,12.3\n2,2600040,1200000,501,0.3,7.2,12.34\n');
   assert.deepEqual(masten[1], { name: '2', e: 2600040, n: 1200000, z: 501, delta: 0.3, h: 7.2, km: '12.34', L: null });
 });
+
+test('Einzelleiter über einem Hindernis: Lage automatisch, Abstand Leiter − Oberkante', () => {
+  // Leiter: Parabel, tiefster Punkt 6.65 m in Feldmitte (L = 45 m), Aufhängung 7.00 m
+  const L = 45, hoehe = x => 6.65 + 0.35 * ((x - 22.5) / 22.5) ** 2;
+  const unten = [{ x: 10, h: 6.3 }, { x: 32.8, h: 6.2 }];
+  assert.equal(A.hindernisSeite(hoehe, unten, L), 'unten');
+  assert.equal(A.hindernisSeite(hoehe, [{ x: 10, h: 7.5 }], L), 'oben');
+  assert.equal(A.hindernisSeite(hoehe, [{ x: 10, h: 6.0 }, { x: 30, h: 7.5 }], L), 'oben', 'kreuzt → oben');
+  // Unterhalb: kleinster Abstand dort, wo Leiter und Oberkante am nächsten sind
+  const r = A.abstandHindernis(hoehe, unten, true, L, true);
+  const erwartet = Math.min(...Array.from({ length: 2281 }, (_, i) => {
+    const x = 10 + 22.8 * i / 2280, k = 6.3 + (6.2 - 6.3) * (x - 10) / 22.8; return hoehe(x) - k;
+  }));
+  assert.ok(Math.abs(r.abstand - erwartet) < 1e-3, `${r.abstand} ≈ ${erwartet}`);
+  assert.ok(r.abstand > 0.3 && r.abstand < 0.4);
+  // Oberhalb (bisher): gleiche Punkte ergeben einen negativen Abstand
+  assert.ok(A.abstandHindernis(hoehe, unten, true, L).abstand < 0);
+  // Senkrechter Sprung: oberhalb gilt der tiefere, unterhalb der höhere Punkt
+  const P = A.hindernisPunkte([{ x: 5, h: 6 }, { x: 5, h: 6.4 }, { x: 8, h: 6.2 }]);
+  assert.equal(A.kanteBei(P, 5, false), 6);
+  assert.equal(A.kanteBei(P, 5, true), 6.4);
+  // Einzelpunkte unterhalb
+  const e = A.abstandHindernis(hoehe, unten, false, L, true);
+  assert.ok(Math.abs(e.abstand - Math.min(hoehe(10) - 6.3, hoehe(32.8) - 6.2)) < 1e-9);
+});

@@ -243,7 +243,7 @@ test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', asy
   assert.equal(r.grafiken, 2, 'Höhenleiter und Kurven über die Spannweite');
   assert.equal(r.pdf.length, 1);
   assert.match(r.pdf[0], /<h1/);
-  assert.equal((r.pdf[0].match(/<svg/g) || []).length, 2, 'Grafiken im PDF');
+  assert.equal((r.pdf[0].match(/<svg[^>]*class="hf-svg"/g) || []).length, 2, 'Grafiken im PDF');
   assert.match(r.pdf[0], /BETA – nicht verifiziert/);
   assert.equal(r.geladen, true);
   assert.deepEqual(fehler, []);
@@ -684,38 +684,48 @@ test('Wechsel Diagramm / Zeichnung / Abschnitt / Foto: Höhe gleitet, Inhalt ble
   await kontext.close();
 });
 
-test('Systemhöhe: zulässiger Bereich aus hf, Übernahme per Knopf und Rückfrage beim Einschalten', async () => {
+test('hf: zulässige Anschlusshöhe und Systemhöhe, Rückfrage mit Anschlusshöhe zuerst', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   const r = await seite.evaluate(async () => {
-    const hw = document.getElementById('sh-hf-hw'), sh = document.getElementById('sh');
-    const sichtbar = () => hw.getClientRects().length > 0;
-    const vorher = sichtbar();                                   // hf noch nicht aktiv
-    // h1 = h2 = 7.00, hf 4.965 … 5.995 → sh 1.01 … 2.03 m; Vorgabe sh 2.40 liegt ausserhalb
+    const hw = document.getElementById('sh-hf-hw'), hh = document.getElementById('h-hf-hw'), sh = document.getElementById('sh');
+    const h1 = document.getElementById('h1'), h2 = document.getElementById('h2');
+    const warte = () => new Promise(r => setTimeout(r, 50));
+    const vorher = hw.getClientRects().length > 0 || hh.getClientRects().length > 0;   // hf noch nicht aktiv
+    // h1 = h2 = 7.00, sh 2.40, hf 4.965 … 5.995 → h zulässig 7.37 … 8.39 m, sh 1.01 … 2.03 m
     const cb = document.getElementById('diagramm-hf');
-    cb.checked = true; cb.dispatchEvent(new Event('change'));
-    await new Promise(r => setTimeout(r, 50));
-    const dialog = document.getElementById('rueckfrage').getClientRects().length > 0 && document.getElementById('rf-text').textContent;
-    document.getElementById('rf-abbrechen').click();             // «So lassen»
-    await new Promise(r => setTimeout(r, 50));
-    const gelassen = sh.value;
-    const info = { sichtbar: sichtbar(), nok: hw.classList.contains('nok'), text: hw.textContent.replace(/\s+/g, ' ').trim() };
-    hw.querySelector('button').click();                          // «2.03 m übernehmen»
-    const nachKnopf = { sh: sh.value, nok: hw.classList.contains('nok'), knopf: !!hw.querySelector('button') };
-    // Rückfrage bestätigen
+    cb.checked = true; cb.dispatchEvent(new Event('change')); await warte();
+    const dialog = document.getElementById('rf-text').textContent;
+    const knoepfe = ['rf-ok', 'rf-alt', 'rf-abbrechen'].map(id => document.getElementById(id).textContent);
+    document.getElementById('rf-abbrechen').click(); await warte();          // «So lassen»
+    const gelassen = [h1.value, h2.value, sh.value];
+    const infoH = { nok: hh.classList.contains('nok'), text: hh.textContent.replace(/\s+/g, ' ').trim() };
+    const infoSh = { nok: hw.classList.contains('nok'), text: hw.textContent.replace(/\s+/g, ' ').trim() };
+    hw.querySelector('button').click();                                     // sh → 2.03 übernehmen
+    const nachSh = sh.value;
+    // Rückfrage: Systemhöhe anpassen (dritter Knopf)
+    sh.value = '2.40'; berechnen();
+    cb.checked = false; cb.dispatchEvent(new Event('change'));
+    cb.checked = true; cb.dispatchEvent(new Event('change')); await warte();
+    document.getElementById('rf-alt').click(); await warte();
+    const altSh = sh.value;
+    // Rückfrage: Anschlusshöhe anpassen (Hauptknopf) — sh 0.80 → h zulässig 5.77 … 6.79
     sh.value = '0.80'; berechnen();
     cb.checked = false; cb.dispatchEvent(new Event('change'));
-    cb.checked = true; cb.dispatchEvent(new Event('change'));
-    await new Promise(r => setTimeout(r, 50));
-    document.getElementById('rf-ok').click();
-    await new Promise(r => setTimeout(r, 50));
-    return { vorher, dialog, gelassen, info, nachKnopf, bestaetigt: sh.value };
+    cb.checked = true; cb.dispatchEvent(new Event('change')); await warte();
+    document.getElementById('rf-ok').click(); await warte();
+    return { vorher, dialog, knoepfe, gelassen, infoH, infoSh, nachSh, altSh, hNeu: [h1.value, h2.value], hOk: !hh.classList.contains('nok') };
   });
   assert.equal(r.vorher, false);
-  assert.match(r.dialog, /sh = 2\.40 m liegt ausserhalb des Bereichs 1\.01 … 2\.03 m.* Auf 2\.03 m anpassen\?/);
-  assert.equal(r.gelassen, '2.4');
-  assert.deepEqual(r.info, { sichtbar: true, nok: true, text: 'zulässig 1.01 … 2.03 m→ 2.03 m übernehmen' });
-  assert.deepEqual(r.nachKnopf, { sh: '2.03', nok: false, knopf: false });
-  assert.equal(r.bestaetigt, '1.01', 'zu klein → nächster Grenzwert sh min');
+  assert.match(r.dialog, /Anschlusshöhe h₁ 7\.00 → 7\.37 m, h₂ 7\.00 → 7\.37 m/);
+  assert.match(r.dialog, /Systemhöhe sh 2\.40 → 2\.03 m/);
+  assert.deepEqual(r.knoepfe, ['Anschlusshöhe anpassen', 'Systemhöhe anpassen', 'So lassen']);
+  assert.deepEqual(r.gelassen, ['7.00', '7.00', '2.4']);
+  assert.deepEqual(r.infoH, { nok: true, text: 'Anschlusshöhe h zulässig 7.37 … 8.39 m über SOK (aus hf)→ h₁ = 7.37 m, h₂ = 7.37 m übernehmen' });
+  assert.deepEqual(r.infoSh, { nok: true, text: 'zulässig 1.01 … 2.03 m→ 2.03 m übernehmen' });
+  assert.equal(r.nachSh, '2.03');
+  assert.equal(r.altSh, '2.03');
+  assert.deepEqual(r.hNeu, ['6.79', '6.79']);
+  assert.equal(r.hOk, true);
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
@@ -734,6 +744,63 @@ test('Exporte mit hf: Berechnungs-PDF mit Prüfung, Zeichnungs-PDF mit Version, 
   assert.match(r[0], /Fahrdraht Soll an den Stützpunkten/);
   assert.match(r[0], /zulässig 1\.01 … 2\.03 m/);
   assert.match(r[1], new RegExp('Durchhang ' + (await seite.evaluate(() => APP_VERSION)).replace(/\./g, '\\.')));
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Einzelleiter über Hindernis: Lage automatisch, Nachweis nach unten; Schalter «Alle Lastfälle»; Band und Masslinie', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(() => {
+    setSysMode('el');
+    document.getElementById('sok-mum-left').value = 0; onSokMumLeftInput();
+    document.getElementById('sok-mum-right').value = 0; onSokMumRightInput();
+    setMindestabstand('0.2');
+    // Leiter 7.00 m, Hindernis darunter bei 6.3 / 6.2 m
+    _mpSetzen({ x: [10, 32.79, null, null], h: [6.3, 6.2, null, null], verbinden: true }); renderObstacleList(); berechnen();
+    const alle = { unten: _nachweis[0].unten, a: _nachweis[0].best.abstand, fall: _nachweis[0].best.fall.T, band: !!_nachweis[0].huelle,
+      legende: document.getElementById('leg-lf-item').getClientRects().length > 0 };
+    setLastfaelleAktiv(false);
+    const aktuell = { a: _nachweis[0].best.abstand, ok: _nachweis[0].ok, text: document.getElementById('hind-erg-H').textContent,
+      band: !!_nachweis[0].huelle, knopfAus: document.querySelector('#obs-section button[onclick="openLastfaelle()"]').disabled };
+    const gespeichert = getProjectState().lastfaelleAktiv;
+    setLastfaelleAktiv(true);
+    // Kettenwerk: gleiche Punkte darüber gelten als oberhalb
+    setSysMode('nfl');
+    _mpSetzen({ x: [15, 30, null, null], h: [7.5, 7.45, null, null], verbinden: true }); berechnen();
+    const oben = { unten: _nachweis[0].unten, a: _nachweis[0].best.abstand };
+    return { alle, aktuell, gespeichert, oben };
+  });
+  assert.equal(r.alle.unten, true);
+  assert.equal(r.alle.fall, 80, 'unterhalb massgebend: Wärme (tiefste Lage)');
+  assert.ok(r.alle.a < 0);
+  assert.equal(r.alle.band, true); assert.equal(r.alle.legende, true);
+  assert.ok(r.aktuell.a > 0.3 && r.aktuell.ok === true, 'aktueller Zustand −20 °C: Leiter deutlich darüber');
+  assert.match(r.aktuell.text, /✓ massgebend: a = 0\.\d\d m .*aktuell −20 °C/);
+  assert.equal(r.aktuell.band, false); assert.equal(r.aktuell.knopfAus, true);
+  assert.equal(r.gespeichert, false);
+  assert.equal(r.oben.unten, false); assert.ok(r.oben.a > 0.5);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('PDF im hellen App-Design: Inter, Logo, Diagramm nach den Eingabewerten mit farbiger Legende', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await fensterAbfangen(seite);
+  const r = await seite.evaluate(() => {
+    setDiagrammHf(true);
+    window.__fenster.length = 0; pdfExport(); hfPdf();
+    return window.__fenster.map(f => f.html);
+  });
+  const [ber, hf] = r;
+  for (const h of [ber, hf]) {
+    assert.match(h, /font-family: Inter/); assert.match(h, /fonts\/inter-latin-wght-normal\.woff2/);
+    assert.match(h, /<div class="hdr"><svg class="logo"/);
+    assert.doesNotMatch(h, /#eb0000|#212121/, 'kein Rot/Schwarz des alten Designs');
+  }
+  const iEin = ber.indexOf('<!-- ── Diagramm'), iS1 = ber.indexOf('<!-- ── Schritt 1');
+  assert.ok(iEin > 0 && iEin < iS1, 'Diagramm direkt nach den Eingabewerten');
+  assert.match(ber, /<div class="legende">.*Fahrdraht Soll \(h − sh\).*hf<sub>min<\/sub> … hf<sub>max<\/sub>/s);
+  assert.doesNotMatch(ber, /Ts bei T<sub>1<\/sub> T<sub>1<\/sub>/, 'keine doppelte Beschriftung');
   assert.deepEqual(fehler, []);
   await kontext.close();
 });

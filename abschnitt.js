@@ -10,7 +10,8 @@
  *             delta = Δ Mastfuss-SOK, h = Aufhängehöhe über SOK,
  *             km = Kilometrierung (Text, z. B. «12.345»),
  *             L  = Feldlänge bis zum nächsten Mast (nur wenn nicht berechenbar)
- * Hindernis:  { name, feld, verbinden, punkte: [{ x, h }] } — oberhalb der Leiter;
+ * Hindernis:  { name, feld, verbinden, punkte: [{ x, h }] } — oberhalb der Leiter
+ *             (Einzelleiter auch unterhalb, siehe hindernisSeite);
  *             feld = Feldnummer (0 = erstes Feld), x im Feld [m], h in m ü. M.
  *             (Feld mit SOK) bzw. über SOK. Die Punkte haben keine feste
  *             Reihenfolge: verbunden wird immer nach x sortiert.
@@ -74,29 +75,43 @@ function hindernisPunkte(punkte) {
     .sort((a, b) => a.x - b.x || a.h - b.h);
 }
 
-// Unterkante an der Stelle x (verbundene Punkte, stückweise gerade);
-// bei gleichem x (senkrechter Sprung) gilt der tiefere Punkt. null ausserhalb.
-function unterkanteBei(P, x) {
+// Kante an der Stelle x (verbundene Punkte, stückweise gerade); null ausserhalb.
+// Hindernis oberhalb: Unterkante — bei gleichem x (senkrechter Sprung) der tiefere Punkt.
+// Hindernis unterhalb: Oberkante — der höhere Punkt (jeweils die ungünstige Seite).
+function kanteBei(P, x, oberkante = false) {
   if (!P.length || x < P[0].x || x > P[P.length - 1].x) return null;
-  let uk = Infinity;
+  const wahl = oberkante ? Math.max : Math.min;
+  let k = oberkante ? -Infinity : Infinity;
   for (let i = 0; i < P.length; i++) {
-    if (P[i].x === x) uk = Math.min(uk, P[i].h);
+    if (P[i].x === x) k = wahl(k, P[i].h);
     if (i + 1 < P.length && P[i].x < x && x < P[i + 1].x)
-      uk = Math.min(uk, P[i].h + (P[i + 1].h - P[i].h) * (x - P[i].x) / (P[i + 1].x - P[i].x));
+      k = wahl(k, P[i].h + (P[i + 1].h - P[i].h) * (x - P[i].x) / (P[i + 1].x - P[i].x));
   }
-  return Number.isFinite(uk) ? uk : null;
+  return Number.isFinite(k) ? k : null;
+}
+function unterkanteBei(P, x) { return kanteBei(P, x, false); }
+
+// Lage eines Hindernisses zum Leiter (Einzelleiter): 'unten', wenn alle Punkte im Feld
+// unter dem Leiter liegen (Leiter führt darüber hinweg), sonst 'oben'. Ein Hindernis, das
+// den Leiter kreuzt, gilt als oberhalb — der Nachweis fällt dann ohnehin negativ aus.
+function hindernisSeite(hoehe, punkte, L) {
+  const P = hindernisPunkte(punkte).filter(p => p.x >= 0 && p.x <= L);
+  if (!P.length) return 'oben';
+  return P.every(p => p.h < hoehe(p.x)) ? 'unten' : 'oben';
 }
 
 // hoehe(x): Leiterhöhe (gleicher Bezug wie h). Liefert { abstand, x, uk } mit dem
-// kleinsten Abstand Unterkante − Leiter innerhalb des Felds [0, L], oder null.
-//   verbinden = true:  Unterkante als Linie durch die nach x sortierten Punkte
+// kleinsten Abstand innerhalb des Felds [0, L], oder null. uk = Kante des Hindernisses.
+//   oberhalb (unten = false): Abstand = Unterkante − Leiter
+//   unterhalb (unten = true): Abstand = Leiter − Oberkante (Einzelleiter über dem Hindernis)
+//   verbinden = true:  Kante als Linie durch die nach x sortierten Punkte
 //   verbinden = false: jeder Punkt einzeln (wie frühere H-Punkte)
-function abstandHindernis(hoehe, punkte, verbinden, L) {
+function abstandHindernis(hoehe, punkte, verbinden, L, unten = false) {
   const P = hindernisPunkte(punkte);
   if (!P.length) return null;
   let best = null;
   const pruefe = (x, uk) => {
-    const d = uk - hoehe(x);
+    const d = unten ? hoehe(x) - uk : uk - hoehe(x);
     if (!best || d < best.abstand) best = { abstand: d, x, uk };
   };
   if (!verbinden || P.length === 1) {
@@ -110,7 +125,7 @@ function abstandHindernis(hoehe, punkte, verbinden, L) {
     const n = Math.max(1, Math.ceil((x1 - x0) / 0.05));
     for (let k = 0; k <= n; k++) {
       const x = x0 + (x1 - x0) * k / n;
-      pruefe(x, unterkanteBei(P, x));
+      pruefe(x, kanteBei(P, x, unten));
     }
   }
   return best;
@@ -274,7 +289,7 @@ function csvVorlage() {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     LASTFALL_VORGABE, EISLAST_HOEHENLAGE, EIS_TEMPERATUR, lastfallEinstellung, lastfaelle, temperaturenLesen,
-    hindernisPunkte, unterkanteBei, abstandHindernis, hindernisNormieren, kmInMeter, feldLaengen, mittelspannweite, mastSok,
+    hindernisPunkte, kanteBei, unterkanteBei, hindernisSeite, abstandHindernis, hindernisNormieren, kmInMeter, feldLaengen, mittelspannweite, mastSok,
     csvLesen, csvSchreiben, csvVorlage, CSV_KOPF,
   };
 }
