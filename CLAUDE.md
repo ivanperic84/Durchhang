@@ -53,7 +53,7 @@ https://ivanperic84.github.io/Durchhang/ (wird aus `main` veröffentlicht).
 ## Prüfen vor jedem Commit
 ```bash
 npm test                                   # Node-Tests (Stand: 89, alle grün)
-CHROMIUM_PFAD=/opt/pw-browsers/chromium npm run test:browser   # Browser (Stand: 53)
+CHROMIUM_PFAD=/opt/pw-browsers/chromium npm run test:browser   # Browser (Stand: 54)
 ```
 - Browser-Tests mit `timeout` starten (z. B. `timeout 900 …`); in Prüfskripten Playwright-
   Kontexte mit `serviceWorkers: 'block'`, sonst wird eine alte Fassung aus dem Cache geladen.

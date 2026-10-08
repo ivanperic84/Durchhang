@@ -1,4 +1,4 @@
-# Übergabe Durchhang — Stand v4.5.1 (1. Oktober 2026)
+# Übergabe Durchhang — Stand v4.5.2 (8. Oktober 2026)
 
 Ziel dieser Datei: Eine neue Claude-Sitzung (auch unter einem anderen Account) kann
 ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLAUDE.md`
@@ -11,8 +11,7 @@ ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLA
 1. Repo `ivanperic84/Durchhang` ist eingebunden? Sonst muss der Nutzer im neuen Account
    GitHub verbinden (claude.ai → Einstellungen → Connectors/GitHub) und der Claude-GitHub-App
    Zugriff auf das Repo geben.
-2. `main` ist der aktuelle Stand (v4.5.1, Commit «v4.5.1: Auswahlkästchen im App-Design,
-   Neon-Strangfarben im Dunkelmodus (#23)»). Arbeitszweig von `main` aus anlegen bzw.
+2. `main` ist der aktuelle Stand (siehe Versionsverlauf unten). Arbeitszweig von `main` aus anlegen bzw.
    neu aufsetzen (`git fetch origin main && git checkout -B <zweig> origin/main`).
 3. `npm ci` (lädt Playwright), dann `npm test` und die Browser-Tests laufen lassen
    (siehe Abschnitt 6). Alles muss grün sein, bevor etwas geändert wird.
@@ -139,6 +138,14 @@ aus ⇒ nur aktueller Zustand T₂.
 
 **Höhen**: Z der Masten = SOK m ü. M. (seit v4.4.0; vorher Mastfuss). Mastfuss = SOK + Δ.
 Der Rechenkern kennt nur Höhen über SOK; SOK-Differenz der Masten macht die App.
+**Bewusster Entscheid des Nutzers (v4.5.2):** Die Rechnung verwendet als Höhendifferenz der
+Aufhängepunkte nur h₂ − h₁, **ohne** den SOK-Unterschied zwischen den Masten. Für die
+Darstellung in m ü. M. wird der SOK-Anstieg linear addiert (Diagramm, Profil, Karte).
+Folge bei schräger SOK: H unverändert, Durchhang einige cm und Tiefpunkt-Lage leicht
+anders als mit echter Höhendifferenz (Beispiel Feld 102–103: 0.863 statt 0.843 m,
+Tiefpunkt ~3 m versetzt). Nicht ohne neue Rückfrage beim Nutzer ändern.
+Δh an Messpunkten = Abstand von der Horizontalen durch den linken Aufhängepunkt
+(m ü. M.) bis zum Seil — auf Karte, Ergebnisleiste und im Diagramm identisch.
 Foto-Messung: Fusspunkte am Mastfuss ⇒ Höhe über SOK = gemessen + Δ, Höhenunterschied
 mit SOK-Differenz (seit v4.4.0; vorher wurde die SOK-Differenz ignoriert).
 
@@ -179,7 +186,7 @@ mit SOK-Differenz (seit v4.4.0; vorher wurde die SOK-Differenz ignoriert).
 ```bash
 npm ci
 npm test                                                     # 89 Node-Tests
-CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 53 Browser-Tests
+CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 54 Browser-Tests
 ```
 - In der Claude-Cloud-Umgebung ist Chromium unter `/opt/pw-browsers/chromium`
   vorinstalliert (nicht `playwright install` ausführen). CI (GitHub Actions) installiert
@@ -235,5 +242,6 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 53 
 | v4.4.0 | #21 | Mehrere Stränge pro Abschnitt; Z = SOK statt Mastfuss, Δ optional, Foto mit Δ |
 | v4.5.0 | #22 | KM 000.000, Δ negativ tippbar, Beispiel mit 3 Strängen, Transparenz |
 | v4.5.1 | #23 | Auswahlkästchen im App-Design, Neon-Strangfarben im Dunkelmodus |
+| v4.5.2 | – | Δh der Messpunkte auf der Karte = Diagramm (SOK-Anstieg berücksichtigt) |
 
 Issue #20: NIS (später).
