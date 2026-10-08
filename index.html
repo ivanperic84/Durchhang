@@ -3083,7 +3083,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v4.5.2';
+const APP_VERSION = 'v4.5.3';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -8831,13 +8831,15 @@ function berechnen() {
     warns.push(t('warn.tiefpunkt.t2'));
   if (warns.length) { warnBox.innerHTML = warns.join('<br>'); warnBox.classList.remove('hidden'); }
 
-  renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, z.c2_vem, ZL, z.c3, _T3, z.c_fd_ref);
+  // T3-Spalte wie T2: Durchhang aus dem kombinierten System (N-FL mit Kombination)
+  const c3Anzeige = (z.c3 && flCombo && z.c3_zeichnung && z.c3_zeichnung !== z.c3) ? { ...z.c3, sag: z.c3_zeichnung.sag } : z.c3;
+  renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, z.c2_vem, ZL, c3Anzeige, _T3, z.c_fd_ref);
   _nachweisAktualisieren();
   drawCanvas(c1, c2, L, h1, h2, sh, false, z.c2_vem, z.c3_zeichnung, z.c_fd_ref);
 
   calcState = { L, Lm, spanMode, q_Ts, q_Fd, q_ges, H_Ts, H_Ts_ub, H_Fd, sh, h1, h2, T1, T2,
                 alpha, EA, EA_Ts, deltaT, c1, c2, flCombo, ZL,
-                LT1_vem: z.LT1_vem, q_vem_vem: z.q_vem_vem, c2_vem: z.c2_vem, c3: z.c3, c_fd_ref: z.c_fd_ref,
+                LT1_vem: z.LT1_vem, q_vem_vem: z.q_vem_vem, c2_vem: z.c2_vem, c3: z.c3, c3_vem: z.c3_zeichnung, c_fd_ref: z.c_fd_ref,
                 matTs: getMaterialNameTs(), matFd: getMaterialNameFd() };
   _hindernisErgebnisse();
   hfPruefzeile();
@@ -10110,7 +10112,8 @@ function updateHighlightCard() {
   _leiste = null;
   if (!calcState) { if (el) el.innerHTML = ''; updateErgebnisleiste(); return; }
   const { c1, c2, h1, h2, L, sh, flCombo, c2_vem, c3: _c3state } = calcState;
-  const _c3curve = (showT3 && _c3state) ? _c3state : null;
+  // T3 wie T2: bei N-FL mit Kombination die Lage des kombinierten Systems (wie im Diagramm)
+  const _c3curve = (showT3 && _c3state) ? (calcState.c3_vem ?? _c3state) : null;
   const _t3clr   = _c3curve ? t2TempColor((v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value))) : null;
   // Kurvenfarbe: R-FL = primary rot, sonst T2-Temperaturfarbe
   const _t2v = (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp2')?.value));
@@ -11087,7 +11090,7 @@ function _zeichnungBauen(stripInSvg) {
   const isRFL  = sysMode === 'rfl';
   const isEl   = sysMode === 'el';
   const showFd = !isEl; // Fahrdraht für NFL und RFL
-  const c3data = (showT3 && calcState.c3) ? calcState.c3 : null;
+  const c3data = (showT3 && calcState.c3) ? (calcState.c3_vem ?? calcState.c3) : null;
   const cDisp  = (isNFL && calcState.c2_vem) ? calcState.c2_vem : c2;
   const catY   = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
 

@@ -1257,3 +1257,37 @@ test('Messpunkte: Δh auf der Karte = Δh im Diagramm, auch bei unterschiedliche
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('T₃ = T₂ bei gleicher Temperatur: gleiche Werte auf Karte, Tabelle und Zeichnung (N-FL kombiniert, Einzelleiter)', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const w = ms => new Promise(res => setTimeout(res, ms));
+    const setze = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input')); e.dispatchEvent(new Event('change')); };
+    const aus = {};
+    for (const sys of ['nfl', 'el']) {
+      setSysMode(sys); await w(100);
+      setze('temp2', '80'); setze('temp3', '80'); if (!showT3) toggleT3();
+      setze('probe-x1', '19.13'); await w(250); berechnen(); await w(150);
+      const mp = document.querySelector('#highlight-card .istzustand-main');
+      const t3Block = mp?.querySelector('div[style*="dashed"]');   // T₃-Teil unter T₂
+      const karte = [...mp.querySelectorAll(':scope > .istzustand-value'), ...(t3Block ? [t3Block.children[1], t3Block.children[4]] : [])]
+        .map(e => parseFloat(e.textContent));
+      const t2 = document.querySelector('#results .metric-value:not(.ref):not(.t3val)')?.textContent;
+      const t3 = document.querySelector('#results .metric-value.t3val')?.textContent;
+      const cs = calcState, c3z = cs.c3_vem ?? cs.c3, c2z = (sys === 'nfl' && cs.c2_vem) ? cs.c2_vem : cs.c2;
+      aus[sys] = { karte, t2, t3, zeichnungGleich: Math.abs(c3z.C - c2z.C) < 1e-9 && Math.abs(c3z.a - c2z.a) < 1e-9 };
+      setze('probe-x1', ''); toggleT3();
+    }
+    return aus;
+  });
+  for (const sys of ['nfl', 'el']) {
+    const { karte, t2, t3, zeichnungGleich } = r[sys];
+    assert.ok(karte.length >= 4, `${sys}: Karte mit T2 und T3`);
+    assert.equal(karte[2], karte[0], `${sys}: Δh T3 = Δh T2`);
+    assert.equal(karte[3], karte[1], `${sys}: Höhe T3 = Höhe T2`);
+    assert.equal(t3, t2, `${sys}: Durchhang in der Tabelle`);
+    assert.equal(zeichnungGleich, true, `${sys}: Zeichnung`);
+  }
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
