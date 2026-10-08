@@ -3083,7 +3083,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v4.5.1';
+const APP_VERSION = 'v4.5.2';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -9994,13 +9994,6 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = 'var(-
         ? q_vem_vem / (2 * (c2.H + calcState.H_Fd)) * xv * (LT1_vem - xv)
         : c2.sag)
     : yChord(xv) - y2;
-  // Δh = Abstand h1-Horizontale → Kurve (identisch mit Diagramm-Annotation für alle Modi)
-  const deltaH  = h1 - y2;
-  const dhLabel = isRfl ? 'Δh' : 'Δh ' + t('dyn.bei.t2');
-  const dhValue = deltaH;
-  const valSize  = compact ? '1.35rem' : '2rem';
-  const sagSize  = compact ? '1.1rem'  : '1.35rem';
-  const topGap   = compact ? '.5rem'   : '1.2rem';
   // SOK-Interpolation an Position xv
   const sokL = getSokMumLeft();
   const sokR = getSokMumRight();
@@ -10008,6 +10001,16 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = 'var(-
   const _sl = sokL ?? sokR ?? 0;
   const _sr = sokR ?? sokL ?? 0;
   const sokAtX  = hasSok ? _sl + (_sr - _sl) * xv / L : 0;
+  // Δh = Abstand Horizontale durch den linken Aufhängepunkt → Kurve, identisch mit der
+  // Diagramm-Annotation: bei unterschiedlicher SOK links/rechts in m ü. M. gemessen
+  // (die Höhen «über SOK» enthalten den SOK-Anstieg bis x nicht)
+  const sokAnstieg = hasSok ? sokAtX - _sl : 0;
+  const deltaH  = h1 - y2 - sokAnstieg;
+  const dhLabel = isRfl ? 'Δh' : 'Δh ' + t('dyn.bei.t2');
+  const dhValue = deltaH;
+  const valSize  = compact ? '1.35rem' : '2rem';
+  const sagSize  = compact ? '1.1rem'  : '1.35rem';
+  const topGap   = compact ? '.5rem'   : '1.2rem';
   const y2_mum  = y2 + sokAtX;
 
   // Hauptwert: m ü. M. wenn SOK gesetzt, sonst über SOK
@@ -10026,7 +10029,7 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = 'var(-
   if (c3Curve) {
     const y3      = catY(xv, c3Curve);
     const y3_disp = hasSok ? f3(y3 + sokAtX) : f3(y3);
-    const sag3    = h1 - y3;
+    const sag3    = h1 - y3 - sokAnstieg;
     if (badge === 'M1' && _leiste) _leiste.f3 = sag3;
     const t3hKey  = isEl ? 'res.seil.hoehe' : 'res.ts.hoehe';
     const y3SubLbl = hasSok

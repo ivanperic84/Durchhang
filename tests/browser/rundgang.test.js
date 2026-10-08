@@ -1235,3 +1235,25 @@ test('Stränge im Dunkelmodus: Neon-Töne statt Standardfarben, Auswahlkästchen
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Messpunkte: Δh auf der Karte = Δh im Diagramm, auch bei unterschiedlicher SOK links/rechts', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const warte = ms => new Promise(res => setTimeout(res, ms));
+    abschnittAnsicht(); await abschnittBeispiel(); await warte(300);
+    abschnittFeldOeffnen(1); setCanvasView('diagramm');          // Feld 102–103: SOK 540.08 → 540.52
+    for (const [id, v] of [['probe-x1', '16.79'], ['probe-x2', '23.04']]) { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input')); }
+    await warte(300); berechnen(); await warte(200);
+    const { h1, L, c2, c2_vem } = calcState, c = c2_vem || c2;
+    const sL = getSokMumLeft(), sR = getSokMumRight();
+    // Diagramm: Horizontale durch den linken Aufhängepunkt (m ü. M.) bis zum Seil (m ü. M.)
+    const soll = x => (sL + h1) - (c.a * Math.cosh((x - c.x_low) / c.a) + c.C + sL + (sR - sL) * x / L);
+    const werte = [...document.querySelectorAll('.istzustand-main')].map(m => parseFloat(m.querySelector('.istzustand-value').textContent));
+    const karte = werte.slice(0, 2);   // je Messpunkt zuerst Δh, darunter die Höhe
+    return { sokVerschieden: sR - sL > 0.4, karte, soll: [soll(16.79), soll(23.04)] };
+  });
+  assert.equal(r.sokVerschieden, true);
+  r.soll.forEach((s, i) => assert.ok(Math.abs(r.karte[i] - s) < 0.006, `M${i + 1}: Karte ${r.karte[i]} ≠ Diagramm ${s.toFixed(3)}`));
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
