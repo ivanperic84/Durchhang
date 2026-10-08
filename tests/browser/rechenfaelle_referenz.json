@@ -2862,7 +2862,7 @@
     6.319597934838782
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.680m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.016m\nZugkraft H Ts\n5'505.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.833m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: -0.02 m (-3.3%)\nΔ Zugkraft H Ts: +1'500.0 N (+37.5%)\nα·ΔT = -345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.680m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.016m\nZugkraft H Ts\n5'505.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.834m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: -0.02 m (-3.3%)\nΔ Zugkraft H Ts: +1'500.0 N (+37.5%)\nα·ΔT = -345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -2952,7 +2952,7 @@
     6.319597934838782
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.680m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.016m\nZugkraft H Ts\n5'505.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.833m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: -0.02 m (-3.3%)\nΔ Zugkraft H Ts: +1'500.0 N (+37.5%)\nα·ΔT = -345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.680m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.016m\nZugkraft H Ts\n5'505.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.834m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: -0.02 m (-3.3%)\nΔ Zugkraft H Ts: +1'500.0 N (+37.5%)\nα·ΔT = -345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -3222,7 +3222,7 @@
     6.279441707126352
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.721m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.021m\nZugkraft H Ts\n4'725.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.833m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.02 m (+2.4%)\nΔ Zugkraft H Ts: +720.0 N (+18.0%)\nα·ΔT = -172.50 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.721m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.021m\nZugkraft H Ts\n4'725.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.834m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.02 m (+2.4%)\nΔ Zugkraft H Ts: +720.0 N (+18.0%)\nα·ΔT = -172.50 × 10⁻⁶"
   },
   {
    "c1": [
@@ -3312,7 +3312,7 @@
     6.140033157803941
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.860m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.053m\nZugkraft H Ts\n7'000.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.833m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.16 m (+22.2%)\nΔ Zugkraft H Ts: +2'995.0 N (+74.8%)\nα·ΔT = -172.50 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.860m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.053m\nZugkraft H Ts\n7'000.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.834m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.16 m (+22.2%)\nΔ Zugkraft H Ts: +2'995.0 N (+74.8%)\nα·ΔT = -172.50 × 10⁻⁶"
   },
   {
    "c1": [
@@ -3582,7 +3582,7 @@
     6.151701040736214
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.848m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.063m\nZugkraft H Ts\n2'735.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.833m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.14 m (+20.6%)\nΔ Zugkraft H Ts: -1'270.0 N (-31.7%)\nα·ΔT = 345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.848m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.063m\nZugkraft H Ts\n2'735.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.834m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.14 m (+20.6%)\nΔ Zugkraft H Ts: -1'270.0 N (-31.7%)\nα·ΔT = 345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -3672,7 +3672,7 @@
     6.151701040736214
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.848m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.063m\nZugkraft H Ts\n2'735.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.833m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.14 m (+20.6%)\nΔ Zugkraft H Ts: -1'270.0 N (-31.7%)\nα·ΔT = 345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.848m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.063m\nZugkraft H Ts\n2'735.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.834m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.14 m (+20.6%)\nΔ Zugkraft H Ts: -1'270.0 N (-31.7%)\nα·ΔT = 345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -3942,7 +3942,7 @@
     6.032284601665765
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.968m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.258m\nZugkraft H Ts\n1'350.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.833m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.26 m (+37.5%)\nΔ Zugkraft H Ts: -2'655.0 N (-66.3%)\nα·ΔT = 805.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.968m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.258m\nZugkraft H Ts\n1'350.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.834m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.26 m (+37.5%)\nΔ Zugkraft H Ts: -2'655.0 N (-66.3%)\nα·ΔT = 805.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4032,7 +4032,7 @@
     6.032284601665765
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.968m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.258m\nZugkraft H Ts\n1'350.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.833m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.26 m (+37.5%)\nΔ Zugkraft H Ts: -2'655.0 N (-66.3%)\nα·ΔT = 805.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.704m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.029m\nZugkraft H Ts\n4'005.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.968m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.258m\nZugkraft H Ts\n1'350.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.834m\nTiefpunkt x\n22.500m\nSeillänge s Ts\n45.055m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.70m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.26 m (+37.5%)\nΔ Zugkraft H Ts: -2'655.0 N (-66.3%)\nα·ΔT = 805.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4090,7 +4090,7 @@
     6.2916416112632305
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.508m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: -0.10 m (-14.6%)\nΔ Zugkraft H Ts: +1'465.0 N (+32.9%)\nα·ΔT = -345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: -0.10 m (-14.6%)\nΔ Zugkraft H Ts: +1'465.0 N (+32.9%)\nα·ΔT = -345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4122,7 +4122,7 @@
     6.2916416112632305
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.633m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: -0.10 m (-14.6%)\nΔ Zugkraft H Ts: +1'465.0 N (+32.9%)\nα·ΔT = -345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.738m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: -0.10 m (-14.6%)\nΔ Zugkraft H Ts: +1'465.0 N (+32.9%)\nα·ΔT = -345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4180,7 +4180,7 @@
     6.2916416112632305
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.508m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: -0.10 m (-14.6%)\nΔ Zugkraft H Ts: +1'465.0 N (+32.9%)\nα·ΔT = -345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: -0.10 m (-14.6%)\nΔ Zugkraft H Ts: +1'465.0 N (+32.9%)\nα·ΔT = -345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4212,7 +4212,7 @@
     6.2916416112632305
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.633m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: -0.10 m (-14.6%)\nΔ Zugkraft H Ts: +1'465.0 N (+32.9%)\nα·ΔT = -345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.738m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: -0.10 m (-14.6%)\nΔ Zugkraft H Ts: +1'465.0 N (+32.9%)\nα·ΔT = -345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4270,7 +4270,7 @@
     6.3142494194996175
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.485m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: -0.03 m (-5.1%)\nΔ Zugkraft H Ts: +1'500.0 N (+37.5%)\nα·ΔT = -345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: -0.03 m (-5.1%)\nΔ Zugkraft H Ts: +1'500.0 N (+37.5%)\nα·ΔT = -345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4302,7 +4302,7 @@
     6.3142494194996175
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.610m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: -0.03 m (-5.1%)\nΔ Zugkraft H Ts: +1'500.0 N (+37.5%)\nα·ΔT = -345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.707m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: -0.03 m (-5.1%)\nΔ Zugkraft H Ts: +1'500.0 N (+37.5%)\nα·ΔT = -345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4360,7 +4360,7 @@
     6.3142494194996175
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.485m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: -0.03 m (-5.1%)\nΔ Zugkraft H Ts: +1'500.0 N (+37.5%)\nα·ΔT = -345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: -0.03 m (-5.1%)\nΔ Zugkraft H Ts: +1'500.0 N (+37.5%)\nα·ΔT = -345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4392,7 +4392,7 @@
     6.3142494194996175
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.610m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: -0.03 m (-5.1%)\nΔ Zugkraft H Ts: +1'500.0 N (+37.5%)\nα·ΔT = -345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.707m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: -0.03 m (-5.1%)\nΔ Zugkraft H Ts: +1'500.0 N (+37.5%)\nα·ΔT = -345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4450,7 +4450,7 @@
     6.259979938818617
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.608m\nTiefpunkt x\n11.776m\nSeillänge s Ts\n45.046m\nZugkraft H Ts\n5'155.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.508m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: -0.05 m (-7.3%)\nΔ Zugkraft H Ts: +705.0 N (+15.8%)\nα·ΔT = -172.50 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.608m\nTiefpunkt x\n11.776m\nSeillänge s Ts\n45.046m\nZugkraft H Ts\n5'155.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: -0.05 m (-7.3%)\nΔ Zugkraft H Ts: +705.0 N (+15.8%)\nα·ΔT = -172.50 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4482,7 +4482,7 @@
     6.259979938818617
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.608m\nTiefpunkt x\n11.776m\nSeillänge s Ts\n45.046m\nZugkraft H Ts\n5'155.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.633m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: -0.05 m (-7.3%)\nΔ Zugkraft H Ts: +705.0 N (+15.8%)\nα·ΔT = -172.50 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.608m\nTiefpunkt x\n11.776m\nSeillänge s Ts\n45.046m\nZugkraft H Ts\n5'155.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.738m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: -0.05 m (-7.3%)\nΔ Zugkraft H Ts: +705.0 N (+15.8%)\nα·ΔT = -172.50 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4540,7 +4540,7 @@
     6.147980532193628
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.763m\nTiefpunkt x\n15.107m\nSeillänge s Ts\n45.077m\nZugkraft H Ts\n7'400.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.508m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.11 m (+16.2%)\nΔ Zugkraft H Ts: +2'950.0 N (+66.3%)\nα·ΔT = -172.50 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.763m\nTiefpunkt x\n15.107m\nSeillänge s Ts\n45.077m\nZugkraft H Ts\n7'400.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.11 m (+16.2%)\nΔ Zugkraft H Ts: +2'950.0 N (+66.3%)\nα·ΔT = -172.50 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4572,7 +4572,7 @@
     6.147980532193628
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.763m\nTiefpunkt x\n15.107m\nSeillänge s Ts\n45.077m\nZugkraft H Ts\n7'400.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.633m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.11 m (+16.2%)\nΔ Zugkraft H Ts: +2'950.0 N (+66.3%)\nα·ΔT = -172.50 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.763m\nTiefpunkt x\n15.107m\nSeillänge s Ts\n45.077m\nZugkraft H Ts\n7'400.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.738m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.11 m (+16.2%)\nΔ Zugkraft H Ts: +2'950.0 N (+66.3%)\nα·ΔT = -172.50 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4630,7 +4630,7 @@
     6.28273441105722
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.574m\nTiefpunkt x\n10.242m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n4'725.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.485m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.02 m (+3.7%)\nΔ Zugkraft H Ts: +720.0 N (+18.0%)\nα·ΔT = -172.50 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.574m\nTiefpunkt x\n10.242m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n4'725.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.02 m (+3.7%)\nΔ Zugkraft H Ts: +720.0 N (+18.0%)\nα·ΔT = -172.50 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4662,7 +4662,7 @@
     6.28273441105722
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.574m\nTiefpunkt x\n10.242m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n4'725.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.610m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.02 m (+3.7%)\nΔ Zugkraft H Ts: +720.0 N (+18.0%)\nα·ΔT = -172.50 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.574m\nTiefpunkt x\n10.242m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n4'725.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.707m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.02 m (+3.7%)\nΔ Zugkraft H Ts: +720.0 N (+18.0%)\nα·ΔT = -172.50 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4720,7 +4720,7 @@
     6.167055181509966
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.737m\nTiefpunkt x\n14.771m\nSeillänge s Ts\n45.072m\nZugkraft H Ts\n7'000.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.485m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.18 m (+33.2%)\nΔ Zugkraft H Ts: +2'995.0 N (+74.8%)\nα·ΔT = -172.50 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.737m\nTiefpunkt x\n14.771m\nSeillänge s Ts\n45.072m\nZugkraft H Ts\n7'000.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.18 m (+33.2%)\nΔ Zugkraft H Ts: +2'995.0 N (+74.8%)\nα·ΔT = -172.50 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4752,7 +4752,7 @@
     6.167055181509966
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.737m\nTiefpunkt x\n14.771m\nSeillänge s Ts\n45.072m\nZugkraft H Ts\n7'000.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.610m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.18 m (+33.2%)\nΔ Zugkraft H Ts: +2'995.0 N (+74.8%)\nα·ΔT = -172.50 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = -5 °C — ΔT = -15 K\nDurchhang Ts belastet\n0.737m\nTiefpunkt x\n14.771m\nSeillänge s Ts\n45.072m\nZugkraft H Ts\n7'000.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.707m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.18 m (+33.2%)\nΔ Zugkraft H Ts: +2'995.0 N (+74.8%)\nα·ΔT = -172.50 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4810,7 +4810,7 @@
     6.154593967046878
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.754m\nTiefpunkt x\n15.860m\nSeillänge s Ts\n45.090m\nZugkraft H Ts\n3'195.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.508m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.10 m (+14.9%)\nΔ Zugkraft H Ts: -1'255.0 N (-28.2%)\nα·ΔT = 345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.754m\nTiefpunkt x\n15.860m\nSeillänge s Ts\n45.090m\nZugkraft H Ts\n3'195.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.10 m (+14.9%)\nΔ Zugkraft H Ts: -1'255.0 N (-28.2%)\nα·ΔT = 345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4842,7 +4842,7 @@
     6.154593967046878
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.754m\nTiefpunkt x\n15.860m\nSeillänge s Ts\n45.090m\nZugkraft H Ts\n3'195.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.633m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.10 m (+14.9%)\nΔ Zugkraft H Ts: -1'255.0 N (-28.2%)\nα·ΔT = 345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.754m\nTiefpunkt x\n15.860m\nSeillänge s Ts\n45.090m\nZugkraft H Ts\n3'195.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.738m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.10 m (+14.9%)\nΔ Zugkraft H Ts: -1'255.0 N (-28.2%)\nα·ΔT = 345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4900,7 +4900,7 @@
     6.154593967046878
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.754m\nTiefpunkt x\n15.860m\nSeillänge s Ts\n45.090m\nZugkraft H Ts\n3'195.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.508m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.10 m (+14.9%)\nΔ Zugkraft H Ts: -1'255.0 N (-28.2%)\nα·ΔT = 345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.754m\nTiefpunkt x\n15.860m\nSeillänge s Ts\n45.090m\nZugkraft H Ts\n3'195.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.10 m (+14.9%)\nΔ Zugkraft H Ts: -1'255.0 N (-28.2%)\nα·ΔT = 345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4932,7 +4932,7 @@
     6.154593967046878
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.754m\nTiefpunkt x\n15.860m\nSeillänge s Ts\n45.090m\nZugkraft H Ts\n3'195.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.633m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.10 m (+14.9%)\nΔ Zugkraft H Ts: -1'255.0 N (-28.2%)\nα·ΔT = 345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.754m\nTiefpunkt x\n15.860m\nSeillänge s Ts\n45.090m\nZugkraft H Ts\n3'195.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.738m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.10 m (+14.9%)\nΔ Zugkraft H Ts: -1'255.0 N (-28.2%)\nα·ΔT = 345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -4990,7 +4990,7 @@
     6.177036454272297
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.724m\nTiefpunkt x\n15.411m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n2'735.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.485m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.17 m (+30.8%)\nΔ Zugkraft H Ts: -1'270.0 N (-31.7%)\nα·ΔT = 345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.724m\nTiefpunkt x\n15.411m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n2'735.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.17 m (+30.8%)\nΔ Zugkraft H Ts: -1'270.0 N (-31.7%)\nα·ΔT = 345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -5022,7 +5022,7 @@
     6.177036454272297
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.724m\nTiefpunkt x\n15.411m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n2'735.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.610m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.17 m (+30.8%)\nΔ Zugkraft H Ts: -1'270.0 N (-31.7%)\nα·ΔT = 345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.724m\nTiefpunkt x\n15.411m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n2'735.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.707m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.17 m (+30.8%)\nΔ Zugkraft H Ts: -1'270.0 N (-31.7%)\nα·ΔT = 345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -5080,7 +5080,7 @@
     6.177036454272297
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.724m\nTiefpunkt x\n15.411m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n2'735.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.485m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.17 m (+30.8%)\nΔ Zugkraft H Ts: -1'270.0 N (-31.7%)\nα·ΔT = 345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.724m\nTiefpunkt x\n15.411m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n2'735.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.17 m (+30.8%)\nΔ Zugkraft H Ts: -1'270.0 N (-31.7%)\nα·ΔT = 345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -5112,7 +5112,7 @@
     6.177036454272297
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.724m\nTiefpunkt x\n15.411m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n2'735.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.610m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.17 m (+30.8%)\nΔ Zugkraft H Ts: -1'270.0 N (-31.7%)\nα·ΔT = 345.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 40 °C — ΔT = +30 K\nDurchhang Ts belastet\n0.724m\nTiefpunkt x\n15.411m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n2'735.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.707m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.17 m (+30.8%)\nΔ Zugkraft H Ts: -1'270.0 N (-31.7%)\nα·ΔT = 345.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -5170,7 +5170,7 @@
     6.052131752757276
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.885m\nTiefpunkt x\n18.730m\nSeillänge s Ts\n45.240m\nZugkraft H Ts\n1'820.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.508m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.23 m (+34.9%)\nΔ Zugkraft H Ts: -2'630.0 N (-59.1%)\nα·ΔT = 805.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.885m\nTiefpunkt x\n18.730m\nSeillänge s Ts\n45.240m\nZugkraft H Ts\n1'820.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.23 m (+34.9%)\nΔ Zugkraft H Ts: -2'630.0 N (-59.1%)\nα·ΔT = 805.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -5202,7 +5202,7 @@
     6.052131752757276
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.885m\nTiefpunkt x\n18.730m\nSeillänge s Ts\n45.240m\nZugkraft H Ts\n1'820.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.633m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.23 m (+34.9%)\nΔ Zugkraft H Ts: -2'630.0 N (-59.1%)\nα·ΔT = 805.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.885m\nTiefpunkt x\n18.730m\nSeillänge s Ts\n45.240m\nZugkraft H Ts\n1'820.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.738m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.23 m (+34.9%)\nΔ Zugkraft H Ts: -2'630.0 N (-59.1%)\nα·ΔT = 805.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -5260,7 +5260,7 @@
     6.052131752757276
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.885m\nTiefpunkt x\n18.730m\nSeillänge s Ts\n45.240m\nZugkraft H Ts\n1'820.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.508m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.23 m (+34.9%)\nΔ Zugkraft H Ts: -2'630.0 N (-59.1%)\nα·ΔT = 805.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.885m\nTiefpunkt x\n18.730m\nSeillänge s Ts\n45.240m\nZugkraft H Ts\n1'820.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.561m\nTiefpunkt x\n10.193m\nSeillänge s Ts\n45.040m\nZugkraft H Ts\n5'915.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.23 m (+34.9%)\nΔ Zugkraft H Ts: -2'630.0 N (-59.1%)\nα·ΔT = 805.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -5292,7 +5292,7 @@
     6.052131752757276
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.885m\nTiefpunkt x\n18.730m\nSeillänge s Ts\n45.240m\nZugkraft H Ts\n1'820.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.633m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.23 m (+34.9%)\nΔ Zugkraft H Ts: -2'630.0 N (-59.1%)\nα·ΔT = 805.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.656m\nTiefpunkt x\n13.245m\nSeillänge s Ts\n45.056m\nZugkraft H Ts\n4'450.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.885m\nTiefpunkt x\n18.730m\nSeillänge s Ts\n45.240m\nZugkraft H Ts\n1'820.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.738m\nTiefpunkt x\n15.453m\nSeillänge s Ts\n45.082m\nZugkraft H Ts\n3'390.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.74m\nq Ts + q Fd + q Hänger\n4.011 + 9.517 + 0.196N/m\nGesamtlast q\n13.724N/m\nΔ Durchhang Ts: +0.23 m (+34.9%)\nΔ Zugkraft H Ts: -2'630.0 N (-59.1%)\nα·ΔT = 805.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -5350,7 +5350,7 @@
     6.072957115332599
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.859m\nTiefpunkt x\n19.016m\nSeillänge s Ts\n45.277m\nZugkraft H Ts\n1'350.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.485m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.31 m (+55.1%)\nΔ Zugkraft H Ts: -2'655.0 N (-66.3%)\nα·ΔT = 805.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.859m\nTiefpunkt x\n19.016m\nSeillänge s Ts\n45.277m\nZugkraft H Ts\n1'350.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.31 m (+55.1%)\nΔ Zugkraft H Ts: -2'655.0 N (-66.3%)\nα·ΔT = 805.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -5382,7 +5382,7 @@
     6.072957115332599
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.859m\nTiefpunkt x\n19.016m\nSeillänge s Ts\n45.277m\nZugkraft H Ts\n1'350.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.610m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.31 m (+55.1%)\nΔ Zugkraft H Ts: -2'655.0 N (-66.3%)\nα·ΔT = 805.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.859m\nTiefpunkt x\n19.016m\nSeillänge s Ts\n45.277m\nZugkraft H Ts\n1'350.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.707m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.31 m (+55.1%)\nΔ Zugkraft H Ts: -2'655.0 N (-66.3%)\nα·ΔT = 805.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -5440,7 +5440,7 @@
     6.072957115332599
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.859m\nTiefpunkt x\n19.016m\nSeillänge s Ts\n45.277m\nZugkraft H Ts\n1'350.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n1.485m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.31 m (+55.1%)\nΔ Zugkraft H Ts: -2'655.0 N (-66.3%)\nα·ΔT = 805.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.859m\nTiefpunkt x\n19.016m\nSeillänge s Ts\n45.277m\nZugkraft H Ts\n1'350.0N\n\nT3 = -20 °C — ΔT = -30 K\nDurchhang Ts belastet\n0.525m\nTiefpunkt x\n8.216m\nSeillänge s Ts\n45.034m\nZugkraft H Ts\n5'505.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.31 m (+55.1%)\nΔ Zugkraft H Ts: -2'655.0 N (-66.3%)\nα·ΔT = 805.00 × 10⁻⁶"
   },
   {
    "c1": [
@@ -5472,7 +5472,7 @@
     6.072957115332599
    ],
    "H_Ts": 4450,
-   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.859m\nTiefpunkt x\n19.016m\nSeillänge s Ts\n45.277m\nZugkraft H Ts\n1'350.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n1.610m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.31 m (+55.1%)\nΔ Zugkraft H Ts: -2'655.0 N (-66.3%)\nα·ΔT = 805.00 × 10⁻⁶"
+   "text": "T1 = 10 °C — AUSGANGSZUSTAND\nDurchhang Ts belastet\n0.554m\nTiefpunkt x\n12.112m\nSeillänge s Ts\n45.048m\nZugkraft H Ts\n4'005.0N\n\nT2 = 80 °C — ΔT = +70 K\nDurchhang Ts belastet\n0.859m\nTiefpunkt x\n19.016m\nSeillänge s Ts\n45.277m\nZugkraft H Ts\n1'350.0N\n\nT3 = 35 °C — ΔT = +25 K\nDurchhang Ts belastet\n0.707m\nTiefpunkt x\n14.904m\nSeillänge s Ts\n45.074m\nZugkraft H Ts\n2'930.0N\n\nFahrdraht (Fd)\nHänger am Mast (= sh)\n2.40m\nHänger im Tiefpunkt\n1.85m\nAbnutzung Fd (30%)\n−2.855N/m\nq Ts + q Fd + q Hänger\n4.011 + 6.662 + 0.196N/m\nGesamtlast q\n10.869N/m\nΔ Durchhang Ts: +0.31 m (+55.1%)\nΔ Zugkraft H Ts: -2'655.0 N (-66.3%)\nα·ΔT = 805.00 × 10⁻⁶"
   },
   {
    "c1": [

@@ -1,4 +1,4 @@
-# Übergabe Durchhang — Stand v4.5.2 (8. Oktober 2026)
+# Übergabe Durchhang — Stand v4.5.3 (8. Oktober 2026)
 
 Ziel dieser Datei: Eine neue Claude-Sitzung (auch unter einem anderen Account) kann
 ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLAUDE.md`
@@ -146,6 +146,8 @@ anders als mit echter Höhendifferenz (Beispiel Feld 102–103: 0.863 statt 0.84
 Tiefpunkt ~3 m versetzt). Nicht ohne neue Rückfrage beim Nutzer ändern.
 Δh an Messpunkten = Abstand von der Horizontalen durch den linken Aufhängepunkt
 (m ü. M.) bis zum Seil — auf Karte, Ergebnisleiste und im Diagramm identisch.
+T₃-Vergleich: bei N-FL mit Kombination immer die Lage des kombinierten Systems
+(`calcState.c3_vem` = `c3_zeichnung` aus dem Rechenkern), genau wie T₂ (`c2_vem`).
 Foto-Messung: Fusspunkte am Mastfuss ⇒ Höhe über SOK = gemessen + Δ, Höhenunterschied
 mit SOK-Differenz (seit v4.4.0; vorher wurde die SOK-Differenz ignoriert).
 
@@ -186,7 +188,7 @@ mit SOK-Differenz (seit v4.4.0; vorher wurde die SOK-Differenz ignoriert).
 ```bash
 npm ci
 npm test                                                     # 89 Node-Tests
-CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 54 Browser-Tests
+CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 55 Browser-Tests
 ```
 - In der Claude-Cloud-Umgebung ist Chromium unter `/opt/pw-browsers/chromium`
   vorinstalliert (nicht `playwright install` ausführen). CI (GitHub Actions) installiert
@@ -242,6 +244,7 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 54 
 | v4.4.0 | #21 | Mehrere Stränge pro Abschnitt; Z = SOK statt Mastfuss, Δ optional, Foto mit Δ |
 | v4.5.0 | #22 | KM 000.000, Δ negativ tippbar, Beispiel mit 3 Strängen, Transparenz |
 | v4.5.1 | #23 | Auswahlkästchen im App-Design, Neon-Strangfarben im Dunkelmodus |
-| v4.5.2 | – | Δh der Messpunkte auf der Karte = Diagramm (SOK-Anstieg berücksichtigt) |
+| v4.5.2 | #25 | Δh der Messpunkte auf der Karte = Diagramm (SOK-Anstieg berücksichtigt) |
+| v4.5.3 | – | T₃ bei N-FL mit Kombination auf Karte, Tabelle und Zeichnung wie T₂ (kombiniertes System) |
 
 Issue #20: NIS (später).
