@@ -1716,10 +1716,12 @@
       <div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.45rem">
           <div class="rgl-section" style="margin-bottom:0" data-i18n="ui.rgl.el.titel">Einzelleiter — Reglagezugkraft</div>
-          <div style="display:flex;gap:.5rem;align-items:center">
-            <button id="rgl-el-edit-btn" onclick="toggleReglageElEdit()" style="font-size:.68rem;padding:.18rem .5rem;border:1px solid var(--border2);border-radius:6px;background:none;cursor:pointer;color:var(--muted);font-family:inherit" data-i18n="ui.bearbeiten">Bearbeiten</button>
-            <button onclick="exportMaterialsCSV()" style="font-size:.68rem;padding:.18rem .5rem;border:1px solid var(--border2);border-radius:6px;background:none;cursor:pointer;color:var(--muted);font-family:inherit" data-i18n="ui.export.csv">Export CSV</button>
-            <label style="font-size:.68rem;padding:.18rem .5rem;border:1px solid var(--border2);border-radius:6px;background:none;cursor:pointer;color:var(--muted);display:inline-block"><span data-i18n="ui.import.csv">Import CSV</span><input type="file" accept=".csv,.txt" onchange="importMaterialsCSV(event)" style="display:none"></label>
+          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+            <button type="button" id="rgl-el-sbb-btn" class="rgl-knopf rgl-knopf-warn" onclick="reglageSbbWiederherstellen()" style="display:none" data-i18n="ui.rgl.sbb">↺ SBB-Werte</button>
+            <button type="button" id="rgl-el-edit-btn" class="rgl-knopf" onclick="toggleReglageElEdit()" data-i18n="ui.bearbeiten">Bearbeiten</button>
+            <button type="button" class="rgl-knopf" onclick="exportMaterialsCSV()" data-i18n="ui.export.csv">Export CSV</button>
+            <!-- Dateiwahl als Label: gleiche Gestaltung wie die Knöpfe daneben -->
+            <label class="rgl-knopf" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.querySelector('input').click()}"><span data-i18n="ui.import.csv">Import CSV</span><input type="file" accept=".csv,.txt" onchange="importMaterialsCSV(event)" style="display:none"></label>
           </div>
         </div>
         <div id="rgl-el-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"></div>

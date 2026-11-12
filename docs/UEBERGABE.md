@@ -1,4 +1,4 @@
-# Übergabe Durchhang — Stand v5.1.3 (12. November 2026)
+# Übergabe Durchhang — Stand v5.2.0 (12. November 2026)
 
 Ziel dieser Datei: Eine neue Claude-Sitzung (auch unter einem anderen Account) kann
 ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLAUDE.md`
@@ -264,6 +264,7 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 
 | v5.1.0 | #29 | Einzelleiter: H von Hand überschreibbar (Rahmen + Hinweis mit Abweichung, «↺ Reglage», im Projekt gespeichert als `hVonHand`); Reglage-Infobox bei allen Systemen aufklappbar mit «i» rechts, direkt unter der Auswahl; Anzeige-Nachführung: `calcState` wird vor dem Zeichnen gesetzt (hf-Linien hingen einen Schritt nach), Laden EL über `applyElVariant` (Leiter ohne eigene Tabelle verloren die Reglage-Bindung), Abschnitt-Ansicht und Kombinations-Notiz beim Sprachwechsel neu, Label-Knopf «↺ Reglage» überlebt Systemwechsel |
 | v5.1.1 | #29 | Reglagewerte einheitlich: hergeleitete Tabellen (Leiter ohne SBB-Tabelle, Starr, angepasste Werte, Reglage-Fenster, CSV) über `_rundeReglage` auf 100 N; Infobox nennt Bezugswerte bei +10 °C aus der wirksamen Tabelle (`_elReglageBoxAktualisieren`, bei jeder Rechnung); Texte für Leiter ohne SBB-Tabelle übersetzt; Sprachwechsel verwirft angepasste Reglage/Handwert nicht mehr. Eingefrorene Fälle unverändert (nur Leiter mit SBB-Tabelle). |
 | v5.1.2 | #30 | Touchscreen: «i» der Reglage-Infobox wurde durch die Touch-Mindesthöhe (40 px) zum Oval gestreckt — jetzt rund mit unsichtbar vergrösserter Tippfläche; Test mit Touch-Nachbildung (`appOeffnen(…, { hasTouch: true })`) |
-| v5.1.3 | – | Einzelleiter H «Freie Eingabe» ohne Reglagebezug/Prozent; Reglage-Infobox dann ausgegraut (`.inaktiv`) mit Zeile «Nicht aktiv – H freie Eingabe»; Knopf «↺» quadratisch rechts neben dem Feld (`.feld-mit-knopf`) statt im Label |
+| v5.1.3 | #31 | Einzelleiter H «Freie Eingabe» ohne Reglagebezug/Prozent; Reglage-Infobox dann ausgegraut (`.inaktiv`) mit Zeile «Nicht aktiv – H freie Eingabe»; Knopf «↺» quadratisch rechts neben dem Feld (`.feld-mit-knopf`) statt im Label |
+| v5.2.0 | – | Reglage-Fenster: angepasste EL-Reglagewerte (Bearbeiten, CSV-Import) gehören zum Projekt (`reglageAngepasst`, Anwendung über `_reglageAnpassungenAnwenden`, Originale in `_RGL_ORIGINAL`); markiert «angepasst», Knopf «↺ SBB-Werte»; nur echte Abweichungen werden festgehalten; Bearbeiten-Eingabe behält den Fokus; Knöpfe einheitlich (`.rgl-knopf`), Texte übersetzt. Vorher: Änderungen nur bis zum Neuladen, gespeicherte Projekte rechneten bei T₁-Änderung wieder mit SBB-Werten. Zudem: EL «Starr» nach Laden/Systemwechsel — `applyElVariant` leitet jetzt bei Starr/Overrides über `_applyReglageOvr` her (vorher normale Tabelle). |
 
 Issue #20: NIS (später).

@@ -1645,6 +1645,21 @@ details.reglage-info-box > summary .info-title { flex: 1; margin-bottom: 0; }
   font-family: inherit;
 }
 #el-reglage-edit-btn:hover { color: var(--text); border-color: var(--xdim); }
+/* Knöpfe im Reglage-Fenster (Bearbeiten / Export / Import): einheitlich, auch das Datei-Label */
+.rgl-knopf {
+  display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
+  min-height: 1.75rem; font: inherit; font-size: .68rem; line-height: 1.2; padding: .18rem .55rem;
+  border: 1px solid var(--border2); border-radius: 6px; background: none; color: var(--muted);
+  cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s;
+}
+.rgl-knopf:hover, .rgl-knopf:focus-visible { color: var(--text); border-color: var(--primary); }
+.rgl-knopf-warn { color: var(--warn); border-color: var(--warn); }
+.rgl-knopf-warn:hover, .rgl-knopf-warn:focus-visible { color: var(--warn); background: var(--warn-s); }
+.rgl-angepasst { display: inline-block; margin-left: .3rem; padding: 0 .3rem; border: 1px solid var(--warn); border-radius: 4px; color: var(--warn); font-size: .62rem; line-height: 1.4; }
+.rgl-angepasst-hw { color: var(--warn); }
+.rgl-knopf-pri { background: var(--primary); border-color: var(--primary); color: var(--on-acc); }
+.rgl-knopf-pri:hover, .rgl-knopf-pri:focus-visible { color: var(--on-acc); filter: brightness(1.08); }
+@media (any-pointer: coarse) { .rgl-knopf { min-height: 40px; } }
 .rtbl { width: 100%; border-collapse: collapse; font-size: .68rem; margin-top: .35rem; }
 .rtbl th, .rtbl td { padding: .15rem .32rem; text-align: right; border-bottom: 1px solid var(--border); }
 .rtbl th { color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border2); }

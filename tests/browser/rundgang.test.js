@@ -1630,3 +1630,55 @@ test('Touchscreen: kleine runde Info-Knöpfe bleiben rund (keine 40-px-Streckung
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Reglage-Fenster: angepasste Reglagewerte gehören zum Projekt, Knöpfe einheitlich, Eingabe behält den Fokus', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  // Tippen im Bearbeiten-Modus (echte Tastatur): Feld behält den Fokus
+  await seite.evaluate(() => { setSysMode('el'); openReglageModal(); toggleReglageElEdit(); });
+  const feld = seite.locator('#rgl-el-wrap input[type=number]').first();
+  await feld.click(); await feld.press('Control+A'); await seite.keyboard.type('7000');
+  const r = await seite.evaluate(async () => {
+    const setze = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); };
+    const H = () => document.getElementById('tension').value;
+    const o = { getippt: _elMatEdits.cu95_0?.H_max };
+    const hoehen = [...document.querySelectorAll('#rgl-el-edit-btn, .rgl-knopf')].filter(e => e.getClientRects().length).map(e => Math.round(e.getBoundingClientRect().height));
+    o.knoepfeGleich = new Set(hoehen).size === 1;
+    const ohne = getProjectState();                       // Projekt ohne Anpassung
+    _applyElMatEdits(); closeReglageModal(); setze('temp1', '10');
+    o.angepasst = H(); o.markiert = /Angepasste/.test(document.getElementById('el-reglage-note').textContent);
+    const mit = getProjectState();
+    setProjectState(ohne); setze('temp1', '10'); o.ohne = H();
+    setProjectState(mit); setze('temp1', '11'); o.mitT11 = H();
+    reglageSbbWiederherstellen(); setze('temp1', '10'); o.sbb = H();
+    return o;
+  });
+  assert.equal(r.getippt, 7000, 'Bearbeiten: «7000» kommt vollständig an');
+  assert.ok(r.knoepfeGleich, 'Bearbeiten / Export / Import gleich hoch');
+  assert.equal(r.angepasst, '4100'); assert.ok(r.markiert, 'Infobox zeigt «angepasst»');
+  assert.equal(r.ohne, '3700', 'anderes Projekt rechnet mit SBB-Werten');
+  assert.equal(r.mitT11, '4040', 'geladenes Projekt rechnet bei neuem T₁ mit seinen angepassten Werten');
+  assert.equal(r.sbb, '3700', '«↺ SBB-Werte» stellt die SBB-Tabelle wieder her');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Einzelleiter «Starr»: nach Laden und Systemwechsel gilt weiter die Starr-Reglage', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const setze = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); };
+    const zust = () => ({ H: document.getElementById('tension').value, box: document.getElementById('el-reglage-title').textContent });
+    setSysMode('el'); setBerechnungsart('starr'); setze('temp1', '10');
+    const vorher = zust();
+    setProjectState(getProjectState()); setze('temp1', '10');
+    const geladen = zust();
+    setSysMode('nfl'); setSysMode('el'); setze('temp1', '10');
+    const wechsel = zust();
+    setBerechnungsart('ausgleichend');
+    return { vorher, geladen, wechsel };
+  });
+  assert.equal(r.vorher.H, '2800'); assert.match(r.vorher.box, /2'800 N.*25 m/);
+  assert.deepEqual(r.geladen, r.vorher, 'nach dem Laden');
+  assert.deepEqual(r.wechsel, r.vorher, 'nach Systemwechsel');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});

@@ -548,7 +548,7 @@
           <tr><td style="padding:3px 8px;color:var(--muted)">H (−20 °C)</td><td style="padding:3px 8px">Basiszugkraft bei −20 °C [N]. Voreinstellung: tabellarische Herstellerwerte; bei Leitern ohne Tabelle 6 000 N.</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">L ref</td><td style="padding:3px 8px">Referenzspannweite [m], auf die die Zustandsgleichung angewendet wird. Standard: 45 m (Cu); 30 m (Aldrey c ≤ 35 m).</td></tr>
         </table>
-        <p>Die Änderungen wirken sofort auf das Diagramm und gelten als Sitzungsüberschreibung (kein dauerhafter Speicher). Mit <strong>↺ Reset</strong> werden die Herstellerwerte wiederhergestellt.</p>
+        <p>Die Änderungen wirken sofort auf die Rechnung des Einzelleiters (N-FL und R-FL sind nicht betroffen). Angepasste Werte gehören zum <strong>Projekt</strong>: Sie werden mit der Berechnung gespeichert und beim Laden wiederhergestellt; andere Projekte rechnen weiter mit den SBB-Werten. Angepasste Leiter sind in der Tabelle mit «angepasst» markiert, die Infobox in der Seitenleiste zeigt «Angepasste Reglagewerte». <strong>↺ SBB-Werte</strong> stellt die SBB-Tabellen wieder her.</p>
         <p style="font-size:.82rem;color:var(--muted)">Für Aldrey-Leiter (240 / 300 / 400 / 550 mm²) wird die Reglagevariante <strong>automatisch</strong> nach der Mittelspannweite Lm gewählt: c ≤ 35 m → 30 m Referenz; c > 35 m → 45 m Referenz.</p>
       </div><!-- /hb-de -->
 
@@ -566,7 +566,7 @@
           <tr><td style="padding:3px 8px;color:var(--muted)">H (−20 °C)</td><td style="padding:3px 8px">Force de base à −20 °C [N]. Valeur par défaut: valeurs tabulaires du fabricant; pour les conducteurs sans table 6 000 N.</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">L ref</td><td style="padding:3px 8px">Portée de référence [m] sur laquelle l'équation d'état est appliquée. Standard: 45 m (Cu); 30 m (Aldrey c ≤ 35 m).</td></tr>
         </table>
-        <p>Les modifications prennent effet immédiatement sur le diagramme et sont valables comme substitution de session (pas de mémoire permanente). Avec <strong>↺ Reset</strong>, les valeurs du fabricant sont restaurées.</p>
+        <p>Les modifications agissent immédiatement sur le calcul du conducteur simple (LC N et LC R ne sont pas concernées). Les valeurs adaptées appartiennent au <strong>projet</strong> : elles sont enregistrées avec le calcul et restaurées au chargement ; les autres projets continuent avec les valeurs CFF. Les conducteurs adaptés sont marqués «adapté» dans le tableau, la boîte de la barre latérale indique «Valeurs de réglage adaptées». <strong>↺ Valeurs CFF</strong> rétablit les tableaux CFF.</p>
         <p style="font-size:.82rem;color:var(--muted)">Pour les conducteurs Aldrey (240 / 300 / 400 / 550 mm²), la variante de réglage est sélectionnée <strong>automatiquement</strong> selon la portée moyenne Lm: c ≤ 35 m → référence 30 m; c > 35 m → référence 45 m.</p>
       </div><!-- /hb-fr -->
 
@@ -584,7 +584,7 @@
           <tr><td style="padding:3px 8px;color:var(--muted)">H (−20 °C)</td><td style="padding:3px 8px">Forza di base a −20 °C [N]. Valore predefinito: valori tabulari del produttore; per conduttori senza tabella 6 000 N.</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">L ref</td><td style="padding:3px 8px">Campata di riferimento [m] su cui viene applicata l'equazione di stato. Standard: 45 m (Cu); 30 m (Aldrey c ≤ 35 m).</td></tr>
         </table>
-        <p>Le modifiche hanno effetto immediato sul diagramma e valgono come sostituzione di sessione (nessuna memoria permanente). Con <strong>↺ Reset</strong> vengono ripristinati i valori del produttore.</p>
+        <p>Le modifiche agiscono subito sul calcolo del conduttore singolo (LC N e LC R non sono interessate). I valori adattati appartengono al <strong>progetto</strong>: vengono salvati con il calcolo e ripristinati al caricamento; gli altri progetti continuano con i valori FFS. I conduttori adattati sono marcati «adattato» nella tabella, la casella nella barra laterale indica «Valori di regolazione adattati». <strong>↺ Valori FFS</strong> ripristina le tabelle FFS.</p>
         <p style="font-size:.82rem;color:var(--muted)">Per i conduttori Aldrey (240 / 300 / 400 / 550 mm²), la variante di regolazione viene selezionata <strong>automaticamente</strong> in base alla lunghezza media Lm: c ≤ 35 m → riferimento 30 m; c > 35 m → riferimento 45 m.</p>
       </div><!-- /hb-it -->
 
@@ -595,11 +595,11 @@
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.6 &nbsp;Reglagetabelle — CSV Export / Import</p>
         <p>Die Reglagetabelle (erreichbar über das Menü «Mehr ⋯» in der Kopfleiste) zeigt für alle Einzelleitertypen die temperaturabhängige Reglagezugkraft von −20 °C bis +40 °C. Über die Schaltflächen im Header der Tabelle:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
-          <li><strong>Bearbeiten</strong> — schaltet alle Materialparameter (H bei −20 °C und L ref) zur Bearbeitung frei. Änderungen gelten für die gesamte Sitzung.</li>
+          <li><strong>Bearbeiten</strong> — schaltet alle Materialparameter (H bei −20 °C und L ref) zur Bearbeitung frei. «Übernehmen» rechnet daraus die Reglagetabelle (auf 100 N gerundet) und speichert sie im Projekt.</li>
           <li><strong>Export CSV</strong> — exportiert alle aktuellen H(−20 °C)- und L-ref-Werte als semikolongetrennte CSV-Datei (UTF-8 BOM, direkt in Excel öffenbar).</li>
           <li><strong>Import CSV</strong> — lädt eine zuvor exportierte CSV-Datei und setzt alle Werte entsprechend. Unbekannte Spalten werden ignoriert; nur gültige Zahlen werden übernommen.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)">Die importierten Werte gelten als Sitzungsüberschreibung und werden beim Neuladen der Seite nicht gespeichert. Für dauerhafte Projektdaten die Speichern-Funktion (Projektdatei) verwenden.</p>
+        <p style="font-size:.8rem;color:var(--muted)">Importierte Werte, die von den SBB-Werten abweichen, gelten als Anpassung des Projekts und werden mit der Berechnung gespeichert. Unveränderte Zeilen bleiben SBB-Werte.</p>
       </div><!-- /hb-de -->
 
       <!-- FR -->
@@ -607,11 +607,11 @@
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.6 &nbsp;Tableau de réglage — Export / Import CSV</p>
         <p>Le tableau de réglage (accessible via le menu «Plus ⋯» dans l'en-tête) affiche pour tous les types de conducteurs simples la force de traction de réglage dépendante de la température de −20 °C à +40 °C. Via les boutons dans l'en-tête du tableau:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
-          <li><strong>Modifier</strong> — déverrouille tous les paramètres matériaux (H à −20 °C et L ref) pour modification. Les modifications s'appliquent à toute la session.</li>
+          <li><strong>Modifier</strong> — déverrouille tous les paramètres matériaux (H à −20 °C et L ref) pour modification. «Appliquer» en calcule le tableau de réglage (arrondi à 100 N) et l'enregistre dans le projet.</li>
           <li><strong>Export CSV</strong> — exporte toutes les valeurs H(−20 °C) et L ref actuelles sous forme de fichier CSV séparé par des points-virgules (UTF-8 BOM, directement ouvrable dans Excel).</li>
           <li><strong>Import CSV</strong> — charge un fichier CSV précédemment exporté et applique toutes les valeurs. Les colonnes inconnues sont ignorées; seuls les nombres valides sont repris.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)">Les valeurs importées sont valables comme substitution de session et ne sont pas sauvegardées lors du rechargement de la page. Utiliser la fonction Enregistrer (fichier projet) pour les données de projet permanentes.</p>
+        <p style="font-size:.8rem;color:var(--muted)">Les valeurs importées qui diffèrent des valeurs CFF sont considérées comme adaptation du projet et enregistrées avec le calcul. Les lignes inchangées restent des valeurs CFF.</p>
       </div><!-- /hb-fr -->
 
       <!-- IT -->
@@ -619,11 +619,11 @@
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.6 &nbsp;Tabella di regolazione — Export / Import CSV</p>
         <p>La tabella di regolazione (accessibile tramite il menu «Altro ⋯» nell'intestazione) mostra per tutti i tipi di conduttori singoli la forza di trazione di regolazione dipendente dalla temperatura da −20 °C a +40 °C. Tramite i pulsanti nell'intestazione della tabella:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
-          <li><strong>Modifica</strong> — sblocca tutti i parametri materiale (H a −20 °C e L ref) per la modifica. Le modifiche si applicano all'intera sessione.</li>
+          <li><strong>Modifica</strong> — sblocca tutti i parametri materiale (H a −20 °C e L ref) per la modifica. «Applica» ne calcola la tabella di regolazione (arrotondata a 100 N) e la salva nel progetto.</li>
           <li><strong>Export CSV</strong> — esporta tutti i valori H(−20 °C) e L ref attuali come file CSV separato da punti e virgola (UTF-8 BOM, apribile direttamente in Excel).</li>
           <li><strong>Import CSV</strong> — carica un file CSV precedentemente esportato e applica tutti i valori. Le colonne sconosciute vengono ignorate; vengono accettati solo numeri validi.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)">I valori importati valgono come sostituzione di sessione e non vengono salvati al ricaricamento della pagina. Per i dati di progetto permanenti utilizzare la funzione Salva (file di progetto).</p>
+        <p style="font-size:.8rem;color:var(--muted)">I valori importati che differiscono dai valori FFS valgono come adattamento del progetto e vengono salvati con il calcolo. Le righe invariate restano valori FFS.</p>
       </div><!-- /hb-it -->
 
 
