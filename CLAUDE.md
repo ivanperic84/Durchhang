@@ -82,7 +82,7 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium npm run test:browser   # Browser (Stand:
   der Fensterstapel in app.js legt das zuletzt geöffnete nach oben (Ebenen in app.css beschrieben).
 - App ist **produktiv** (v6.0): kein Wasserzeichen mehr (Bildschirm und PDFs), so vom Nutzer entschieden.
 - **Entwicklermodus** für Unfertiges (zurzeit hf_min / hf_max): 3× schnell aufs App-Symbol, bleibt im
-  Gerät (`localStorage dh_dev`), Schild «DEV». Unfertige UI mit Klasse `nur-dev` (auch im Handbuch),
+  Gerät (`localStorage dh_dev`), Schild «DEV», Symbol als Wäscheleine. Unfertige UI mit Klasse `nur-dev` (auch im Handbuch),
   Logik über `entwicklerModus` (z. B. `hfGrenzenM()` liefert sonst `null`). Tests dafür mit
   `appOeffnen(browser, url, { dev: true })`. Freigabe einer Funktion = `nur-dev`/Abfragen entfernen.
 - Projekte werden im Browser gespeichert (`getProjectState` / `setProjectState`);

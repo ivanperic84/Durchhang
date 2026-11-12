@@ -1173,7 +1173,18 @@ html:not(.dev) .nur-dev { display: none !important; }
 .header-icon.umgeschaltet { animation: symbol-dreh .6s cubic-bezier(.3,1.4,.5,1); }
 @keyframes symbol-tipp { 0% { transform: scale(1); } 40% { transform: scale(.86) rotate(-6deg); } 100% { transform: scale(1); } }
 @keyframes symbol-dreh { 0% { transform: rotate(0) scale(1); } 60% { transform: rotate(380deg) scale(1.15); } 100% { transform: rotate(360deg) scale(1); } }
-@media (prefers-reduced-motion: reduce) { .header-icon.tipp, .header-icon.umgeschaltet { animation: none; } }
+/* Wäscheleine im Entwicklermodus: Hänger und Fahrdraht weg, Wäsche am Seil */
+html.dev .header-icon .kette-teil { display: none; }
+.header-icon .waesche > g { transform-box: fill-box; transform-origin: 50% 0; }
+.header-icon.umgeschaltet .waesche > g { animation: waesche-schaukeln 1.6s ease-out .25s; }
+.header-icon.umgeschaltet .waesche .w-socke { animation-delay: .35s; }
+.header-icon.umgeschaltet .waesche .w-hose { animation-delay: .45s; }
+.header-icon.tipp .waesche > g { animation: waesche-schaukeln .8s ease-out; }
+@keyframes waesche-schaukeln {
+  0% { transform: rotate(0); } 15% { transform: rotate(16deg); } 35% { transform: rotate(-12deg); }
+  55% { transform: rotate(7deg); } 75% { transform: rotate(-3deg); } 100% { transform: rotate(0); }
+}
+@media (prefers-reduced-motion: reduce) { .header-icon.tipp, .header-icon.umgeschaltet, .header-icon .waesche > g { animation: none !important; } }
 .dev-schild { font-size: .58rem; font-weight: 800; letter-spacing: .06em; color: var(--text); background: var(--warn-s); border: 1px solid var(--warn);
   border-radius: 4px; padding: 0 .25rem; line-height: 1.4; margin-left: -.35rem; align-self: center; }
 /* ── Fenster (Modal) ──

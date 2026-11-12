@@ -1736,6 +1736,8 @@ test('Entwicklermodus: hf_min / hf_max ausgeblendet; 3× aufs App-Symbol schalte
   });
   assert.deepEqual(await sichtbar(), [], 'ohne Entwicklermodus keine hf-Teile');
   assert.deepEqual(aus, { modus: false, hfGrenzen: null, hfFenster: false, pdfHf: false, hbHf: false });
+  assert.deepEqual(await seite.evaluate(() => ({ waesche: document.querySelector('.header-icon .waesche').getClientRects().length > 0,
+    haenger: document.querySelector('.header-icon .kette-teil').getClientRects().length > 0 })), { waesche: false, haenger: true }, 'normal: Symbol ohne Wäsche');
   // 1× und 2× klicken: nur Animation, noch kein Wechsel
   const symbol = seite.locator('.header-icon');
   await symbol.click();
@@ -1745,6 +1747,10 @@ test('Entwicklermodus: hf_min / hf_max ausgeblendet; 3× aufs App-Symbol schalte
     meldung: document.getElementById('meldungen').innerText }));
   assert.ok(tipp, 'Klick löst eine kleine Animation aus');
   assert.deepEqual({ ...an, meldung: /Entwicklermodus eingeschaltet/.test(an.meldung) }, { modus: true, gespeichert: '1', html: true, meldung: true });
+  const symbolTeile = () => seite.evaluate(() => ({
+    waesche: document.querySelector('.header-icon .waesche').getClientRects().length > 0,
+    haenger: document.querySelector('.header-icon .kette-teil').getClientRects().length > 0 }));
+  assert.deepEqual(await symbolTeile(), { waesche: true, haenger: false }, 'Entwicklermodus: Wäscheleine statt Hänger');
   const imDev = await sichtbar();
   ['hf-btn', 'leg-hf-item', 'dev-schild', 'hf-pruefzeile'].forEach(id => assert.ok(imDev.includes(id), `${id} im Entwicklermodus sichtbar`));
   // bleibt nach dem Neuladen, Ausschalten wieder mit 3 Klicks

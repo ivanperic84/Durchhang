@@ -49,11 +49,20 @@
     <svg width="28" height="28" viewBox="14 20 72 64" fill="none" stroke-linecap="round" aria-hidden="true">
       <line x1="20" y1="26" x2="20" y2="78" style="stroke:var(--xdim)" stroke-width="4.2"/>
       <line x1="80" y1="26" x2="80" y2="78" style="stroke:var(--xdim)" stroke-width="4.2"/>
-      <g style="stroke:var(--xdim)" stroke-width="1.6">
+      <g class="kette-teil" style="stroke:var(--xdim)" stroke-width="1.6">
         <line x1="35" y1="40.6" x2="35" y2="56"/><line x1="50" y1="44.5" x2="50" y2="56"/><line x1="65" y1="40.6" x2="65" y2="56"/>
       </g>
-      <line x1="20" y1="56" x2="80" y2="56" style="stroke:var(--muted)" stroke-width="3"/>
+      <line class="kette-teil" x1="20" y1="56" x2="80" y2="56" style="stroke:var(--muted)" stroke-width="3"/>
       <path d="M20 30 Q50 59 80 30" style="stroke:var(--primary)" stroke-width="6"/>
+      <!-- Entwicklermodus: Wäscheleine – drei Wäschestücke am Seil (schaukeln beim Einschalten) -->
+      <g class="waesche nur-dev" stroke="none">
+        <g class="w-shirt"><path d="M26 41 L30 39.5 Q33 41.5 36 39.5 L40 41 L43 46 L39.5 47.5 L39.5 56 L26.5 56 L26.5 47.5 L23 46 Z" fill="#e2584d"/>
+          <rect x="31.8" y="37.3" width="2.4" height="4" rx="1" fill="#6b4f2a"/></g>
+        <g class="w-socke"><path d="M47 44 L53 44 L53 54 L57.5 56.5 Q58.5 60 55 60 L48.5 58.5 Q47 57.5 47 55.5 Z" fill="#f2b631"/>
+          <rect x="48.8" y="41.8" width="2.4" height="4" rx="1" fill="#6b4f2a"/></g>
+        <g class="w-hose"><path d="M60.5 40.5 L73.5 40.5 L74.5 57 L69.2 57 L67 46.5 L64.8 57 L59.5 57 Z" fill="#3aa676"/>
+          <rect x="65.8" y="37.3" width="2.4" height="4" rx="1" fill="#6b4f2a"/></g>
+      </g>
     </svg>
   </div>
   <span id="dev-schild" class="dev-schild nur-dev" title="Entwicklermodus aktiv" data-i18n-title="dev.titel">DEV</span>

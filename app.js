@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v6.0.1';
+const APP_VERSION = 'v6.0.2';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -136,7 +136,11 @@ function _appSymbolEinrichten() {
   sym.dataset.dev = '1';
   let klicks = 0, zeit = null;
   const anim = k => { sym.classList.remove('tipp', 'umgeschaltet'); void sym.offsetWidth; sym.classList.add(k); };
-  sym.addEventListener('animationend', () => sym.classList.remove('tipp', 'umgeschaltet'));
+  // Ende der Animation: im Entwicklermodus erst, wenn die Wäsche (zuletzt die Hose) ausgeschaukelt hat
+  sym.addEventListener('animationend', e => {
+    const fertig = e.target.classList?.contains('w-hose') || (e.target === sym && !entwicklerModus);
+    if (fertig) sym.classList.remove('tipp', 'umgeschaltet');
+  });
   sym.addEventListener('click', () => {
     klicks++; clearTimeout(zeit); zeit = setTimeout(() => { klicks = 0; }, 650);
     if (klicks >= 3) { klicks = 0; anim('umgeschaltet'); entwicklerModusSetzen(!entwicklerModus, { melden: true }); }
