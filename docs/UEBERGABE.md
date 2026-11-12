@@ -1,4 +1,4 @@
-# Übergabe Durchhang — Stand v5.2.0 (12. November 2026)
+# Übergabe Durchhang — Stand v5.3.0 (12. November 2026)
 
 Ziel dieser Datei: Eine neue Claude-Sitzung (auch unter einem anderen Account) kann
 ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLAUDE.md`
@@ -145,8 +145,10 @@ Darstellung in m ü. M. wird der SOK-Anstieg linear addiert (Diagramm, Profil, K
 Folge bei schräger SOK: H unverändert, Durchhang einige cm und Tiefpunkt-Lage leicht
 anders als mit echter Höhendifferenz (Beispiel Feld 102–103: 0.863 statt 0.843 m,
 Tiefpunkt ~3 m versetzt). Nicht ohne neue Rückfrage beim Nutzer ändern.
-Δh an Messpunkten = Abstand von der Horizontalen durch den linken Aufhängepunkt
-(m ü. M.) bis zum Seil — auf Karte, Ergebnisleiste und im Diagramm identisch.
+Angabe an Messpunkten (seit v5.3 wählbar, `mpBezug`, Vorgabe «höchster Punkt»):
+Δh = Abstand von der Horizontalen durch den höchsten / linken / rechten Aufhängepunkt
+(m ü. M.) bis zum Seil, oder Durchhang unter der Sehne — nur über `mpBezugHoehe()`;
+auf Karte, Ergebnisleiste, Diagramm und PDF identisch.
 **Angezeigte Seillage nur über `anzeigeKurve(zustand)`** (T1/T2/T3; N-FL mit Kombination = kombiniertes System) und Fahrdraht nur über `fdUeberSok()` — Karte, Diagramm, Zeichnung, PDF und Export müssen dieselben Werte zeigen.
 T₃-Vergleich: bei N-FL mit Kombination immer die Lage des kombinierten Systems
 (`calcState.c3_vem` = `c3_zeichnung` aus dem Rechenkern), genau wie T₂ (`c2_vem`).
@@ -266,5 +268,6 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 
 | v5.1.2 | #30 | Touchscreen: «i» der Reglage-Infobox wurde durch die Touch-Mindesthöhe (40 px) zum Oval gestreckt — jetzt rund mit unsichtbar vergrösserter Tippfläche; Test mit Touch-Nachbildung (`appOeffnen(…, { hasTouch: true })`) |
 | v5.1.3 | #31 | Einzelleiter H «Freie Eingabe» ohne Reglagebezug/Prozent; Reglage-Infobox dann ausgegraut (`.inaktiv`) mit Zeile «Nicht aktiv – H freie Eingabe»; Knopf «↺» quadratisch rechts neben dem Feld (`.feld-mit-knopf`) statt im Label |
 | v5.2.0 | – | Reglage-Fenster: angepasste EL-Reglagewerte (Bearbeiten, CSV-Import) gehören zum Projekt (`reglageAngepasst`, Anwendung über `_reglageAnpassungenAnwenden`, Originale in `_RGL_ORIGINAL`); markiert «angepasst», Knopf «↺ SBB-Werte»; nur echte Abweichungen werden festgehalten; Bearbeiten-Eingabe behält den Fokus; Knöpfe einheitlich (`.rgl-knopf`), Texte übersetzt. Vorher: Änderungen nur bis zum Neuladen, gespeicherte Projekte rechneten bei T₁-Änderung wieder mit SBB-Werten. Zudem: EL «Starr» nach Laden/Systemwechsel — `applyElVariant` leitet jetzt bei Starr/Overrides über `_applyReglageOvr` her (vorher normale Tabelle). |
+| v5.3.0 | – | Messpunkt-Bezug wählbar (`mpBezug`: hoch [Vorgabe] / links / rechts / sehne) — eine Stelle `mpBezugHoehe()` für Diagramm (Referenzlinie + Masslinie), Karten, Ergebnisleiste und PDF (vorher PDF = Sehne, Bildschirm = links); im Projekt gespeichert, ältere Projekte → hoch. Auswahl `#mp-bezug` neben «Reset» der Messpunkte |
 
 Issue #20: NIS (später).

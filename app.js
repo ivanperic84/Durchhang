@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v5.2.0';
+const APP_VERSION = 'v5.3.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -4080,7 +4080,7 @@ function getProjectState() {
   const fotoState = typeof window._fotoGetProjectState === 'function'
                     ? window._fotoGetProjectState() : null;
   return { schemaVersion: PROJEKT_SCHEMA_VERSION,
-           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, drawingHf: Ansicht.zeichnungHf, diagrammHf, lastfaelleAktiv, fotoState, elBerechnungsart, koordAktiv, abschnitt: { ...abschnitt, zBezug: 'sok' }, messpunkte: _mpLive(), lastfaelle: lastfallEinst, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, hVonHand: _hVonHand, reglageAngepasst: JSON.parse(JSON.stringify(_reglageAngepasst)), elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: JSON.parse(JSON.stringify(_elMatEdits)), hf: hfEingabe };
+           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, drawingHf: Ansicht.zeichnungHf, diagrammHf, lastfaelleAktiv, fotoState, elBerechnungsart, koordAktiv, abschnitt: { ...abschnitt, zBezug: 'sok' }, messpunkte: _mpLive(), lastfaelle: lastfallEinst, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, hVonHand: _hVonHand, mpBezug, reglageAngepasst: JSON.parse(JSON.stringify(_reglageAngepasst)), elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: JSON.parse(JSON.stringify(_elMatEdits)), hf: hfEingabe };
 }
 
 // ── Projektzustand: Version, Pruefung, transaktionales Laden ──────────────
@@ -4183,6 +4183,9 @@ function _setProjectStateIntern(s) {
   const flds = s.fields || {};
   // Angepasste Reglagewerte des Projekts zuerst anwenden (ältere Projekte: SBB-Werte)
   _reglageAngepasst = JSON.parse(JSON.stringify(s.reglageAngepasst || {}));
+  // Messpunkt-Bezug (ab v5.3; ältere Projekte: Vorgabe «höchster Punkt»)
+  mpBezug = MP_BEZUEGE.includes(s.mpBezug) ? s.mpBezug : 'hoch';
+  { const sel = document.getElementById('mp-bezug'); if (sel) sel.value = mpBezug; }
   _reglageAnpassungenAnwenden();
   // Globals (mode3pt + yCInputMode werden nach updateSysModeUI gesetzt)
   spanMode       = s.spanMode       ?? 'single';
@@ -6277,6 +6280,25 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
 // Wählt je Zustand die Kurve, die das Diagramm zeichnet: N-FL mit Kombination =
 // kombiniertes System (Ts + Fd), sonst die Zustandskurve. (Die reinen Ts-Kurven c2/c3
 // dienen der Rechnung, nicht der Anzeige — Abweichungen hatten zu Anzeige-Fehlern geführt.)
+// ── Bezug der Messpunkt-Angabe: Durchhang unter der Sehne oder Δh zum linken /
+// rechten / höchsten Aufhängepunkt. EINE Stelle für Diagramm, Karten, Leiste und PDF.
+// Höhen in derselben Koordinate wie die Kurve (über SOK bzw. m ü. M. mit SOK links/rechts).
+let mpBezug = 'hoch';
+const MP_BEZUEGE = ['sehne', 'links', 'rechts', 'hoch'];
+function mpBezugHoehe(x, A1, A2, L) {
+  if (mpBezug === 'links')  return A1;
+  if (mpBezug === 'rechts') return A2;
+  if (mpBezug === 'sehne')  return A1 + (A2 - A1) * x / L;
+  return Math.max(A1, A2);
+}
+function mpBezugKurz() { return mpBezug === 'sehne' ? 'f' : 'Δh'; }
+function mpBezugText() { return t('mp.bezug.' + mpBezug); }
+function setMpBezug(wert) {
+  mpBezug = MP_BEZUEGE.includes(wert) ? wert : 'hoch';
+  const sel = document.getElementById('mp-bezug'); if (sel && sel.value !== mpBezug) sel.value = mpBezug;
+  berechnen();
+}
+
 function anzeigeKurve(zustand = 'T2', cs = calcState) {
   if (!cs) return null;
   if (zustand === 'T1') return cs.c1;
@@ -6772,13 +6794,16 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     if (rflHasZL && Math.abs(c2.sag - c1.sag) > 0.005) {
       sagLine(c2, DF.akzent);
     }
-    // Messpunkt aktiv: horizontale Referenzlinie auf Höhe linker Ankerpunkt (h1)
-    const refY = cy(h1d);
-    ctx.save();
-    ctx.setLineDash([8, 5]); ctx.strokeStyle = DF.sehne; ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.45;
-    ctx.beginPath(); ctx.moveTo(padL, refY); ctx.lineTo(padL + plotW, refY); ctx.stroke();
-    ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.restore();
+    // Messpunkt aktiv: horizontale Referenzlinie auf Höhe des gewählten Bezugspunkts
+    // (bei «Durchhang» dient die bereits gezeichnete Sehne als Bezug → keine Linie)
+    const refY = cy(mpBezugHoehe(0, h1d, h2d, L));
+    if (mpBezug !== 'sehne') {
+      ctx.save();
+      ctx.setLineDash([8, 5]); ctx.strokeStyle = DF.sehne; ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.45;
+      ctx.beginPath(); ctx.moveTo(padL, refY); ctx.lineTo(padL + plotW, refY); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.restore();
+    }
   }
 
   // ── Anchor points ──
@@ -6915,7 +6940,8 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
 
     const cProbe = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
     const y2     = catYD(xv, cProbe);
-    const distH1 = h1d - y2;
+    const refD   = mpBezugHoehe(xv, h1d, h2d, L);   // Bezugshöhe an der Stelle x
+    const distH1 = refD - y2;
 
     // Dot on T<sub>2</sub> curve
     ctx.beginPath(); ctx.arc(px, cy(y2), 5, 0, Math.PI * 2);
@@ -6966,7 +6992,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.fillText(label, bx + 8, by + boxH / 2 + 5);
 
     // Δh-Annotation: Seite gegenüber Callout, vertikal versetzt bei Cluster
-    const refY  = cy(h1d);
+    const refY  = cy(refD);
     const wireY = cy(y2);
     if (Math.abs(refY - wireY) > 4) {
       const labelSide = onRight ? 'left' : 'right';
@@ -6982,7 +7008,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
       ctx.lineTo(px - 3.5, refY - 6); ctx.lineTo(px + 3.5, refY - 6); ctx.closePath(); ctx.fill();
       ctx.fillStyle = dotColor; ctx.font = `bold 10px ${DIAGRAMM_SCHRIFT}`;
       ctx.textAlign = labelSide === 'left' ? 'right' : 'left';
-      const dhTxt = `Δh = ${distH1.toFixed(2)} m`, dhW = ctx.measureText(dhTxt).width;
+      const dhTxt = `${mpBezugKurz()} = ${distH1.toFixed(2)} m`, dhW = ctx.measureText(dhTxt).width;
       const dhX = px + (labelSide === 'left' ? -6 - dhW : 6);
       // Überdeckt der Text eine Hindernis-Beschriftung, einen Δh-Text oder ein Messpunkt-Schild: Seite
       // wechseln, sonst nach unten versetzen (innerhalb der Masslinie, max. 6 Schritte)
@@ -7227,9 +7253,11 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = 'var(-
   // Δh = Abstand Horizontale durch den linken Aufhängepunkt → Kurve, identisch mit der
   // Diagramm-Annotation: bei unterschiedlicher SOK links/rechts in m ü. M. gemessen
   // (die Höhen «über SOK» enthalten den SOK-Anstieg bis x nicht)
-  const sokAnstieg = hasSok ? sokAtX - _sl : 0;
-  const deltaH  = h1 - y2 - sokAnstieg;
-  const dhLabel = isRfl ? 'Δh' : 'Δh ' + t('dyn.bei.t2');
+  // Bezug wählbar (mpBezug): Werte absolut gerechnet, damit SOK links ≠ rechts stimmt
+  const { h2 } = calcState;
+  const refAbs  = mpBezugHoehe(xv, h1 + (hasSok ? _sl : 0), h2 + (hasSok ? _sr : 0), L);
+  const deltaH  = refAbs - (y2 + sokAtX);
+  const dhLabel = isRfl ? mpBezugText() : mpBezugText() + ' ' + t('dyn.bei.t2');
   const dhValue = deltaH;
   const valSize  = compact ? '1.35rem' : '2rem';
   const sagSize  = compact ? '1.1rem'  : '1.35rem';
@@ -7252,7 +7280,7 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = 'var(-
   if (c3Curve) {
     const y3      = catY(xv, c3Curve);
     const y3_disp = hasSok ? f3(y3 + sokAtX) : f3(y3);
-    const sag3    = h1 - y3 - sokAnstieg;
+    const sag3    = refAbs - (y3 + sokAtX);
     if (badge === 'M1' && _leiste) _leiste.f3 = sag3;
     const t3hKey  = isEl ? 'res.seil.hoehe' : 'res.ts.hoehe';
     const y3SubLbl = hasSok
@@ -7262,7 +7290,7 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = 'var(-
       <div style="margin-top:.5rem;padding-top:.4rem;border-top:1px dashed var(--border2)">
         <div style="font-size:.72rem;font-weight:600;color:${t3Clr};letter-spacing:.02em">${badge}' &nbsp;T<sub style="font-size:.8em">3</sub></div>
         <div style="font-size:${compact?'1.05rem':'1.35rem'};font-weight:700;color:${t3Clr}">${f3(sag3)}<span style="font-size:.72rem;margin-left:.2rem">m</span></div>
-        <div style="font-size:.72rem;color:var(--muted);margin-top:.1rem">Δh T<sub style="font-size:.8em">3</sub></div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:.1rem">${mpBezugKurz()} T<sub style="font-size:.8em">3</sub></div>
         <div style="font-size:.7rem;color:var(--muted);margin-top:${compact?'.5rem':'1rem'}">${y3SubLbl}</div>
         <div style="font-size:${compact?'.9rem':'1.1rem'};font-weight:600;color:${t3Clr}">${y3_disp}<span style="font-size:.72rem;margin-left:.2rem">${mainUnit}</span></div>
       </div>`;
@@ -7297,7 +7325,7 @@ function updateErgebnisleiste() {
   const kopf = L.art === 'M1'
     ? `M1 · x ${L.x.toFixed(2)} m`
     : `${sysMode === 'rfl' ? 'T' : 'T<sub>2</sub>'} ${fmtT(T2)}`;
-  const fLbl = L.art === 'M1' ? 'Δh' : 'f';
+  const fLbl = L.art === 'M1' ? mpBezugKurz() : 'f';
   const teile = [
     `<span class="el-kopf">${kopf}</span>`,
     `<span>${fLbl} <b style="color:${L.farbe}">${f3(L.f)}</b> m</span>`,
@@ -7924,7 +7952,9 @@ function buildPdfSectionHtml(projName, canvasImg) {
   function probeRows(xv, badge) {
     if (xv === null || xv === undefined) return '';
     const y_ts   = catY_fn(xv, cAnzeigePdf);
-    const sag_x  = yChordFn(xv) - y_ts;
+    // gleicher Bezug wie am Bildschirm (mpBezug), absolut gerechnet
+    const _sk    = x => hasSok ? sokAtX(x) : 0;
+    const sag_x  = mpBezugHoehe(xv, h1 + _sk(0), h2 + _sk(L), L) - (y_ts + _sk(xv));
     const y_ts_d = hasSok ? (y_ts + sokAtX(xv)).toFixed(2) + ` m ${t('pdf.mum.short')}` : y_ts.toFixed(2) + ` m ${t('pdf.sok.short')}`;
     let fdCell = '';
     if (!isEl) {
@@ -8216,7 +8246,7 @@ ${hasAnyProbe ? `
       <th>${t('pdf.mp.punkt')}</th>
       <th>${isEl ? t('res.seil.hoehe') : t('res.ts.hoehe')} ${hasSok ? `[m ${t('pdf.mum.short')}]` : `[m ${t('pdf.sok.short')}]`}</th>
       ${!isEl ? `<th>${t('pdf.fd.hoehe')} ${hasSok ? `[m ${t('pdf.mum.short')}]` : `[m ${t('pdf.sok.short')}]`}</th>` : ''}
-      <th>${t('pdf.mp.durchhang')}</th>
+      <th>${mpBezugText()} [m]</th>
     </tr>
     ${probeRows(probeX1, 'M1')}
     ${probeRows(probeX2, 'M2')}

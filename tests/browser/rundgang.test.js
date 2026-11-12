@@ -1246,7 +1246,7 @@ test('Stränge im Dunkelmodus: Neon-Töne statt Standardfarben, Auswahlkästchen
   await kontext.close();
 });
 
-test('Messpunkte: Δh auf der Karte = Δh im Diagramm, auch bei unterschiedlicher SOK links/rechts', async () => {
+test('Messpunkte: Karte = Diagramm für alle Bezüge (Durchhang, Δh links/rechts/höchster Punkt), SOK links ≠ rechts', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   const r = await seite.evaluate(async () => {
     const warte = ms => new Promise(res => setTimeout(res, ms));
@@ -1254,16 +1254,26 @@ test('Messpunkte: Δh auf der Karte = Δh im Diagramm, auch bei unterschiedliche
     abschnittFeldOeffnen(1); setCanvasView('diagramm');          // Feld 102–103: SOK 540.08 → 540.52
     for (const [id, v] of [['probe-x1', '16.79'], ['probe-x2', '23.04']]) { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input')); }
     await warte(300); berechnen(); await warte(200);
-    const { h1, L, c2, c2_vem } = calcState, c = c2_vem || c2;
+    const vorgabe = mpBezug;
+    const { h1, h2, L, c2, c2_vem } = calcState, c = c2_vem || c2;
     const sL = getSokMumLeft(), sR = getSokMumRight();
-    // Diagramm: Horizontale durch den linken Aufhängepunkt (m ü. M.) bis zum Seil (m ü. M.)
-    const soll = x => (sL + h1) - (c.a * Math.cosh((x - c.x_low) / c.a) + c.C + sL + (sR - sL) * x / L);
-    const werte = [...document.querySelectorAll('.istzustand-main')].map(m => parseFloat(m.querySelector('.istzustand-value').textContent));
-    const karte = werte.slice(0, 2);   // je Messpunkt zuerst Δh, darunter die Höhe
-    return { sokVerschieden: sR - sL > 0.4, karte, soll: [soll(16.79), soll(23.04)] };
+    const A1 = sL + h1, A2 = sR + h2;
+    const seil = x => c.a * Math.cosh((x - c.x_low) / c.a) + c.C + sL + (sR - sL) * x / L;   // m ü. M.
+    // Bezug je Variante (m ü. M.): Horizontale durch links / rechts / höchsten Punkt, bzw. Sehne
+    const bezug = { links: () => A1, rechts: () => A2, hoch: () => Math.max(A1, A2), sehne: x => A1 + (A2 - A1) * x / L };
+    const aus = {};
+    for (const m of ['hoch', 'links', 'rechts', 'sehne']) {
+      setMpBezug(m); await warte(100);
+      const werte = [...document.querySelectorAll('.istzustand-main')].map(e => parseFloat(e.querySelector('.istzustand-value').textContent));
+      aus[m] = { karte: werte.slice(0, 2), soll: [16.79, 23.04].map(x => bezug[m](x) - seil(x)) };
+    }
+    setMpBezug('hoch');
+    return { sokVerschieden: sR - sL > 0.4, vorgabe, aus };
   });
   assert.equal(r.sokVerschieden, true);
-  r.soll.forEach((s, i) => assert.ok(Math.abs(r.karte[i] - s) < 0.006, `M${i + 1}: Karte ${r.karte[i]} ≠ Diagramm ${s.toFixed(3)}`));
+  assert.equal(r.vorgabe, 'hoch', 'Vorgabe: Δh zum höchsten Punkt');
+  for (const [m, v] of Object.entries(r.aus))
+    v.soll.forEach((s, i) => assert.ok(Math.abs(v.karte[i] - s) < 0.006, `${m} M${i + 1}: Karte ${v.karte[i]} ≠ Diagramm ${s.toFixed(3)}`));
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
@@ -1679,6 +1689,40 @@ test('Einzelleiter «Starr»: nach Laden und Systemwechsel gilt weiter die Starr
   assert.equal(r.vorher.H, '2800'); assert.match(r.vorher.box, /2'800 N.*25 m/);
   assert.deepEqual(r.geladen, r.vorher, 'nach dem Laden');
   assert.deepEqual(r.wechsel, r.vorher, 'nach Systemwechsel');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Messpunkt-Bezug: Auswahl wirkt auf Diagramm, Karte, Leiste und PDF gleich und bleibt im Projekt', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const setze = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); };
+    setSysMode('el'); setze('span', '50'); setze('sok-mum-left', '540.68'); setze('sok-mum-right', '541.22');
+    setze('h1', '7'); setze('h2', '7'); setze('temp2', '40'); setze('probe-x1', '19.5'); berechnen();
+    const aus = {};
+    for (const m of ['hoch', 'links', 'rechts', 'sehne']) {
+      const sel = document.getElementById('mp-bezug'); sel.value = m; sel.dispatchEvent(new Event('change'));
+      const karte = parseFloat(document.querySelector('.istzustand-main .istzustand-value').textContent);
+      const html = buildPdfSectionHtml('t', '');
+      const pdf = parseFloat((html.match(/M1 &nbsp; x = 19\.50 m<\/td>(?:\s*<td[^>]*>[^<]*<\/td>)*?\s*<td[^>]*>([\d.\-]+) m<\/td>\s*<\/tr>/) || [])[1]);
+      const kopf = (html.match(/<th>([^<]*)\[m\]<\/th>/) || [])[1]?.trim();
+      aus[m] = { karte, pdf, kopf, label: document.body.innerText.includes(t('mp.bezug.' + m)) };
+    }
+    document.getElementById('mp-bezug').value = 'links'; setMpBezug('links');
+    const st = getProjectState(); setMpBezug('hoch'); setProjectState(st);
+    const geladen = { mpBezug, auswahl: document.getElementById('mp-bezug').value };
+    const alt = { ...st }; delete alt.mpBezug; setProjectState(alt);
+    return { aus, geladen, altesProjekt: mpBezug };
+  });
+  assert.equal(r.aus.hoch.karte, 1.23); assert.equal(r.aus.links.karte, 0.69);
+  assert.equal(r.aus.rechts.karte, 1.23); assert.equal(r.aus.sehne.karte, 0.90);
+  for (const [m, v] of Object.entries(r.aus)) {
+    assert.ok(Math.abs(v.pdf - v.karte) < 0.006, `${m}: PDF ${v.pdf} ≠ Karte ${v.karte}`);
+    assert.ok(v.label, `${m}: Beschriftung sichtbar`);
+  }
+  assert.equal(r.aus.sehne.kopf, 'Durchhang (Sehne)');
+  assert.deepEqual(r.geladen, { mpBezug: 'links', auswahl: 'links' }, 'Bezug wird mit dem Projekt gespeichert');
+  assert.equal(r.altesProjekt, 'hoch', 'ältere Projekte: Vorgabe höchster Punkt');
   assert.deepEqual(fehler, []);
   await kontext.close();
 });

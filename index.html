@@ -1113,6 +1113,13 @@
     <div class="probe-readout">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.4rem">
         <div class="probe-hint-small" id="probe-hint" data-i18n="canvas.probe.hint">Messpunkte: ins Diagramm klicken / ziehen oder x-Wert eingeben</div>
+        <!-- Bezug der Angabe am Messpunkt (Diagramm, Karten, Leiste, PDF) -->
+        <select id="mp-bezug" class="mp-bezug" onchange="setMpBezug(this.value)" title="Bezug der Angabe am Messpunkt" data-i18n-title="mp.bezug.titel" aria-label="Bezug der Angabe am Messpunkt" data-i18n-aria="mp.bezug.titel">
+          <option value="hoch" data-i18n="mp.bezug.hoch">Δh zum höchsten Punkt</option>
+          <option value="links" data-i18n="mp.bezug.links">Δh zum linken Punkt</option>
+          <option value="rechts" data-i18n="mp.bezug.rechts">Δh zum rechten Punkt</option>
+          <option value="sehne" data-i18n="mp.bezug.sehne">Durchhang (Sehne)</option>
+        </select>
         <button id="probe-reset-btn" data-i18n="canvas.probe.reset" onclick="clearMesspunkte()" title="Messpunkte löschen" data-i18n-title="ui.mp.loeschen.titel"
           style="font-size:.72rem;padding:.22rem .65rem;border-radius:7px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;line-height:1.4">
           ✕ Reset

@@ -1908,3 +1908,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 /* Datei-Dialog: Speicherzustand (dauerhaft, belegt, letzte Sicherung) */
 .speicher-status { margin: .55rem 0 0; font-size: .7rem; color: var(--muted); text-align: right; }
 .speicher-status.warn { color: var(--warn); font-weight: 600; }
+
+/* Messpunkte: Auswahl des Bezugs (Durchhang / Δh links / rechts / höchster Punkt) */
+.mp-bezug { font: inherit; font-size: .72rem; padding: .22rem .4rem; border-radius: 7px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text); cursor: pointer; flex-shrink: 0; max-width: 13rem; margin-left: auto; }
