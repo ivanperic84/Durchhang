@@ -1,8 +1,8 @@
 /* Service Worker — macht die Anwendung offline verfügbar.
  *
- * Die App ist eine einzige HTML-Datei; der Zwischenspeicher ist entsprechend
- * klein. Strategie:
- *   HTML und eigene Skripte (.js)
+ * Die App besteht aus index.html, app.css, i18n.js, app.js, handbuch.html und
+ * den Rechenmodulen; der Zwischenspeicher ist entsprechend klein. Strategie:
+ *   HTML, eigene Skripte (.js) und Gestaltung (.css)
  *         → «network first»: online immer die neueste Fassung, offline die
  *           zwischengespeicherte. Verhindert, dass nach einer Aktualisierung
  *           eine veraltete Datei hängen bleibt — und dass eine neue Seite
@@ -12,13 +12,17 @@
  * CACHE_VERSION bei jeder Veröffentlichung erhöhen — alte Zwischenspeicher
  * werden beim Aktivieren automatisch entfernt.
  */
-const CACHE_VERSION = 'durchhang-v4.7.0';
+const CACHE_VERSION = 'durchhang-v5.0.0';
 
 /* Bestandteile der Anwendung. Relative Pfade, damit es sowohl unter
    /Durchhang/ auf GitHub Pages als auch in einem Unterordner funktioniert. */
 const APP_DATEIEN = [
   './',
   './index.html',
+  './app.css',
+  './i18n.js',
+  './app.js',
+  './handbuch.html',
   './rechenkern.js',
   './export3d.js',
   './abschnitt.js',
@@ -65,8 +69,10 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   const istHtml = req.mode === 'navigate' ||
                   (req.headers.get('accept') || '').includes('text/html');
+  // Eigene Programm-, Gestaltungs- und Handbuch-Dateien: immer zusammen mit
+  // index.html aktuell halten (sonst trifft eine neue Seite auf altes CSS).
   const istEigenesSkript = url.origin === self.location.origin &&
-                           url.pathname.endsWith('.js');
+                           /\.(js|css|html)$/.test(url.pathname);
 
   if (istHtml || istEigenesSkript) {
     // Netz zuerst, Zwischenspeicher als Rückfall
