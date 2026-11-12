@@ -175,10 +175,15 @@
             <button onclick="openCustomModal()" title="Eigenes Kettenwerk definieren" data-i18n-title="ui.kw.eigen" style="flex-shrink:0;background:none;border:1px solid var(--border);border-radius:8px;padding:.2rem .45rem;font-size:.72rem;color:var(--muted);cursor:pointer;line-height:1;transition:border-color .15s,color .15s" onmouseover="this.style.color = 'var(--text)';this.style.borderColor = 'var(--primary)'" onmouseout="this.style.color = 'var(--muted)';this.style.borderColor = 'var(--border)'">＋</button>
           </div>
         </div>
+        <div class="rgl-wrap">
         <details id="combo-info" class="reglage-info-box" style="display:none;margin-top:.5rem">
-          <summary class="info-title" id="combo-title"></summary>
+          <summary><span class="info-title" id="combo-title"></span></summary>
           <div class="info-note" id="combo-note"></div>
         </details>
+        <!-- «i» neben (nicht in) der Titelzeile: kein Knopf im Knopf -->
+        <button type="button" class="rgl-i" onclick="openReglageModal()"
+          title="Reglagetabelle anzeigen" data-i18n-title="ui.reglage.zeigen" aria-label="Reglagetabelle anzeigen" data-i18n-aria="ui.reglage.zeigen">i</button>
+        </div>
       </div>
 
       <!-- Einzelleiter: Leitermaterial direkt wählbar -->
@@ -214,6 +219,17 @@
         <div class="seg-ctrl" id="el-basis-btns" style="width:100%"></div>
       </div>
 
+      <!-- Einzelleiter: Reglagewert-Info — gleich gestaltet wie die Kombination (N-FL / R-FL) -->
+      <div class="rgl-wrap">
+      <details id="el-reglage-info" class="reglage-info-box" style="display:none;margin-top:.5rem">
+        <summary><span class="info-title" id="el-reglage-title"></span></summary>
+        <div class="info-note" id="el-reglage-note"></div>
+        <div id="el-reglage-edit-panel" style="display:none"></div>
+      </details>
+      <button type="button" class="rgl-i" id="el-reglage-info-btn" onclick="toggleReglageEdit()"
+        title="Reglagetabelle anzeigen" data-i18n-title="ui.reglage.zeigen" aria-label="Reglagetabelle anzeigen" data-i18n-aria="ui.reglage.zeigen">i</button>
+      </div>
+
       <!-- Berechnungsart (Einzelleiter und N-FL) -->
       <div id="berechnungsart-row" style="display:none;margin-top:.5rem">
         <label id="berechnungsart-label" data-i18n="par.berechnungsart" style="font-size:.72rem;font-weight:500;color:var(--muted);display:block;margin-bottom:.25rem">Berechnungsart</label>
@@ -222,18 +238,6 @@
           <button class="seg-btn"        id="seg-ba-starr" data-i18n="par.ba.starr" onclick="setBerechnungsart('starr')">Starr</button>
         </div>
         <div id="ba-hint" style="font-size:.65rem;color:var(--tertiary);margin-top:.25rem"></div>
-      </div>
-
-      <!-- Einzelleiter: Reglagewert-Info -->
-      <div id="el-reglage-info" class="reglage-info-box" style="display:none;margin-top:.5rem">
-        <div class="reglage-hdr">
-          <div class="info-title" id="el-reglage-title"></div>
-          <button id="el-reglage-info-btn" onclick="toggleReglageEdit()"
-            style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.2);background:none;color:var(--muted);font-size:.6rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"
-            title="Reglagetabelle anzeigen" data-i18n-title="ui.reglage.zeigen">i</button>
-        </div>
-        <div class="info-note" id="el-reglage-note"></div>
-        <div id="el-reglage-edit-panel" style="display:none"></div>
       </div>
 
       <div id="wear-row" style="display:none;margin-top:.6rem">
@@ -678,12 +682,12 @@
           </div>
           <div class="field">
             <label for="tension" id="tension-label" style="display:flex;justify-content:space-between;align-items:center;gap:.3rem">
-              <span>H Ts unbelastet</span>
+              <span id="tension-label-txt">H Ts unbelastet</span>
               <button id="tension-reset-btn" onclick="resetHToReglage()" title="H auf Reglagetabellenwert zurücksetzen" data-i18n-title="ui.reglage.reset.titel"
                 style="display:none;padding:.1rem .35rem;border-radius:5px;border:1px solid var(--warn);background:none;color:var(--warn);font-size:.65rem;cursor:pointer;font-family:inherit;line-height:1.4;white-space:nowrap;flex-shrink:0" data-i18n="ui.reglage.reset">&#x21BA; Reglage</button>
             </label>
             <div class="input-wrap" id="tension-wrap">
-              <input type="number" id="tension" value="2100" min="0.1" step="1" oninput="if(!_tensionAutoFilling){activePresetRef=null;_updateTensionFotoState(false);} berechnenEntprellt()" onchange="berechnen()">
+              <input type="number" id="tension" value="2100" min="0.1" step="1" oninput="_hEingabe(); berechnenEntprellt()" onchange="berechnen()">
               <span class="input-unit">N</span>
             </div>
             <div id="tension-reglage-hw" class="feld-reglage-hw" style="display:none"></div>

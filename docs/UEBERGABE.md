@@ -1,4 +1,4 @@
-# Übergabe Durchhang — Stand v5.0.0 (12. November 2026)
+# Übergabe Durchhang — Stand v5.1.1 (12. November 2026)
 
 Ziel dieser Datei: Eine neue Claude-Sitzung (auch unter einem anderen Account) kann
 ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLAUDE.md`
@@ -109,7 +109,8 @@ Einzelleiter (EL, z. B. Speise-/Rückleiter).
   gerundet (`runde10`); Zugkraft bei T: `nflZugkraftBei` rundet auf 5 N (mit Eis 10 N).
 - Abnutzung Fahrdraht über `mflAbgenutzt` (qFdAbnutzung Cu107 9.1594111, Cu150 13.533177).
 - Starr: Reglagetabelle «starr» (SBB 0161.1013.0003), Mittelspannweite gesperrt.
-  EL starr: Referenzspannweite 25 m, Zugkraft auf 100 N gerundet.
+  EL starr: Referenzspannweite 25 m. Alle hergeleiteten EL-Reglagewerte (auch Leiter ohne
+  SBB-Tabelle: 6 kN bei −20 °C) werden auf 100 N gerundet (`_rundeReglage`, seit v5.1.1).
 - Reglagetabelle «normal» 0161.1013.0001: Referenzspannweite 45 m gilt für die
   Reglage-**Zugkraft**, nicht für die Systemhöhe.
 - R-FL: Abnutzung als negative Zusatzlast × H_Ts/(H_Ts+H_Fd); Fahrdraht-Verschiebung
@@ -203,6 +204,15 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 
   `page.addScriptTag` laden und `axe.run()` in den Zuständen Hauptansicht, Diagramm + hf,
   Zeichnung, Abschnitt (mit Strängen), hf-Ansicht, Lastfälle, Datei, Reglage, Handbuch —
   je hell und dunkel; das Wasserzeichen `#beta-wz` ausschliessen. Stand: 0 Verstösse.
+- Anzeige-Nachführung (v5.1): Prüfskript im Scratchpad ändert je System × Ansicht
+  (Diagramm, Zeichnung, Abschnitt) jede sichtbare Eingabe und vergleicht die Anzeige
+  (Seitenleiste-Text, sichtbare Elemente, Feldwerte, Canvas/SVG-Hash, Ergebnisbereich
+  `.canvas-card` + `.results-card`) mit dem Zustand nach `setProjectState(getProjectState())`.
+  Dazu zufällige 5-Schritt-Abfolgen inkl. System-, Ansichts- und Sprachwechsel. Einzige
+  gewollte Abweichung: «Mastangaben» klappt beim Laden auf, wenn belegt. Fest als
+  Browser-Test «Anzeige folgt jeder Eingabe».
+- Prüfskripte immer mit `__dirname` für Bilder schreiben bzw. aus dem Scratchpad starten —
+  sonst landen PNGs im Repo-Ordner.
 - Exporte gelegentlich mit Python prüfen (`ezdxf`, `ifcopenshell`).
 
 ---
@@ -249,6 +259,9 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 
 | v4.5.3 | #26 | T₃ bei N-FL mit Kombination auf Karte, Tabelle und Zeichnung wie T₂ (kombiniertes System) |
 | v4.6.0 | – | Eingabeprüfung (Fehler sperrt, Warnung rechnet: L > 80 m, h > 15 m, T ausserhalb −30…+90 °C), Messpunkte am Handy 2 × 2, Systemtext beim Start |
 | v4.7.0 | #27 | Menü «Mehr ⋯» (Reglage, Handbuch, Darstellung, Zurücksetzen), Reglagewerte einklappbar, T₃-Karte unter den Höhen, dichtere Spalte am PC, H-Zeile erst mit SOK, Handy: Zeichnungslegende unten, Abschnitt-Erklärung einklappbar; gemeinsame Seillage `anzeigeKurve()` — PDF-Messpunkte und Fd am Tiefpunkt jetzt wie Bildschirm |
-| v5.0.0 | – | Aufbau: index.html aufgeteilt in app.css, i18n.js, app.js, handbuch.html (Handbuch lädt beim Öffnen); Datensicherheit: «Alles sichern» (Komplettsicherung + Einlesen ohne Doppelte), dauerhafter Speicher (storage.persist), Erinnerung nach 14 Tagen, Speicherzustand im Datei-Dialog |
+| v5.0.0 | #28 | Aufbau: index.html aufgeteilt in app.css, i18n.js, app.js, handbuch.html (Handbuch lädt beim Öffnen); Datensicherheit: «Alles sichern» (Komplettsicherung + Einlesen ohne Doppelte), dauerhafter Speicher (storage.persist), Erinnerung nach 14 Tagen, Speicherzustand im Datei-Dialog |
+| v5.0.1 | – | Fensterstapel: zuletzt geöffnetes Fenster liegt oben (Rückfrage «Löschen?» war hinter dem Datei-Dialog); Esc schliesst das oberste Fenster; Ebenen in app.css dokumentiert |
+| v5.1.0 | – | Einzelleiter: H von Hand überschreibbar (Rahmen + Hinweis mit Abweichung, «↺ Reglage», im Projekt gespeichert als `hVonHand`); Reglage-Infobox bei allen Systemen aufklappbar mit «i» rechts, direkt unter der Auswahl; Anzeige-Nachführung: `calcState` wird vor dem Zeichnen gesetzt (hf-Linien hingen einen Schritt nach), Laden EL über `applyElVariant` (Leiter ohne eigene Tabelle verloren die Reglage-Bindung), Abschnitt-Ansicht und Kombinations-Notiz beim Sprachwechsel neu, Label-Knopf «↺ Reglage» überlebt Systemwechsel |
+| v5.1.1 | – | Reglagewerte einheitlich: hergeleitete Tabellen (Leiter ohne SBB-Tabelle, Starr, angepasste Werte, Reglage-Fenster, CSV) über `_rundeReglage` auf 100 N; Infobox nennt Bezugswerte bei +10 °C aus der wirksamen Tabelle (`_elReglageBoxAktualisieren`, bei jeder Rechnung); Texte für Leiter ohne SBB-Tabelle übersetzt; Sprachwechsel verwirft angepasste Reglage/Handwert nicht mehr. Eingefrorene Fälle unverändert (nur Leiter mit SBB-Tabelle). |
 
 Issue #20: NIS (später).
