@@ -1,4 +1,4 @@
-# Übergabe Durchhang — Stand v6.0.2 (12. November 2026)
+# Übergabe Durchhang — Stand v6.0.3 (12. November 2026)
 
 Ziel dieser Datei: Eine neue Claude-Sitzung (auch unter einem anderen Account) kann
 ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLAUDE.md`
@@ -272,5 +272,6 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 
 | v6.0.0 | #32 | **Produktiv**: Wasserzeichen «BETA – nicht verifiziert» entfernt (Bildschirm, PDFs, Handbuch). hf_min / hf_max nur im **Entwicklermodus** (3× aufs App-Symbol, `localStorage dh_dev`, Schild «DEV», Animation beim Antippen): UI mit `.nur-dev`, `hfGrenzenM()` → `null`, Schalter Diagramm/Zeichnung wirken nur mit `entwicklerModus`; Handbuch-Kapitel 6.14 nur im Entwicklermodus. Gespeicherte hf-Eingaben bleiben erhalten. |
 | v6.0.1 | #32 | Stränge: Auswahlkästchen (18 px, Touch mit unsichtbar grösserer Tippfläche) und Farbfeld kompakt; Farbfeld von der Touch-Mindesthöhe ausgenommen |
 | v6.0.2 | – | Entwicklermodus: App-Symbol wird zur Wäscheleine (T-Shirt, Socke, Hose am Seil; Hänger/Fahrdraht ausgeblendet), Wäsche schaukelt beim Einschalten und Antippen (`.waesche`, `.kette-teil`) |
+| v6.0.3 | – | Diagramm ohne Messpunkt: Masslinie am Tiefpunkt (T₁/T₂) und Referenzlinie folgen ebenfalls `mpBezug` (Δh bzw. f); Ergebnis «Durchhang f» der Rechnung unverändert |
 
 Issue #20: NIS (später).

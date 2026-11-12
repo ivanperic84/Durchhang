@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v6.0.2';
+const APP_VERSION = 'v6.0.3';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -6768,10 +6768,12 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   }
 
   // ── Sag annotation ──
+  // Masslinie am Tiefpunkt — Bezug wie bei den Messpunkten (Auswahl mpBezug):
+  // Sehne (f) oder Horizontale durch den höchsten / linken / rechten Aufhängepunkt (Δh)
   function sagAnnotation(c, color, side) {
     const x0     = Math.max(0, Math.min(L, c.x_low));
     const yBot   = catYD(x0, c);
-    const yChord = h1d + (h2d - h1d) * x0 / L;
+    const yChord = mpBezugHoehe(x0, h1d, h2d, L);
     if (Math.abs(yChord - yBot) < 0.001) return;
     const [bx, by, ty] = [cx(x0), cy(yBot), cy(yChord)];
     // Arrow line
@@ -6791,14 +6793,15 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     const mid = (by + ty) / 2;
     ctx.fillStyle = color; ctx.font = `bold 10px ${DIAGRAMM_SCHRIFT}`;
     ctx.textAlign = side === 'left' ? 'right' : 'left';
-    ctx.fillText(`f = ${c.sag.toFixed(2)} m`, bx + (side === 'left' ? -6 : 6), mid + 4);
+    const wert = mpBezug === 'sehne' ? c.sag : yChord - yBot;
+    ctx.fillText(`${mpBezugKurz()} = ${wert.toFixed(2)} m`, bx + (side === 'left' ? -6 : 6), mid + 4);
   }
 
   // Gestrichelte Linie (Sehne → Tiefpunkt) ohne Dreiecke und Label — immer sichtbar bei Messpunkt
   function sagLine(c, color) {
     const x0     = Math.max(0, Math.min(L, c.x_low));
     const yBot   = catYD(x0, c);
-    const yChord = h1d + (h2d - h1d) * x0 / L;
+    const yChord = mpBezugHoehe(x0, h1d, h2d, L);
     if (Math.abs(yChord - yBot) < 0.001) return;
     const [bx, by, ty] = [cx(x0), cy(yBot), cy(yChord)];
     ctx.setLineDash([3, 3]); ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.5;
@@ -6807,6 +6810,16 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   }
 
   const anyProbe = probeX1 !== null || probeX2 !== null || probeX3 !== null || probeX4 !== null;
+  // Horizontale Referenzlinie auf Höhe des gewählten Bezugspunkts — mit und ohne Messpunkt
+  // (bei «Durchhang» dient die bereits gezeichnete Sehne als Bezug → keine Linie)
+  if (mpBezug !== 'sehne') {
+    const refY = cy(mpBezugHoehe(0, h1d, h2d, L));
+    ctx.save();
+    ctx.setLineDash([8, 5]); ctx.strokeStyle = DF.sehne; ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.45;
+    ctx.beginPath(); ctx.moveTo(padL, refY); ctx.lineTo(padL + plotW, refY); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.restore();
+  }
   if (!anyProbe) {
     // Keine Messpunkte: f-Annotation wie gewohnt (Linie + Dreiecke + Label)
     const c1SagColor = (isRfl && rflHasZL) ? DF.t1 : (isRfl ? DF.akzent : DF.t1);
@@ -6828,16 +6841,6 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     }
     if (rflHasZL && Math.abs(c2.sag - c1.sag) > 0.005) {
       sagLine(c2, DF.akzent);
-    }
-    // Messpunkt aktiv: horizontale Referenzlinie auf Höhe des gewählten Bezugspunkts
-    // (bei «Durchhang» dient die bereits gezeichnete Sehne als Bezug → keine Linie)
-    const refY = cy(mpBezugHoehe(0, h1d, h2d, L));
-    if (mpBezug !== 'sehne') {
-      ctx.save();
-      ctx.setLineDash([8, 5]); ctx.strokeStyle = DF.sehne; ctx.lineWidth = 1;
-      ctx.globalAlpha = 0.45;
-      ctx.beginPath(); ctx.moveTo(padL, refY); ctx.lineTo(padL + plotW, refY); ctx.stroke();
-      ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.restore();
     }
   }
 

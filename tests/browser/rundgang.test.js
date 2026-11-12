@@ -1776,3 +1776,24 @@ test('Stränge: Auswahlkästchen und Farbfeld kompakt, auch auf dem Touchscreen'
     await kontext.close();
   }
 });
+
+test('Diagramm ohne Messpunkt: Masslinie am Tiefpunkt folgt dem gewählten Bezug', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const setze = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); };
+    setze('h2', '7.60'); berechnen();
+    // Beschriftungen auf der Zeichenfläche mitschreiben
+    const texte = []; const ctx = document.getElementById('main-canvas').getContext('2d'); const orig = ctx.fillText;
+    ctx.fillText = function (t, ...a) { texte.push(String(t)); return orig.call(this, t, ...a); };
+    const lesen = m => { texte.length = 0; setMpBezug(m); return texte.filter(t => /^(Δh|f) = /.test(t)); };
+    const aus = { hoch: lesen('hoch'), sehne: lesen('sehne'), links: lesen('links') };
+    ctx.fillText = orig; setMpBezug('hoch');
+    const c = calcState.c2_vem || calcState.c2;   // wie gezeichnet (N-FL: kombiniertes System)
+    return { aus, soll: (7.6 - (c.a + c.C)).toFixed(2), f: c.sag.toFixed(2) };
+  });
+  assert.ok(r.aus.hoch.includes(`Δh = ${r.soll} m`), `höchster Punkt: ${r.aus.hoch} (soll ${r.soll})`);
+  assert.ok(r.aus.sehne.includes(`f = ${r.f} m`), `Sehne: ${r.aus.sehne}`);
+  assert.ok(r.aus.links.every(t => t.startsWith('Δh')) && r.aus.links.length > 0, `links: ${r.aus.links}`);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
