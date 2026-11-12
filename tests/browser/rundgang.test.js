@@ -1470,14 +1470,18 @@ test('Fensterstapel: Rückfrage liegt über jedem Fenster, Esc schliesst das obe
   await kontext.close();
 });
 
-test('Einzelleiter: H von Hand überschreibbar, «↺ Reglage» zurück, Handwert bleibt gespeichert', async () => {
+test('Einzelleiter: H freie Eingabe, «↺» rechts daneben, Infobox ausgegraut, bleibt gespeichert', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   const r = await seite.evaluate(async () => {
     const w = ms => new Promise(res => setTimeout(res, ms));
     const H = () => document.getElementById('tension');
     const zustand = () => ({ H: H().value, frei: !H().readOnly,
       reset: istSichtbar(document.getElementById('tension-reset-btn')),
-      hw: document.getElementById('tension-reglage-hw').textContent.trim() });
+      hw: document.getElementById('tension-reglage-hw').textContent.trim(),
+      boxAus: document.getElementById('el-reglage-info').classList.contains('inaktiv'),
+      zeile: istSichtbar(document.getElementById('el-reglage-inaktiv')),
+      knopfRechts: (() => { const f = document.getElementById('tension-wrap').getBoundingClientRect(), k = document.getElementById('tension-reset-btn').getBoundingClientRect();
+        return k.width > 0 && k.left >= f.right && Math.abs((k.top + k.bottom) / 2 - (f.top + f.bottom) / 2) < 3; })() });
     setSysMode('nfl'); setSysMode('el'); await w(100);   // Systemwechsel darf den Knopf im Label nicht löschen
     const start = zustand();
     H().value = '4500'; H().dispatchEvent(new Event('input', { bubbles: true })); berechnen(); await w(50);
@@ -1496,11 +1500,14 @@ test('Einzelleiter: H von Hand überschreibbar, «↺ Reglage» zurück, Handwer
   assert.equal(r.start.H, '3700'); assert.ok(r.start.frei, 'Einzelleiter: H ist eintippbar');
   assert.ok(!r.start.reset, 'ohne Handwert kein «↺ Reglage»');
   assert.equal(r.hand.H, '4500'); assert.ok(r.hand.reset, '«↺ Reglage» erscheint beim Handwert');
-  assert.match(r.hand.hw, /Von Hand.*3'700 N.*\+22/);
+  assert.match(r.hand.hw, /Freie Eingabe/); assert.doesNotMatch(r.hand.hw, /%|3'700/, 'kein Bezug zur Reglage');
+  assert.ok(r.hand.boxAus && r.hand.zeile, 'Reglage-Infobox ausgegraut mit Zusatzzeile');
+  assert.ok(r.hand.knopfRechts, '«↺» rechts neben dem Feld, gleiche Höhe');
+  assert.ok(!r.start.boxAus && !r.start.zeile, 'ohne freie Eingabe keine Markierung');
   assert.equal(r.nachT1.H, '4500', 'T₁-Änderung überschreibt den Handwert nicht');
-  assert.match(r.nachT1.hw, /3'100 N/, 'Hinweis nennt die Reglage beim neuen T₁');
   assert.equal(r.geladen.H, '4500', 'Handwert bleibt beim Speichern/Laden erhalten'); assert.ok(r.geladen.reset);
-  assert.equal(r.zurueck.H, '3100', '«↺ Reglage» setzt auf den Reglagewert bei T₁ zurück'); assert.ok(!r.zurueck.reset);
+  assert.equal(r.zurueck.H, '3100', '«↺» setzt auf den Reglagewert bei T₁ zurück'); assert.ok(!r.zurueck.reset);
+  assert.ok(!r.zurueck.boxAus && !r.zurueck.zeile, 'nach «↺» Infobox wieder normal');
   assert.ok(!r.nfl.frei, 'N-FL: H bleibt an die Reglage gebunden');
   assert.deepEqual(fehler, []);
   await kontext.close();

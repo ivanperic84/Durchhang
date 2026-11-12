@@ -1338,6 +1338,18 @@ input.feld-gesperrt { color: var(--muted) !important; cursor: default; backgroun
 .feld-reglage-hw { margin-top: .25rem; font-size: .66rem; line-height: 1.35; color: var(--tertiary); }
 .feld-reglage-hw.nok { color: var(--fail); }
 .feld-reglage-hw.hand { color: var(--warn); }
+/* Feld mit Knopf rechts daneben (z. B. H + «↺» zurück zur Reglage) */
+.feld-mit-knopf { display: flex; gap: .4rem; align-items: stretch; }
+.feld-mit-knopf > .input-wrap { flex: 1; min-width: 0; }
+.feld-knopf-reset {
+  flex-shrink: 0; aspect-ratio: 1; min-width: 2.4rem; padding: 0 .45rem; border-radius: 8px;
+  border: 1px solid var(--warn); background: none; color: var(--warn);
+  font: inherit; font-size: 1rem; line-height: 1; cursor: pointer; transition: background .15s;
+}
+.feld-knopf-reset:hover, .feld-knopf-reset:focus-visible { background: var(--warn-s); }
+/* Reglage-Infobox nicht wirksam (H freie Eingabe): ausgegraut + Zusatzzeile */
+.reglage-info-box.inaktiv, .reglage-info-box.inaktiv + .rgl-i { opacity: .38; }
+.rgl-inaktiv { margin-top: .3rem; font-size: .66rem; color: var(--warn); }
 /* Einzelleiter: H von Hand — Rahmen in Warnfarbe wie bei der Foto-Aufnahme */
 .input-wrap.feld-hand { outline: 2px solid var(--warn); outline-offset: -1px; border-radius: 8px; }
 .feld-reglage-hw .sh-knopf { display: block; margin-top: .15rem; text-align: left; }

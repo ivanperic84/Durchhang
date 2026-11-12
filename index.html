@@ -229,6 +229,8 @@
       <button type="button" class="rgl-i" id="el-reglage-info-btn" onclick="toggleReglageEdit()"
         title="Reglagetabelle anzeigen" data-i18n-title="ui.reglage.zeigen" aria-label="Reglagetabelle anzeigen" data-i18n-aria="ui.reglage.zeigen">i</button>
       </div>
+      <!-- Hinweis, solange H frei eingegeben ist (Reglage nicht wirksam) -->
+      <div id="el-reglage-inaktiv" class="rgl-inaktiv" style="display:none" data-i18n="ui.reglage.inaktiv">Nicht aktiv – H freie Eingabe</div>
 
       <!-- Berechnungsart (Einzelleiter und N-FL) -->
       <div id="berechnungsart-row" style="display:none;margin-top:.5rem">
@@ -681,14 +683,18 @@
             </div>
           </div>
           <div class="field">
-            <label for="tension" id="tension-label" style="display:flex;justify-content:space-between;align-items:center;gap:.3rem">
+            <label for="tension" id="tension-label">
               <span id="tension-label-txt">H Ts unbelastet</span>
-              <button id="tension-reset-btn" onclick="resetHToReglage()" title="H auf Reglagetabellenwert zurücksetzen" data-i18n-title="ui.reglage.reset.titel"
-                style="display:none;padding:.1rem .35rem;border-radius:5px;border:1px solid var(--warn);background:none;color:var(--warn);font-size:.65rem;cursor:pointer;font-family:inherit;line-height:1.4;white-space:nowrap;flex-shrink:0" data-i18n="ui.reglage.reset">&#x21BA; Reglage</button>
             </label>
-            <div class="input-wrap" id="tension-wrap">
-              <input type="number" id="tension" value="2100" min="0.1" step="1" oninput="_hEingabe(); berechnenEntprellt()" onchange="berechnen()">
-              <span class="input-unit">N</span>
+            <!-- Feld + Knopf «↺» rechts daneben (nur bei freier Eingabe / Foto-Aufnahme sichtbar) -->
+            <div class="feld-mit-knopf">
+              <div class="input-wrap" id="tension-wrap">
+                <input type="number" id="tension" value="2100" min="0.1" step="1" oninput="_hEingabe(); berechnenEntprellt()" onchange="berechnen()">
+                <span class="input-unit">N</span>
+              </div>
+              <button type="button" id="tension-reset-btn" class="feld-knopf-reset" onclick="resetHToReglage()" style="display:none"
+                title="H auf Reglagetabellenwert zurücksetzen" data-i18n-title="ui.reglage.reset.titel"
+                aria-label="H auf Reglagetabellenwert zurücksetzen" data-i18n-aria="ui.reglage.reset.titel">&#x21BA;</button>
             </div>
             <div id="tension-reglage-hw" class="feld-reglage-hw" style="display:none"></div>
             <!-- Delta + Info: unter dem Feld, nur bei Foto-Override -->
