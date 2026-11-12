@@ -1426,7 +1426,8 @@ input.feld-gesperrt { color: var(--muted) !important; cursor: default; backgroun
 .abs-str-tab select.abs-inp { width: auto; min-width: 7rem; }
 .abs-str-sys { font-size: .74rem; color: var(--text2); max-width: 16rem; }
 .abs-str-aktiv { font-size: .72rem; font-weight: 600; color: var(--primary); }
-.abs-farbe { width: 2rem; height: 1.6rem; padding: 2px; border: 1px solid var(--border2); border-radius: 7px; background: var(--s2); cursor: pointer; }
+/* Farbfeld der Stränge: kompakt, gleich hoch wie das Auswahlkästchen daneben (auch bei Touch) */
+.abs-farbe { width: 1.6rem; height: 1.25rem; padding: 2px; border: 1px solid var(--border2); border-radius: 6px; background: var(--s2); cursor: pointer; vertical-align: middle; }
 .abs-farbe::-webkit-color-swatch-wrapper { padding: 0; }
 .abs-farbe::-webkit-color-swatch { border: none; border-radius: 4px; }
 .abs-farbe::-moz-color-swatch { border: none; border-radius: 4px; }
@@ -1803,8 +1804,9 @@ input[type=checkbox].auswahl:checked::after { transform: rotate(45deg) scale(1);
 input[type=checkbox].auswahl:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 input[type=checkbox].auswahl:disabled { opacity: .45; cursor: default; }
 @media (any-pointer: coarse) {
-  input[type=checkbox].auswahl { width: 22px; height: 22px; }
-  input[type=checkbox].auswahl::after { left: 6px; top: 2px; width: 6px; height: 12px; }
+  /* Touch: Kästchen bleibt klein, die Tippfläche wird unsichtbar vergrössert */
+  input[type=checkbox].auswahl::before { content: ''; position: absolute; inset: -11px; }
+  .abs-farbe { width: 1.75rem; height: 1.4rem; }
 }
 .proj-check { cursor:pointer; flex-shrink:0; margin-right:1px; }
 .proj-bulk-bar { background:var(--text2); color:var(--on-acc); border-radius:8px; padding:.4rem .7rem; display:flex; align-items:center; gap:.45rem; margin-bottom:.5rem; flex-wrap:wrap; }
@@ -1896,7 +1898,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
    Empfohlen sind rund 44 px; 40 px hält die Oberfläche noch kompakt. */
 @media (any-pointer: coarse) {
   button, select,
-  input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=file]) {
+  input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=file]):not(.abs-farbe) {
     min-height: 40px;
   }
   input[type=range] { height: 32px; }

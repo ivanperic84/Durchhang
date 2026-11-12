@@ -1755,3 +1755,18 @@ test('Entwicklermodus: hf_min / hf_max ausgeblendet; 3× aufs App-Symbol schalte
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Stränge: Auswahlkästchen und Farbfeld kompakt, auch auf dem Touchscreen', async () => {
+  for (const opt of [{}, { hasTouch: true }]) {
+    const { seite, fehler, kontext } = await appOeffnen(browser, url, opt);
+    const r = await seite.evaluate(async () => {
+      abschnittAnsicht(); await abschnittBeispiel(); await new Promise(res => setTimeout(res, 300));
+      const m = sel => { const q = document.querySelector(sel).getBoundingClientRect(); return { b: Math.round(q.width), h: Math.round(q.height) }; };
+      return { box: m('.abs-str-tab input.auswahl'), farbe: m('.abs-str-tab .abs-farbe') };
+    });
+    assert.ok(r.box.h <= 20 && r.box.b <= 20, `Kästchen ${JSON.stringify(r.box)}`);
+    assert.ok(r.farbe.h <= 24 && r.farbe.b <= 30, `Farbfeld ${JSON.stringify(r.farbe)}`);
+    assert.deepEqual(fehler, []);
+    await kontext.close();
+  }
+});

@@ -1,4 +1,4 @@
-# Übergabe Durchhang — Stand v6.0.0 (12. November 2026)
+# Übergabe Durchhang — Stand v6.0.1 (12. November 2026)
 
 Ziel dieser Datei: Eine neue Claude-Sitzung (auch unter einem anderen Account) kann
 ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLAUDE.md`
@@ -270,5 +270,6 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 
 | v5.2.0 | – | Reglage-Fenster: angepasste EL-Reglagewerte (Bearbeiten, CSV-Import) gehören zum Projekt (`reglageAngepasst`, Anwendung über `_reglageAnpassungenAnwenden`, Originale in `_RGL_ORIGINAL`); markiert «angepasst», Knopf «↺ SBB-Werte»; nur echte Abweichungen werden festgehalten; Bearbeiten-Eingabe behält den Fokus; Knöpfe einheitlich (`.rgl-knopf`), Texte übersetzt. Vorher: Änderungen nur bis zum Neuladen, gespeicherte Projekte rechneten bei T₁-Änderung wieder mit SBB-Werten. Zudem: EL «Starr» nach Laden/Systemwechsel — `applyElVariant` leitet jetzt bei Starr/Overrides über `_applyReglageOvr` her (vorher normale Tabelle). |
 | v5.3.0 | – | Messpunkt-Bezug wählbar (`mpBezug`: hoch [Vorgabe] / links / rechts / sehne) — eine Stelle `mpBezugHoehe()` für Diagramm (Referenzlinie + Masslinie), Karten, Ergebnisleiste und PDF (vorher PDF = Sehne, Bildschirm = links); im Projekt gespeichert, ältere Projekte → hoch. Auswahl `#mp-bezug` neben «Reset» der Messpunkte |
 | v6.0.0 | – | **Produktiv**: Wasserzeichen «BETA – nicht verifiziert» entfernt (Bildschirm, PDFs, Handbuch). hf_min / hf_max nur im **Entwicklermodus** (3× aufs App-Symbol, `localStorage dh_dev`, Schild «DEV», Animation beim Antippen): UI mit `.nur-dev`, `hfGrenzenM()` → `null`, Schalter Diagramm/Zeichnung wirken nur mit `entwicklerModus`; Handbuch-Kapitel 6.14 nur im Entwicklermodus. Gespeicherte hf-Eingaben bleiben erhalten. |
+| v6.0.1 | – | Stränge: Auswahlkästchen (18 px, Touch mit unsichtbar grösserer Tippfläche) und Farbfeld kompakt; Farbfeld von der Touch-Mindesthöhe ausgenommen |
 
 Issue #20: NIS (später).
