@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v5.0.0';
+const APP_VERSION = 'v5.0.1';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -11599,9 +11599,8 @@ document.addEventListener('keydown', e => {
   if (document.getElementById('rueckfrage')?.classList.contains('open')) return;
   const mehr = document.getElementById('mehr-menu');
   if (mehr && mehr.style.display !== 'none') { closeMehrMenu(); document.getElementById('mehr-btn')?.focus(); e.preventDefault(); return; }
-  const offen = [...document.querySelectorAll('.modal-overlay.open')];
-  if (offen.length) {
-    const fenster = offen[offen.length - 1];
+  const fenster = _oberstesFenster();
+  if (fenster) {
     const zu = fenster.querySelector('.modal-close');
     if (zu) zu.click(); else fenster.classList.remove('open');
     e.preventDefault();
@@ -11609,6 +11608,39 @@ document.addEventListener('keydown', e => {
   }
   if (document.querySelector('.canvas-card.canvas-fullscreen')) { toggleCanvasFullscreen(); e.preventDefault(); }
 });
+
+// ── Fensterstapel: zuletzt geöffnetes Fenster liegt oben ────────────────────
+// Alle Fenster (.modal-overlay) haben dieselbe Grundebene; ohne Stapel
+// entschiede die Reihenfolge im HTML, und z. B. die Rückfrage «Löschen?»
+// läge hinter dem Datei-Dialog. Beim Öffnen bekommt das Fenster deshalb
+// die nächsthöhere Ebene.
+const FENSTER_EBENE = 1200;
+let _fensterZaehler = 0;
+function _fensterOeffnetSich(el, vorher = null) {
+  // vorher: Klassen vor der Änderung — so wird auch «zu und gleich wieder auf»
+  // (beides im selben Ablauf) als neues Öffnen erkannt.
+  const warOffen = vorher !== null && /(^|\s)open(\s|$)/.test(vorher);
+  if (el.classList.contains('open')) {
+    if (!el.dataset.ebene || (vorher !== null && !warOffen)) { el.dataset.ebene = String(++_fensterZaehler); el.style.zIndex = String(FENSTER_EBENE + _fensterZaehler); }
+  } else if (el.dataset.ebene) {
+    delete el.dataset.ebene; el.style.zIndex = '';
+    if (!document.querySelector('.modal-overlay.open')) _fensterZaehler = 0;
+  }
+}
+function _oberstesFenster() {
+  const offen = [...document.querySelectorAll('.modal-overlay.open')];
+  if (!offen.length) return null;
+  return offen.reduce((a, b) => (+(b.dataset.ebene || 0) >= +(a.dataset.ebene || 0) ? b : a));
+}
+function _fensterStapelEinrichten() {
+  const beob = new MutationObserver(liste => liste.forEach(m => _fensterOeffnetSich(m.target, m.oldValue ?? '')));
+  document.querySelectorAll('.modal-overlay').forEach(el => {
+    beob.observe(el, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
+    _fensterOeffnetSich(el);
+  });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _fensterStapelEinrichten);
+else _fensterStapelEinrichten();
 
 // ── Darstellung: Auto (wie Gerät) / Hell / Dunkel ──────────────────────────
 // Das Thema wird schon im <head> gesetzt (kein Aufblitzen); hier nur Knopf,

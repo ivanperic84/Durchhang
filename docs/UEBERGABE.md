@@ -1,4 +1,4 @@
-# Übergabe Durchhang — Stand v5.0.0 (12. November 2026)
+# Übergabe Durchhang — Stand v5.0.1 (12. November 2026)
 
 Ziel dieser Datei: Eine neue Claude-Sitzung (auch unter einem anderen Account) kann
 ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLAUDE.md`
@@ -249,6 +249,7 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 
 | v4.5.3 | #26 | T₃ bei N-FL mit Kombination auf Karte, Tabelle und Zeichnung wie T₂ (kombiniertes System) |
 | v4.6.0 | – | Eingabeprüfung (Fehler sperrt, Warnung rechnet: L > 80 m, h > 15 m, T ausserhalb −30…+90 °C), Messpunkte am Handy 2 × 2, Systemtext beim Start |
 | v4.7.0 | #27 | Menü «Mehr ⋯» (Reglage, Handbuch, Darstellung, Zurücksetzen), Reglagewerte einklappbar, T₃-Karte unter den Höhen, dichtere Spalte am PC, H-Zeile erst mit SOK, Handy: Zeichnungslegende unten, Abschnitt-Erklärung einklappbar; gemeinsame Seillage `anzeigeKurve()` — PDF-Messpunkte und Fd am Tiefpunkt jetzt wie Bildschirm |
-| v5.0.0 | – | Aufbau: index.html aufgeteilt in app.css, i18n.js, app.js, handbuch.html (Handbuch lädt beim Öffnen); Datensicherheit: «Alles sichern» (Komplettsicherung + Einlesen ohne Doppelte), dauerhafter Speicher (storage.persist), Erinnerung nach 14 Tagen, Speicherzustand im Datei-Dialog |
+| v5.0.0 | #28 | Aufbau: index.html aufgeteilt in app.css, i18n.js, app.js, handbuch.html (Handbuch lädt beim Öffnen); Datensicherheit: «Alles sichern» (Komplettsicherung + Einlesen ohne Doppelte), dauerhafter Speicher (storage.persist), Erinnerung nach 14 Tagen, Speicherzustand im Datei-Dialog |
+| v5.0.1 | – | Fensterstapel: zuletzt geöffnetes Fenster liegt oben (Rückfrage «Löschen?» war hinter dem Datei-Dialog); Esc schliesst das oberste Fenster; Ebenen in app.css dokumentiert |
 
 Issue #20: NIS (später).

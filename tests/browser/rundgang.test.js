@@ -1433,3 +1433,39 @@ test('Aufbau: Gestaltung, Übersetzungen, Programm und Handbuch als eigene Datei
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Fensterstapel: Rückfrage liegt über jedem Fenster, Esc schliesst das oberste', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const tick = () => new Promise(res => setTimeout(res, 0));
+    const rf = document.getElementById('rueckfrage');
+    const rfOben = () => { const k = rf.querySelector('.modal-card').getBoundingClientRect();
+      return rf.contains(document.elementFromPoint(k.x + k.width / 2, k.y + 20)); };
+    const verdeckt = [];
+    for (const el of document.querySelectorAll('.modal-overlay')) {
+      if (el === rf) continue;
+      el.classList.add('open'); const antwort = frageBestaetigung('Test?'); await tick();
+      if (!rfOben()) verdeckt.push(el.id);
+      document.getElementById('rf-abbrechen').click(); await antwort.catch(() => {});
+      el.classList.remove('open'); await tick();
+    }
+    // Echter Ablauf: im Datei-Dialog eine Berechnung löschen
+    localStorage.clear(); openProjectsModal(); saveCurrentCalc(); await tick();
+    const id = getProjMeta().find(m => !m.isGroup).id;
+    const loeschen = deleteProjectById(id); await tick();
+    const loeschenOben = rf.classList.contains('open') && rfOben();
+    document.getElementById('rf-abbrechen').click(); await loeschen.catch(() => {});
+    // Datei zu und gleich wieder auf, Handbuch dazwischen geöffnet: Datei liegt oben
+    closeProjectsModal(); openHandbuch(); openProjectsModal(); await tick();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    const nachEsc = { datei: document.getElementById('projects-modal').classList.contains('open'),
+                      handbuch: document.getElementById('handbuch-modal').classList.contains('open') };
+    closeHandbuch();
+    return { verdeckt, loeschenOben, nachEsc };
+  });
+  assert.deepEqual(r.verdeckt, [], 'Rückfrage verdeckt hinter: ' + r.verdeckt.join(', '));
+  assert.ok(r.loeschenOben, 'Rückfrage «Löschen?» liegt über dem Datei-Dialog');
+  assert.deepEqual(r.nachEsc, { datei: false, handbuch: true }, 'Esc schliesst das zuletzt geöffnete Fenster');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});

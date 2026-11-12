@@ -1,6 +1,6 @@
 {
   "name": "durchhang",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "private": true,
   "description": "Durchhang Kettenwerk N-FL / R-FL / Einzelleiter — Berechnung im Browser",
   "scripts": {

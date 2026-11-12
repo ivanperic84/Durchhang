@@ -1166,13 +1166,16 @@ button.header-manual-link:disabled { opacity: .4; cursor: not-allowed; }
 }
 
 /* ── Wasserzeichen «BETA – nicht verifiziert»: sichtbar, aber nicht störend ── */
-#beta-wz { position: fixed; inset: 0; z-index: 905; pointer-events: none; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+#beta-wz { position: fixed; inset: 0; z-index: 1900; pointer-events: none; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 #beta-wz span { transform: rotate(-24deg); font-size: clamp(1.6rem, 5.4vw, 6rem); font-weight: 800; letter-spacing: .06em; white-space: nowrap;
   color: var(--text); opacity: .055; user-select: none; -webkit-user-select: none; }
 @media print { #beta-wz { display: none; } }
-/* ── Modal: Benutzerdefiniertes Kettenwerk ── */
+/* ── Fenster (Modal) ──
+   Ebenen: Vollbild-Zeichnung 1000 · Menüs 1100 · Fenster ab 1200 (das zuletzt
+   geöffnete liegt oben, siehe Fensterstapel in app.js) · Wasserzeichen 1900 ·
+   Meldungen 2000. */
 .modal-overlay {
-  display: none; position: fixed; inset: 0; z-index: 900;
+  display: none; position: fixed; inset: 0; z-index: 1200;
   background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
   align-items: center; justify-content: center; padding: 1rem;
 }
@@ -1200,7 +1203,7 @@ button.header-manual-link:disabled { opacity: .4; cursor: not-allowed; }
 #meldungen {
   /* Oben rechts, bewusst nicht unten: Die Knöpfe des Rückfrage-Dialogs sitzen
      am unteren Kartenrand — dort würden Meldungen sie verdecken. */
-  position: fixed; z-index: 950;
+  position: fixed; z-index: 2000;
   right: 1rem; top: 1rem;
   display: flex; flex-direction: column; gap: .5rem;
   max-width: min(26rem, calc(100vw - 2rem));
