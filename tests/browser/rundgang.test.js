@@ -1736,6 +1736,8 @@ test('Entwicklermodus: hf_min / hf_max ausgeblendet; 3× aufs App-Symbol schalte
   });
   assert.deepEqual(await sichtbar(), [], 'ohne Entwicklermodus keine hf-Teile');
   assert.deepEqual(aus, { modus: false, hfGrenzen: null, hfFenster: false, pdfHf: false, hbHf: false });
+  assert.deepEqual(await seite.evaluate(() => ({ waesche: document.querySelector('.header-icon .waesche').getClientRects().length > 0,
+    haenger: document.querySelector('.header-icon .kette-teil').getClientRects().length > 0 })), { waesche: false, haenger: true }, 'normal: Symbol ohne Wäsche');
   // 1× und 2× klicken: nur Animation, noch kein Wechsel
   const symbol = seite.locator('.header-icon');
   await symbol.click();
@@ -1745,6 +1747,10 @@ test('Entwicklermodus: hf_min / hf_max ausgeblendet; 3× aufs App-Symbol schalte
     meldung: document.getElementById('meldungen').innerText }));
   assert.ok(tipp, 'Klick löst eine kleine Animation aus');
   assert.deepEqual({ ...an, meldung: /Entwicklermodus eingeschaltet/.test(an.meldung) }, { modus: true, gespeichert: '1', html: true, meldung: true });
+  const symbolTeile = () => seite.evaluate(() => ({
+    waesche: document.querySelector('.header-icon .waesche').getClientRects().length > 0,
+    haenger: document.querySelector('.header-icon .kette-teil').getClientRects().length > 0 }));
+  assert.deepEqual(await symbolTeile(), { waesche: true, haenger: false }, 'Entwicklermodus: Wäscheleine statt Hänger');
   const imDev = await sichtbar();
   ['hf-btn', 'leg-hf-item', 'dev-schild', 'hf-pruefzeile'].forEach(id => assert.ok(imDev.includes(id), `${id} im Entwicklermodus sichtbar`));
   // bleibt nach dem Neuladen, Ausschalten wieder mit 3 Klicks
@@ -1769,4 +1775,25 @@ test('Stränge: Auswahlkästchen und Farbfeld kompakt, auch auf dem Touchscreen'
     assert.deepEqual(fehler, []);
     await kontext.close();
   }
+});
+
+test('Diagramm ohne Messpunkt: Masslinie am Tiefpunkt folgt dem gewählten Bezug', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const setze = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); };
+    setze('h2', '7.60'); berechnen();
+    // Beschriftungen auf der Zeichenfläche mitschreiben
+    const texte = []; const ctx = document.getElementById('main-canvas').getContext('2d'); const orig = ctx.fillText;
+    ctx.fillText = function (t, ...a) { texte.push(String(t)); return orig.call(this, t, ...a); };
+    const lesen = m => { texte.length = 0; setMpBezug(m); return texte.filter(t => /^(Δh|f) = /.test(t)); };
+    const aus = { hoch: lesen('hoch'), sehne: lesen('sehne'), links: lesen('links') };
+    ctx.fillText = orig; setMpBezug('hoch');
+    const c = calcState.c2_vem || calcState.c2;   // wie gezeichnet (N-FL: kombiniertes System)
+    return { aus, soll: (7.6 - (c.a + c.C)).toFixed(2), f: c.sag.toFixed(2) };
+  });
+  assert.ok(r.aus.hoch.includes(`Δh = ${r.soll} m`), `höchster Punkt: ${r.aus.hoch} (soll ${r.soll})`);
+  assert.ok(r.aus.sehne.includes(`f = ${r.f} m`), `Sehne: ${r.aus.sehne}`);
+  assert.ok(r.aus.links.every(t => t.startsWith('Δh')) && r.aus.links.length > 0, `links: ${r.aus.links}`);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
 });
