@@ -40,9 +40,12 @@ async function browserStarten() {
 // Neue Seite laden und warten, bis die erste Berechnung steht.
 // Liefert { seite, fehler } — fehler sammelt Skriptfehler und console.error.
 async function appOeffnen(browser, url, optionen = {}) {
+  // { dev: true }: Entwicklermodus (unfertige Funktionen wie hf_min / hf_max) vor dem Laden einschalten
+  const { dev = false, ...kontextOptionen } = optionen;
   const kontext = await browser.newContext({
-    viewport: { width: 1280, height: 900 }, serviceWorkers: 'block', acceptDownloads: true, ...optionen,
+    viewport: { width: 1280, height: 900 }, serviceWorkers: 'block', acceptDownloads: true, ...kontextOptionen,
   });
+  if (dev) await kontext.addInitScript(() => { try { localStorage.setItem('dh_dev', '1'); } catch (e) {} });
   const seite = await kontext.newPage();
   const fehler = [];
   seite.on('pageerror', e => fehler.push('Skriptfehler: ' + e.message));

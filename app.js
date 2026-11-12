@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v5.1.3';
+const APP_VERSION = 'v6.0.1';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -104,7 +104,7 @@ function _pdfDiagrammLegende() {
   }
   if (showT3 && c.c3) teile.push(e(linie(F.akzent, 'dashed', 1.5), `T<sub>3</sub>`));
   teile.push(e(linie(F.sehne, 'dashed', 1), t('leg.sehne')));
-  if (diagrammHf && !isEl && hfGrenzenM() && !hfGrenzenM().fehler) {
+  if (diagrammHf && entwicklerModus && !isEl && hfGrenzenM() && !hfGrenzenM().fehler) {
     teile.push(e(linie(F.fd, 'dotted', 2), t('pdf.leg.fd.soll')), e(linie(F.fd, 'solid', 1), t('pdf.leg.fd.ist')));
     teile.push(e(flaeche(F.hfBand, 'rgba(47,158,84,.45)'), 'hf<sub>min</sub> … hf<sub>max</sub>'));
   }
@@ -115,6 +115,36 @@ function _pdfDiagrammLegende() {
   return teile.join('');
 }
 let calcState = null; // Letztes Berechnungsergebnis (für PDF-Export und Messpunkte)
+
+// ── Entwicklermodus ─────────────────────────────────────────────────────────
+// Unfertige Funktionen (zurzeit hf_min / hf_max) sind nur im Entwicklermodus sichtbar
+// und wirksam. Umschalten: 3× schnell auf das App-Symbol; bleibt auf dem Gerät
+// gespeichert (localStorage «dh_dev»). Sichtbarkeit über Klasse .nur-dev (app.css),
+// Rechnung/Zeichnung über entwicklerModus (z. B. hfGrenzenM liefert sonst null).
+let entwicklerModus = document.documentElement.classList.contains('dev');
+function entwicklerModusSetzen(an, { melden = false } = {}) {
+  entwicklerModus = !!an;
+  try { if (entwicklerModus) localStorage.setItem('dh_dev', '1'); else localStorage.removeItem('dh_dev'); } catch (e) {}
+  document.documentElement.classList.toggle('dev', entwicklerModus);
+  if (!entwicklerModus && document.getElementById('hf-modal')?.classList.contains('open')) closeHf();
+  if (melden) meldung(t(entwicklerModus ? 'dev.an' : 'dev.aus'), 'info');
+  if (calcState) berechnen();
+}
+function _appSymbolEinrichten() {
+  const sym = document.querySelector('.header-icon');
+  if (!sym || sym.dataset.dev) return;
+  sym.dataset.dev = '1';
+  let klicks = 0, zeit = null;
+  const anim = k => { sym.classList.remove('tipp', 'umgeschaltet'); void sym.offsetWidth; sym.classList.add(k); };
+  sym.addEventListener('animationend', () => sym.classList.remove('tipp', 'umgeschaltet'));
+  sym.addEventListener('click', () => {
+    klicks++; clearTimeout(zeit); zeit = setTimeout(() => { klicks = 0; }, 650);
+    if (klicks >= 3) { klicks = 0; anim('umgeschaltet'); entwicklerModusSetzen(!entwicklerModus, { melden: true }); }
+    else anim('tipp');
+  });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _appSymbolEinrichten);
+else _appSymbolEinrichten();
 
 // Canvas-Koordinatensystem — wird bei jedem Zeichnen aktualisiert
 const view = {
@@ -3809,8 +3839,14 @@ function applyElVariant(idx) {
       activePresetRef = null;
     }
   }
-  _elReglageBoxAktualisieren();
   zeigeElement(infoBox, true);
+  // «Starr» (L_ref = 25 m) bzw. angepasste Bezugswerte: Tabelle wie bei setBerechnungsart
+  // herleiten. Früher blieb hier die normale Tabelle stehen — nach dem Laden eines
+  // Starr-Projekts oder einem Systemwechsel rechnete T₁ dann mit falschen Werten.
+  if (elBerechnungsart === 'starr' || elReglageHmaxOvr !== null || elReglageLrefOvr !== null) {
+    if (mat.E && mat.AK) { _applyReglageOvr(); return; }
+  }
+  _elReglageBoxAktualisieren();
   if (elReglageOpen) renderReglageEditPanel();
   berechnen();
 }
@@ -4074,7 +4110,7 @@ function getProjectState() {
   const fotoState = typeof window._fotoGetProjectState === 'function'
                     ? window._fotoGetProjectState() : null;
   return { schemaVersion: PROJEKT_SCHEMA_VERSION,
-           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, drawingHf: Ansicht.zeichnungHf, diagrammHf, lastfaelleAktiv, fotoState, elBerechnungsart, koordAktiv, abschnitt: { ...abschnitt, zBezug: 'sok' }, messpunkte: _mpLive(), lastfaelle: lastfallEinst, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, hVonHand: _hVonHand, elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: _elMatEdits, hf: hfEingabe };
+           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, drawingHf: Ansicht.zeichnungHf, diagrammHf, lastfaelleAktiv, fotoState, elBerechnungsart, koordAktiv, abschnitt: { ...abschnitt, zBezug: 'sok' }, messpunkte: _mpLive(), lastfaelle: lastfallEinst, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, hVonHand: _hVonHand, mpBezug, reglageAngepasst: JSON.parse(JSON.stringify(_reglageAngepasst)), elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: JSON.parse(JSON.stringify(_elMatEdits)), hf: hfEingabe };
 }
 
 // ── Projektzustand: Version, Pruefung, transaktionales Laden ──────────────
@@ -4131,6 +4167,9 @@ function _pruefeProjektState(s) {
   if (st.spans != null && !Array.isArray(st.spans)) {
     warnungen.push('spans'); st.spans = [];
   }
+  if (st.reglageAngepasst != null && (typeof st.reglageAngepasst !== 'object' || Array.isArray(st.reglageAngepasst))) {
+    warnungen.push('reglageAngepasst'); st.reglageAngepasst = {};
+  }
   if (st.elMatEdits != null && (typeof st.elMatEdits !== 'object' || Array.isArray(st.elMatEdits))) {
     warnungen.push('elMatEdits'); st.elMatEdits = {};
   }
@@ -4172,6 +4211,12 @@ function setProjectState(s) {
 // ── State wiederherstellen (innerer Teil) ──
 function _setProjectStateIntern(s) {
   const flds = s.fields || {};
+  // Angepasste Reglagewerte des Projekts zuerst anwenden (ältere Projekte: SBB-Werte)
+  _reglageAngepasst = JSON.parse(JSON.stringify(s.reglageAngepasst || {}));
+  // Messpunkt-Bezug (ab v5.3; ältere Projekte: Vorgabe «höchster Punkt»)
+  mpBezug = MP_BEZUEGE.includes(s.mpBezug) ? s.mpBezug : 'hoch';
+  { const sel = document.getElementById('mp-bezug'); if (sel) sel.value = mpBezug; }
+  _reglageAnpassungenAnwenden();
   // Globals (mode3pt + yCInputMode werden nach updateSysModeUI gesetzt)
   spanMode       = s.spanMode       ?? 'single';
   spanCount      = s.spanCount      ?? 3;
@@ -4778,7 +4823,6 @@ async function batchPdfExport() {
   .pdf-section { page-break-after: always; }
   .pdf-section:last-child { page-break-after: avoid; }
 </style></head><body>
-${_pdfWasserzeichen()}
 ${sections.map(s => `<div class="pdf-section">${s}</div>`).join('\n')}
 </body></html>`;
   _druckfenster(combinedHtml);
@@ -5322,6 +5366,8 @@ function _elReglageBoxAktualisieren() {
   const { mat, variant, L_ref } = _reglageBase();
   const H10 = _tabelleBeiT(activePresetRef?.H_Ts_ub_table, 10);
   titel.innerHTML = `${t('ui.reglage.bei')} +10 °C: H = ${H10 ? Math.round(H10).toLocaleString('de-CH') : '—'} N  (Lm = ${L_ref} m)`;
+  const schl = document.getElementById('el-material-select')?.value + (mat?.H_reglage_variants?.length > 1 ? '_' + elBasiskraftIdx : '');
+  if (mat && _rglIstAngepasst(schl)) { notiz.textContent = t('ui.reglage.angepasst.box'); return; }
   notiz.textContent = !mat ? '' : (variant?.H_reglage != null)
     ? (variant.reglage_note_key ? t(variant.reglage_note_key) : (variant.reglage_note || ''))
     : t('mat.rn.6kn.vorgabe');
@@ -5451,6 +5497,10 @@ function _effLref(mat, variant) {
 function renderReglageElTable() {
   const wrap = document.getElementById('rgl-el-wrap');
   if (!wrap) return;
+  const irgendwas = Object.keys(_reglageAngepasst).length > 0;
+  zeigeElement(document.getElementById('rgl-el-sbb-btn'), irgendwas);
+  const note = document.getElementById('rgl-el-note');
+  if (note) note.innerHTML = t('ui.rgl.el.note') + (irgendwas ? `<br><span class="rgl-angepasst-hw">${t('ui.rgl.angepasst.hw')}</span>` : '');
   const em = _rglElEditMode;
 
   // Alle Materialien mit ihren Varianten als Zeilen sammeln
@@ -5489,22 +5539,23 @@ function renderReglageElTable() {
       ? `${escHtml(r.name)} <span style="color:var(--tertiary);font-size:.7rem">· ${escHtml(r.label)}</span>`
       : escHtml(r.name);
     const preset = r.hasPreset ? '' : ` <span style="color:var(--tertiary);font-size:.65rem">${t('ui.voreinst')}</span>`;
+    const angepasst = _rglIstAngepasst(r.key) ? ` <span class="rgl-angepasst">${t('ui.rgl.angepasst')}</span>` : '';
 
     if (em) {
       tBody += `<tr>
-        <td class="c-left">${nameCell}</td>
+        <td class="c-left">${nameCell}${angepasst}</td>
         <td class="c-right"><input type="number" step="100" min="100" value="${r.Hmax ?? 6000}"
           style="width:5rem;border:1px solid var(--border2);border-radius:5px;padding:.1rem .25rem;font-size:.71rem;text-align:right;font-family:inherit"
-          oninput="_elMatEdits['${r.key}'] = _elMatEdits['${r.key}'] || {}; _elMatEdits['${r.key}'].H_max=parseFloat(this.value)||null; renderReglageElTable()"> N</td>
+          oninput="_rglEditEingabe('${r.key}', 'H_max', this.value)"> N</td>
         <td class="c-right"><input type="number" step="1" min="1" max="300" value="${r.Lref}"
           style="width:3.5rem;border:1px solid var(--border2);border-radius:5px;padding:.1rem .25rem;font-size:.71rem;text-align:right;font-family:inherit"
-          oninput="_elMatEdits['${r.key}'] = _elMatEdits['${r.key}'] || {}; _elMatEdits['${r.key}'].L_ref=parseFloat(this.value)||null; renderReglageElTable()"> m</td>
-        <td class="c-right" style="color:var(--muted)">${h10Val}</td>
+          oninput="_rglEditEingabe('${r.key}', 'L_ref', this.value)"> m</td>
+        <td class="c-right" style="color:var(--muted)" data-h10="${r.key}">${h10Val}</td>
       </tr>`;
     } else {
       const tdNote = `<td class="c-left" style="color:var(--muted);font-size:.71rem">${r.note}</td>`;
       tBody += `<tr>
-        <td class="c-left">${nameCell}</td>
+        <td class="c-left">${nameCell}${angepasst}</td>
         <td class="c-right">${hVal}${preset}</td>
         <td class="c-right" style="color:var(--muted)">${h10Val}</td>
         <td class="c-ctr" style="color:var(--muted)">${lVal} m</td>
@@ -5520,13 +5571,13 @@ function renderReglageElTable() {
         <th class="c-left">${t('ui.material')}</th>
         <th class="c-right">H (−20 °C)</th>
         <th class="c-right">L ref</th>
-        <th class="c-right">H (+10 °C) <span style="font-weight:400;font-size:.65rem">berechnet</span></th>
+        <th class="c-right">H (+10 °C) <span style="font-weight:400;font-size:.65rem">${t('ui.berechnet')}</span></th>
       </tr></thead>
       <tbody>${tBody}</tbody>
     </table>
     <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:.6rem">
-      <button onclick="_resetElMatEdits()" style="font-size:.7rem;padding:.2rem .55rem;border:1px solid var(--border2);border-radius:6px;background:none;cursor:pointer;color:var(--muted);font-family:inherit">Zurücksetzen</button>
-      <button onclick="_applyElMatEdits()" style="font-size:.7rem;padding:.2rem .55rem;border:1px solid var(--primary);border-radius:6px;background:var(--primary);cursor:pointer;color:var(--on-acc);font-family:inherit">Übernehmen</button>
+      <button type="button" class="rgl-knopf" onclick="_resetElMatEdits()">${t('ui.reset')}</button>
+      <button type="button" class="rgl-knopf rgl-knopf-pri" onclick="_applyElMatEdits()">${t('lf.uebernehmen')}</button>
     </div>`;
   } else {
     wrap.innerHTML = `<table class="rgl-tbl" style="min-width:460px">
@@ -5562,13 +5613,93 @@ function toggleReglageElEdit() {
   renderReglageElTable();
 }
 
+// ── Angepasste Reglagewerte (Einzelleiter) — gehören zum Projekt ────────────
+// Bearbeiten/Import im Reglage-Fenster ändern nicht mehr dauerhaft MATERIALS, sondern
+// werden hier je Schlüssel (Material bzw. Material_Variante) festgehalten, mit dem
+// Projekt gespeichert und beim Laden wieder angewendet. Ein Projekt ohne Anpassungen
+// rechnet mit den SBB-Werten. { schluessel: { vals: [13 Werte −20…+40 °C], L_ref } }
+let _reglageAngepasst = {};
+const _RGL_TEMPS = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40];
+const _RGL_ORIGINAL = {};   // Originalwerte je Material, beim ersten Anpassen gesichert
+function _rglFelder(o) { return { t: o.H_reglage_table, h: o.H_reglage, l: o.L_ref }; }
+function _rglSichern(matKey) {
+  const m = MATERIALS[matKey];
+  if (m && !_RGL_ORIGINAL[matKey]) _RGL_ORIGINAL[matKey] = { m: _rglFelder(m), v: (m.H_reglage_variants || []).map(_rglFelder) };
+}
+function _rglSetzen(o, f) {
+  for (const [k, w] of [['H_reglage_table', f.t], ['H_reglage', f.h], ['L_ref', f.l]]) { if (w === undefined) delete o[k]; else o[k] = w; }
+}
+// Schlüssel → { matKey, vi } (vi = −1: ohne Variante)
+function _rglSchluessel(k) {
+  if (MATERIALS[k]) return { matKey: k, vi: -1 };
+  const i = k.lastIndexOf('_'), vi = parseInt(k.slice(i + 1), 10);
+  return (i > 0 && !isNaN(vi) && MATERIALS[k.slice(0, i)]) ? { matKey: k.slice(0, i), vi } : null;
+}
+function _reglageAnpassungenAnwenden() {
+  // zuerst alle Originale zurück, dann die Anpassungen dieses Projekts
+  for (const [matKey, o] of Object.entries(_RGL_ORIGINAL)) {
+    const m = MATERIALS[matKey]; if (!m) continue;
+    _rglSetzen(m, o.m); (m.H_reglage_variants || []).forEach((v, i) => o.v[i] && _rglSetzen(v, o.v[i]));
+  }
+  for (const [k, a] of Object.entries(_reglageAngepasst)) {
+    const z = _rglSchluessel(k); if (!z || !Array.isArray(a?.vals) || a.vals.length !== _RGL_TEMPS.length) continue;
+    _rglSichern(z.matKey);
+    const m = MATERIALS[z.matKey];
+    const setze = o => { o.H_reglage_table = { temps: [..._RGL_TEMPS], vals: a.vals.map(Number) }; o.H_reglage = Number(a.vals[_RGL_TEMPS.indexOf(10)]); if (a.L_ref > 0) o.L_ref = a.L_ref; };
+    if (z.vi >= 0 && m.H_reglage_variants?.[z.vi]) { setze(m.H_reglage_variants[z.vi]); if (z.vi === 0) setze(m); }
+    else setze(m);
+  }
+}
+function _rglIstAngepasst(k) { return !!_reglageAngepasst[k]; }
+// SBB-/Originalwerte zu einem Schlüssel (unabhängig von angewendeten Anpassungen)
+function _rglOriginal(k) {
+  const z = _rglSchluessel(k); if (!z) return null;
+  const m = MATERIALS[z.matKey], o = _RGL_ORIGINAL[z.matKey];
+  const fm = o ? o.m : _rglFelder(m);
+  const f = o ? (z.vi >= 0 && o.v[z.vi] ? o.v[z.vi] : o.m)
+              : _rglFelder(z.vi >= 0 && m.H_reglage_variants?.[z.vi] ? m.H_reglage_variants[z.vi] : m);
+  const L_ref = f.l ?? fm.l ?? 45;   // Varianten erben die Bezugsspannweite des Leiters
+  // Leiter ohne SBB-Tabelle: wirksam ist die Herleitung aus 6 kN bei −20 °C (wie applyElVariant)
+  const vals = f.t?.vals ?? fm.t?.vals ?? _RGL_TEMPS.map(T => _rundeReglage(_reglageH(m, 6000, L_ref, T)));
+  return { vals, L_ref };
+}
+// Anpassung nur festhalten, wenn sie von den Originalwerten abweicht
+function _rglFesthalten(k, vals, L_ref) {
+  const o = _rglOriginal(k);
+  const gleich = o?.vals && o.vals.length === vals.length && o.vals.every((v, i) => Math.round(v) === Math.round(vals[i]))
+                 && (L_ref == null || Number(L_ref) === Number(o.L_ref));
+  if (gleich) delete _reglageAngepasst[k]; else _reglageAngepasst[k] = { vals, L_ref };
+}
+// Einzelleiter neu aufbauen, nachdem sich Tabellen geändert haben
+function _rglElNeu() {
+  if (sysMode === 'el') { elReglageHmaxOvr = null; elReglageLrefOvr = null; applyElVariant(elBasiskraftIdx); }
+}
+function reglageSbbWiederherstellen() {
+  _reglageAngepasst = {}; _elMatEdits = {};
+  _reglageAnpassungenAnwenden(); _rglElNeu(); renderReglageElTable();
+  meldung(t('msg.rgl.sbb'), 'erfolg');
+}
+
+// Eingabe im Bearbeiten-Modus: nur die berechnete Spalte nachführen — die Tabelle
+// nicht neu aufbauen, sonst verliert das Feld nach jeder Ziffer den Fokus.
+function _rglEditEingabe(key, feld, wert) {
+  const ed = (_elMatEdits[key] = _elMatEdits[key] || {});
+  ed[feld] = parseFloat(wert) || null;
+  const z = _rglSchluessel(key); if (!z) return;
+  const mat = MATERIALS[z.matKey]; mat._key = z.matKey;
+  const variant = z.vi >= 0 ? mat.H_reglage_variants?.[z.vi] : mat;
+  const H10 = _reglageHAt10(mat, variant, _effHmax(mat, variant), _effLref(mat, variant));
+  const zelle = document.querySelector(`#rgl-el-wrap [data-h10="${key}"]`);
+  if (zelle) zelle.textContent = H10 != null ? Math.round(H10).toLocaleString('de-CH') + ' N' : '—';
+}
+
 function _resetElMatEdits() {
   _elMatEdits = {};
   renderReglageElTable();
 }
 
 function _applyElMatEdits() {
-  // Übernommene Werte in MATERIALS schreiben und activePresetRef aktualisieren
+  // Übernommene Werte als Anpassung des Projekts festhalten (nicht dauerhaft in MATERIALS)
   for (const [key, mat] of Object.entries(MATERIALS)) {
     mat._key = key;
     const applyToVariant = (editKey, variant) => {
@@ -5577,18 +5708,8 @@ function _applyElMatEdits() {
       if (ed.H_max != null || ed.L_ref != null) {
         const H_max = ed.H_max ?? _effHmax(mat, variant);
         const L_ref = ed.L_ref ?? _effLref(mat, variant);
-        const temps = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40];
-        const vals  = temps.map(T => _rundeReglage(_reglageH(mat, H_max, L_ref, T)));
-        const newTbl = { temps, vals };
-        if (variant === mat) {
-          mat.H_reglage_table = newTbl;
-          mat.H_reglage = vals[temps.indexOf(10)];
-          if (ed.L_ref != null) mat.L_ref = L_ref;
-        } else {
-          variant.H_reglage_table = newTbl;
-          variant.H_reglage = vals[temps.indexOf(10)];
-          if (ed.L_ref != null) variant.L_ref = L_ref;
-        }
+        const vals  = _RGL_TEMPS.map(T => _rundeReglage(_reglageH(mat, H_max, L_ref, T)));
+        _rglFesthalten(editKey, vals, L_ref);
       }
     };
     if (mat.H_reglage_variants && mat.H_reglage_variants.length > 1) {
@@ -5598,8 +5719,8 @@ function _applyElMatEdits() {
     }
   }
   _elMatEdits = {};
-  // Sidebar-Preset aktualisieren falls Einzelleiter aktiv
-  if (sysMode === 'el') { const s=document.getElementById('el-material-select'); if(s) { elReglageHmaxOvr=null; elReglageLrefOvr=null; applyElVariant(elBasiskraftIdx); } }
+  _reglageAnpassungenAnwenden();
+  _rglElNeu();   // Sidebar-Preset aktualisieren falls Einzelleiter aktiv
   _rglElEditMode = false;
   const btn = document.getElementById('rgl-el-edit-btn');
   if (btn) btn.textContent = t('ui.bearbeiten');
@@ -5696,21 +5817,14 @@ function importMaterialsCSV(event) {
         const mat = MATERIALS[matKey];
         if (!mat) continue;
 
-        const applyFn = (target) => {
-          target.H_reglage_table = { temps, vals: Hvals.map(Math.round) };
-          target.H_reglage = Math.round(Hvals[temps.indexOf(10)]);
-          if (L_ref != null && !isNaN(L_ref)) target.L_ref = L_ref;
-        };
-        if (variantIdx >= 0 && mat.H_reglage_variants?.[variantIdx]) {
-          applyFn(mat.H_reglage_variants[variantIdx]);
-          if (variantIdx === 0) applyFn(mat); // Haupteintrag synchen
-        } else {
-          applyFn(mat);
-        }
+        // Als Anpassung des Projekts festhalten (Variante 0 gleicht den Haupteintrag mit ab)
+        const schluessel = (variantIdx >= 0 && mat.H_reglage_variants?.[variantIdx]) ? matKey + '_' + variantIdx : matKey;
+        _rglFesthalten(schluessel, Hvals.map(Math.round), (L_ref != null && !isNaN(L_ref)) ? L_ref : null);
         updated++;
       }
       if (updated > 0) {
-        if (sysMode === 'el') { elReglageHmaxOvr=null; elReglageLrefOvr=null; applyElVariant(elBasiskraftIdx); }
+        _reglageAnpassungenAnwenden();
+        _rglElNeu();
         renderReglageElTable();
         meldung(t('msg.mat.aktualisiert').replace('{n}', updated), 'erfolg');
       } else {
@@ -6195,6 +6309,25 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
 // Wählt je Zustand die Kurve, die das Diagramm zeichnet: N-FL mit Kombination =
 // kombiniertes System (Ts + Fd), sonst die Zustandskurve. (Die reinen Ts-Kurven c2/c3
 // dienen der Rechnung, nicht der Anzeige — Abweichungen hatten zu Anzeige-Fehlern geführt.)
+// ── Bezug der Messpunkt-Angabe: Durchhang unter der Sehne oder Δh zum linken /
+// rechten / höchsten Aufhängepunkt. EINE Stelle für Diagramm, Karten, Leiste und PDF.
+// Höhen in derselben Koordinate wie die Kurve (über SOK bzw. m ü. M. mit SOK links/rechts).
+let mpBezug = 'hoch';
+const MP_BEZUEGE = ['sehne', 'links', 'rechts', 'hoch'];
+function mpBezugHoehe(x, A1, A2, L) {
+  if (mpBezug === 'links')  return A1;
+  if (mpBezug === 'rechts') return A2;
+  if (mpBezug === 'sehne')  return A1 + (A2 - A1) * x / L;
+  return Math.max(A1, A2);
+}
+function mpBezugKurz() { return mpBezug === 'sehne' ? 'f' : 'Δh'; }
+function mpBezugText() { return t('mp.bezug.' + mpBezug); }
+function setMpBezug(wert) {
+  mpBezug = MP_BEZUEGE.includes(wert) ? wert : 'hoch';
+  const sel = document.getElementById('mp-bezug'); if (sel && sel.value !== mpBezug) sel.value = mpBezug;
+  berechnen();
+}
+
 function anzeigeKurve(zustand = 'T2', cs = calcState) {
   if (!cs) return null;
   if (zustand === 'T1') return cs.c1;
@@ -6221,6 +6354,7 @@ function fdSpanne(z, e, n = 120) {
 }
 // hf-Grenzen in m über SOK aus der hf-Ansicht (null = Einzelleiter, { fehler } = Eingaben unvollständig)
 function hfGrenzenM() {
+  if (!entwicklerModus) return null;   // hf noch nicht freigegeben (Entwicklermodus)
   if (sysMode === 'el' || typeof hfRechnen !== 'function') return null;
   _hfStart();
   const r = hfRechnen();
@@ -6329,7 +6463,7 @@ function hfPruefzeile() {
   if (!el) return;
   let aktiv = false;
   // Nur solange im Diagramm «Fahrdraht Soll/Ist + hf» eingeschaltet ist (dann zuoberst im Ergebnis)
-  aktiv = sysMode !== 'el' && !!calcState && diagrammHf;
+  aktiv = sysMode !== 'el' && !!calcState && diagrammHf && entwicklerModus;
   const g = aktiv ? hfGrenzenM() : null;
   if (!g || g.fehler) { zeigeElement(el, false); return; }
   const { c1, c2, c2_vem, c_fd_ref, h1, h2, sh, L } = calcState;
@@ -6402,11 +6536,12 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   }
   ys.push(h1d, h2d);
   // Schalter «Fahrdraht + hf»: Fahrdraht bei T₂ und das hf-Band gehören in den Ausschnitt
-  const hfD = diagrammHf && !isEl ? hfGrenzenM() : null;
+  const dHf = diagrammHf && entwicklerModus;   // Schalter wirkt nur im Entwicklermodus
+  const hfD = dHf && !isEl ? hfGrenzenM() : null;
   const hfDok = !!hfD && !hfD.fehler;
   const zFd = { c1, c2, c2_vem: c2_vem_draw, c_fd_ref: cFdRef ?? calcState?.c_fd_ref };
   const fdD = x => aY(x, fdUeberSok(x, zFd, { h1, h2, sh, L }));
-  if (diagrammHf && !isEl) {
+  if (dHf && !isEl) {
     for (let i = 0; i <= 60; i++) ys.push(fdD(L * i / 60));
     ys.push(aY(0, h1 - sh), aY(L, h2 - sh));
     if (hfDok) ys.push(aY(0, hfD.min), aY(L, hfD.min), aY(0, hfD.max), aY(L, hfD.max));
@@ -6478,7 +6613,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   ctx.fillText(t('canvas.x.label'), padL + plotW / 2, CH - 4);
 
   // ── hf-Band und Fahrdraht bei T₂ (Schalter in der Legende) ──
-  if (diagrammHf && !isEl) {
+  if (dHf && !isEl) {
     ctx.save();
     ctx.beginPath(); ctx.rect(padL, padT, plotW, plotH); ctx.clip();
     if (hfDok) {
@@ -6690,13 +6825,16 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     if (rflHasZL && Math.abs(c2.sag - c1.sag) > 0.005) {
       sagLine(c2, DF.akzent);
     }
-    // Messpunkt aktiv: horizontale Referenzlinie auf Höhe linker Ankerpunkt (h1)
-    const refY = cy(h1d);
-    ctx.save();
-    ctx.setLineDash([8, 5]); ctx.strokeStyle = DF.sehne; ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.45;
-    ctx.beginPath(); ctx.moveTo(padL, refY); ctx.lineTo(padL + plotW, refY); ctx.stroke();
-    ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.restore();
+    // Messpunkt aktiv: horizontale Referenzlinie auf Höhe des gewählten Bezugspunkts
+    // (bei «Durchhang» dient die bereits gezeichnete Sehne als Bezug → keine Linie)
+    const refY = cy(mpBezugHoehe(0, h1d, h2d, L));
+    if (mpBezug !== 'sehne') {
+      ctx.save();
+      ctx.setLineDash([8, 5]); ctx.strokeStyle = DF.sehne; ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.45;
+      ctx.beginPath(); ctx.moveTo(padL, refY); ctx.lineTo(padL + plotW, refY); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.restore();
+    }
   }
 
   // ── Anchor points ──
@@ -6833,7 +6971,8 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
 
     const cProbe = (sysMode === 'nfl' && c2_vem_draw) ? c2_vem_draw : c2;
     const y2     = catYD(xv, cProbe);
-    const distH1 = h1d - y2;
+    const refD   = mpBezugHoehe(xv, h1d, h2d, L);   // Bezugshöhe an der Stelle x
+    const distH1 = refD - y2;
 
     // Dot on T<sub>2</sub> curve
     ctx.beginPath(); ctx.arc(px, cy(y2), 5, 0, Math.PI * 2);
@@ -6884,7 +7023,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.fillText(label, bx + 8, by + boxH / 2 + 5);
 
     // Δh-Annotation: Seite gegenüber Callout, vertikal versetzt bei Cluster
-    const refY  = cy(h1d);
+    const refY  = cy(refD);
     const wireY = cy(y2);
     if (Math.abs(refY - wireY) > 4) {
       const labelSide = onRight ? 'left' : 'right';
@@ -6900,7 +7039,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
       ctx.lineTo(px - 3.5, refY - 6); ctx.lineTo(px + 3.5, refY - 6); ctx.closePath(); ctx.fill();
       ctx.fillStyle = dotColor; ctx.font = `bold 10px ${DIAGRAMM_SCHRIFT}`;
       ctx.textAlign = labelSide === 'left' ? 'right' : 'left';
-      const dhTxt = `Δh = ${distH1.toFixed(2)} m`, dhW = ctx.measureText(dhTxt).width;
+      const dhTxt = `${mpBezugKurz()} = ${distH1.toFixed(2)} m`, dhW = ctx.measureText(dhTxt).width;
       const dhX = px + (labelSide === 'left' ? -6 - dhW : 6);
       // Überdeckt der Text eine Hindernis-Beschriftung, einen Δh-Text oder ein Messpunkt-Schild: Seite
       // wechseln, sonst nach unten versetzen (innerhalb der Masslinie, max. 6 Schritte)
@@ -7145,9 +7284,11 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = 'var(-
   // Δh = Abstand Horizontale durch den linken Aufhängepunkt → Kurve, identisch mit der
   // Diagramm-Annotation: bei unterschiedlicher SOK links/rechts in m ü. M. gemessen
   // (die Höhen «über SOK» enthalten den SOK-Anstieg bis x nicht)
-  const sokAnstieg = hasSok ? sokAtX - _sl : 0;
-  const deltaH  = h1 - y2 - sokAnstieg;
-  const dhLabel = isRfl ? 'Δh' : 'Δh ' + t('dyn.bei.t2');
+  // Bezug wählbar (mpBezug): Werte absolut gerechnet, damit SOK links ≠ rechts stimmt
+  const { h2 } = calcState;
+  const refAbs  = mpBezugHoehe(xv, h1 + (hasSok ? _sl : 0), h2 + (hasSok ? _sr : 0), L);
+  const deltaH  = refAbs - (y2 + sokAtX);
+  const dhLabel = isRfl ? mpBezugText() : mpBezugText() + ' ' + t('dyn.bei.t2');
   const dhValue = deltaH;
   const valSize  = compact ? '1.35rem' : '2rem';
   const sagSize  = compact ? '1.1rem'  : '1.35rem';
@@ -7170,7 +7311,7 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = 'var(-
   if (c3Curve) {
     const y3      = catY(xv, c3Curve);
     const y3_disp = hasSok ? f3(y3 + sokAtX) : f3(y3);
-    const sag3    = h1 - y3 - sokAnstieg;
+    const sag3    = refAbs - (y3 + sokAtX);
     if (badge === 'M1' && _leiste) _leiste.f3 = sag3;
     const t3hKey  = isEl ? 'res.seil.hoehe' : 'res.ts.hoehe';
     const y3SubLbl = hasSok
@@ -7180,7 +7321,7 @@ function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = 'var(-
       <div style="margin-top:.5rem;padding-top:.4rem;border-top:1px dashed var(--border2)">
         <div style="font-size:.72rem;font-weight:600;color:${t3Clr};letter-spacing:.02em">${badge}' &nbsp;T<sub style="font-size:.8em">3</sub></div>
         <div style="font-size:${compact?'1.05rem':'1.35rem'};font-weight:700;color:${t3Clr}">${f3(sag3)}<span style="font-size:.72rem;margin-left:.2rem">m</span></div>
-        <div style="font-size:.72rem;color:var(--muted);margin-top:.1rem">Δh T<sub style="font-size:.8em">3</sub></div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:.1rem">${mpBezugKurz()} T<sub style="font-size:.8em">3</sub></div>
         <div style="font-size:.7rem;color:var(--muted);margin-top:${compact?'.5rem':'1rem'}">${y3SubLbl}</div>
         <div style="font-size:${compact?'.9rem':'1.1rem'};font-weight:600;color:${t3Clr}">${y3_disp}<span style="font-size:.72rem;margin-left:.2rem">${mainUnit}</span></div>
       </div>`;
@@ -7215,7 +7356,7 @@ function updateErgebnisleiste() {
   const kopf = L.art === 'M1'
     ? `M1 · x ${L.x.toFixed(2)} m`
     : `${sysMode === 'rfl' ? 'T' : 'T<sub>2</sub>'} ${fmtT(T2)}`;
-  const fLbl = L.art === 'M1' ? 'Δh' : 'f';
+  const fLbl = L.art === 'M1' ? mpBezugKurz() : 'f';
   const teile = [
     `<span class="el-kopf">${kopf}</span>`,
     `<span>${fLbl} <b style="color:${L.farbe}">${f3(L.f)}</b> m</span>`,
@@ -7842,7 +7983,9 @@ function buildPdfSectionHtml(projName, canvasImg) {
   function probeRows(xv, badge) {
     if (xv === null || xv === undefined) return '';
     const y_ts   = catY_fn(xv, cAnzeigePdf);
-    const sag_x  = yChordFn(xv) - y_ts;
+    // gleicher Bezug wie am Bildschirm (mpBezug), absolut gerechnet
+    const _sk    = x => hasSok ? sokAtX(x) : 0;
+    const sag_x  = mpBezugHoehe(xv, h1 + _sk(0), h2 + _sk(L), L) - (y_ts + _sk(xv));
     const y_ts_d = hasSok ? (y_ts + sokAtX(xv)).toFixed(2) + ` m ${t('pdf.mum.short')}` : y_ts.toFixed(2) + ` m ${t('pdf.sok.short')}`;
     let fdCell = '';
     if (!isEl) {
@@ -8134,7 +8277,7 @@ ${hasAnyProbe ? `
       <th>${t('pdf.mp.punkt')}</th>
       <th>${isEl ? t('res.seil.hoehe') : t('res.ts.hoehe')} ${hasSok ? `[m ${t('pdf.mum.short')}]` : `[m ${t('pdf.sok.short')}]`}</th>
       ${!isEl ? `<th>${t('pdf.fd.hoehe')} ${hasSok ? `[m ${t('pdf.mum.short')}]` : `[m ${t('pdf.sok.short')}]`}</th>` : ''}
-      <th>${t('pdf.mp.durchhang')}</th>
+      <th>${mpBezugText()} [m]</th>
     </tr>
     ${probeRows(probeX1, 'M1')}
     ${probeRows(probeX2, 'M2')}
@@ -8266,7 +8409,7 @@ function _zeichnungBauen(stripInSvg) {
   // Y display range (add headroom above anchors)
   // 'catenary': nur Kettenwerk/Leiter, SOK aus der Ausdehnung ausschliessen
   // hf_min / hf_max (Werte aus der hf-Ansicht) als Band über SOK — nur Kettenwerk
-  const hfZ = (drawingHf && showFd) ? _hfFuerZeichnung() : null;
+  const hfZ = (drawingHf && entwicklerModus && showFd) ? _hfFuerZeichnung() : null;
   const hfOk = !!(hfZ && !hfZ.fehler);
   if (hfOk) yCrvMin = Math.min(yCrvMin, absY(0, hfZ.min), absY(L, hfZ.min));
   const yMin   = drawingExtent === 'catenary'
@@ -9187,7 +9330,7 @@ html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #fff; }
 svg { display: block; width: 267mm; height: 180mm; }
-</style></head><body>${_pdfWasserzeichen()}${svg}</body></html>`;
+</style></head><body>${svg}</body></html>`;
   _druckfenster(html);
 }
 
@@ -10820,10 +10963,6 @@ function pdfExport() {
   _pdfDrucken(t('pdf.title'), bodyContent);
 }
 
-// Wasserzeichen für Druckfenster (PDF-Protokolle, Zeichnung, Serienbericht)
-function _pdfWasserzeichen() {
-  return `<div aria-hidden="true" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-28deg);font:800 44pt Inter,Arial,sans-serif;letter-spacing:.06em;color:rgba(17,18,24,.06);white-space:nowrap;pointer-events:none;z-index:9999">${escHtml(t('ui.beta'))}</div>`;
-}
 
 // Stylesheet der Druckfenster im hellen App-Design (Schrift Inter, Akzentblau, Karten).
 // Die Schrift wird mit absoluter Adresse geladen — das Druckfenster hat keine eigene Adresse.
@@ -10907,7 +11046,7 @@ function _pdfDrucken(titel, bodyContent) {
   _druckfenster(`<!DOCTYPE html><html lang="${currentLang}"><head><meta charset="UTF-8">
 <title>${titel}</title>
 <style>${_pdfStil()}</style></head><body>
-${_pdfWasserzeichen()}${bodyContent}
+${bodyContent}
 </body></html>`);
 }
 
@@ -10927,6 +11066,7 @@ const HF_VORGABE = {
 let hfEingabe = null;          // null: beim ersten Öffnen aus der Durchhang-Berechnung übernehmen
 
 function openHf() {
+  if (!entwicklerModus) return;
   _hfStart();
   document.getElementById('hf-modal').classList.add('open');
   renderHf();

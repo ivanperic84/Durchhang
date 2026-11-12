@@ -1,4 +1,4 @@
-# Übergabe Durchhang — Stand v5.1.3 (12. November 2026)
+# Übergabe Durchhang — Stand v6.0.1 (12. November 2026)
 
 Ziel dieser Datei: Eine neue Claude-Sitzung (auch unter einem anderen Account) kann
 ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLAUDE.md`
@@ -68,7 +68,7 @@ Einzelleiter (EL, z. B. Speise-/Rückleiter).
 - Ansichten (Reiter): **Diagramm**, **Zeichnung** (massstäblich, Überhöhung Start 5×),
   **Abschnitt**, **Foto** (zuletzt, ausgegraut — nur Abschätzung, Info-Modal 1× pro Start).
 - Mitlaufende Ergebnisleiste (Tablet hochkant), Feld-Schnellauswahl oben (mit Abschnitt).
-- **hf_min / hf_max** (Fahrdrahthöhe): eigene Ansicht (Knopf in der Kopfleiste), Werte
+- **hf_min / hf_max** (Fahrdrahthöhe, **seit v6.0 nur im Entwicklermodus** — noch nicht final): eigene Ansicht (Knopf in der Kopfleiste), Werte
   live aus der Durchhang-Berechnung (nur c wählbar), Höhenleiter + Kurven über Spannweite,
   Zusammensetzung (Formel- und Zahlenzeile), PDF. Im Diagramm/Zeichnung als Schalter:
   Band + Prüfzeile (Soll-Fahrdrahthöhe h − sh an den Stützpunkten prüfen, Ist bei T₂ nur
@@ -79,7 +79,7 @@ Einzelleiter (EL, z. B. Speise-/Rückleiter).
 - Projekte/Gruppen im Browser speichern (Datei-Dialog), Serienbericht, JSON-Import/Export.
 - Handbuch (Dialog, DE/FR/IT) mit Kapitelleiste links und Suche.
 - Hell/Dunkel/Auto, Design nach Vorlage https://ivanperic84.github.io/vierendeel/
-  (Akzentblau #4a5cb8 hell / #7c8de0 dunkel). Wasserzeichen «BETA – nicht verifiziert».
+  (Akzentblau #4a5cb8 hell / #7c8de0 dunkel). Kein Wasserzeichen mehr (seit v6.0 produktiv).
 - Sprachen DE/FR/IT vollständig (Test prüft auf fehlende Schlüssel).
 
 **Abschnitt (Reiter «Abschnitt»)**
@@ -145,8 +145,10 @@ Darstellung in m ü. M. wird der SOK-Anstieg linear addiert (Diagramm, Profil, K
 Folge bei schräger SOK: H unverändert, Durchhang einige cm und Tiefpunkt-Lage leicht
 anders als mit echter Höhendifferenz (Beispiel Feld 102–103: 0.863 statt 0.843 m,
 Tiefpunkt ~3 m versetzt). Nicht ohne neue Rückfrage beim Nutzer ändern.
-Δh an Messpunkten = Abstand von der Horizontalen durch den linken Aufhängepunkt
-(m ü. M.) bis zum Seil — auf Karte, Ergebnisleiste und im Diagramm identisch.
+Angabe an Messpunkten (seit v5.3 wählbar, `mpBezug`, Vorgabe «höchster Punkt»):
+Δh = Abstand von der Horizontalen durch den höchsten / linken / rechten Aufhängepunkt
+(m ü. M.) bis zum Seil, oder Durchhang unter der Sehne — nur über `mpBezugHoehe()`;
+auf Karte, Ergebnisleiste, Diagramm und PDF identisch.
 **Angezeigte Seillage nur über `anzeigeKurve(zustand)`** (T1/T2/T3; N-FL mit Kombination = kombiniertes System) und Fahrdraht nur über `fdUeberSok()` — Karte, Diagramm, Zeichnung, PDF und Export müssen dieselben Werte zeigen.
 T₃-Vergleich: bei N-FL mit Kombination immer die Lage des kombinierten Systems
 (`calcState.c3_vem` = `c3_zeichnung` aus dem Rechenkern), genau wie T₂ (`c2_vem`).
@@ -203,7 +205,7 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 
 - Barrierefreiheit: axe-core (npm-Paket `axe-core`, im Scratchpad installieren) per
   `page.addScriptTag` laden und `axe.run()` in den Zuständen Hauptansicht, Diagramm + hf,
   Zeichnung, Abschnitt (mit Strängen), hf-Ansicht, Lastfälle, Datei, Reglage, Handbuch —
-  je hell und dunkel; das Wasserzeichen `#beta-wz` ausschliessen. Stand: 0 Verstösse.
+  je hell und dunkel (mit und ohne Entwicklermodus). Stand: 0 Verstösse.
 - Anzeige-Nachführung (v5.1): Prüfskript im Scratchpad ändert je System × Ansicht
   (Diagramm, Zeichnung, Abschnitt) jede sichtbare Eingabe und vergleicht die Anzeige
   (Seitenleiste-Text, sichtbare Elemente, Feldwerte, Canvas/SVG-Hash, Ergebnisbereich
@@ -264,6 +266,10 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 
 | v5.1.0 | #29 | Einzelleiter: H von Hand überschreibbar (Rahmen + Hinweis mit Abweichung, «↺ Reglage», im Projekt gespeichert als `hVonHand`); Reglage-Infobox bei allen Systemen aufklappbar mit «i» rechts, direkt unter der Auswahl; Anzeige-Nachführung: `calcState` wird vor dem Zeichnen gesetzt (hf-Linien hingen einen Schritt nach), Laden EL über `applyElVariant` (Leiter ohne eigene Tabelle verloren die Reglage-Bindung), Abschnitt-Ansicht und Kombinations-Notiz beim Sprachwechsel neu, Label-Knopf «↺ Reglage» überlebt Systemwechsel |
 | v5.1.1 | #29 | Reglagewerte einheitlich: hergeleitete Tabellen (Leiter ohne SBB-Tabelle, Starr, angepasste Werte, Reglage-Fenster, CSV) über `_rundeReglage` auf 100 N; Infobox nennt Bezugswerte bei +10 °C aus der wirksamen Tabelle (`_elReglageBoxAktualisieren`, bei jeder Rechnung); Texte für Leiter ohne SBB-Tabelle übersetzt; Sprachwechsel verwirft angepasste Reglage/Handwert nicht mehr. Eingefrorene Fälle unverändert (nur Leiter mit SBB-Tabelle). |
 | v5.1.2 | #30 | Touchscreen: «i» der Reglage-Infobox wurde durch die Touch-Mindesthöhe (40 px) zum Oval gestreckt — jetzt rund mit unsichtbar vergrösserter Tippfläche; Test mit Touch-Nachbildung (`appOeffnen(…, { hasTouch: true })`) |
-| v5.1.3 | – | Einzelleiter H «Freie Eingabe» ohne Reglagebezug/Prozent; Reglage-Infobox dann ausgegraut (`.inaktiv`) mit Zeile «Nicht aktiv – H freie Eingabe»; Knopf «↺» quadratisch rechts neben dem Feld (`.feld-mit-knopf`) statt im Label |
+| v5.1.3 | #31 | Einzelleiter H «Freie Eingabe» ohne Reglagebezug/Prozent; Reglage-Infobox dann ausgegraut (`.inaktiv`) mit Zeile «Nicht aktiv – H freie Eingabe»; Knopf «↺» quadratisch rechts neben dem Feld (`.feld-mit-knopf`) statt im Label |
+| v5.2.0 | – | Reglage-Fenster: angepasste EL-Reglagewerte (Bearbeiten, CSV-Import) gehören zum Projekt (`reglageAngepasst`, Anwendung über `_reglageAnpassungenAnwenden`, Originale in `_RGL_ORIGINAL`); markiert «angepasst», Knopf «↺ SBB-Werte»; nur echte Abweichungen werden festgehalten; Bearbeiten-Eingabe behält den Fokus; Knöpfe einheitlich (`.rgl-knopf`), Texte übersetzt. Vorher: Änderungen nur bis zum Neuladen, gespeicherte Projekte rechneten bei T₁-Änderung wieder mit SBB-Werten. Zudem: EL «Starr» nach Laden/Systemwechsel — `applyElVariant` leitet jetzt bei Starr/Overrides über `_applyReglageOvr` her (vorher normale Tabelle). |
+| v5.3.0 | – | Messpunkt-Bezug wählbar (`mpBezug`: hoch [Vorgabe] / links / rechts / sehne) — eine Stelle `mpBezugHoehe()` für Diagramm (Referenzlinie + Masslinie), Karten, Ergebnisleiste und PDF (vorher PDF = Sehne, Bildschirm = links); im Projekt gespeichert, ältere Projekte → hoch. Auswahl `#mp-bezug` neben «Reset» der Messpunkte |
+| v6.0.0 | – | **Produktiv**: Wasserzeichen «BETA – nicht verifiziert» entfernt (Bildschirm, PDFs, Handbuch). hf_min / hf_max nur im **Entwicklermodus** (3× aufs App-Symbol, `localStorage dh_dev`, Schild «DEV», Animation beim Antippen): UI mit `.nur-dev`, `hfGrenzenM()` → `null`, Schalter Diagramm/Zeichnung wirken nur mit `entwicklerModus`; Handbuch-Kapitel 6.14 nur im Entwicklermodus. Gespeicherte hf-Eingaben bleiben erhalten. |
+| v6.0.1 | – | Stränge: Auswahlkästchen (18 px, Touch mit unsichtbar grösserer Tippfläche) und Farbfeld kompakt; Farbfeld von der Touch-Mindesthöhe ausgenommen |
 
 Issue #20: NIS (später).

@@ -192,7 +192,7 @@ test('Dunkelmodus: keine hellen Eingabefelder (H-Punkte, Mindestabstand, Mastang
 });
 
 test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', async () => {
-  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true });
   await fensterAbfangen(seite);
   const r = await seite.evaluate(() => {
     // In der Excel gespeicherter Fall (hfmin_v11_D / hfmax_v11_D): N-FL StCu 50 + Cu 107, c = L_m = 30 m,
@@ -246,7 +246,7 @@ test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', asy
   assert.equal(r.pdf.length, 1);
   assert.match(r.pdf[0], /<h1/);
   assert.equal((r.pdf[0].match(/<svg[^>]*class="hf-svg"/g) || []).length, 2, 'Grafiken im PDF');
-  assert.match(r.pdf[0], /BETA – nicht verifiziert/);
+  assert.doesNotMatch(r.pdf[0], /BETA – nicht verifiziert/);   // produktiv: ohne Wasserzeichen
   assert.equal(r.geladen, true);
   assert.deepEqual(fehler, []);
   await kontext.close();
@@ -328,7 +328,7 @@ test('Lastfälle: Minuswert tippbar, keine Höhenlage-Auswahl, Hinweis Zusatzlas
 });
 
 test('Zeichnung folgt dem Dunkelmodus, PDF bleibt hell, Texte übersetzt', async () => {
-  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true });
   await fensterAbfangen(seite);
   const r = await seite.evaluate(() => {
     document.getElementById('sok-mum-left').value = '450'; onSokMumInput();
@@ -361,7 +361,7 @@ test('Zeichnung folgt dem Dunkelmodus, PDF bleibt hell, Texte übersetzt', async
 });
 
 test('Handbuch: Kapitel links mit aktueller Stelle, Suche markiert und springt, Handy-Menü', async () => {
-  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true });
   // Bewegung reduziert: Sprünge ohne Animation, damit der Test nicht auf das Scrollen wartet
   await seite.emulateMedia({ reducedMotion: 'reduce' });
   await seite.evaluate(() => openHandbuch());
@@ -572,29 +572,23 @@ test('Feld-Schnellauswahl, H/a im Zeichnungsband, Abschnitt-Scroll (normal und V
   await kontext.close();
 });
 
-test('Wasserzeichen «BETA – nicht verifiziert»: Bildschirm in allen Sprachen, alle PDFs', async () => {
+test('Produktiv: kein Wasserzeichen mehr – weder am Bildschirm noch in den PDFs', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   await fensterAbfangen(seite);
   const r = await seite.evaluate(() => {
-    const wz = document.getElementById('beta-wz');
-    const stil = getComputedStyle(wz);
-    const texte = {};
-    for (const l of ['fr', 'it', 'de']) { setLang(l); texte[l] = wz.innerText.trim(); }
     window.__fenster.length = 0;
     pdfExport(); pdfExportDrawing();
-    return { texte, fest: stil.position === 'fixed', klickbar: stil.pointerEvents, pdf: window.__fenster.map(f => f.html) };
+    return { element: !!document.getElementById('beta-wz'), text: /BETA|BÊTA|nicht verifiziert/.test(document.body.innerText), pdf: window.__fenster.map(f => f.html) };
   });
-  assert.deepEqual(r.texte, { fr: 'BÊTA – non vérifié', it: 'BETA – non verificato', de: 'BETA – nicht verifiziert' });
-  assert.equal(r.fest, true);
-  assert.equal(r.klickbar, 'none', 'Wasserzeichen darf keine Klicks abfangen');
+  assert.equal(r.element, false); assert.equal(r.text, false);
   assert.equal(r.pdf.length, 2);
-  r.pdf.forEach(h => assert.match(h, /BETA – nicht verifiziert/));
+  r.pdf.forEach(h => assert.doesNotMatch(h, /BETA|BÊTA|nicht verifiziert/));
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
 
 test('Zeichnung: «Kettenwerk» ohne Masten bis SOK; hf-Band mit Prüfung, PDF, DXF, Speichern', async () => {
-  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true });
   await fensterAbfangen(seite);
   const r = await seite.evaluate(() => {
     document.getElementById('h2').value = '6.50'; berechnen();
@@ -657,7 +651,7 @@ test('H-Punkte ohne SOK gesperrt mit Link zu den Mastangaben; mit SOK Höhe übe
 });
 
 test('Handy 390 px: keine seitliche Verschiebung, Kopfzeile vollständig sichtbar', async () => {
-  const { seite, fehler, kontext } = await appOeffnen(browser, url, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true, viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const r = await seite.evaluate(() => {
     const W = document.documentElement.clientWidth;
     const sichtbar = id => { const b = document.getElementById(id).getBoundingClientRect(); return b.width > 0 && b.left >= 0 && b.right <= W + 1; };
@@ -716,7 +710,7 @@ test('Fenstergrösse ändern / Handy drehen: Diagramm wird ohne Eingabe neu geze
 });
 
 test('Systemwechsel sanft (Hauptansicht), ohne Einfluss auf die Rechnung; hf-Grafik beschriftet', async () => {
-  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true });
   const r = await seite.evaluate(() => {
     const erg = [];
     for (const m of ['rfl', 'el', 'nfl']) {
@@ -817,7 +811,7 @@ test('Handy: Menü «Teilen» bleibt im Bild; im Vollbild erreichbar', async () 
 });
 
 test('Diagramm: Schalter «Fahrdraht + hf», Prüfzeile im Ergebnis, Speichern', async () => {
-  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true });
   const r = await seite.evaluate(() => {
     const zeile = () => { const el = document.getElementById('hf-pruefzeile'); return el.getClientRects().length ? el.className : 'aus'; };
     const vorher = zeile();
@@ -857,7 +851,7 @@ test('Diagramm: Schalter «Fahrdraht + hf», Prüfzeile im Ergebnis, Speichern',
 });
 
 test('Zeichnung: hf-Beschriftungen überlagern sich nicht; Höhenleiter erklärt die Leserichtung', async () => {
-  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true });
   const r = await seite.evaluate(() => {
     setCanvasView('zeichnung'); setDrawingHf(true);
     const texte = [...document.querySelectorAll('#scale-svg-container svg text')].filter(t => /^hf(min|max) = /.test(t.textContent));
@@ -890,7 +884,7 @@ test('Fusszeile: ohne «Statikteam», Version aus APP_VERSION', async () => {
 
 test('Schalter: Knopf bleibt im Schalter (Maus und Touch, ein und aus)', async () => {
   for (const opt of [{}, { viewport: { width: 820, height: 1180 }, isMobile: true, hasTouch: true }]) {
-    const { seite, fehler, kontext } = await appOeffnen(browser, url, opt);
+    const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true, ...opt });
     const r = await seite.evaluate(() => {
       // Übergänge aus, damit die Endlage gemessen wird
       document.head.insertAdjacentHTML('beforeend', '<style>*,*::after{transition:none!important}</style>');
@@ -914,7 +908,7 @@ test('Schalter: Knopf bleibt im Schalter (Maus und Touch, ein und aus)', async (
 });
 
 test('hf-Prüfung: Soll-Fahrdrahthöhe an den Stützpunkten (h − sh), Ist bei T2 nur Info', async () => {
-  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true });
   const r = await seite.evaluate(() => {
     setDiagrammHf(true);
     const zeile = () => document.getElementById('hf-pruefzeile');
@@ -978,7 +972,7 @@ test('Wechsel Diagramm / Zeichnung / Abschnitt / Foto: Höhe gleitet, Inhalt ble
 });
 
 test('hf: zulässige Anschlusshöhe, Rückfrage nur mit Anschlusshöhe; Systemhöhe bleibt; Prüfzeile zuoberst nur mit Schalter', async () => {
-  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true });
   const r = await seite.evaluate(async () => {
     const hh = document.getElementById('h-hf-hw'), sh = document.getElementById('sh');
     const h1 = document.getElementById('h1'), h2 = document.getElementById('h2');
@@ -1023,7 +1017,7 @@ test('hf: zulässige Anschlusshöhe, Rückfrage nur mit Anschlusshöhe; Systemh�
 });
 
 test('Exporte mit hf: Berechnungs-PDF mit Prüfung, Zeichnungs-PDF mit Version, DXF-Layer auch bei Diagramm-Schalter', async () => {
-  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true });
   await fensterAbfangen(seite);
   await seite.evaluate(() => { setDiagrammHf(true); });
   const [dl] = await Promise.all([seite.waitForEvent('download'), seite.evaluate(() => exportDxf())]);
@@ -1076,7 +1070,7 @@ test('Einzelleiter über Hindernis: Lage automatisch, Nachweis nach unten; Schal
 });
 
 test('PDF im hellen App-Design: Inter, Logo, Diagramm nach den Eingabewerten mit farbiger Legende', async () => {
-  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true });
   await fensterAbfangen(seite);
   const r = await seite.evaluate(() => {
     setDiagrammHf(true);
@@ -1246,7 +1240,7 @@ test('Stränge im Dunkelmodus: Neon-Töne statt Standardfarben, Auswahlkästchen
   await kontext.close();
 });
 
-test('Messpunkte: Δh auf der Karte = Δh im Diagramm, auch bei unterschiedlicher SOK links/rechts', async () => {
+test('Messpunkte: Karte = Diagramm für alle Bezüge (Durchhang, Δh links/rechts/höchster Punkt), SOK links ≠ rechts', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   const r = await seite.evaluate(async () => {
     const warte = ms => new Promise(res => setTimeout(res, ms));
@@ -1254,16 +1248,26 @@ test('Messpunkte: Δh auf der Karte = Δh im Diagramm, auch bei unterschiedliche
     abschnittFeldOeffnen(1); setCanvasView('diagramm');          // Feld 102–103: SOK 540.08 → 540.52
     for (const [id, v] of [['probe-x1', '16.79'], ['probe-x2', '23.04']]) { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input')); }
     await warte(300); berechnen(); await warte(200);
-    const { h1, L, c2, c2_vem } = calcState, c = c2_vem || c2;
+    const vorgabe = mpBezug;
+    const { h1, h2, L, c2, c2_vem } = calcState, c = c2_vem || c2;
     const sL = getSokMumLeft(), sR = getSokMumRight();
-    // Diagramm: Horizontale durch den linken Aufhängepunkt (m ü. M.) bis zum Seil (m ü. M.)
-    const soll = x => (sL + h1) - (c.a * Math.cosh((x - c.x_low) / c.a) + c.C + sL + (sR - sL) * x / L);
-    const werte = [...document.querySelectorAll('.istzustand-main')].map(m => parseFloat(m.querySelector('.istzustand-value').textContent));
-    const karte = werte.slice(0, 2);   // je Messpunkt zuerst Δh, darunter die Höhe
-    return { sokVerschieden: sR - sL > 0.4, karte, soll: [soll(16.79), soll(23.04)] };
+    const A1 = sL + h1, A2 = sR + h2;
+    const seil = x => c.a * Math.cosh((x - c.x_low) / c.a) + c.C + sL + (sR - sL) * x / L;   // m ü. M.
+    // Bezug je Variante (m ü. M.): Horizontale durch links / rechts / höchsten Punkt, bzw. Sehne
+    const bezug = { links: () => A1, rechts: () => A2, hoch: () => Math.max(A1, A2), sehne: x => A1 + (A2 - A1) * x / L };
+    const aus = {};
+    for (const m of ['hoch', 'links', 'rechts', 'sehne']) {
+      setMpBezug(m); await warte(100);
+      const werte = [...document.querySelectorAll('.istzustand-main')].map(e => parseFloat(e.querySelector('.istzustand-value').textContent));
+      aus[m] = { karte: werte.slice(0, 2), soll: [16.79, 23.04].map(x => bezug[m](x) - seil(x)) };
+    }
+    setMpBezug('hoch');
+    return { sokVerschieden: sR - sL > 0.4, vorgabe, aus };
   });
   assert.equal(r.sokVerschieden, true);
-  r.soll.forEach((s, i) => assert.ok(Math.abs(r.karte[i] - s) < 0.006, `M${i + 1}: Karte ${r.karte[i]} ≠ Diagramm ${s.toFixed(3)}`));
+  assert.equal(r.vorgabe, 'hoch', 'Vorgabe: Δh zum höchsten Punkt');
+  for (const [m, v] of Object.entries(r.aus))
+    v.soll.forEach((s, i) => assert.ok(Math.abs(v.karte[i] - s) < 0.006, `${m} M${i + 1}: Karte ${v.karte[i]} ≠ Diagramm ${s.toFixed(3)}`));
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
@@ -1544,7 +1548,7 @@ test('Reglage-Infobox: bei N-FL, R-FL und Einzelleiter gleich gestaltet (aufklap
 });
 
 test('Anzeige folgt jeder Eingabe (kein Nachziehen erst durch Systemwechsel)', async () => {
-  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true });
   const r = await seite.evaluate(async () => {
     const w = ms => new Promise(res => setTimeout(res, ms));
     const bild = () => document.getElementById('main-canvas').toDataURL();
@@ -1629,4 +1633,140 @@ test('Touchscreen: kleine runde Info-Knöpfe bleiben rund (keine 40-px-Streckung
   assert.deepEqual(r.verzerrt, []);
   assert.deepEqual(fehler, []);
   await kontext.close();
+});
+
+test('Reglage-Fenster: angepasste Reglagewerte gehören zum Projekt, Knöpfe einheitlich, Eingabe behält den Fokus', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  // Tippen im Bearbeiten-Modus (echte Tastatur): Feld behält den Fokus
+  await seite.evaluate(() => { setSysMode('el'); openReglageModal(); toggleReglageElEdit(); });
+  const feld = seite.locator('#rgl-el-wrap input[type=number]').first();
+  await feld.click(); await feld.press('Control+A'); await seite.keyboard.type('7000');
+  const r = await seite.evaluate(async () => {
+    const setze = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); };
+    const H = () => document.getElementById('tension').value;
+    const o = { getippt: _elMatEdits.cu95_0?.H_max };
+    const hoehen = [...document.querySelectorAll('#rgl-el-edit-btn, .rgl-knopf')].filter(e => e.getClientRects().length).map(e => Math.round(e.getBoundingClientRect().height));
+    o.knoepfeGleich = new Set(hoehen).size === 1;
+    const ohne = getProjectState();                       // Projekt ohne Anpassung
+    _applyElMatEdits(); closeReglageModal(); setze('temp1', '10');
+    o.angepasst = H(); o.markiert = /Angepasste/.test(document.getElementById('el-reglage-note').textContent);
+    const mit = getProjectState();
+    setProjectState(ohne); setze('temp1', '10'); o.ohne = H();
+    setProjectState(mit); setze('temp1', '11'); o.mitT11 = H();
+    reglageSbbWiederherstellen(); setze('temp1', '10'); o.sbb = H();
+    return o;
+  });
+  assert.equal(r.getippt, 7000, 'Bearbeiten: «7000» kommt vollständig an');
+  assert.ok(r.knoepfeGleich, 'Bearbeiten / Export / Import gleich hoch');
+  assert.equal(r.angepasst, '4100'); assert.ok(r.markiert, 'Infobox zeigt «angepasst»');
+  assert.equal(r.ohne, '3700', 'anderes Projekt rechnet mit SBB-Werten');
+  assert.equal(r.mitT11, '4040', 'geladenes Projekt rechnet bei neuem T₁ mit seinen angepassten Werten');
+  assert.equal(r.sbb, '3700', '«↺ SBB-Werte» stellt die SBB-Tabelle wieder her');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Einzelleiter «Starr»: nach Laden und Systemwechsel gilt weiter die Starr-Reglage', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const setze = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); };
+    const zust = () => ({ H: document.getElementById('tension').value, box: document.getElementById('el-reglage-title').textContent });
+    setSysMode('el'); setBerechnungsart('starr'); setze('temp1', '10');
+    const vorher = zust();
+    setProjectState(getProjectState()); setze('temp1', '10');
+    const geladen = zust();
+    setSysMode('nfl'); setSysMode('el'); setze('temp1', '10');
+    const wechsel = zust();
+    setBerechnungsart('ausgleichend');
+    return { vorher, geladen, wechsel };
+  });
+  assert.equal(r.vorher.H, '2800'); assert.match(r.vorher.box, /2'800 N.*25 m/);
+  assert.deepEqual(r.geladen, r.vorher, 'nach dem Laden');
+  assert.deepEqual(r.wechsel, r.vorher, 'nach Systemwechsel');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Messpunkt-Bezug: Auswahl wirkt auf Diagramm, Karte, Leiste und PDF gleich und bleibt im Projekt', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const setze = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); };
+    setSysMode('el'); setze('span', '50'); setze('sok-mum-left', '540.68'); setze('sok-mum-right', '541.22');
+    setze('h1', '7'); setze('h2', '7'); setze('temp2', '40'); setze('probe-x1', '19.5'); berechnen();
+    const aus = {};
+    for (const m of ['hoch', 'links', 'rechts', 'sehne']) {
+      const sel = document.getElementById('mp-bezug'); sel.value = m; sel.dispatchEvent(new Event('change'));
+      const karte = parseFloat(document.querySelector('.istzustand-main .istzustand-value').textContent);
+      const html = buildPdfSectionHtml('t', '');
+      const pdf = parseFloat((html.match(/M1 &nbsp; x = 19\.50 m<\/td>(?:\s*<td[^>]*>[^<]*<\/td>)*?\s*<td[^>]*>([\d.\-]+) m<\/td>\s*<\/tr>/) || [])[1]);
+      const kopf = (html.match(/<th>([^<]*)\[m\]<\/th>/) || [])[1]?.trim();
+      aus[m] = { karte, pdf, kopf, label: document.body.innerText.includes(t('mp.bezug.' + m)) };
+    }
+    document.getElementById('mp-bezug').value = 'links'; setMpBezug('links');
+    const st = getProjectState(); setMpBezug('hoch'); setProjectState(st);
+    const geladen = { mpBezug, auswahl: document.getElementById('mp-bezug').value };
+    const alt = { ...st }; delete alt.mpBezug; setProjectState(alt);
+    return { aus, geladen, altesProjekt: mpBezug };
+  });
+  assert.equal(r.aus.hoch.karte, 1.23); assert.equal(r.aus.links.karte, 0.69);
+  assert.equal(r.aus.rechts.karte, 1.23); assert.equal(r.aus.sehne.karte, 0.90);
+  for (const [m, v] of Object.entries(r.aus)) {
+    assert.ok(Math.abs(v.pdf - v.karte) < 0.006, `${m}: PDF ${v.pdf} ≠ Karte ${v.karte}`);
+    assert.ok(v.label, `${m}: Beschriftung sichtbar`);
+  }
+  assert.equal(r.aus.sehne.kopf, 'Durchhang (Sehne)');
+  assert.deepEqual(r.geladen, { mpBezug: 'links', auswahl: 'links' }, 'Bezug wird mit dem Projekt gespeichert');
+  assert.equal(r.altesProjekt, 'hoch', 'ältere Projekte: Vorgabe höchster Punkt');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Entwicklermodus: hf_min / hf_max ausgeblendet; 3× aufs App-Symbol schaltet ein und aus, bleibt gespeichert', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await fensterAbfangen(seite);
+  const sichtbar = () => seite.evaluate(() => ['hf-btn', 'leg-hf-item', 'draw-hf', 'hf-pruefzeile', 'h-hf-hw', 'dev-schild']
+    .filter(id => { const e = document.getElementById(id); return e && e.getClientRects().length > 0; }));
+  const aus = await seite.evaluate(async () => {
+    setDiagrammHf(true); openHf(); berechnen();   // auch ein gespeicherter Schalter darf ohne Entwicklermodus nichts bewirken
+    window.__fenster.length = 0; pdfExport();
+    await openHandbuch();
+    const hb = document.getElementById('hb-text').innerText; closeHandbuch();
+    return { modus: entwicklerModus, hfGrenzen: hfGrenzenM(), hfFenster: document.getElementById('hf-modal').classList.contains('open'),
+             pdfHf: /hf<sub>min<\/sub>|Fahrdrahthöhe/.test(window.__fenster[0]?.html || ''), hbHf: /hf_min|6\.14/.test(hb) };
+  });
+  assert.deepEqual(await sichtbar(), [], 'ohne Entwicklermodus keine hf-Teile');
+  assert.deepEqual(aus, { modus: false, hfGrenzen: null, hfFenster: false, pdfHf: false, hbHf: false });
+  // 1× und 2× klicken: nur Animation, noch kein Wechsel
+  const symbol = seite.locator('.header-icon');
+  await symbol.click();
+  const tipp = await seite.evaluate(() => document.querySelector('.header-icon').classList.contains('tipp'));
+  await symbol.click(); await symbol.click();
+  const an = await seite.evaluate(() => ({ modus: entwicklerModus, gespeichert: localStorage.getItem('dh_dev'), html: document.documentElement.classList.contains('dev'),
+    meldung: document.getElementById('meldungen').innerText }));
+  assert.ok(tipp, 'Klick löst eine kleine Animation aus');
+  assert.deepEqual({ ...an, meldung: /Entwicklermodus eingeschaltet/.test(an.meldung) }, { modus: true, gespeichert: '1', html: true, meldung: true });
+  const imDev = await sichtbar();
+  ['hf-btn', 'leg-hf-item', 'dev-schild', 'hf-pruefzeile'].forEach(id => assert.ok(imDev.includes(id), `${id} im Entwicklermodus sichtbar`));
+  // bleibt nach dem Neuladen, Ausschalten wieder mit 3 Klicks
+  await seite.reload(); await seite.waitForFunction(() => typeof calcState !== 'undefined' && calcState);
+  assert.equal(await seite.evaluate(() => entwicklerModus), true, 'bleibt nach dem Neuladen');
+  await symbol.click(); await symbol.click(); await symbol.click();
+  assert.equal(await seite.evaluate(() => entwicklerModus + '/' + localStorage.getItem('dh_dev')), 'false/null');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Stränge: Auswahlkästchen und Farbfeld kompakt, auch auf dem Touchscreen', async () => {
+  for (const opt of [{}, { hasTouch: true }]) {
+    const { seite, fehler, kontext } = await appOeffnen(browser, url, opt);
+    const r = await seite.evaluate(async () => {
+      abschnittAnsicht(); await abschnittBeispiel(); await new Promise(res => setTimeout(res, 300));
+      const m = sel => { const q = document.querySelector(sel).getBoundingClientRect(); return { b: Math.round(q.width), h: Math.round(q.height) }; };
+      return { box: m('.abs-str-tab input.auswahl'), farbe: m('.abs-str-tab .abs-farbe') };
+    });
+    assert.ok(r.box.h <= 20 && r.box.b <= 20, `Kästchen ${JSON.stringify(r.box)}`);
+    assert.ok(r.farbe.h <= 24 && r.farbe.b <= 30, `Farbfeld ${JSON.stringify(r.farbe)}`);
+    assert.deepEqual(fehler, []);
+    await kontext.close();
+  }
 });

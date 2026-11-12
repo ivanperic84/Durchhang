@@ -21,6 +21,8 @@
     (wahl === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.thema = dunkel ? 'dunkel' : 'hell';
   document.documentElement.dataset.themaWahl = wahl;
+  // Entwicklermodus (3× aufs App-Symbol): unfertige Funktionen wie hf_min / hf_max
+  try { if (localStorage.getItem('dh_dev') === '1') document.documentElement.classList.add('dev'); } catch (e) {}
 })();
 </script>
 <meta name="description" content="Berechnung des Durchhangs von Fahrleitungen und Einzelleitern mit Temperatureinfluss, Zeichnungsansicht und Foto-Auswertung.">
@@ -39,8 +41,6 @@
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
-<!-- Wasserzeichen: App in Beta-Phase, Ergebnisse nicht verifiziert (auch auf PDFs, siehe _pdfWasserzeichen) -->
-<div id="beta-wz" aria-hidden="true"><span data-i18n="ui.beta">BETA – nicht verifiziert</span></div>
 
 
 <div class="header" role="banner">
@@ -56,6 +56,7 @@
       <path d="M20 30 Q50 59 80 30" style="stroke:var(--primary)" stroke-width="6"/>
     </svg>
   </div>
+  <span id="dev-schild" class="dev-schild nur-dev" title="Entwicklermodus aktiv" data-i18n-title="dev.titel">DEV</span>
   <div style="flex:1;min-width:0">
     <h1 id="app-title">Durchhang N-FL</h1>
     <p id="app-subtitle" style="display:none">Kettenwerk — Seillinie mit Temperatureinfluss</p>
@@ -86,7 +87,7 @@
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 12h10M8 3v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 6l3-3 3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <span class="header-manual-text header-label" data-i18n="share.btn">Teilen</span>
   </button>
-  <button onclick="openHf()" id="hf-btn" class="header-manual-link" title="Fahrdrahthöhe hf_min / hf_max" data-i18n-title="hf.titel" style="background:none;border:none;cursor:pointer;color:var(--text2)">
+  <button onclick="openHf()" id="hf-btn" class="header-manual-link nur-dev" title="Fahrdrahthöhe hf_min / hf_max" data-i18n-title="hf.titel" style="background:none;border:none;cursor:pointer;color:var(--text2)">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1.5 14.5h13M8 2v9.5M5.8 4.2L8 2l2.2 2.2M5.8 9.3L8 11.5l2.2-2.2M1.5 2h13"/></svg>
     <span class="header-manual-text header-label" data-i18n="hf.kurz">hf min/max</span>
   </button>
@@ -475,7 +476,7 @@
           </div>
         </div>
       </div>
-      <div id="h-hf-hw" class="feld-reglage-hw" role="status" style="display:none"></div>
+      <div id="h-hf-hw" class="feld-reglage-hw nur-dev" role="status" style="display:none"></div>
 
       <!-- Mastlänge (für Foto-Kalibrierung) — nur im Foto-Tab sichtbar -->
       <div id="mastlaenge-row" class="field-row" style="display:none;margin-top:.5rem">
@@ -842,8 +843,8 @@
             </div>
           </div>
           <!-- hf_min / hf_max als Band (nur Kettenwerk) -->
-          <span class="draw-hf-teil" style="width:1px;height:14px;background:var(--border);flex-shrink:0"></span>
-          <label class="schalter-zeile draw-hf-teil" style="font-size:.7rem;color:var(--muted)" title="hf_min / hf_max aus der hf-Ansicht einblenden" data-i18n-title="draw.hf.titel">
+          <span class="draw-hf-teil nur-dev" style="width:1px;height:14px;background:var(--border);flex-shrink:0"></span>
+          <label class="schalter-zeile draw-hf-teil nur-dev" style="font-size:.7rem;color:var(--muted)" title="hf_min / hf_max aus der hf-Ansicht einblenden" data-i18n-title="draw.hf.titel">
             <input type="checkbox" role="switch" id="draw-hf" onchange="setDrawingHf(this.checked);if(this.checked)hfNachfrage()"><span class="schalter" aria-hidden="true"></span><span>hf<sub>min</sub> / hf<sub>max</sub></span>
           </label>
         </div>
@@ -1106,13 +1107,20 @@
       <div class="legend-item" id="leg-fd-solllage-item" style="display:none"><div class="legend-dot" style="background:var(--muted);opacity:.35"></div><span id="leg-fd-solllage-label" data-i18n-html="leg.fd.solllage">Fd Solllage (T<sub>1</sub>)</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--muted);opacity:.7"></div><span id="leg-sehne-label" data-i18n="leg.sehne">Sehnenlinie</span></div>
       <div class="legend-item" id="leg-lf-item" style="display:none"><div class="legend-dot" style="background:rgba(95,97,108,.35)"></div><span data-i18n="leg.lastfaelle">Bereich Lastfälle</span></div>
-      <label class="schalter-zeile legend-item" id="leg-hf-item"><input type="checkbox" role="switch" id="diagramm-hf" onchange="setDiagrammHf(this.checked);if(this.checked)hfNachfrage()"><span class="schalter" aria-hidden="true"></span><span data-i18n-html="leg.hf">Fahrdraht Soll/Ist + hf<sub>min</sub>/hf<sub>max</sub></span></label>
+      <label class="schalter-zeile legend-item nur-dev" id="leg-hf-item"><input type="checkbox" role="switch" id="diagramm-hf" onchange="setDiagrammHf(this.checked);if(this.checked)hfNachfrage()"><span class="schalter" aria-hidden="true"></span><span data-i18n-html="leg.hf">Fahrdraht Soll/Ist + hf<sub>min</sub>/hf<sub>max</sub></span></label>
     </div>
     <div id="abschnitt-view" style="display:none"></div>
     <div id="canvas-scroll-area">
     <div class="probe-readout">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.4rem">
         <div class="probe-hint-small" id="probe-hint" data-i18n="canvas.probe.hint">Messpunkte: ins Diagramm klicken / ziehen oder x-Wert eingeben</div>
+        <!-- Bezug der Angabe am Messpunkt (Diagramm, Karten, Leiste, PDF) -->
+        <select id="mp-bezug" class="mp-bezug" onchange="setMpBezug(this.value)" title="Bezug der Angabe am Messpunkt" data-i18n-title="mp.bezug.titel" aria-label="Bezug der Angabe am Messpunkt" data-i18n-aria="mp.bezug.titel">
+          <option value="hoch" data-i18n="mp.bezug.hoch">Δh zum höchsten Punkt</option>
+          <option value="links" data-i18n="mp.bezug.links">Δh zum linken Punkt</option>
+          <option value="rechts" data-i18n="mp.bezug.rechts">Δh zum rechten Punkt</option>
+          <option value="sehne" data-i18n="mp.bezug.sehne">Durchhang (Sehne)</option>
+        </select>
         <button id="probe-reset-btn" data-i18n="canvas.probe.reset" onclick="clearMesspunkte()" title="Messpunkte löschen" data-i18n-title="ui.mp.loeschen.titel"
           style="font-size:.72rem;padding:.22rem .65rem;border-radius:7px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;line-height:1.4">
           ✕ Reset
@@ -1200,7 +1208,7 @@
     <div id="error-box" class="alert alert-error hidden"></div>
     <div id="warn-box"  class="alert alert-warn  hidden"></div>
     <div id="highlight-card"></div>
-    <div id="hf-pruefzeile" class="hf-pruefzeile" role="status" style="display:none"></div>
+    <div id="hf-pruefzeile" class="hf-pruefzeile nur-dev" role="status" style="display:none"></div>
     <div id="results"></div>
   </div>
 
@@ -1218,7 +1226,7 @@
 
 <!-- Rückfrage (ersetzt confirm / prompt) -->
 <!-- ── Ansicht: Fahrdrahthöhe hf_min / hf_max (fahrdrahthoehe.js) ── -->
-<div class="modal-overlay" id="hf-modal" role="dialog" aria-modal="true" aria-labelledby="hf-titel" onclick="if(event.target===this)closeHf()" style="align-items:flex-start;padding:1.5rem 1rem;overflow-y:auto">
+<div class="modal-overlay nur-dev" id="hf-modal" role="dialog" aria-modal="true" aria-labelledby="hf-titel" onclick="if(event.target===this)closeHf()" style="align-items:flex-start;padding:1.5rem 1rem;overflow-y:auto">
   <div class="modal-card" style="max-width:980px;width:100%;max-height:none">
     <div class="modal-header">
       <h2 class="modal-title" id="hf-titel" data-i18n="hf.titel" style="margin:0">Fahrdrahthöhe hf_min / hf_max</h2>
@@ -1716,10 +1724,12 @@
       <div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.45rem">
           <div class="rgl-section" style="margin-bottom:0" data-i18n="ui.rgl.el.titel">Einzelleiter — Reglagezugkraft</div>
-          <div style="display:flex;gap:.5rem;align-items:center">
-            <button id="rgl-el-edit-btn" onclick="toggleReglageElEdit()" style="font-size:.68rem;padding:.18rem .5rem;border:1px solid var(--border2);border-radius:6px;background:none;cursor:pointer;color:var(--muted);font-family:inherit" data-i18n="ui.bearbeiten">Bearbeiten</button>
-            <button onclick="exportMaterialsCSV()" style="font-size:.68rem;padding:.18rem .5rem;border:1px solid var(--border2);border-radius:6px;background:none;cursor:pointer;color:var(--muted);font-family:inherit" data-i18n="ui.export.csv">Export CSV</button>
-            <label style="font-size:.68rem;padding:.18rem .5rem;border:1px solid var(--border2);border-radius:6px;background:none;cursor:pointer;color:var(--muted);display:inline-block"><span data-i18n="ui.import.csv">Import CSV</span><input type="file" accept=".csv,.txt" onchange="importMaterialsCSV(event)" style="display:none"></label>
+          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+            <button type="button" id="rgl-el-sbb-btn" class="rgl-knopf rgl-knopf-warn" onclick="reglageSbbWiederherstellen()" style="display:none" data-i18n="ui.rgl.sbb">↺ SBB-Werte</button>
+            <button type="button" id="rgl-el-edit-btn" class="rgl-knopf" onclick="toggleReglageElEdit()" data-i18n="ui.bearbeiten">Bearbeiten</button>
+            <button type="button" class="rgl-knopf" onclick="exportMaterialsCSV()" data-i18n="ui.export.csv">Export CSV</button>
+            <!-- Dateiwahl als Label: gleiche Gestaltung wie die Knöpfe daneben -->
+            <label class="rgl-knopf" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.querySelector('input').click()}"><span data-i18n="ui.import.csv">Import CSV</span><input type="file" accept=".csv,.txt" onchange="importMaterialsCSV(event)" style="display:none"></label>
           </div>
         </div>
         <div id="rgl-el-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"></div>

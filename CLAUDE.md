@@ -57,7 +57,7 @@ https://ivanperic84.github.io/Durchhang/ (wird aus `main` veröffentlicht).
 ## Prüfen vor jedem Commit
 ```bash
 npm test                                   # Node-Tests (Stand: 89, alle grün)
-CHROMIUM_PFAD=/opt/pw-browsers/chromium npm run test:browser   # Browser (Stand: 66)
+CHROMIUM_PFAD=/opt/pw-browsers/chromium npm run test:browser   # Browser (Stand: 71)
 ```
 - Browser-Tests mit `timeout` starten (z. B. `timeout 900 …`); in Prüfskripten Playwright-
   Kontexte mit `serviceWorkers: 'block'`, sonst wird eine alte Fassung aus dem Cache geladen.
@@ -80,7 +80,11 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium npm run test:browser   # Browser (Stand:
   brauchen `min-height: 0` und eine unsichtbar vergrösserte Tippfläche (`::after`), sonst werden sie gestreckt.
 - Neue Fenster (Dialoge) als `.modal-overlay` mit Klasse `open` öffnen, keine eigene `z-index` setzen:
   der Fensterstapel in app.js legt das zuletzt geöffnete nach oben (Ebenen in app.css beschrieben).
-- Wasserzeichen «BETA – nicht verifiziert» bleibt (Bildschirm und PDFs).
+- App ist **produktiv** (v6.0): kein Wasserzeichen mehr (Bildschirm und PDFs), so vom Nutzer entschieden.
+- **Entwicklermodus** für Unfertiges (zurzeit hf_min / hf_max): 3× schnell aufs App-Symbol, bleibt im
+  Gerät (`localStorage dh_dev`), Schild «DEV». Unfertige UI mit Klasse `nur-dev` (auch im Handbuch),
+  Logik über `entwicklerModus` (z. B. `hfGrenzenM()` liefert sonst `null`). Tests dafür mit
+  `appOeffnen(browser, url, { dev: true })`. Freigabe einer Funktion = `nur-dev`/Abfragen entfernen.
 - Projekte werden im Browser gespeichert (`getProjectState` / `setProjectState`);
   ältere Projekte müssen weiter ladbar sein (Migration beim Laden ergänzen, nie brechen).
 - Für Rechenänderungen zuerst Test schreiben; die eingefrorenen Referenzfälle dürfen sich
