@@ -1165,14 +1165,20 @@ button.header-manual-link:disabled { opacity: .4; cursor: not-allowed; }
   .card { padding: .8rem .85rem; }
 }
 
-/* ── Wasserzeichen «BETA – nicht verifiziert»: sichtbar, aber nicht störend ── */
-#beta-wz { position: fixed; inset: 0; z-index: 1900; pointer-events: none; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-#beta-wz span { transform: rotate(-24deg); font-size: clamp(1.6rem, 5.4vw, 6rem); font-weight: 800; letter-spacing: .06em; white-space: nowrap;
-  color: var(--text); opacity: .055; user-select: none; -webkit-user-select: none; }
-@media print { #beta-wz { display: none; } }
+/* ── Entwicklermodus: unfertige Funktionen (Klasse .nur-dev) nur mit html.dev ──
+   Umschalten: 3× schnell auf das App-Symbol (bleibt auf dem Gerät gespeichert). */
+html:not(.dev) .nur-dev { display: none !important; }
+.header-icon { cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+.header-icon.tipp { animation: symbol-tipp .32s ease-out; }
+.header-icon.umgeschaltet { animation: symbol-dreh .6s cubic-bezier(.3,1.4,.5,1); }
+@keyframes symbol-tipp { 0% { transform: scale(1); } 40% { transform: scale(.86) rotate(-6deg); } 100% { transform: scale(1); } }
+@keyframes symbol-dreh { 0% { transform: rotate(0) scale(1); } 60% { transform: rotate(380deg) scale(1.15); } 100% { transform: rotate(360deg) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .header-icon.tipp, .header-icon.umgeschaltet { animation: none; } }
+.dev-schild { font-size: .58rem; font-weight: 800; letter-spacing: .06em; color: var(--text); background: var(--warn-s); border: 1px solid var(--warn);
+  border-radius: 4px; padding: 0 .25rem; line-height: 1.4; margin-left: -.35rem; align-self: center; }
 /* ── Fenster (Modal) ──
    Ebenen: Vollbild-Zeichnung 1000 · Menüs 1100 · Fenster ab 1200 (das zuletzt
-   geöffnete liegt oben, siehe Fensterstapel in app.js) · Wasserzeichen 1900 ·
+   geöffnete liegt oben, siehe Fensterstapel in app.js) ·
    Meldungen 2000. */
 .modal-overlay {
   display: none; position: fixed; inset: 0; z-index: 1200;

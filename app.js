@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v5.3.0';
+const APP_VERSION = 'v6.0.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -104,7 +104,7 @@ function _pdfDiagrammLegende() {
   }
   if (showT3 && c.c3) teile.push(e(linie(F.akzent, 'dashed', 1.5), `T<sub>3</sub>`));
   teile.push(e(linie(F.sehne, 'dashed', 1), t('leg.sehne')));
-  if (diagrammHf && !isEl && hfGrenzenM() && !hfGrenzenM().fehler) {
+  if (diagrammHf && entwicklerModus && !isEl && hfGrenzenM() && !hfGrenzenM().fehler) {
     teile.push(e(linie(F.fd, 'dotted', 2), t('pdf.leg.fd.soll')), e(linie(F.fd, 'solid', 1), t('pdf.leg.fd.ist')));
     teile.push(e(flaeche(F.hfBand, 'rgba(47,158,84,.45)'), 'hf<sub>min</sub> … hf<sub>max</sub>'));
   }
@@ -115,6 +115,36 @@ function _pdfDiagrammLegende() {
   return teile.join('');
 }
 let calcState = null; // Letztes Berechnungsergebnis (für PDF-Export und Messpunkte)
+
+// ── Entwicklermodus ─────────────────────────────────────────────────────────
+// Unfertige Funktionen (zurzeit hf_min / hf_max) sind nur im Entwicklermodus sichtbar
+// und wirksam. Umschalten: 3× schnell auf das App-Symbol; bleibt auf dem Gerät
+// gespeichert (localStorage «dh_dev»). Sichtbarkeit über Klasse .nur-dev (app.css),
+// Rechnung/Zeichnung über entwicklerModus (z. B. hfGrenzenM liefert sonst null).
+let entwicklerModus = document.documentElement.classList.contains('dev');
+function entwicklerModusSetzen(an, { melden = false } = {}) {
+  entwicklerModus = !!an;
+  try { if (entwicklerModus) localStorage.setItem('dh_dev', '1'); else localStorage.removeItem('dh_dev'); } catch (e) {}
+  document.documentElement.classList.toggle('dev', entwicklerModus);
+  if (!entwicklerModus && document.getElementById('hf-modal')?.classList.contains('open')) closeHf();
+  if (melden) meldung(t(entwicklerModus ? 'dev.an' : 'dev.aus'), 'info');
+  if (calcState) berechnen();
+}
+function _appSymbolEinrichten() {
+  const sym = document.querySelector('.header-icon');
+  if (!sym || sym.dataset.dev) return;
+  sym.dataset.dev = '1';
+  let klicks = 0, zeit = null;
+  const anim = k => { sym.classList.remove('tipp', 'umgeschaltet'); void sym.offsetWidth; sym.classList.add(k); };
+  sym.addEventListener('animationend', () => sym.classList.remove('tipp', 'umgeschaltet'));
+  sym.addEventListener('click', () => {
+    klicks++; clearTimeout(zeit); zeit = setTimeout(() => { klicks = 0; }, 650);
+    if (klicks >= 3) { klicks = 0; anim('umgeschaltet'); entwicklerModusSetzen(!entwicklerModus, { melden: true }); }
+    else anim('tipp');
+  });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _appSymbolEinrichten);
+else _appSymbolEinrichten();
 
 // Canvas-Koordinatensystem — wird bei jedem Zeichnen aktualisiert
 const view = {
@@ -4793,7 +4823,6 @@ async function batchPdfExport() {
   .pdf-section { page-break-after: always; }
   .pdf-section:last-child { page-break-after: avoid; }
 </style></head><body>
-${_pdfWasserzeichen()}
 ${sections.map(s => `<div class="pdf-section">${s}</div>`).join('\n')}
 </body></html>`;
   _druckfenster(combinedHtml);
@@ -6325,6 +6354,7 @@ function fdSpanne(z, e, n = 120) {
 }
 // hf-Grenzen in m über SOK aus der hf-Ansicht (null = Einzelleiter, { fehler } = Eingaben unvollständig)
 function hfGrenzenM() {
+  if (!entwicklerModus) return null;   // hf noch nicht freigegeben (Entwicklermodus)
   if (sysMode === 'el' || typeof hfRechnen !== 'function') return null;
   _hfStart();
   const r = hfRechnen();
@@ -6433,7 +6463,7 @@ function hfPruefzeile() {
   if (!el) return;
   let aktiv = false;
   // Nur solange im Diagramm «Fahrdraht Soll/Ist + hf» eingeschaltet ist (dann zuoberst im Ergebnis)
-  aktiv = sysMode !== 'el' && !!calcState && diagrammHf;
+  aktiv = sysMode !== 'el' && !!calcState && diagrammHf && entwicklerModus;
   const g = aktiv ? hfGrenzenM() : null;
   if (!g || g.fehler) { zeigeElement(el, false); return; }
   const { c1, c2, c2_vem, c_fd_ref, h1, h2, sh, L } = calcState;
@@ -6506,11 +6536,12 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   }
   ys.push(h1d, h2d);
   // Schalter «Fahrdraht + hf»: Fahrdraht bei T₂ und das hf-Band gehören in den Ausschnitt
-  const hfD = diagrammHf && !isEl ? hfGrenzenM() : null;
+  const dHf = diagrammHf && entwicklerModus;   // Schalter wirkt nur im Entwicklermodus
+  const hfD = dHf && !isEl ? hfGrenzenM() : null;
   const hfDok = !!hfD && !hfD.fehler;
   const zFd = { c1, c2, c2_vem: c2_vem_draw, c_fd_ref: cFdRef ?? calcState?.c_fd_ref };
   const fdD = x => aY(x, fdUeberSok(x, zFd, { h1, h2, sh, L }));
-  if (diagrammHf && !isEl) {
+  if (dHf && !isEl) {
     for (let i = 0; i <= 60; i++) ys.push(fdD(L * i / 60));
     ys.push(aY(0, h1 - sh), aY(L, h2 - sh));
     if (hfDok) ys.push(aY(0, hfD.min), aY(L, hfD.min), aY(0, hfD.max), aY(L, hfD.max));
@@ -6582,7 +6613,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   ctx.fillText(t('canvas.x.label'), padL + plotW / 2, CH - 4);
 
   // ── hf-Band und Fahrdraht bei T₂ (Schalter in der Legende) ──
-  if (diagrammHf && !isEl) {
+  if (dHf && !isEl) {
     ctx.save();
     ctx.beginPath(); ctx.rect(padL, padT, plotW, plotH); ctx.clip();
     if (hfDok) {
@@ -8378,7 +8409,7 @@ function _zeichnungBauen(stripInSvg) {
   // Y display range (add headroom above anchors)
   // 'catenary': nur Kettenwerk/Leiter, SOK aus der Ausdehnung ausschliessen
   // hf_min / hf_max (Werte aus der hf-Ansicht) als Band über SOK — nur Kettenwerk
-  const hfZ = (drawingHf && showFd) ? _hfFuerZeichnung() : null;
+  const hfZ = (drawingHf && entwicklerModus && showFd) ? _hfFuerZeichnung() : null;
   const hfOk = !!(hfZ && !hfZ.fehler);
   if (hfOk) yCrvMin = Math.min(yCrvMin, absY(0, hfZ.min), absY(L, hfZ.min));
   const yMin   = drawingExtent === 'catenary'
@@ -9299,7 +9330,7 @@ html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #fff; }
 svg { display: block; width: 267mm; height: 180mm; }
-</style></head><body>${_pdfWasserzeichen()}${svg}</body></html>`;
+</style></head><body>${svg}</body></html>`;
   _druckfenster(html);
 }
 
@@ -10932,10 +10963,6 @@ function pdfExport() {
   _pdfDrucken(t('pdf.title'), bodyContent);
 }
 
-// Wasserzeichen für Druckfenster (PDF-Protokolle, Zeichnung, Serienbericht)
-function _pdfWasserzeichen() {
-  return `<div aria-hidden="true" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-28deg);font:800 44pt Inter,Arial,sans-serif;letter-spacing:.06em;color:rgba(17,18,24,.06);white-space:nowrap;pointer-events:none;z-index:9999">${escHtml(t('ui.beta'))}</div>`;
-}
 
 // Stylesheet der Druckfenster im hellen App-Design (Schrift Inter, Akzentblau, Karten).
 // Die Schrift wird mit absoluter Adresse geladen — das Druckfenster hat keine eigene Adresse.
@@ -11019,7 +11046,7 @@ function _pdfDrucken(titel, bodyContent) {
   _druckfenster(`<!DOCTYPE html><html lang="${currentLang}"><head><meta charset="UTF-8">
 <title>${titel}</title>
 <style>${_pdfStil()}</style></head><body>
-${_pdfWasserzeichen()}${bodyContent}
+${bodyContent}
 </body></html>`);
 }
 
@@ -11039,6 +11066,7 @@ const HF_VORGABE = {
 let hfEingabe = null;          // null: beim ersten Öffnen aus der Durchhang-Berechnung übernehmen
 
 function openHf() {
+  if (!entwicklerModus) return;
   _hfStart();
   document.getElementById('hf-modal').classList.add('open');
   renderHf();

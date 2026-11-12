@@ -1,4 +1,4 @@
-# Übergabe Durchhang — Stand v5.3.0 (12. November 2026)
+# Übergabe Durchhang — Stand v6.0.0 (12. November 2026)
 
 Ziel dieser Datei: Eine neue Claude-Sitzung (auch unter einem anderen Account) kann
 ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLAUDE.md`
@@ -68,7 +68,7 @@ Einzelleiter (EL, z. B. Speise-/Rückleiter).
 - Ansichten (Reiter): **Diagramm**, **Zeichnung** (massstäblich, Überhöhung Start 5×),
   **Abschnitt**, **Foto** (zuletzt, ausgegraut — nur Abschätzung, Info-Modal 1× pro Start).
 - Mitlaufende Ergebnisleiste (Tablet hochkant), Feld-Schnellauswahl oben (mit Abschnitt).
-- **hf_min / hf_max** (Fahrdrahthöhe): eigene Ansicht (Knopf in der Kopfleiste), Werte
+- **hf_min / hf_max** (Fahrdrahthöhe, **seit v6.0 nur im Entwicklermodus** — noch nicht final): eigene Ansicht (Knopf in der Kopfleiste), Werte
   live aus der Durchhang-Berechnung (nur c wählbar), Höhenleiter + Kurven über Spannweite,
   Zusammensetzung (Formel- und Zahlenzeile), PDF. Im Diagramm/Zeichnung als Schalter:
   Band + Prüfzeile (Soll-Fahrdrahthöhe h − sh an den Stützpunkten prüfen, Ist bei T₂ nur
@@ -79,7 +79,7 @@ Einzelleiter (EL, z. B. Speise-/Rückleiter).
 - Projekte/Gruppen im Browser speichern (Datei-Dialog), Serienbericht, JSON-Import/Export.
 - Handbuch (Dialog, DE/FR/IT) mit Kapitelleiste links und Suche.
 - Hell/Dunkel/Auto, Design nach Vorlage https://ivanperic84.github.io/vierendeel/
-  (Akzentblau #4a5cb8 hell / #7c8de0 dunkel). Wasserzeichen «BETA – nicht verifiziert».
+  (Akzentblau #4a5cb8 hell / #7c8de0 dunkel). Kein Wasserzeichen mehr (seit v6.0 produktiv).
 - Sprachen DE/FR/IT vollständig (Test prüft auf fehlende Schlüssel).
 
 **Abschnitt (Reiter «Abschnitt»)**
@@ -205,7 +205,7 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 
 - Barrierefreiheit: axe-core (npm-Paket `axe-core`, im Scratchpad installieren) per
   `page.addScriptTag` laden und `axe.run()` in den Zuständen Hauptansicht, Diagramm + hf,
   Zeichnung, Abschnitt (mit Strängen), hf-Ansicht, Lastfälle, Datei, Reglage, Handbuch —
-  je hell und dunkel; das Wasserzeichen `#beta-wz` ausschliessen. Stand: 0 Verstösse.
+  je hell und dunkel (mit und ohne Entwicklermodus). Stand: 0 Verstösse.
 - Anzeige-Nachführung (v5.1): Prüfskript im Scratchpad ändert je System × Ansicht
   (Diagramm, Zeichnung, Abschnitt) jede sichtbare Eingabe und vergleicht die Anzeige
   (Seitenleiste-Text, sichtbare Elemente, Feldwerte, Canvas/SVG-Hash, Ergebnisbereich
@@ -269,5 +269,6 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 
 | v5.1.3 | #31 | Einzelleiter H «Freie Eingabe» ohne Reglagebezug/Prozent; Reglage-Infobox dann ausgegraut (`.inaktiv`) mit Zeile «Nicht aktiv – H freie Eingabe»; Knopf «↺» quadratisch rechts neben dem Feld (`.feld-mit-knopf`) statt im Label |
 | v5.2.0 | – | Reglage-Fenster: angepasste EL-Reglagewerte (Bearbeiten, CSV-Import) gehören zum Projekt (`reglageAngepasst`, Anwendung über `_reglageAnpassungenAnwenden`, Originale in `_RGL_ORIGINAL`); markiert «angepasst», Knopf «↺ SBB-Werte»; nur echte Abweichungen werden festgehalten; Bearbeiten-Eingabe behält den Fokus; Knöpfe einheitlich (`.rgl-knopf`), Texte übersetzt. Vorher: Änderungen nur bis zum Neuladen, gespeicherte Projekte rechneten bei T₁-Änderung wieder mit SBB-Werten. Zudem: EL «Starr» nach Laden/Systemwechsel — `applyElVariant` leitet jetzt bei Starr/Overrides über `_applyReglageOvr` her (vorher normale Tabelle). |
 | v5.3.0 | – | Messpunkt-Bezug wählbar (`mpBezug`: hoch [Vorgabe] / links / rechts / sehne) — eine Stelle `mpBezugHoehe()` für Diagramm (Referenzlinie + Masslinie), Karten, Ergebnisleiste und PDF (vorher PDF = Sehne, Bildschirm = links); im Projekt gespeichert, ältere Projekte → hoch. Auswahl `#mp-bezug` neben «Reset» der Messpunkte |
+| v6.0.0 | – | **Produktiv**: Wasserzeichen «BETA – nicht verifiziert» entfernt (Bildschirm, PDFs, Handbuch). hf_min / hf_max nur im **Entwicklermodus** (3× aufs App-Symbol, `localStorage dh_dev`, Schild «DEV», Animation beim Antippen): UI mit `.nur-dev`, `hfGrenzenM()` → `null`, Schalter Diagramm/Zeichnung wirken nur mit `entwicklerModus`; Handbuch-Kapitel 6.14 nur im Entwicklermodus. Gespeicherte hf-Eingaben bleiben erhalten. |
 
 Issue #20: NIS (später).
