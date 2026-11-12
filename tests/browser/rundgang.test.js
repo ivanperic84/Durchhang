@@ -1291,3 +1291,40 @@ test('T₃ = T₂ bei gleicher Temperatur: gleiche Werte auf Karte, Tabelle und 
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Eingabeprüfung: Fehler sperrt (Spannweite 0/leer, Höhe ≤ 0), Warnung rechnet weiter (ungewöhnliche Werte)', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const setze = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input')); berechnen(); };
+    const zustand = id => ({ rot: document.getElementById(id).classList.contains('feld-fehler'), gelb: document.getElementById(id).classList.contains('feld-warnung'),
+      gerechnet: !!calcState, fehler: !document.getElementById('error-box').classList.contains('hidden'),
+      warnung: !document.getElementById('warn-box').classList.contains('hidden') ? document.getElementById('warn-box').innerText : '' });
+    const aus = {};
+    for (const [n, id, v, zurueck] of [['span0', 'span', '0', '45'], ['spanLeer', 'span', '', '45'], ['h1null', 'h1', '0', '7'],
+      ['span120', 'span', '120', '45'], ['h20', 'h2', '20', '7'], ['t2_120', 'temp2', '120', '-20'], ['normal', 'span', '45', '45']]) {
+      setze(id, v); aus[n] = zustand(id); setze(id, zurueck);
+    }
+    return aus;
+  });
+  for (const n of ['span0', 'spanLeer', 'h1null']) assert.deepEqual({ rot: r[n].rot, gerechnet: r[n].gerechnet, fehler: r[n].fehler }, { rot: true, gerechnet: false, fehler: true }, n);
+  for (const n of ['span120', 'h20', 't2_120']) {
+    assert.deepEqual({ gelb: r[n].gelb, gerechnet: r[n].gerechnet, fehler: r[n].fehler }, { gelb: true, gerechnet: true, fehler: false }, n);
+    assert.match(r[n].warnung, /bitte prüfen/, n);
+  }
+  assert.deepEqual({ rot: r.normal.rot, gelb: r.normal.gelb, warnung: r.normal.warnung }, { rot: false, gelb: false, warnung: '' });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Handy: Messpunkte M1–M4 und H1–H4 je 2 nebeneinander, eingetippter Wert sichtbar', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { viewport: { width: 390, height: 844 } });
+  const r = await seite.evaluate(() => {
+    const e = document.getElementById('probe-x1'); e.value = '15.5'; e.dispatchEvent(new Event('input'));
+    const spalten = s => getComputedStyle(document.querySelector(s)).gridTemplateColumns.split(' ').length;
+    return { m: spalten('.probe-m-zeile'), h: spalten('.probe-h-zeile'), breite: e.getBoundingClientRect().width };
+  });
+  assert.deepEqual({ m: r.m, h: r.h }, { m: 2, h: 2 });
+  assert.ok(r.breite >= 60, `Eingabefeld ${r.breite}px breit`);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});

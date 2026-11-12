@@ -1,4 +1,4 @@
-# Übergabe Durchhang — Stand v4.5.3 (8. Oktober 2026)
+# Übergabe Durchhang — Stand v4.6.0 (12. November 2026)
 
 Ziel dieser Datei: Eine neue Claude-Sitzung (auch unter einem anderen Account) kann
 ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLAUDE.md`
@@ -188,7 +188,7 @@ mit SOK-Differenz (seit v4.4.0; vorher wurde die SOK-Differenz ignoriert).
 ```bash
 npm ci
 npm test                                                     # 89 Node-Tests
-CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 55 Browser-Tests
+CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 57 Browser-Tests
 ```
 - In der Claude-Cloud-Umgebung ist Chromium unter `/opt/pw-browsers/chromium`
   vorinstalliert (nicht `playwright install` ausführen). CI (GitHub Actions) installiert
@@ -245,6 +245,7 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 55 
 | v4.5.0 | #22 | KM 000.000, Δ negativ tippbar, Beispiel mit 3 Strängen, Transparenz |
 | v4.5.1 | #23 | Auswahlkästchen im App-Design, Neon-Strangfarben im Dunkelmodus |
 | v4.5.2 | #25 | Δh der Messpunkte auf der Karte = Diagramm (SOK-Anstieg berücksichtigt) |
-| v4.5.3 | – | T₃ bei N-FL mit Kombination auf Karte, Tabelle und Zeichnung wie T₂ (kombiniertes System) |
+| v4.5.3 | #26 | T₃ bei N-FL mit Kombination auf Karte, Tabelle und Zeichnung wie T₂ (kombiniertes System) |
+| v4.6.0 | – | Eingabeprüfung (Fehler sperrt, Warnung rechnet: L > 80 m, h > 15 m, T ausserhalb −30…+90 °C), Messpunkte am Handy 2 × 2, Systemtext beim Start |
 
 Issue #20: NIS (später).

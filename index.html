@@ -951,7 +951,14 @@ body {
 }
 .probe-h-input:focus { outline: none; border-color: var(--h-clr); }
 .probe-h-unit { font-size: .65rem; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+.probe-m-zeile { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; }
 .probe-h-zeile { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; margin-top: .4rem; }
+/* Handy: je 2 Messpunkte pro Zeile — 4 nebeneinander wären zu schmal zum Eintippen */
+@media (max-width: 600px) {
+  .probe-m-zeile, .probe-h-zeile { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: .45rem; }
+}
+/* Eingabe ausserhalb des üblichen Bereichs: Rechnung läuft, Feld gelb markiert */
+.feld-warnung { border-color: var(--warn) !important; box-shadow: 0 0 0 2px var(--warn-s) !important; }
 .probe-h-rel { grid-column: 2; font-size: .62rem; color: var(--tertiary); min-height: .9em; padding-left: .2rem; font-variant-numeric: tabular-nums; }
 .probe-h-input:disabled { opacity: .55; cursor: not-allowed; }
 .probe-sok-link { margin-top: .35rem; background: none; border: none; padding: 0; font: inherit; font-size: .72rem; font-weight: 600;
@@ -1975,7 +1982,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
         <button class="seg-btn active" id="seg-nfl" onclick="sysWaehlen('nfl')" data-i18n="sys.nfl.kurz">N-FL</button>
       </div>
       <p id="sys-info" style="font-size:.72rem;color:var(--muted);margin-top:.35rem;margin-bottom:.75rem">
-        Fixabgefangen — Zugkraft temperaturabhängig (Zustandsgleichung)
+        Tragseil fix abgefangen — Zugkraft temperaturabhängig (Zustandsgleichung)
       </p>
       <!-- Kombination (N-FL / R-FL) -->
       <div id="combo-row">
@@ -2921,7 +2928,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
         </button>
       </div>
       <!-- M-Eingaben -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem">
+      <div class="probe-m-zeile">
         <div class="probe-m-group">
           <span class="probe-mp-badge m1">M1</span>
           <div class="probe-input-wrap">
@@ -3083,7 +3090,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v4.5.3';
+const APP_VERSION = 'v4.6.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -8734,7 +8741,9 @@ function berechnenEntprellt() {
 // Bei ungültiger Eingabe: Ergebnisse ausblenden, Diagramm abdunkeln und das
 // beanstandete Feld markieren — sonst stehen alte Werte da, als wären sie aktuell.
 const _FEHLER_FELD = { L: 'span', 'H.ts': 'tension', 'H.el': 'tension', 'H.fd': 'tension-fd',
-                       h1: 'h1', h2: 'h2', T1: 'temp1', sh: 'sh' };
+                       h1: 'h1', h2: 'h2', T1: 'temp1', T2: 'temp2', sh: 'sh' };
+// Übliche Bereiche: ausserhalb rechnet die App weiter, zeigt aber einen Hinweis
+const PLAUSIBEL = { L: 80, h: 15, T: [-30, 90] };
 function _ergebnisVeraltet(ja, feldId = null) {
   document.body.classList.toggle('ergebnis-veraltet', ja);
   document.querySelectorAll('.feld-fehler').forEach(el => {
@@ -8785,14 +8794,25 @@ function berechnen() {
   calcState = null;
 
   // Eingabevalidierung — nennt das erste beanstandete Feld statt einer Sammelmeldung.
+  document.querySelectorAll('.feld-warnung').forEach(el => el.classList.remove('feld-warnung'));
+  // Spannweite: leeres Feld oder 0 nicht stillschweigend durch 50 m ersetzen
+  const _spanFelder = spanMode === 'single' ? [document.getElementById('span')]
+    : Array.from({ length: spanCount }, (_, i) => document.getElementById(`span-${i}`)).filter(Boolean);
+  const _spanFalsch = _spanFelder.find(el => { const v = parseFloat(el.value); return !(v > 0); });
+  if (_spanFalsch) {
+    errorBox.innerHTML = `${t('val.feld.L')}: ${t(isNaN(parseFloat(_spanFalsch.value)) ? 'val.fehlt' : 'val.positiv')}`;
+    errorBox.classList.remove('hidden');
+    _ergebnisVeraltet(true, _spanFalsch.id);
+    return;
+  }
   // [Schlüssel, Wert, muss > 0 sein]
   const isEl = sysMode === 'el';
   const pflichtfelder = isEl
     ? [['L', L, true], ['q.el', q_Ts, true], ['H.el', H_Ts, true],
-       ['h1', h1, false], ['h2', h2, false], ['T1', T1, false]]
+       ['h1', h1, true], ['h2', h2, true], ['T1', T1, false], ['T2', T2, false]]
     : [['L', L, true], ['q.ts', q_Ts, true], ['q.fd', q_Fd_base, true],
-       ['H.ts', H_Ts, true], ['H.fd', H_Fd, true], ['h1', h1, false],
-       ['h2', h2, false], ['T1', T1, false], ['sh', sh, true]];
+       ['H.ts', H_Ts, true], ['H.fd', H_Fd, true], ['h1', h1, true],
+       ['h2', h2, true], ['T1', T1, false], ['T2', T2, false], ['sh', sh, true]];
   for (const [feld, wert, positiv] of pflichtfelder) {
     const grund = isNaN(wert) ? 'val.fehlt' : (positiv && wert <= 0 ? 'val.positiv' : null);
     if (grund) {
@@ -8825,7 +8845,16 @@ function berechnen() {
   const { c1, c2 } = z;
 
   const warns = [];
-  if (spanMode === 'ruling') warns.push(`Lm = ${Lm.toFixed(2)} m · Dargestelltes Feld: ${L.toFixed(1)} m`);
+  if (spanMode === 'ruling') warns.push(t('warn.lm.feld').replace('{lm}', Lm.toFixed(2)).replace('{l}', L.toFixed(1)));
+  // Plausibilität: ungewöhnliche Werte gelb markieren, Rechnung läuft weiter
+  const _plausibel = (id, ok, text) => { if (ok) return; warns.push('⚠ ' + text); document.getElementById(id)?.classList.add('feld-warnung'); };
+  _spanFelder.forEach(el => _plausibel(el.id, parseFloat(el.value) <= PLAUSIBEL.L,
+    t('warn.plaus.L').replace('{v}', fN(parseFloat(el.value), 1)).replace('{max}', PLAUSIBEL.L)));
+  [['h1', h1], ['h2', h2]].forEach(([id, v]) => _plausibel(id, v <= PLAUSIBEL.h,
+    t('warn.plaus.h').replace('{v}', fN(v, 2)).replace('{max}', PLAUSIBEL.h)));
+  [['temp1', T1], ['temp2', T2], ...(_T3 !== null ? [['temp3', _T3]] : [])].forEach(([id, v]) =>
+    _plausibel(id, v >= PLAUSIBEL.T[0] && v <= PLAUSIBEL.T[1],
+      t('warn.plaus.T').replace('{v}', fN(v, 0)).replace('{min}', PLAUSIBEL.T[0]).replace('{max}', PLAUSIBEL.T[1])));
   if (c1.x_low < 0 || c1.x_low > L) warns.push(t('warn.tiefpunkt.t1'));
   if ((sysMode === 'nfl' || isEl) && c2 && (c2.x_low < 0 || c2.x_low > L))
     warns.push(t('warn.tiefpunkt.t2'));
@@ -14614,6 +14643,11 @@ const LANG = {
     'val.feld.h1':      'Höhe links h\u2081',
     'val.feld.h2':      'Höhe rechts h\u2082',
     'val.feld.T1':      'Temperatur T\u2081',
+    'val.feld.T2':      'Temperatur T\u2082',
+    'warn.lm.feld':     'Lm = {lm} m · Dargestelltes Feld: {l} m',
+    'warn.plaus.L':     'Spannweite {v} m ist ungewöhnlich gross (üblich bis {max} m) — bitte prüfen.',
+    'warn.plaus.h':     'Höhe {v} m über SOK ist ungewöhnlich gross (üblich bis {max} m) — bitte prüfen.',
+    'warn.plaus.T':     'Temperatur {v} °C liegt ausserhalb des üblichen Bereichs ({min} bis +{max} °C) — bitte prüfen.',
     'val.feld.sh':      'Systemhöhe sh',
     // Rechenfehler
     'err.ausgangszustand':  'Ausgangszustand',
@@ -15478,6 +15512,11 @@ const LANG = {
     'val.feld.h1':      'Hauteur gauche h\u2081',
     'val.feld.h2':      'Hauteur droite h\u2082',
     'val.feld.T1':      'Température T\u2081',
+    'val.feld.T2':      'Température T\u2082',
+    'warn.lm.feld':     'Lm = {lm} m · Portée représentée : {l} m',
+    'warn.plaus.L':     'La portée de {v} m est inhabituellement grande (habituel jusqu’à {max} m) — à vérifier.',
+    'warn.plaus.h':     'La hauteur de {v} m sur DRS est inhabituellement grande (habituel jusqu’à {max} m) — à vérifier.',
+    'warn.plaus.T':     'La température de {v} °C est hors de la plage habituelle ({min} à +{max} °C) — à vérifier.',
     'val.feld.sh':      'Hauteur de système sh',
     // Erreurs de calcul
     'err.ausgangszustand':  'État initial',
@@ -16342,6 +16381,11 @@ const LANG = {
     'val.feld.h1':      'Altezza sinistra h\u2081',
     'val.feld.h2':      'Altezza destra h\u2082',
     'val.feld.T1':      'Temperatura T\u2081',
+    'val.feld.T2':      'Temperatura T\u2082',
+    'warn.lm.feld':     'Lm = {lm} m · Campata rappresentata: {l} m',
+    'warn.plaus.L':     'La campata di {v} m è insolitamente grande (di solito fino a {max} m) — da verificare.',
+    'warn.plaus.h':     'L’altezza di {v} m sopra il PRF è insolitamente grande (di solito fino a {max} m) — da verificare.',
+    'warn.plaus.T':     'La temperatura di {v} °C è fuori dal campo usuale (da {min} a +{max} °C) — da verificare.',
     'val.feld.sh':      'Altezza di sistema sh',
     // Errori di calcolo
     'err.ausgangszustand':  'Stato iniziale',
@@ -18657,7 +18701,8 @@ SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
           <li><strong>Offline</strong>: Die App funktioniert nach dem ersten Laden ohne Internet und lässt sich installieren. Nach einer Aktualisierung erscheint «Eine neue Version ist verfügbar» — «Jetzt laden» wählen oder die Seite neu laden.</li>
           <li><strong>Schalter</strong> statt Kästchen: Ein-/Aus-Optionen sind überall als Schalter dargestellt.</li>
           <li><strong>Wasserzeichen «BETA – nicht verifiziert»</strong>: Die App ist in der Beta-Phase, die Ergebnisse sind nicht verifiziert. Das Wasserzeichen liegt blass über dem Bildschirm und steht auch auf PDF-Protokollen und Zeichnung.</li>
-          <li><strong>Escape</strong> schliesst offene Fenster; Pflichtfelder mit ungültigem Wert werden markiert, die Ergebnisse dann als veraltet angezeigt.</li>
+          <li><strong>Escape</strong> schliesst offene Fenster.</li>
+          <li><strong>Eingabeprüfung</strong>: Unmögliche Werte (Spannweite leer, 0 oder negativ; Höhe h ≤ 0; fehlende Temperatur) werden <em>rot</em> markiert, die Rechnung stoppt und die Ergebnisse erscheinen als veraltet. Ungewöhnliche Werte (Spannweite über 80 m, Höhe über SOK über 15 m, Temperatur ausserhalb −30 bis +90 °C) werden <em>gelb</em> markiert mit einem Hinweis «bitte prüfen» — die Rechnung läuft weiter.</li>
         </ul>
       </div><!-- /hb-de -->
       <div class="hb-lang hb-fr" style="display:none">
@@ -18673,7 +18718,8 @@ SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
           <li><strong>Hors ligne</strong> : après le premier chargement, l’application fonctionne sans Internet et peut être installée. Après une mise à jour apparaît «Une nouvelle version est disponible» — choisir «Charger maintenant» ou recharger la page.</li>
           <li><strong>Interrupteurs</strong> au lieu de cases à cocher : les options oui/non sont partout représentées par des interrupteurs.</li>
           <li><strong>Filigrane «BÊTA – non vérifié»</strong> : l’application est en phase bêta, les résultats ne sont pas vérifiés. Le filigrane apparaît en transparence sur l’écran ainsi que sur les protocoles PDF et le dessin.</li>
-          <li><strong>Échap</strong> ferme les fenêtres ouvertes ; les champs invalides sont marqués et les résultats affichés comme obsolètes.</li>
+          <li><strong>Échap</strong> ferme les fenêtres ouvertes.</li>
+          <li><strong>Contrôle des saisies</strong> : les valeurs impossibles (portée vide, 0 ou négative ; hauteur h ≤ 0 ; température manquante) sont marquées en <em>rouge</em>, le calcul s’arrête et les résultats sont affichés comme obsolètes. Les valeurs inhabituelles (portée supérieure à 80 m, hauteur sur DRS supérieure à 15 m, température hors de −30 à +90 °C) sont marquées en <em>jaune</em> avec la remarque «à vérifier» — le calcul continue.</li>
         </ul>
       </div><!-- /hb-fr -->
       <div class="hb-lang hb-it" style="display:none">
@@ -18689,7 +18735,8 @@ SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
           <li><strong>Offline</strong>: dopo il primo caricamento l’applicazione funziona senza Internet e può essere installata. Dopo un aggiornamento appare «È disponibile una nuova versione» — scegliere «Carica ora» o ricaricare la pagina.</li>
           <li><strong>Interruttori</strong> al posto delle caselle: le opzioni sì/no sono ovunque rappresentate da interruttori.</li>
           <li><strong>Filigrana «BETA – non verificato»</strong>: l’applicazione è in fase beta, i risultati non sono verificati. La filigrana appare in trasparenza sullo schermo e anche sui protocolli PDF e sul disegno.</li>
-          <li><strong>Esc</strong> chiude le finestre aperte; i campi non validi vengono evidenziati e i risultati mostrati come non aggiornati.</li>
+          <li><strong>Esc</strong> chiude le finestre aperte.</li>
+          <li><strong>Controllo dei dati</strong>: i valori impossibili (campata vuota, 0 o negativa; altezza h ≤ 0; temperatura mancante) sono evidenziati in <em>rosso</em>, il calcolo si ferma e i risultati appaiono come non aggiornati. I valori insoliti (campata oltre 80 m, altezza sopra il PRF oltre 15 m, temperatura fuori da −30 a +90 °C) sono evidenziati in <em>giallo</em> con l’avviso «da verificare» — il calcolo prosegue.</li>
         </ul>
       </div><!-- /hb-it -->
 
