@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v5.1.2';
+const APP_VERSION = 'v5.1.3';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -2999,17 +2999,15 @@ function _zugkraftSperre(fotoAktiv = window._fotoTabActive) {
   if (hw) {
     const hand = sysMode === 'el' && _hVonHand;
     if (hand) {
-      const soll = _tabelleBeiT(activePresetRef?.H_Ts_ub_table, parseFloat(document.getElementById('temp1').value));
-      const ist  = parseFloat(el.value);
-      const pct  = (soll && !isNaN(ist)) ? Math.round((ist - soll) / soll * 100) : null;
-      hw.innerHTML = t('par.H.hand.el')
-        .replace('{H}', soll != null ? Math.round(soll).toLocaleString('de-CH') : '—')
-        .replace('{d}', pct == null ? '' : ` (${pct >= 0 ? '+' : '−'}${Math.abs(pct)}\u00a0%)`);
+      hw.innerHTML = t('par.H.hand.el');   // freie Eingabe — bewusst ohne Bezug zur Reglage
     } else {
       hw.innerHTML = t(sysMode === 'el' ? 'par.H.reglage.el' : 'par.H.reglage');
     }
     hw.classList.toggle('hand', hand);
     document.getElementById('tension-wrap')?.classList.toggle('feld-hand', hand);
+    // Reglage-Infobox oben (System): ausgegraut + Zusatzzeile, solange sie nicht wirkt
+    document.getElementById('el-reglage-info')?.classList.toggle('inaktiv', hand);
+    zeigeElement(document.getElementById('el-reglage-inaktiv'), hand && istSichtbar(document.getElementById('el-reglage-info')));
     zeigeElement(hw, reglage && !mode3pt && !fotoAktiv && !_hFromFoto);
   }
   _updateTensionResetBtn();
