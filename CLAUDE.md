@@ -57,7 +57,7 @@ https://ivanperic84.github.io/Durchhang/ (wird aus `main` veröffentlicht).
 ## Prüfen vor jedem Commit
 ```bash
 npm test                                   # Node-Tests (Stand: 89, alle grün)
-CHROMIUM_PFAD=/opt/pw-browsers/chromium npm run test:browser   # Browser (Stand: 65)
+CHROMIUM_PFAD=/opt/pw-browsers/chromium npm run test:browser   # Browser (Stand: 66)
 ```
 - Browser-Tests mit `timeout` starten (z. B. `timeout 900 …`); in Prüfskripten Playwright-
   Kontexte mit `serviceWorkers: 'block'`, sonst wird eine alte Fassung aus dem Cache geladen.
@@ -76,6 +76,8 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium npm run test:browser   # Browser (Stand:
 - Hell-/Dunkelmodus: Farben nur über CSS-Variablen (`:root` / `:root[data-thema="dunkel"]`).
   Canvas/SVG-Farben aus den Hilfsfunktionen (z. B. `diagrammFarben()`).
 - Alle Checkboxen sind app-weit Schalter (Toggle); Ausnahme Klasse `.auswahl` (Auswahlkästchen).
+- Touch-Geräte: alle Knöpfe haben min. 40 px Höhe (`@media (any-pointer: coarse)`). Kleine runde Knöpfe
+  brauchen `min-height: 0` und eine unsichtbar vergrösserte Tippfläche (`::after`), sonst werden sie gestreckt.
 - Neue Fenster (Dialoge) als `.modal-overlay` mit Klasse `open` öffnen, keine eigene `z-index` setzen:
   der Fensterstapel in app.js legt das zuletzt geöffnete nach oben (Ebenen in app.css beschrieben).
 - Wasserzeichen «BETA – nicht verifiziert» bleibt (Bildschirm und PDFs).

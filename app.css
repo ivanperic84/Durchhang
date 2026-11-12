@@ -1614,7 +1614,7 @@ details.reglage-info-box > summary .info-title { flex: 1; margin-bottom: 0; }
 .rgl-wrap > details > summary { padding-right: 1.5rem; }
 .rgl-wrap > details[style*="display:none"] + .rgl-i,
 .rgl-wrap > details[style*="display: none"] + .rgl-i { display: none; }
-.rgl-wrap > .rgl-i { position: absolute; top: .45rem; right: .6rem; opacity: .75; }   /* mittig zur ersten Titelzeile */
+.rgl-wrap > .rgl-i { position: absolute; top: .45rem; right: .6rem; opacity: .75; min-height: 0; min-width: 0; }  /* rund bleiben, auch bei Touch-Mindesthöhe */   /* mittig zur ersten Titelzeile */
 .rgl-wrap > .rgl-i {
   flex-shrink: 0; align-self: center; width: 16px; height: 16px; border-radius: 50%;
   border: 1px solid var(--border2); background: none; color: var(--muted);
@@ -1875,6 +1875,7 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
   /* Kleine runde Info-Knöpfe: Tippfläche unsichtbar vergrössern statt aufblähen */
   [id$="-info-btn"] { position: relative; min-height: 0; }
   [id$="-info-btn"]::after { content: ''; position: absolute; inset: -13px; }
+  .rgl-wrap > .rgl-i::after { content: ''; position: absolute; inset: -12px; }
 }
 
 /* Datei-Dialog: Speicherzustand (dauerhaft, belegt, letzte Sicherung) */
