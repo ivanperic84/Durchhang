@@ -1603,3 +1603,23 @@ test('Reglagewerte: hergeleitete auf 100 N gerundet, Infobox nennt den Bezugswer
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Touchscreen: kleine runde Info-Knöpfe bleiben rund (keine 40-px-Streckung)', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { hasTouch: true });
+  const r = await seite.evaluate(async () => {
+    const out = { coarse: matchMedia('(any-pointer: coarse)').matches, verzerrt: [] };
+    for (const sys of ['nfl', 'rfl', 'el']) {
+      setSysMode(sys); await new Promise(res => setTimeout(res, 50));
+      document.querySelectorAll('.rgl-i, [id$="-info-btn"]').forEach(b => {
+        if (!b.getClientRects().length) return;
+        const q = b.getBoundingClientRect();
+        if (Math.abs(q.width - q.height) > 2) out.verzerrt.push(`${sys}: ${b.id || b.className} ${Math.round(q.width)}×${Math.round(q.height)}`);
+      });
+    }
+    return out;
+  });
+  assert.ok(r.coarse, 'Touch-Nachbildung aktiv');
+  assert.deepEqual(r.verzerrt, []);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
