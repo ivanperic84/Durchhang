@@ -1575,3 +1575,31 @@ test('Anzeige folgt jeder Eingabe (kein Nachziehen erst durch Systemwechsel)', a
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Reglagewerte: hergeleitete auf 100 N gerundet, Infobox nennt den Bezugswert bei +10 °C wie das H-Feld', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const setze = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); };
+    const zahl = s => parseInt(String(s).replace(/[^\d]/g, ''), 10);
+    const abweichungen = [];
+    setSysMode('el');
+    for (const o of [...document.getElementById('el-material-select').options]) for (const art of ['ausgleichend', 'starr']) {
+      setze('el-material-select', o.value); setBerechnungsart(art); setze('temp1', '10');
+      const tbl = activePresetRef?.H_Ts_ub_table;
+      const nicht100 = (tbl?.vals || []).filter(v => v % 100 !== 0);
+      const titel = document.getElementById('el-reglage-title').textContent;
+      const H = document.getElementById('tension').value;
+      const boxH = zahl((titel.match(/H = ([\d'’]+)/) || [])[1]);
+      if (!tbl || nicht100.length || !/\+10 °C/.test(titel) || boxH !== +H) abweichungen.push({ mat: o.value, art, titel, H, nicht100 });
+    }
+    setBerechnungsart('ausgleichend');
+    // N-FL: Notiz nennt die Bezugswerte bei +10 °C, unabhängig von T₁
+    setSysMode('nfl'); setze('temp1', '10'); const n10 = document.getElementById('combo-note').textContent;
+    setze('temp1', '17'); const n17 = document.getElementById('combo-note').textContent;
+    return { abweichungen, nflGleich: n10 === n17, nfl10: /bei \+10 °C/.test(n10) };
+  });
+  assert.deepEqual(r.abweichungen, []);
+  assert.ok(r.nfl10 && r.nflGleich, 'N-FL-Infobox: Bezugswerte bei +10 °C, unabhängig von T₁');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});

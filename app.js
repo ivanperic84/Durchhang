@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v5.1.0';
+const APP_VERSION = 'v5.1.1';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -505,10 +505,11 @@ function buildPresetNote(p, currentH_Ts_ub, currentT1) {
     const bel = t('preset.nfl.bel'), ub = t('preset.nfl.ub'), bei = t('preset.bei.t1');
     const rg  = _presetReglage(p);
     const ref = rg.note_ref ? `  (${rg.note_ref})` : '';
-    const H_ub = (currentH_Ts_ub != null) ? currentH_Ts_ub : rg.H_Ts_ub;
-    const T1   = (currentT1   != null) ? currentT1   : p.T1;
-    const sign = T1 >= 0 ? '+' : '';
-    return `Reglage ${ts}: ${bel} ${fmt(rg.H_Ts)} N / ${ub} ${fmt(H_ub)} N ${bei} ${sign}${T1} °C  ·  H ${fd}: ${fmt(p.H_Fd)} N${ref}`;
+    // Bezugswerte der Reglagetabelle bei +10 °C (belastet und unbelastet am selben
+    // Bezugspunkt). Der Wert bei T₁ steht im H-Feld. currentH_Ts_ub/currentT1 bleiben
+    // als Parameter für ältere Aufrufe, werden aber nicht mehr angezeigt.
+    const H_ub = _tabelleBeiT(rg.H_Ts_ub_table, 10) ?? rg.H_Ts_ub;
+    return `Reglage ${ts} ${bei} +10 °C: ${bel} ${fmt(rg.H_Ts)} N / ${ub} ${fmt(H_ub)} N  ·  H ${fd}: ${fmt(p.H_Fd)} N${ref}`;
   } else if (p.sysMode === 'rfl') {
     const konst = t('preset.hts.konst');
     const abnutzung = t('preset.abnutzung');
@@ -3012,6 +3013,7 @@ function _zugkraftSperre(fotoAktiv = window._fotoTabActive) {
     zeigeElement(hw, reglage && !mode3pt && !fotoAktiv && !_hFromFoto);
   }
   _updateTensionResetBtn();
+  _elReglageBoxAktualisieren();
 }
 
 function resetHToReglage() {
@@ -3802,15 +3804,14 @@ function applyElVariant(idx) {
     const dftH = 6000, dftL = mat.L_ref ?? 45;
     if (mat.E && mat.AK && elReglageHmaxOvr === null && elReglageLrefOvr === null) {
       const _t = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40];
-      const _v = _t.map(T => { const H = _reglageH(mat, dftH, dftL, T); return H ? Math.round(H) : 0; });
+      const _v = _t.map(T => _rundeReglage(_reglageH(mat, dftH, dftL, T)));
       activePresetRef = { H_Ts_ub_table: { temps: _t, vals: _v } };
       updateH_Ts_ubFromT1();
     } else {
       activePresetRef = null;
     }
-    document.getElementById('el-reglage-title').innerHTML = 'Reglagewerte';
-    document.getElementById('el-reglage-note').innerHTML  = '6 kN Basiszugkraft (Voreinstellung −20 °C)';
   }
+  _elReglageBoxAktualisieren();
   zeigeElement(infoBox, true);
   if (elReglageOpen) renderReglageEditPanel();
   berechnen();
@@ -5310,17 +5311,27 @@ function _reglageBase() {
 // Referenzspannweite neu gerendert werden (Material, Basiskraft, Berechnungsart).
 // Bei abweichendem L_ref — Berechnungsart «Starr» erzwingt 25 m statt 45 m — ist der
 // tabellierte H_reglage nicht mehr massgebend und wird passend zu L_ref hergeleitet.
-function _renderReglageTitle() {
-  const el = document.getElementById('el-reglage-title');
-  if (!el) return;
-  const { mat, variant, H_max, L_ref } = _reglageBase();
-  if (!mat || !variant || variant.H_reglage == null) return; // andere Zweige setzen den Titel selbst
-  const matLref = variant.L_ref ?? mat.L_ref ?? 45;
-  const H10  = (L_ref !== matLref) ? _reglageH(mat, H_max, L_ref, 10) : variant.H_reglage;
-  const Htxt = (H10 != null && isFinite(H10)) ? Math.round(H10).toLocaleString('de-CH') : '—';
-  el.innerHTML =
-    `H = ${Htxt} N  (${t('ui.reglage.bei')} T<sub>1</sub> = 10 °C, Lm = ${L_ref} m)`;
+function _renderReglageTitle() { _elReglageBoxAktualisieren(); }
+
+// Einzelleiter-Infobox: Bezugswert bei +10 °C aus derselben Tabelle, mit der gerechnet
+// wird (SBB-Tabelle oder hergeleitet und auf 100 N gerundet) — dadurch passen Box,
+// Reglagetabelle und H-Feld bei T₁ = +10 °C immer zusammen. Läuft bei jeder Rechnung.
+function _elReglageBoxAktualisieren() {
+  if (sysMode !== 'el') return;
+  const titel = document.getElementById('el-reglage-title');
+  const notiz = document.getElementById('el-reglage-note');
+  if (!titel || !notiz) return;
+  const { mat, variant, L_ref } = _reglageBase();
+  const H10 = _tabelleBeiT(activePresetRef?.H_Ts_ub_table, 10);
+  titel.innerHTML = `${t('ui.reglage.bei')} +10 °C: H = ${H10 ? Math.round(H10).toLocaleString('de-CH') : '—'} N  (Lm = ${L_ref} m)`;
+  notiz.textContent = !mat ? '' : (variant?.H_reglage != null)
+    ? (variant.reglage_note_key ? t(variant.reglage_note_key) : (variant.reglage_note || ''))
+    : t('mat.rn.6kn.vorgabe');
 }
+
+// Hergeleitete Reglagewerte werden wie die SBB-Reglagetabellen auf 100 N gerundet —
+// überall gleich (Feld, Infobox, Tabelle, Export). 0 = kein Wert.
+function _rundeReglage(H) { return (H != null && isFinite(H) && H > 0) ? Math.round(H / 100) * 100 : 0; }
 
 // Berechnet H bei Temperatur T, ausgehend von H_max bei −20 °C
 function _reglageH(mat, H_max, L_ref, T) {
@@ -5365,8 +5376,10 @@ function renderReglageEditPanel() {
             }
           }
         }
+      } else if (activePresetRef?.H_Ts_ub_table) {
+        H = _tabelleBeiT(activePresetRef.H_Ts_ub_table, T);   // genau die Werte der Rechnung
       } else {
-        H = _reglageH(mat, H_max, L_ref, T);
+        H = _rundeReglage(_reglageH(mat, H_max, L_ref, T)) || null;
       }
       const Hr = H !== null ? Math.round(H) : null;
       const f  = H !== null ? mat.q * L_ref * L_ref / (8 * H) : null;
@@ -5400,20 +5413,15 @@ function _applyReglageOvr() {
     activePresetRef = { H_Ts_ub_table: tbl };
     updateH_Ts_ubFromT1();
   } else if (mat && H_max && mat.E && mat.AK) {
-    // Override aktiv oder «Starr» (L_ref = 25 m): Werte aus H_max herleiten.
-    // Reine Starr-Herleitung (ohne manuelle Werte) auf 100 N runden wie die
-    // Reglagetabelle SBB 0161.1013.0003 — so entstehen exakt deren Werte.
-    const wieTabelle = elBerechnungsart === 'starr' && elReglageHmaxOvr === null && elReglageLrefOvr === null;
+    // Override aktiv oder «Starr» (L_ref = 25 m): Werte aus H_max herleiten und wie
+    // die Reglagetabellen auf 100 N runden (bei Starr ergeben sich so exakt die Werte
+    // der Tabelle SBB 0161.1013.0003).
     const temps = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40];
-    const vals  = temps.map(T => {
-      const H = _reglageH(mat, H_max, L_ref, T);
-      if (H === null) return 0;
-      return wieTabelle ? Math.round(H / 100) * 100 : Math.round(H);
-    });
+    const vals  = temps.map(T => _rundeReglage(_reglageH(mat, H_max, L_ref, T)));
     activePresetRef = { H_Ts_ub_table: { temps, vals } };
     updateH_Ts_ubFromT1();
   }
-  _renderReglageTitle();   // L_ref kann sich geändert haben (z.B. Berechnungsart)
+  _elReglageBoxAktualisieren();   // L_ref kann sich geändert haben (z.B. Berechnungsart)
   renderReglageEditPanel();
   berechnen();
 }
@@ -5546,7 +5554,7 @@ function _reglageHAt10(mat, variant, H_max, L_ref) {
     const i = tbl.temps.indexOf(10);
     if (i >= 0) return tbl.vals[i];
   }
-  return _reglageH(mat, H_max, L_ref, 10);
+  return _rundeReglage(_reglageH(mat, H_max, L_ref, 10)) || null;
 }
 
 function toggleReglageElEdit() {
@@ -5572,7 +5580,7 @@ function _applyElMatEdits() {
         const H_max = ed.H_max ?? _effHmax(mat, variant);
         const L_ref = ed.L_ref ?? _effLref(mat, variant);
         const temps = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40];
-        const vals  = temps.map(T => { const H = _reglageH(mat, H_max, L_ref, T); return H ? Math.round(H) : 0; });
+        const vals  = temps.map(T => _rundeReglage(_reglageH(mat, H_max, L_ref, T)));
         const newTbl = { temps, vals };
         if (variant === mat) {
           mat.H_reglage_table = newTbl;
@@ -5618,8 +5626,7 @@ function exportMaterialsCSV() {
       const tbl   = (variant !== mat ? variant?.H_reglage_table : null) ?? mat.H_reglage_table;
       const Hvals = temps.map(T => {
         if (tbl) { const i = tbl.temps.indexOf(T); if (i >= 0) return Math.round(tbl.vals[i]); }
-        const H = _reglageH(mat, H_max ?? 6000, L_ref, T);
-        return H ? Math.round(H) : 0;
+        return _rundeReglage(_reglageH(mat, H_max ?? 6000, L_ref, T));
       });
       const note  = (variant !== mat ? variant?.reglage_note : null) ?? mat.reglage_note ?? '';
       lines.push([
@@ -11617,8 +11624,9 @@ function setLang(lang) {
     }
   }
   // ── Einzelleiter-Reglageinfo neu rendern ──────────────────────
-  const _elInfo = document.getElementById('el-reglage-info');
-  if (istSichtbar(_elInfo)) elMaterialChanged();
+  // (früher elMaterialChanged() — das verwarf angepasste Reglagewerte und den Handwert)
+  _elReglageBoxAktualisieren();
+  if (elReglageOpen) renderReglageEditPanel();
 
   // ── Abschnitt-Ansicht in neuer Sprache neu aufbauen (sonst bleibt sie in der alten) ──
   if (_abschnittSichtbar) renderAbschnitt();
