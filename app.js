@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v5.0.1';
+const APP_VERSION = 'v5.1.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -2877,6 +2877,34 @@ let yCInputMode = 'sag';  // 'sag' = Durchhang unter Sehne | 'sok' = Höhe ab SO
 let activePresetRef = null; // { H_Ts_ub_table } or null
 let _tensionAutoFilling = false; // Verhindert Zirkel beim Auto-Befüllen
 let _hFromFoto = false; // H wurde durch Foto-Feldaufnahme überschrieben
+// Einzelleiter: H von Hand eingegeben (statt aus der Reglage). Bleibt bis «↺ Reglage»,
+// Wechsel von Leiter/Basiskraft/Berechnungsart/Reglagewerten oder System.
+let _hVonHand = false;
+
+// Wert einer Reglagetabelle bei Temperatur T (linear, oberhalb extrapoliert)
+function _tabelleBeiT(tbl, T) {
+  if (!tbl || isNaN(T)) return null;
+  const { temps, vals } = tbl, n = temps.length;
+  if (T <= temps[0]) return vals[0];
+  if (T >= temps[n - 1]) {
+    const k = (vals[n - 1] - vals[n - 2]) / (temps[n - 1] - temps[n - 2]);
+    return Math.max(100, Math.round(vals[n - 1] + k * (T - temps[n - 1])));
+  }
+  for (let i = 0; i < n - 1; i++)
+    if (T >= temps[i] && T <= temps[i + 1])
+      return Math.round(vals[i] + (T - temps[i]) / (temps[i + 1] - temps[i]) * (vals[i + 1] - vals[i]));
+  return null;
+}
+
+// Eingabe im H-Feld. Einzelleiter: Handwert neben der Reglage (zurücksetzbar);
+// sonst (eigene Kombination) wie bisher ohne Reglagebezug.
+function _hEingabe() {
+  if (_tensionAutoFilling) return;
+  if (sysMode === 'el' && activePresetRef) _hVonHand = true;
+  else activePresetRef = null;
+  _updateTensionFotoState(false);
+  _zugkraftSperre();
+}
 
 // Δ H zum theoretischen Reglagewert anzeigen
 function _updateTensionDelta() {
@@ -2926,6 +2954,7 @@ function _updateTensionDelta() {
 // Visueller Zustand des H-Felds: normal / foto-override
 function _updateTensionFotoState(fromFoto) {
   _hFromFoto = fromFoto;
+  if (fromFoto) _hVonHand = false;   // Foto-Aufnahme ersetzt den Handwert
   const wrap = document.getElementById('tension-wrap');
   const note = document.getElementById('tension-foto-note');
   if (wrap) {
@@ -2946,7 +2975,7 @@ function _updateTensionResetBtn() {
   const hasTbl = !!(activePresetRef?.H_Ts_ub_table
                  || activePresetP?.H_reglage_table
                  || activePresetP?.H_reglage_variants?.[0]?.H_reglage_table);
-  const isOverridden = _hFromFoto;  // Reset-Button nur bei Foto-Override
+  const isOverridden = _hFromFoto || (_hVonHand && sysMode === 'el');  // Foto oder Handwert (EL)
   zeigeElement(btn, (hasTbl && isOverridden));
 }
 
@@ -2960,15 +2989,29 @@ function _zugkraftSperre(fotoAktiv = window._fotoTabActive) {
   // Kettenwerk: Wert kommt aus der gewählten Kombination (N-FL Reglagetabelle, R-FL konstant);
   // Einzelleiter: aus der Reglage des Leiters
   const reglage = sysMode === 'el' ? !!activePresetRef : !!document.getElementById('preset-select')?.value;
-  const gesperrt = reglage || mode3pt || !!fotoAktiv;
+  // Einzelleiter: H bleibt von Hand überschreibbar (Rückweg «↺ Reglage»)
+  const gesperrt = (reglage && sysMode !== 'el') || mode3pt || !!fotoAktiv;
   el.readOnly = gesperrt;
   el.tabIndex = gesperrt ? -1 : 0;
   el.classList.toggle('feld-gesperrt', gesperrt);
   const hw = document.getElementById('tension-reglage-hw');
   if (hw) {
-    hw.innerHTML = t(sysMode === 'el' ? 'par.H.reglage.el' : 'par.H.reglage');
+    const hand = sysMode === 'el' && _hVonHand;
+    if (hand) {
+      const soll = _tabelleBeiT(activePresetRef?.H_Ts_ub_table, parseFloat(document.getElementById('temp1').value));
+      const ist  = parseFloat(el.value);
+      const pct  = (soll && !isNaN(ist)) ? Math.round((ist - soll) / soll * 100) : null;
+      hw.innerHTML = t('par.H.hand.el')
+        .replace('{H}', soll != null ? Math.round(soll).toLocaleString('de-CH') : '—')
+        .replace('{d}', pct == null ? '' : ` (${pct >= 0 ? '+' : '−'}${Math.abs(pct)}\u00a0%)`);
+    } else {
+      hw.innerHTML = t(sysMode === 'el' ? 'par.H.reglage.el' : 'par.H.reglage');
+    }
+    hw.classList.toggle('hand', hand);
+    document.getElementById('tension-wrap')?.classList.toggle('feld-hand', hand);
     zeigeElement(hw, reglage && !mode3pt && !fotoAktiv && !_hFromFoto);
   }
+  _updateTensionResetBtn();
 }
 
 function resetHToReglage() {
@@ -2980,6 +3023,7 @@ function resetHToReglage() {
   if (!tbl) return;
   if (!activePresetRef) activePresetRef = { H_Ts_ub_table: tbl };
   _hFromFoto = false; // Guard zuerst löschen damit updateH_Ts_ubFromT1 durchläuft
+  _hVonHand = false;
   updateH_Ts_ubFromT1();
   _updateTensionFotoState(false);
   _updateTensionDelta();
@@ -3338,7 +3382,8 @@ function updateSysModeUI(mode) {
       : t('sys.info.el');
 
   // Zugkraft-Label
-  document.getElementById('tension-label').textContent =
+  // Nur den Text — im Label sitzt auch der Knopf «↺ Reglage»
+  document.getElementById('tension-label-txt').textContent =
     isNfl ? t('par.H.ts.ub') : isRfl ? t('par.H.ts.const') : t('par.H.el');
 
   // Belastet-Anzeige: nur N-FL
@@ -3400,7 +3445,8 @@ function updateSysModeUI(mode) {
   // Kombination (N-FL/R-FL) vs. Material (Einzelleiter)
   zeigeElement(document.getElementById('combo-row'), !(isEl));
   zeigeElement(document.getElementById('el-material-row'), isEl);
-  zeigeElement(document.getElementById('el-basis-row'), isEl);
+  // Basiskraft-Zeile nur, wenn der Leiter Varianten hat (sonst leere Leiste, z. B. Cu 107)
+  zeigeElement(document.getElementById('el-basis-row'), isEl && !!document.getElementById('el-basis-btns')?.children.length);
   if (!isEl) zeigeElement(document.getElementById('el-reglage-info'), false);
   // Abnutzungszeile nur im Einzelleiter-Modus ausblenden — sonst bleibt der
   // bisherige Zustand unverändert (vorher als Selbstzuweisung geschrieben).
@@ -3687,6 +3733,7 @@ function sysWaehlen(mode) {
 
 function setSysMode(mode) {
   sysMode = mode;
+  _hVonHand = false;
   updateSysModeUI(mode);
   // Foto-H-Override beim Moduswechsel immer löschen — nur „In App übernehmen" soll H setzen
   if (_hFromFoto && typeof _updateTensionFotoState === 'function') _updateTensionFotoState(false);
@@ -3719,6 +3766,7 @@ function autoSelectElVariantBySpan(L) {
 // Einzelleiter: Materialwechsel → material-ts hidden field + Eigengewicht aktualisieren
 // Einzelleiter: Variante (Basiskraft) anwenden
 function applyElVariant(idx) {
+  _hVonHand = false;   // neue Reglage gewählt → Handwert verwerfen
   const sel = document.getElementById('el-material-select').value;
   const mat = MATERIALS[sel];
   if (!mat) return;
@@ -4027,7 +4075,7 @@ function getProjectState() {
   const fotoState = typeof window._fotoGetProjectState === 'function'
                     ? window._fotoGetProjectState() : null;
   return { schemaVersion: PROJEKT_SCHEMA_VERSION,
-           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, drawingHf: Ansicht.zeichnungHf, diagrammHf, lastfaelleAktiv, fotoState, elBerechnungsart, koordAktiv, abschnitt: { ...abschnitt, zBezug: 'sok' }, messpunkte: _mpLive(), lastfaelle: lastfallEinst, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: _elMatEdits, hf: hfEingabe };
+           sysMode, spanMode, spanCount, wearPct, yCInputMode, elBasiskraftIdx, mode3pt, fields, spans, drawingVEx: Ansicht.zeichnungVEx, drawingExtent: Ansicht.zeichnungExtent, drawingHf: Ansicht.zeichnungHf, diagrammHf, lastfaelleAktiv, fotoState, elBerechnungsart, koordAktiv, abschnitt: { ...abschnitt, zBezug: 'sok' }, messpunkte: _mpLive(), lastfaelle: lastfallEinst, lmOvr, lmFormula, showMinClearance: _showMinClearance, showT3, hFromFoto: _hFromFoto, hVonHand: _hVonHand, elReglageHmaxOvr, elReglageLrefOvr, elMatEdits: _elMatEdits, hf: hfEingabe };
 }
 
 // ── Projektzustand: Version, Pruefung, transaktionales Laden ──────────────
@@ -4248,6 +4296,7 @@ function _setProjectStateIntern(s) {
 
   // Preset / Material
   if (sysMode !== 'el') {
+    _hVonHand = false;
     rebuildPresetDropdown(sysMode);  // befuellt Dropdown + wendet erstes Preset an
     const presetKey = flds['preset-select'] ?? '';
     document.getElementById('preset-select').value = presetKey;
@@ -4293,16 +4342,11 @@ function _setProjectStateIntern(s) {
         basisBtns.innerHTML = '';
         zeigeElement(basisRow, false);
       }
-      const variant = mat.H_reglage_variants ? mat.H_reglage_variants[elBasiskraftIdx] : mat;
-      if (variant) {
-        activePresetRef = variant.H_reglage_table ? { H_Ts_ub_table: variant.H_reglage_table } : null;
-        if (variant.H_reglage != null) {
-          _renderReglageTitle();
-          document.getElementById('el-reglage-note').textContent =
-            variant.reglage_note_key ? t(variant.reglage_note_key) : (variant.reglage_note || '');
-          zeigeElement(document.getElementById('el-reglage-info'), true);
-        }
-      }
+      // Reglage wie bei der Auswahl im Menü aufbauen (auch Leiter ohne eigene Tabelle:
+      // dort entsteht die Tabelle aus der 6-kN-Voreinstellung). Früher eigene Kopie —
+      // dabei ging bei solchen Leitern die Bindung an die Reglage verloren.
+      elReglageHmaxOvr = null; elReglageLrefOvr = null;   // Overrides folgen unten
+      applyElVariant(elBasiskraftIdx);
     }
     if (flds['tension'] != null) document.getElementById('tension').value = flds['tension'];
     // EL Reglage-Overrides wiederherstellen (NACH Material-Setup)
@@ -4310,6 +4354,9 @@ function _setProjectStateIntern(s) {
     elReglageLrefOvr = s.elReglageLrefOvr ?? null;
     _elMatEdits      = s.elMatEdits       ?? {};
     if (elReglageHmaxOvr !== null || elReglageLrefOvr !== null) _applyReglageOvr();
+    // Handwert H (ab v5.1) zuletzt — die Reglage-Schritte oben würden ihn überschreiben
+    _hVonHand = !!s.hVonHand && !s.hFromFoto;
+    if (_hVonHand && flds['tension'] != null) document.getElementById('tension').value = flds['tension'];
   }
   // T2-Slider synchronisieren und Eislast-Sichtbarkeit aktualisieren
   if (flds['temp2'] != null) {
@@ -5156,6 +5203,7 @@ const setProjectState = Projekte.setProjectState;
 function updateH_Ts_ubFromT1() {
   if (!activePresetRef || !activePresetRef.H_Ts_ub_table) return;
   if (_hFromFoto) return; // Foto-H schützen — T₁-Änderung darf es nicht überschreiben
+  if (_hVonHand && sysMode === 'el') return; // Handwert schützen (Einzelleiter)
   const T1 = parseFloat(document.getElementById('temp1').value);
   if (isNaN(T1)) return;
   const { temps, vals } = activePresetRef.H_Ts_ub_table;
@@ -5344,6 +5392,7 @@ function renderReglageEditPanel() {
 
 // Übernimmt Override in activePresetRef → aktualisiert Zugkraft + Diagramm
 function _applyReglageOvr() {
+  _hVonHand = false;   // Reglage geändert (Werte/Berechnungsart) → Handwert verwerfen
   const { mat, tbl, H_max, L_ref } = _reglageBase();
   if (tbl) {
     // Ohne Override und ausserhalb der Berechnungsart «Starr» ist die
@@ -5370,6 +5419,9 @@ function _applyReglageOvr() {
 }
 
 function toggleReglageEdit() {
+  // Ist die Box zugeklappt, öffnet «i» sie samt Tabelle (statt unsichtbar umzuschalten)
+  const box = document.getElementById('el-reglage-info');
+  if (box && !box.open) { box.open = true; elReglageOpen = false; }
   elReglageOpen = !elReglageOpen;
   const panel = document.getElementById('el-reglage-edit-panel');
   zeigeElement(panel, elReglageOpen);
@@ -5920,14 +5972,16 @@ function berechnen() {
 
   // T3-Spalte wie T2: Durchhang aus dem kombinierten System (N-FL mit Kombination)
   const c3Anzeige = (z.c3 && flCombo && z.c3_zeichnung && z.c3_zeichnung !== z.c3) ? { ...z.c3, sag: z.c3_zeichnung.sag } : z.c3;
-  renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, z.c2_vem, ZL, c3Anzeige, _T3, z.c_fd_ref);
-  _nachweisAktualisieren();
-  drawCanvas(c1, c2, L, h1, h2, sh, false, z.c2_vem, z.c3_zeichnung, z.c_fd_ref);
-
+  // Ergebnis ZUERST ablegen: Ergebnisse, Prüfzeile und Diagramm lesen Teile davon
+  // (z. B. hf_min/hf_max über hfGrenzenM). Früher stand dies erst danach — dann zeigte
+  // das Diagramm nach manchen Eingaben die hf-Linien des vorherigen Rechenschritts.
   calcState = { L, Lm, spanMode, q_Ts, q_Fd, q_ges, H_Ts, H_Ts_ub, H_Fd, sh, h1, h2, T1, T2,
                 alpha, EA, EA_Ts, deltaT, c1, c2, flCombo, ZL,
                 LT1_vem: z.LT1_vem, q_vem_vem: z.q_vem_vem, c2_vem: z.c2_vem, c3: z.c3, c3_vem: z.c3_zeichnung, c_fd_ref: z.c_fd_ref,
                 matTs: getMaterialNameTs(), matFd: getMaterialNameFd() };
+  renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L, flCombo, z.c2_vem, ZL, c3Anzeige, _T3, z.c_fd_ref);
+  _nachweisAktualisieren();
+  drawCanvas(c1, c2, L, h1, h2, sh, false, z.c2_vem, z.c3_zeichnung, z.c_fd_ref);
   _hindernisErgebnisse();
   hfPruefzeile();
   hHfHinweis();
@@ -11550,6 +11604,7 @@ function setLang(lang) {
         const _nEl = document.getElementById('combo-note');
         if (_tEl) _tEl.textContent = buildPresetTitle(_p);
         if (_nEl) _nEl.textContent = buildPresetNote(_p);
+        refreshPresetNote();   // N-FL: mit aktuellem T1 / H statt Vorgabewerten
       }
     } else {
       const _cp = loadCustomPresets().find(p => p.key === _pKey);
@@ -11564,6 +11619,9 @@ function setLang(lang) {
   // ── Einzelleiter-Reglageinfo neu rendern ──────────────────────
   const _elInfo = document.getElementById('el-reglage-info');
   if (istSichtbar(_elInfo)) elMaterialChanged();
+
+  // ── Abschnitt-Ansicht in neuer Sprache neu aufbauen (sonst bleibt sie in der alten) ──
+  if (_abschnittSichtbar) renderAbschnitt();
 
   // ── Mode-dependent labels + re-render ─────────────────────────
   updateSysModeUI(sysMode);

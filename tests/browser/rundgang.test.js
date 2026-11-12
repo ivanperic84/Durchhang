@@ -1469,3 +1469,109 @@ test('Fensterstapel: Rückfrage liegt über jedem Fenster, Esc schliesst das obe
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Einzelleiter: H von Hand überschreibbar, «↺ Reglage» zurück, Handwert bleibt gespeichert', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const w = ms => new Promise(res => setTimeout(res, ms));
+    const H = () => document.getElementById('tension');
+    const zustand = () => ({ H: H().value, frei: !H().readOnly,
+      reset: istSichtbar(document.getElementById('tension-reset-btn')),
+      hw: document.getElementById('tension-reglage-hw').textContent.trim() });
+    setSysMode('nfl'); setSysMode('el'); await w(100);   // Systemwechsel darf den Knopf im Label nicht löschen
+    const start = zustand();
+    H().value = '4500'; H().dispatchEvent(new Event('input', { bubbles: true })); berechnen(); await w(50);
+    const hand = zustand(); const sagHand = calcState.c2.sag;
+    const t1 = document.getElementById('temp1'); t1.value = '25'; t1.dispatchEvent(new Event('input', { bubbles: true })); t1.dispatchEvent(new Event('change', { bubbles: true })); await w(50);
+    const nachT1 = zustand();
+    setProjectState(getProjectState()); await w(100);
+    const geladen = zustand();
+    document.getElementById('tension-reset-btn').click(); await w(50);
+    const zurueck = zustand();
+    // N-FL bleibt an die Reglage gebunden
+    setSysMode('nfl'); await w(50);
+    const nfl = { frei: !H().readOnly };
+    return { start, hand, nachT1, geladen, zurueck, nfl, sagHand };
+  });
+  assert.equal(r.start.H, '3700'); assert.ok(r.start.frei, 'Einzelleiter: H ist eintippbar');
+  assert.ok(!r.start.reset, 'ohne Handwert kein «↺ Reglage»');
+  assert.equal(r.hand.H, '4500'); assert.ok(r.hand.reset, '«↺ Reglage» erscheint beim Handwert');
+  assert.match(r.hand.hw, /Von Hand.*3'700 N.*\+22/);
+  assert.equal(r.nachT1.H, '4500', 'T₁-Änderung überschreibt den Handwert nicht');
+  assert.match(r.nachT1.hw, /3'100 N/, 'Hinweis nennt die Reglage beim neuen T₁');
+  assert.equal(r.geladen.H, '4500', 'Handwert bleibt beim Speichern/Laden erhalten'); assert.ok(r.geladen.reset);
+  assert.equal(r.zurueck.H, '3100', '«↺ Reglage» setzt auf den Reglagewert bei T₁ zurück'); assert.ok(!r.zurueck.reset);
+  assert.ok(!r.nfl.frei, 'N-FL: H bleibt an die Reglage gebunden');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Reglage-Infobox: bei N-FL, R-FL und Einzelleiter gleich gestaltet (aufklappbar, «i» rechts, unter der Auswahl)', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const out = {};
+    for (const [sys, id] of [['nfl', 'combo-info'], ['rfl', 'combo-info'], ['el', 'el-reglage-info']]) {
+      setSysMode(sys); await new Promise(res => setTimeout(res, 100));
+      const box = document.getElementById(id), sum = box.querySelector(':scope > summary'), i = box.parentElement.querySelector(':scope > .rgl-i');
+      const ba = document.getElementById('berechnungsart-row');
+      const ri = i?.getBoundingClientRect(), rs = sum.getBoundingClientRect();
+      out[sys] = { details: box.tagName, sichtbar: istSichtbar(box), iRechts: !!i && istSichtbar(i) && ri.right > rs.right - 30 && ri.top < rs.bottom && ri.bottom > rs.top,
+                   vorBerechnungsart: !istSichtbar(ba) || box.getBoundingClientRect().top < ba.getBoundingClientRect().top };
+    }
+    // Einzelleiter: «i» öffnet die Box samt Reglagetabelle
+    const box = document.getElementById('el-reglage-info'); box.open = false;
+    document.getElementById('el-reglage-info-btn').click();
+    out.elTabelle = box.open && istSichtbar(document.getElementById('el-reglage-edit-panel'));
+    toggleReglageEdit();
+    // N-FL / R-FL: «i» öffnet die Reglagetabelle
+    setSysMode('nfl'); document.querySelector('#combo-info + .rgl-i').click();
+    out.nflTabelle = document.getElementById('reglage-modal').classList.contains('open');
+    closeReglageModal();
+    return out;
+  });
+  for (const sys of ['nfl', 'rfl', 'el']) assert.deepEqual(r[sys], { details: 'DETAILS', sichtbar: true, iRechts: true, vorBerechnungsart: true }, sys);
+  assert.ok(r.elTabelle, 'Einzelleiter: «i» öffnet die Reglagetabelle');
+  assert.ok(r.nflTabelle, 'N-FL: «i» öffnet die Reglagetabelle');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Anzeige folgt jeder Eingabe (kein Nachziehen erst durch Systemwechsel)', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const w = ms => new Promise(res => setTimeout(res, ms));
+    const bild = () => document.getElementById('main-canvas').toDataURL();
+    const setze = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); };
+    // 1) hf-Linien im Diagramm nach «Starr» (früher: Werte des vorherigen Schritts)
+    setSysMode('nfl'); setCanvasView('diagramm'); setDiagrammHf(true);
+    setze('preset-select', 'nfl_stcu50_cu107_190_8'); await w(50);
+    setSpanMode('ruling'); await w(50); setBerechnungsart('starr'); await w(150);
+    const vorher = bild(); setProjectState(getProjectState()); await w(150);
+    const hfGleich = vorher === bild();
+    setDiagrammHf(false); setBerechnungsart('ausgleichend');
+    // 2) Einzelleiter ohne eigene Reglagetabelle (Cu 107): nach dem Laden folgt H weiter T₁
+    setSysMode('el'); setze('el-material-select', 'cu107'); await w(50);
+    setProjectState(getProjectState()); await w(100);
+    const H0 = document.getElementById('tension').value;
+    setze('temp1', '30'); await w(50);
+    const elFolgt = document.getElementById('tension').value !== H0 && istSichtbar(document.getElementById('tension-reglage-hw'));
+    setLang('fr'); await w(50);
+    const basisLeer = !istSichtbar(document.getElementById('el-basis-row'));
+    setLang('de');
+    // EL-«i» liegt nur bei sichtbarer Box vor
+    setSysMode('nfl'); const iVersteckt = !istSichtbar(document.getElementById('el-reglage-info-btn'));
+    // 3) Abschnitt-Ansicht wechselt die Sprache sofort
+    setSysMode('nfl'); abschnittAnsicht(); await w(100);
+    setLang('fr'); await w(100);
+    const absFr = document.getElementById('abschnitt-view').innerText;
+    setLang('de'); setCanvasView('diagramm');
+    return { hfGleich, elFolgt, basisLeer, iVersteckt, absFrOk: /Mât/.test(absFr) && !/Mast hinzu|\+ Mast/.test(absFr) };
+  });
+  assert.ok(r.hfGleich, 'hf-Linien im Diagramm stimmen nach Wechsel auf «Starr»');
+  assert.ok(r.elFolgt, 'Einzelleiter Cu 107: nach dem Laden folgt H der Reglage bei T₁');
+  assert.ok(r.absFrOk, 'Abschnitt-Ansicht sofort auf Französisch');
+  assert.ok(r.basisLeer, 'Cu 107: keine leere Basiskraft-Leiste nach Sprachwechsel');
+  assert.ok(r.iVersteckt, '«i» des Einzelleiters bei N-FL ausgeblendet');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});

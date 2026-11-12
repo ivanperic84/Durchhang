@@ -1337,6 +1337,9 @@ mark.hb-treffer.aktuell { background: #f59e0b; color: #111218; box-shadow: 0 0 0
 input.feld-gesperrt { color: var(--muted) !important; cursor: default; background: var(--s2) !important; }
 .feld-reglage-hw { margin-top: .25rem; font-size: .66rem; line-height: 1.35; color: var(--tertiary); }
 .feld-reglage-hw.nok { color: var(--fail); }
+.feld-reglage-hw.hand { color: var(--warn); }
+/* Einzelleiter: H von Hand — Rahmen in Warnfarbe wie bei der Foto-Aufnahme */
+.input-wrap.feld-hand { outline: 2px solid var(--warn); outline-offset: -1px; border-radius: 8px; }
 .feld-reglage-hw .sh-knopf { display: block; margin-top: .15rem; text-align: left; }
 .hf-pz-ist { display: block; color: var(--muted); font-size: .7rem; margin-top: .1rem; }
 .hf-pz-link { border: none; background: none; padding: 0; min-height: 0 !important; color: var(--primary); font: inherit; font-weight: 600; cursor: pointer; text-decoration: underline; }
@@ -1603,6 +1606,23 @@ details.reglage-info-box > summary::-webkit-details-marker { display: none; }
 details.reglage-info-box > summary::before { content: '\25B8'; transition: transform .15s; }
 details.reglage-info-box[open] > summary::before { transform: rotate(90deg); }
 details.reglage-info-box[open] > summary { margin-bottom: .15rem; }
+details.reglage-info-box > summary { align-items: baseline; }
+details.reglage-info-box > summary .info-title { flex: 1; margin-bottom: 0; }
+/* «i» rechts auf Höhe der Titelzeile — bei allen Systemen an derselben Stelle.
+   Liegt neben der Box (nicht in <summary>), sonst wäre es ein Knopf im Knopf. */
+.rgl-wrap { position: relative; }
+.rgl-wrap > details > summary { padding-right: 1.5rem; }
+.rgl-wrap > details[style*="display:none"] + .rgl-i,
+.rgl-wrap > details[style*="display: none"] + .rgl-i { display: none; }
+.rgl-wrap > .rgl-i { position: absolute; top: .45rem; right: .6rem; opacity: .75; }   /* mittig zur ersten Titelzeile */
+.rgl-wrap > .rgl-i {
+  flex-shrink: 0; align-self: center; width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid var(--border2); background: none; color: var(--muted);
+  font: 700 .6rem/1 inherit; cursor: pointer; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: border-color .15s, color .15s;
+}
+.rgl-wrap > .rgl-i:hover, .rgl-wrap > .rgl-i:focus-visible { color: var(--text); border-color: var(--primary); }
 .reglage-info-box .reglage-hdr {
   display: flex; justify-content: space-between; align-items: baseline; gap: .4rem;
 }
