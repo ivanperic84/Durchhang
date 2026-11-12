@@ -1,4 +1,4 @@
-# Übergabe Durchhang — Stand v4.6.0 (12. November 2026)
+# Übergabe Durchhang — Stand v4.7.0 (12. November 2026)
 
 Ziel dieser Datei: Eine neue Claude-Sitzung (auch unter einem anderen Account) kann
 ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLAUDE.md`
@@ -146,6 +146,7 @@ anders als mit echter Höhendifferenz (Beispiel Feld 102–103: 0.863 statt 0.84
 Tiefpunkt ~3 m versetzt). Nicht ohne neue Rückfrage beim Nutzer ändern.
 Δh an Messpunkten = Abstand von der Horizontalen durch den linken Aufhängepunkt
 (m ü. M.) bis zum Seil — auf Karte, Ergebnisleiste und im Diagramm identisch.
+**Angezeigte Seillage nur über `anzeigeKurve(zustand)`** (T1/T2/T3; N-FL mit Kombination = kombiniertes System) und Fahrdraht nur über `fdUeberSok()` — Karte, Diagramm, Zeichnung, PDF und Export müssen dieselben Werte zeigen.
 T₃-Vergleich: bei N-FL mit Kombination immer die Lage des kombinierten Systems
 (`calcState.c3_vem` = `c3_zeichnung` aus dem Rechenkern), genau wie T₂ (`c2_vem`).
 Foto-Messung: Fusspunkte am Mastfuss ⇒ Höhe über SOK = gemessen + Δ, Höhenunterschied
@@ -188,7 +189,7 @@ mit SOK-Differenz (seit v4.4.0; vorher wurde die SOK-Differenz ignoriert).
 ```bash
 npm ci
 npm test                                                     # 89 Node-Tests
-CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 57 Browser-Tests
+CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 58 Browser-Tests
 ```
 - In der Claude-Cloud-Umgebung ist Chromium unter `/opt/pw-browsers/chromium`
   vorinstalliert (nicht `playwright install` ausführen). CI (GitHub Actions) installiert
@@ -247,5 +248,6 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 57 
 | v4.5.2 | #25 | Δh der Messpunkte auf der Karte = Diagramm (SOK-Anstieg berücksichtigt) |
 | v4.5.3 | #26 | T₃ bei N-FL mit Kombination auf Karte, Tabelle und Zeichnung wie T₂ (kombiniertes System) |
 | v4.6.0 | – | Eingabeprüfung (Fehler sperrt, Warnung rechnet: L > 80 m, h > 15 m, T ausserhalb −30…+90 °C), Messpunkte am Handy 2 × 2, Systemtext beim Start |
+| v4.7.0 | – | Menü «Mehr ⋯» (Reglage, Handbuch, Darstellung, Zurücksetzen), Reglagewerte einklappbar, T₃-Karte unter den Höhen, dichtere Spalte am PC, H-Zeile erst mit SOK, Handy: Zeichnungslegende unten, Abschnitt-Erklärung einklappbar; gemeinsame Seillage `anzeigeKurve()` — PDF-Messpunkte und Fd am Tiefpunkt jetzt wie Bildschirm |
 
 Issue #20: NIS (später).

@@ -537,7 +537,9 @@ test('Feld-Schnellauswahl, H/a im Zeichnungsband, Abschnitt-Scroll (normal und V
     abschnittAnsicht(); await abschnittBeispiel(); await warte(200);
     // Seite nicht weit über den Inhalt scrollbar: höchstens Eingabespalte + Fuss
     const seitenH = document.documentElement.scrollHeight;
-    const spalteUnten = document.querySelector('.sidebar').getBoundingClientRect().bottom + scrollY;
+    // Inhalt unten: Eingabespalte oder Ansicht (Abschnitt), je nachdem was länger ist
+    const spalteUnten = Math.max(document.querySelector('.sidebar').getBoundingClientRect().bottom,
+      document.querySelector('.canvas-card').getBoundingClientRect().bottom) + scrollY;
     // Vollbild: Abschnitt scrollt in sich
     abschnitt = { masten: [...beispielMasten(), ...beispielMasten().map((m, i) => ({ ...m, name: String(200 + i), e: m.e + 300, km: (12.6 + i * 0.05).toFixed(3) }))], offen: null, mp: {} };
     renderAbschnitt(); toggleCanvasFullscreen(); await warte(100);
@@ -659,7 +661,7 @@ test('Handy 390 px: keine seitliche Verschiebung, Kopfzeile vollständig sichtba
   const r = await seite.evaluate(() => {
     const W = document.documentElement.clientWidth;
     const sichtbar = id => { const b = document.getElementById(id).getBoundingClientRect(); return b.width > 0 && b.left >= 0 && b.right <= W + 1; };
-    const vorher = { breite: document.documentElement.scrollWidth, knoepfe: ['lang-it', 'thema-btn', 'hf-btn', 'quick-save-btn'].every(sichtbar) };
+    const vorher = { breite: document.documentElement.scrollWidth, knoepfe: ['lang-it', 'mehr-btn', 'hf-btn', 'quick-save-btn'].every(sichtbar) };
     openHf();
     const hf = document.documentElement.scrollWidth;
     closeHf();
@@ -767,19 +769,27 @@ test('Projektliste: Auswahl als normale Box; Kopfleiste kompakt mit «Teilen»',
     closeProjectsModal();
     const kopf = document.querySelector('.header');
     const teilen = kopf.querySelector('#share-btn');
-    const symbole = [...kopf.querySelectorAll('.header-symbol')].map(b => ({ titel: !!b.title, text: b.textContent.trim() }));
+    // Seltene Befehle im Menü «Mehr ⋯», beschriftet
+    document.getElementById('mehr-btn').click();
+    const mm = document.getElementById('mehr-menu');
+    const symbole = [...mm.querySelectorAll('.share-item')].map(b => ({ text: !!b.textContent.trim(), sichtbar: b.getBoundingClientRect().right <= document.documentElement.clientWidth }));
+    const mehrOffen = getComputedStyle(mm).display !== 'none' && document.getElementById('mehr-btn').getAttribute('aria-expanded') === 'true';
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    const mehrZu = getComputedStyle(mm).display === 'none';
     teilen.click();
     const menu = document.getElementById('share-menu');
     const m = menu.getBoundingClientRect();
     const offen = getComputedStyle(menu).display !== 'none' && m.left >= 0 && m.right <= document.documentElement.clientWidth;
     closeShareMenu();
-    return { auswahl, teilenImKopf: !!teilen, teilenImDiagramm: !!document.querySelector('.canvas-card #share-btn'), symbole, offen };
+    return { auswahl, teilenImKopf: !!teilen, teilenImDiagramm: !!document.querySelector('.canvas-card #share-btn'), symbole, offen, mehrOffen, mehrZu };
   });
   assert.deepEqual(r.auswahl, { klasse: true, appearance: 'none', quadratisch: true });
   assert.equal(r.teilenImKopf, true);
   assert.equal(r.teilenImDiagramm, false);
-  assert.equal(r.symbole.length, 4);
-  for (const b of r.symbole) assert.deepEqual(b, { titel: true, text: '' });
+  assert.equal(r.symbole.length, 4, 'Reglage, Handbuch, Darstellung, Zurücksetzen');
+  for (const b of r.symbole) assert.deepEqual(b, { text: true, sichtbar: true });
+  assert.equal(r.mehrOffen, true);
+  assert.equal(r.mehrZu, true, 'Escape schliesst das Menü');
   assert.equal(r.offen, true, 'Menü «Teilen» offen und im Bild');
   assert.deepEqual(fehler, []);
   await kontext.close();
@@ -1319,12 +1329,38 @@ test('Eingabeprüfung: Fehler sperrt (Spannweite 0/leer, Höhe ≤ 0), Warnung r
 test('Handy: Messpunkte M1–M4 und H1–H4 je 2 nebeneinander, eingetippter Wert sichtbar', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url, { viewport: { width: 390, height: 844 } });
   const r = await seite.evaluate(() => {
+    document.getElementById('sok-mum-left').value = 500; onSokMumLeftInput();   // H-Zeile erscheint erst mit SOK
     const e = document.getElementById('probe-x1'); e.value = '15.5'; e.dispatchEvent(new Event('input'));
     const spalten = s => getComputedStyle(document.querySelector(s)).gridTemplateColumns.split(' ').length;
     return { m: spalten('.probe-m-zeile'), h: spalten('.probe-h-zeile'), breite: e.getBoundingClientRect().width };
   });
   assert.deepEqual({ m: r.m, h: r.h }, { m: 2, h: 2 });
   assert.ok(r.breite >= 60, `Eingabefeld ${r.breite}px breit`);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Gemeinsame Seillage: PDF-Messpunkte und Fahrdraht am Tiefpunkt wie Bildschirm; H-Zeile erst mit SOK', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  await fensterAbfangen(seite);
+  const r = await seite.evaluate(() => {
+    document.getElementById('temp2').value = 40;
+    const e = document.getElementById('probe-x1'); e.value = '15'; e.dispatchEvent(new Event('input')); berechnen();
+    const ohneSok = { zeile: getComputedStyle(document.getElementById('probe-h-section')).display, hinweis: getComputedStyle(document.getElementById('probe-sok-hinweis')).display };
+    const cs = calcState, k = anzeigeKurve('T2');
+    const sollTs = kettenY(k, 15), sollFd = fdUeberSok(k.x_low, cs, cs);
+    window.__fenster.length = 0; pdfExport();
+    const txt = window.__fenster[0].html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+    const fdPdf = parseFloat((txt.match(/Fd-Höhe über SOK = ([\d.]+) m/) || [])[1]);
+    const tsPdf = parseFloat((txt.match(/M1 (?:&nbsp; )?x = 15\.00 m ([\d.]+) m/) || [])[1]);
+    document.getElementById('sok-mum-left').value = 500; onSokMumLeftInput();
+    const mitSok = getComputedStyle(document.getElementById('probe-h-section')).display;
+    return { ohneSok, mitSok, fdPdf, sollFd: +sollFd.toFixed(2), tsPdf, sollTs: +sollTs.toFixed(2), karteTs: parseFloat(document.querySelectorAll('#highlight-card .istzustand-value')[1].textContent) };
+  });
+  assert.deepEqual(r.ohneSok, { zeile: 'none', hinweis: 'block' });
+  assert.notEqual(r.mitSok, 'none');
+  assert.equal(r.fdPdf, r.sollFd, 'Fahrdraht am Tiefpunkt: PDF = Diagramm/Zeichnung');
+  assert.equal(r.tsPdf, r.sollTs, 'Ts-Höhe am Messpunkt: PDF = Karte');
   assert.deepEqual(fehler, []);
   await kontext.close();
 });

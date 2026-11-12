@@ -252,6 +252,13 @@ body {
   border-bottom: 1px solid var(--border);
 }
 .sidebar-scroll .card:last-of-type { border-bottom: none; }
+/* PC mit üblicher Bildschirmhöhe: Spalte etwas dichter, damit Spannweite und Höhen
+   ohne Scrollen sichtbar sind (Tablet/Handy unverändert) */
+@media (min-width: 861px) and (max-height: 1100px) {
+  .sidebar-scroll .card { padding-top: .85rem; padding-bottom: .85rem; }
+  .sidebar-scroll .card-title { margin-bottom: .55rem; }
+  .sidebar-scroll .field-group { gap: .45rem; }
+}
 @media (max-width: 860px) {
   .sidebar { position: static; max-height: none; }
   .sidebar-scroll {
@@ -659,6 +666,10 @@ body {
   white-space: nowrap; transition: background .12s;
 }
 .share-item:hover { background: var(--s3); }
+.kopf-menu { position: fixed; z-index: 1100; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12); min-width: 215px; overflow: hidden; padding: .2rem 0; }
+.kopf-menu .share-item { font-size: .8rem; padding: .55rem .85rem; }
+.kopf-menu-trenner { height: 1px; background: var(--border); margin: .2rem 0; }
 /* SVG viewport — viewBox controls zoom/pan, no scrollbars */
 #drawing-viewport {
   position: relative;
@@ -961,6 +972,8 @@ body {
 .feld-warnung { border-color: var(--warn) !important; box-shadow: 0 0 0 2px var(--warn-s) !important; }
 .probe-h-rel { grid-column: 2; font-size: .62rem; color: var(--tertiary); min-height: .9em; padding-left: .2rem; font-variant-numeric: tabular-nums; }
 .probe-h-input:disabled { opacity: .55; cursor: not-allowed; }
+.probe-sok-hinweis { margin: .45rem 0 0; font-size: .72rem; color: var(--muted); text-align: center; }
+.probe-sok-hinweis .probe-sok-link { margin-top: 0; margin-left: .25rem; }
 .probe-sok-link { margin-top: .35rem; background: none; border: none; padding: 0; font: inherit; font-size: .72rem; font-weight: 600;
   color: var(--primary); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 .probe-h-input[readonly], .probe-mp-xinput[readonly] { color: var(--text2); cursor: not-allowed; background-image: repeating-linear-gradient(135deg, transparent 0 6px, var(--border) 6px 7px); }
@@ -1391,6 +1404,16 @@ input.feld-gesperrt { color: var(--muted) !important; cursor: default; backgroun
 .abs-knopf.haupt { background: var(--primary); border-color: var(--primary); color: var(--on-acc); font-weight: 600; }
 .abs-knopf.haupt:hover:not(:disabled) { background: var(--primary); filter: brightness(1.1); }
 .abs-hinweis { font-size: .68rem; color: var(--tertiary); margin: .2rem 0 .6rem; line-height: 1.45; }
+/* Erklärung zur Masttabelle: am Handy eingeklappt, damit die Tabelle oben steht */
+.abs-hinweis-box > summary { cursor: pointer; font-size: .68rem; color: var(--muted); list-style: none; margin: .1rem 0 .3rem; }
+.abs-hinweis-box > summary::-webkit-details-marker { display: none; }
+.abs-hinweis-box > summary::before { content: '\25B8  '; }
+.abs-hinweis-box[open] > summary::before { content: '\25BE  '; }
+/* Handy: Legende der Zeichnung unter die Zeichnung statt darüber */
+@media (max-width: 600px) {
+  #drawing-legend-overlay { position: static; flex-direction: row; flex-wrap: wrap; justify-content: center; column-gap: .9rem;
+    margin: .35rem .5rem .2rem; background: none; border: none; box-shadow: none; backdrop-filter: none; }
+}
 .abs-leer { font-size: .8rem; color: var(--muted); padding: 1.2rem 0; text-align: center; }
 .abs-scroll { overflow-x: auto; margin-bottom: .6rem; }
 .abs-tab { border-collapse: collapse; font-size: .72rem; width: 100%; font-variant-numeric: tabular-nums; }
@@ -1607,6 +1630,12 @@ input.aus-koord { background: var(--acc-s) !important; color: var(--text) !impor
 .reglage-info-box .info-note {
   color: var(--muted);
 }
+/* Kombination: nur die Werkstoffzeile sichtbar, Reglagewerte beim Aufklappen */
+details.reglage-info-box > summary { cursor: pointer; list-style: none; display: flex; gap: .35rem; margin-bottom: 0; }
+details.reglage-info-box > summary::-webkit-details-marker { display: none; }
+details.reglage-info-box > summary::before { content: '\25B8'; transition: transform .15s; }
+details.reglage-info-box[open] > summary::before { transform: rotate(90deg); }
+details.reglage-info-box[open] > summary { margin-bottom: .15rem; }
 .reglage-info-box .reglage-hdr {
   display: flex; justify-content: space-between; align-items: baseline; gap: .4rem;
 }
@@ -1820,20 +1849,16 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 
 /* ── v3.1: Beschriftete Knöpfe in der Kopfzeile ── */
 .header-label { margin-left: .3rem; }
-.header-reset { margin-left: 0; }
 /* Kopfleiste kompakt: Knöpfe enger, seltene Befehle als Symbolgruppe mit etwas Abstand */
 @media (min-width: 601px) {
   .header { gap: .3rem; }
   .header > div:nth-child(2) { margin-right: .7rem; }
-  #share-btn + #hf-btn, .header-symbol:not(.header-symbol + .header-symbol) { margin-left: .6rem; }
+  #share-btn + #hf-btn, #mehr-btn { margin-left: .6rem; }
 }
-/* Seltene Befehle nur als Symbol (Name im Tooltip), eng gruppiert */
-button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 .nur-vollbild { display: none !important; }
 .canvas-card.canvas-fullscreen .nur-vollbild { display: flex !important; align-items: center; justify-content: center; }
 @media (max-width: 1000px) {
   .header-label { display: none; }
-  .header-reset { margin-left: .3rem; }
 }
 
 /* ── v3.1: Einklappbare optionale Mastangaben ── */
@@ -1918,29 +1943,37 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1.5 14.5h13M8 2v9.5M5.8 4.2L8 2l2.2 2.2M5.8 9.3L8 11.5l2.2-2.2M1.5 2h13"/></svg>
     <span class="header-manual-text header-label" data-i18n="hf.kurz">hf min/max</span>
   </button>
-  <button onclick="openReglageModal()" class="header-manual-link header-symbol" title="Reglagetabelle" data-i18n-title="ui.reglage" style="background:none;border:none;cursor:pointer;color:var(--text2)">
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="2" rx="1" style="fill:var(--text2)"/><rect x="2" y="7" width="12" height="2" rx="1" style="fill:var(--text2)"/><rect x="2" y="11" width="8" height="2" rx="1" style="fill:var(--text2)"/></svg>
-  </button>
-  <button onclick="openHandbuch()" class="header-manual-link header-symbol" title="Handbuch" data-i18n-title="ui.handbuch" style="background:none;border:none;cursor:pointer;color:var(--text2)">
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2a6 6 0 100 12A6 6 0 008 2zm0 9V7m0-2v.01" stroke-width="1.7" stroke-linecap="round" style="stroke:var(--text2)"/></svg>
-  </button>
-  <button onclick="totalReset()" class="header-manual-link header-symbol header-reset" title="Zurücksetzen auf Standardwerte" data-i18n-title="ui.reset.titel"
-    style="background:none;border:none;cursor:pointer;color:var(--text2)">
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-      <path d="M2.5 8a5.5 5.5 0 1 1 1.1 3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      <polyline points="2.5,4.5 2.5,8 6,8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </button>
-  <button id="thema-btn" class="header-manual-link header-symbol" onclick="wechsleThema()" type="button"
-    style="background:none;border:none;cursor:pointer;color:var(--text2)" title="Darstellung">
-    <svg id="thema-icon" width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor"
-         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></svg>
+  <!-- Seltene Befehle im Menü «Mehr ⋯» (beschriftet statt nur Symbole) -->
+  <button id="mehr-btn" class="header-manual-link" onclick="toggleMehrMenu(event)" type="button" aria-haspopup="true" aria-expanded="false"
+    title="Mehr" data-i18n-title="ui.mehr" style="background:none;border:none;cursor:pointer;color:var(--text2)">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="3" cy="8" r="1.4"/><circle cx="8" cy="8" r="1.4"/><circle cx="13" cy="8" r="1.4"/></svg>
+    <span class="header-manual-text header-label" data-i18n="ui.mehr">Mehr</span>
   </button>
   <div class="lang-switcher">
     <button class="lang-btn active" id="lang-de" onclick="setLang('de')">DE</button>
     <button class="lang-btn"        id="lang-fr" onclick="setLang('fr')">FR</button>
     <button class="lang-btn"        id="lang-it" onclick="setLang('it')">IT</button>
   </div>
+</div>
+
+<div id="mehr-menu" class="kopf-menu" style="display:none">
+  <button class="share-item" type="button" onclick="closeMehrMenu();openReglageModal()">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="3" width="12" height="2" rx="1" fill="currentColor"/><rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor"/><rect x="2" y="11" width="8" height="2" rx="1" fill="currentColor"/></svg>
+    <span data-i18n="ui.reglage">Reglagetabelle</span>
+  </button>
+  <button class="share-item" type="button" onclick="closeMehrMenu();openHandbuch()">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2a6 6 0 100 12A6 6 0 008 2zm0 9V7m0-2v.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    <span data-i18n="ui.handbuch">Handbuch</span>
+  </button>
+  <button class="share-item" type="button" id="thema-btn" onclick="event.stopPropagation();wechsleThema()" title="Darstellung">
+    <svg id="thema-icon" width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
+    <span id="thema-name">Darstellung</span>
+  </button>
+  <div class="kopf-menu-trenner" role="separator"></div>
+  <button class="share-item" id="reset-btn" type="button" onclick="closeMehrMenu();totalReset()" title="Zurücksetzen auf Standardwerte" data-i18n-title="ui.reset.titel">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 1 1.1 3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><polyline points="2.5,4.5 2.5,8 6,8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span data-i18n="ui.reset">Zurücksetzen</span>
+  </button>
 </div>
 
 <div id="share-menu" style="display:none;position:fixed;z-index:1100;background:var(--bg);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:215px;overflow:hidden">
@@ -1995,10 +2028,10 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
             <button onclick="openCustomModal()" title="Eigenes Kettenwerk definieren" data-i18n-title="ui.kw.eigen" style="flex-shrink:0;background:none;border:1px solid var(--border);border-radius:8px;padding:.2rem .45rem;font-size:.72rem;color:var(--muted);cursor:pointer;line-height:1;transition:border-color .15s,color .15s" onmouseover="this.style.color = 'var(--text)';this.style.borderColor = 'var(--primary)'" onmouseout="this.style.color = 'var(--muted)';this.style.borderColor = 'var(--border)'">＋</button>
           </div>
         </div>
-        <div id="combo-info" class="reglage-info-box" style="display:none;margin-top:.5rem">
-          <div class="info-title" id="combo-title"></div>
+        <details id="combo-info" class="reglage-info-box" style="display:none;margin-top:.5rem">
+          <summary class="info-title" id="combo-title"></summary>
           <div class="info-note" id="combo-note"></div>
-        </div>
+        </details>
       </div>
 
       <!-- Einzelleiter: Leitermaterial direkt wählbar -->
@@ -2193,79 +2226,6 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
       </div>
     </div>
 
-    <!-- T3 — Vergleichskurve -->
-    <div id="t3-card" class="card" style="padding:0">
-    <div id="t3-wrapper" style="padding:.55rem 1rem .6rem">
-      <button id="t3-toggle-btn" onclick="toggleT3()"
-        style="width:100%;padding:.28rem .6rem;border-radius:7px;border:1px solid var(--border);
-               background:none;color:var(--muted);font-size:.74rem;font-weight:500;cursor:pointer;
-               display:flex;align-items:center;justify-content:center;gap:.35rem;transition:background .15s,color .15s,border-color .15s"
-        onmouseover="this.style.background = 'var(--s3)'"
-        onmouseout="this.style.background = 'none'">
-        <svg id="t3-toggle-icon" width="22" height="8" viewBox="0 0 22 8" style="flex-shrink:0">
-          <line x1="0" y1="4" x2="22" y2="4" stroke="currentColor" stroke-width="1.8" stroke-dasharray="5,3" stroke-linecap="round"/>
-        </svg>
-        <span id="t3-toggle-txt">T<sub>3</sub> Vergleichskurve einblenden</span>
-      </button>
-      <div id="t3-section" style="display:none;margin-top:.55rem">
-        <div class="field">
-          <label data-i18n-html="ui.temp.t3">Temperatur T<sub>3</sub></label>
-          <div class="input-wrap">
-            <input type="number" id="temp3" value="80" min="-20" max="80" step="1"
-                   oninput="onT3Input(this.value)"
-                   onchange="onT3Input(this.value)">
-            <span class="input-unit">°C</span>
-          </div>
-        </div>
-        <div style="margin:.4rem 0 .8rem">
-          <div style="padding:0 7px">
-            <div style="position:relative;height:16px;margin-bottom:2px">
-              <span class="t3-lbl" data-val="-20" style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:0%">−20°</span>
-              <span class="t3-lbl" data-val="-10" style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:10%">−10°</span>
-              <span class="t3-lbl" data-val="0"   style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:20%">0°</span>
-              <span class="t3-lbl" data-val="10"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:30%">10°</span>
-              <span class="t3-lbl" data-val="20"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:40%">20°</span>
-              <span class="t3-lbl" data-val="30"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:50%">30°</span>
-              <span class="t3-lbl" data-val="40"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:60%">40°</span>
-              <span class="t3-lbl" data-val="50"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:70%">50°</span>
-              <span class="t3-lbl" data-val="60"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:80%">60°</span>
-              <span class="t3-lbl" data-val="70"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:90%">70°</span>
-              <span class="t3-lbl" data-val="80"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:100%">80°</span>
-            </div>
-            <svg width="100%" height="8" viewBox="0 0 200 8" preserveAspectRatio="none" style="display:block;overflow:visible">
-              <line x1="0"   y1="0" x2="0"   y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
-              <line x1="10"  y1="0" x2="10"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
-              <line x1="20"  y1="0" x2="20"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
-              <line x1="30"  y1="0" x2="30"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
-              <line x1="40"  y1="0" x2="40"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
-              <line x1="50"  y1="0" x2="50"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
-              <line x1="60"  y1="0" x2="60"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
-              <line x1="70"  y1="0" x2="70"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
-              <line x1="80"  y1="0" x2="80"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
-              <line x1="90"  y1="0" x2="90"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
-              <line x1="100" y1="0" x2="100" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
-              <line x1="110" y1="0" x2="110" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
-              <line x1="120" y1="0" x2="120" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
-              <line x1="130" y1="0" x2="130" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
-              <line x1="140" y1="0" x2="140" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
-              <line x1="150" y1="0" x2="150" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
-              <line x1="160" y1="0" x2="160" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
-              <line x1="170" y1="0" x2="170" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
-              <line x1="180" y1="0" x2="180" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
-              <line x1="190" y1="0" x2="190" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
-              <line x1="200" y1="0" x2="200" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
-            </svg>
-          </div>
-          <input type="range" id="temp3-slider" aria-label="T3" min="-20" max="80" step="5" value="80"
-                 style="width:100%;cursor:pointer;display:block;margin-top:2px"
-                 oninput="onT3Slider(this.value,true)"
-                 onchange="onT3Slider(this.value,false)"
-                 onmouseup="onT3SliderEnd()"
-                 ontouchend="onT3SliderEnd()">
-        </div>
-      </div>
-    </div>
-    </div><!-- /card T3 -->
 
     <!-- 3. Spannweite -->
     <div class="card">
@@ -2482,6 +2442,80 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 
       <p id="bp-drag-hint" data-i18n="bp.drag.hint" style="display:none;font-size:.72rem;color:var(--tertiary);margin-top:.5rem;font-style:italic"></p>
     </div>
+
+    <!-- T3 — Vergleichskurve -->
+    <div id="t3-card" class="card" style="padding:0">
+    <div id="t3-wrapper" style="padding:.55rem 1rem .6rem">
+      <button id="t3-toggle-btn" onclick="toggleT3()"
+        style="width:100%;padding:.28rem .6rem;border-radius:7px;border:1px solid var(--border);
+               background:none;color:var(--muted);font-size:.74rem;font-weight:500;cursor:pointer;
+               display:flex;align-items:center;justify-content:center;gap:.35rem;transition:background .15s,color .15s,border-color .15s"
+        onmouseover="this.style.background = 'var(--s3)'"
+        onmouseout="this.style.background = 'none'">
+        <svg id="t3-toggle-icon" width="22" height="8" viewBox="0 0 22 8" style="flex-shrink:0">
+          <line x1="0" y1="4" x2="22" y2="4" stroke="currentColor" stroke-width="1.8" stroke-dasharray="5,3" stroke-linecap="round"/>
+        </svg>
+        <span id="t3-toggle-txt">T<sub>3</sub> Vergleichskurve einblenden</span>
+      </button>
+      <div id="t3-section" style="display:none;margin-top:.55rem">
+        <div class="field">
+          <label data-i18n-html="ui.temp.t3">Temperatur T<sub>3</sub></label>
+          <div class="input-wrap">
+            <input type="number" id="temp3" value="80" min="-20" max="80" step="1"
+                   oninput="onT3Input(this.value)"
+                   onchange="onT3Input(this.value)">
+            <span class="input-unit">°C</span>
+          </div>
+        </div>
+        <div style="margin:.4rem 0 .8rem">
+          <div style="padding:0 7px">
+            <div style="position:relative;height:16px;margin-bottom:2px">
+              <span class="t3-lbl" data-val="-20" style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:0%">−20°</span>
+              <span class="t3-lbl" data-val="-10" style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:10%">−10°</span>
+              <span class="t3-lbl" data-val="0"   style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:20%">0°</span>
+              <span class="t3-lbl" data-val="10"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:30%">10°</span>
+              <span class="t3-lbl" data-val="20"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:40%">20°</span>
+              <span class="t3-lbl" data-val="30"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:50%">30°</span>
+              <span class="t3-lbl" data-val="40"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:60%">40°</span>
+              <span class="t3-lbl" data-val="50"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:70%">50°</span>
+              <span class="t3-lbl" data-val="60"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:80%">60°</span>
+              <span class="t3-lbl" data-val="70"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:90%">70°</span>
+              <span class="t3-lbl" data-val="80"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:100%">80°</span>
+            </div>
+            <svg width="100%" height="8" viewBox="0 0 200 8" preserveAspectRatio="none" style="display:block;overflow:visible">
+              <line x1="0"   y1="0" x2="0"   y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="10"  y1="0" x2="10"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="20"  y1="0" x2="20"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="30"  y1="0" x2="30"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="40"  y1="0" x2="40"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="50"  y1="0" x2="50"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="60"  y1="0" x2="60"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="70"  y1="0" x2="70"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="80"  y1="0" x2="80"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="90"  y1="0" x2="90"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="100" y1="0" x2="100" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="110" y1="0" x2="110" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="120" y1="0" x2="120" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="130" y1="0" x2="130" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="140" y1="0" x2="140" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="150" y1="0" x2="150" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="160" y1="0" x2="160" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="170" y1="0" x2="170" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="180" y1="0" x2="180" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="190" y1="0" x2="190" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="200" y1="0" x2="200" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+            </svg>
+          </div>
+          <input type="range" id="temp3-slider" aria-label="T3" min="-20" max="80" step="5" value="80"
+                 style="width:100%;cursor:pointer;display:block;margin-top:2px"
+                 oninput="onT3Slider(this.value,true)"
+                 onchange="onT3Slider(this.value,false)"
+                 onmouseup="onT3SliderEnd()"
+                 ontouchend="onT3SliderEnd()">
+        </div>
+      </div>
+    </div>
+    </div><!-- /card T3 -->
 
     <!-- 5. Parameter -->
     <div class="card">
@@ -2997,7 +3031,8 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
           <span class="probe-h-rel" id="probe-h-rel-4"></span>
         </div>
       </div>
-      <button type="button" class="probe-sok-link" id="probe-sok-link" onclick="sokEintragen()" style="display:none" data-i18n="probe.sok.link">SOK m ü. M. eintragen</button>
+      <p class="probe-sok-hinweis" id="probe-sok-hinweis" style="display:none"><span data-i18n="probe.h.ohnesok">H-Punkte H1–H4 (Hindernisse) brauchen die SOK m ü. M.:</span>
+        <button type="button" class="probe-sok-link" id="probe-sok-link" onclick="sokEintragen()" style="display:none" data-i18n="probe.sok.link">SOK m ü. M. eintragen</button></p>
     </div>
     <div class="obs-section" id="obs-section" style="display:none"></div>
     </div><!-- /canvas-scroll-area -->
@@ -3090,7 +3125,7 @@ button.header-manual-link.header-symbol { padding: .38rem .5rem; }
 <script src="fahrdrahthoehe.js"></script>
 <script>
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v4.6.0';
+const APP_VERSION = 'v4.7.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -3247,6 +3282,8 @@ function escHtml(v) {
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }
 
+// Schmaler Bildschirm (Handy) — gleiche Grenze wie die CSS-Regeln @media (max-width: 600px)
+const _handyBreite = () => !!window.matchMedia?.('(max-width: 600px)').matches;
 function zeigeElement(el, sichtbar) {
   // Bewusst direkter Zugriff auf style.display — dies ist die einzige Stelle
   // im Programm, an der er stehen darf.
@@ -9074,12 +9111,21 @@ function renderResults(c1, c2, T1, T2, alpha, deltaT, q_Ts, q_Fd, sh, h1, h2, L,
 // CANVAS-ZEICHNUNG
 // ═══════════════════════════════════════════════════════════════
 // ── Fahrdraht bei T₂ und hf_min / hf_max (Diagramm, Prüfzeile) ──────────
+// ── Angezeigte Seillage: EINE Stelle für Karte, Diagramm, Zeichnung, PDF und Export ──
+// Wählt je Zustand die Kurve, die das Diagramm zeichnet: N-FL mit Kombination =
+// kombiniertes System (Ts + Fd), sonst die Zustandskurve. (Die reinen Ts-Kurven c2/c3
+// dienen der Rechnung, nicht der Anzeige — Abweichungen hatten zu Anzeige-Fehlern geführt.)
+function anzeigeKurve(zustand = 'T2', cs = calcState) {
+  if (!cs) return null;
+  if (zustand === 'T1') return cs.c1;
+  if (zustand === 'T3') return cs.c3 ? (cs.c3_vem ?? cs.c3) : null;
+  return (sysMode === 'nfl' && cs.c2_vem) ? cs.c2_vem : cs.c2;
+}
 // Fahrdraht über SOK an der Stelle x: Solllage + Tragseil-Verschiebung
-// (N-FL gegenüber T₁, R-FL nach VEM 7.53a) — wie Zeichnung und 3D-Export.
+// (N-FL gegenüber T₁, R-FL nach VEM 7.53a) — wie Zeichnung, PDF und 3D-Export.
 function fdUeberSok(x, z, e) {
-  const catY = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
   const soll = (e.h1 - e.sh) + (e.h2 - e.h1) * x / e.L;
-  if (sysMode === 'nfl') return soll + catY(x, z.c2_vem || z.c2) - catY(x, z.c1);
+  if (sysMode === 'nfl') return soll + kettenY(z.c2_vem || z.c2, x) - kettenY(z.c1, x);
   if (sysMode === 'rfl') return soll + rflFahrdrahtVerschiebung(z.c2, z.c_fd_ref, x);
   return soll;
 }
@@ -9258,7 +9304,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   view.ch = CH;
   ctx.clearRect(0, 0, CW, CH);
 
-  const catY  = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
+  const catY  = (x, c) => kettenY(c, x);
   // Zeichenkoordinate (m ü. M. wenn SOK gesetzt)
   const catYD = (x, c) => aY(x, catY(x, c));
   const isEl  = sysMode === 'el';
@@ -10004,27 +10050,11 @@ function canvasPt(e) {
 // ── Highlight-Karte: Schlüsselwerte für einen Messpunkt ──
 function mpBlock(xv, badge, cls, compact = false, c3Curve = null, t3Clr = 'var(--muted)', t2Clr = 'var(--muted)') {
   if (!calcState) return '';
-  const { c1, c2, h1, h2, L, sh, flCombo, LT1_vem, q_vem_vem, c2_vem } = calcState;
-  const catY    = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
-  const yFdSoll = x => (h1 - sh) + (h2 - h1) * x / L;
-  const yChord  = x => h1 + (h2 - h1) * x / L;
-  const isNfl   = sysMode === 'nfl';
+  const { h1, L } = calcState;
+  const catY    = (x, c) => kettenY(c, x);
   const isRfl   = sysMode === 'rfl';
   const isEl    = sysMode === 'el';
-  const cIst    = (isNfl || isEl) ? c2 : (isRfl && c2 && c2 !== c1 ? c2 : c1); // R-FL mit ZL: c2, sonst c1
-  const useVem  = isNfl && flCombo && c2_vem;               // kombiniertes System verfügbar?
-  const y2_ts   = catY(xv, cIst);                           // Ts-Position (für Fd-Verschiebung)
-  const y2      = useVem ? catY(xv, c2_vem) : y2_ts;       // Anzeigewert: kombiniert oder Ts
-  const y1      = catY(xv, c1);
-  const fd      = isNfl ? yFdSoll(xv) + (y2_ts - y1)                // Fd stets via Ts
-                : isRfl ? yFdSoll(xv) + rflFahrdrahtVerschiebung(cIst, calcState.c_fd_ref, xv)
-                : yFdSoll(xv);
-  // VEM 7.66: positionsabhängiger Durchhang f(x) = q_vem/(2*(H<sub>2</sub>+H_Fd)) * x * (LT1-x)
-  const sag     = isNfl
-    ? (flCombo && LT1_vem !== null
-        ? q_vem_vem / (2 * (c2.H + calcState.H_Fd)) * xv * (LT1_vem - xv)
-        : c2.sag)
-    : yChord(xv) - y2;
+  const y2      = catY(xv, anzeigeKurve('T2'));             // wie im Diagramm gezeichnet
   // SOK-Interpolation an Position xv
   const sokL = getSokMumLeft();
   const sokR = getSokMumRight();
@@ -10147,7 +10177,7 @@ function updateHighlightCard() {
   // Kurvenfarbe: R-FL = primary rot, sonst T2-Temperaturfarbe
   const _t2v = (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp2')?.value));
   const curveClr = sysMode === 'rfl' ? 'var(--primary)' : t2TempColor(_t2v);
-  const catY    = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
+  const catY    = (x, c) => kettenY(c, x);
   const yFdSoll = x => (h1 - sh) + (h2 - h1) * x / L;
   const isNfl   = sysMode === 'nfl';
   const isEl    = sysMode === 'el';
@@ -10437,6 +10467,9 @@ function _hZeileStatus() {
       ? `≙ ${fN(h - (l + (r - l) * x / L), 2)} m ${t('dyn.ueber.sok')}` : '';
   }
   zeigeElement(document.getElementById('probe-sok-link'), !hasSok);
+  zeigeElement(document.getElementById('probe-sok-hinweis'), !hasSok);
+  // Ohne SOK keine vier gesperrten Felder, nur der Hinweis mit Link (eine Zeile)
+  zeigeElement(document.getElementById('probe-h-section'), hasSok);
   _obsSichtbarkeit();
 }
 // Mastangaben öffnen und ins Feld SOK m ü. M. springen
@@ -10720,21 +10753,20 @@ function buildPdfSectionHtml(projName, canvasImg) {
   const sokAtX = x => sokLv + (sokRv - sokLv) * x / L;
 
   // ── Hilfsfunktionen für Messpunkte ──
-  const catY_fn = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
+  const catY_fn = (x, c) => kettenY(c, x);
+  const cAnzeigePdf = anzeigeKurve('T2');   // gleiche Seillage wie Karte und Diagramm
   const yChordFn = x => h1 + (h2 - h1) * x / L;
   const yFdSollFn = x => (h1 - sh) + (h2 - h1) * x / L;
   const cIstPdf = (isNFL || isEl) ? c2 : c1;  // Auslegungs-Zustand
 
   function probeRows(xv, badge) {
     if (xv === null || xv === undefined) return '';
-    const y_ts   = catY_fn(xv, cIstPdf);
+    const y_ts   = catY_fn(xv, cAnzeigePdf);
     const sag_x  = yChordFn(xv) - y_ts;
     const y_ts_d = hasSok ? (y_ts + sokAtX(xv)).toFixed(2) + ` m ${t('pdf.mum.short')}` : y_ts.toFixed(2) + ` m ${t('pdf.sok.short')}`;
     let fdCell = '';
     if (!isEl) {
-      const y_fd = isNFL
-        ? yFdSollFn(xv) + (catY_fn(xv, cIstPdf) - catY_fn(xv, c1))
-        : yFdSollFn(xv);
+      const y_fd = fdUeberSok(xv, calcState, { h1, h2, sh, L });
       const y_fd_d = hasSok ? (y_fd + sokAtX(xv)).toFixed(2) + ` m ${t('pdf.mum.short')}` : y_fd.toFixed(2) + ` m ${t('pdf.sok.short')}`;
       fdCell = `<td style="padding:3px 7px">${y_fd_d}</td>`;
     }
@@ -10767,13 +10799,9 @@ function buildPdfSectionHtml(projName, canvasImg) {
       <td class="${cls}">${sign(d)}${fmt(Math.abs(d))} ${unit}${pct}</td></tr>`;
   }
 
-  // Compute absolute Fd height above SOK for PDF
-  const yFdSollPdf = x => sh > 0 ? (h1 - sh) + (h2 - h1) * x / L : h1 + (h2 - h1) * x / L;
-  const catY_c1Pdf = x => c1.a * Math.cosh((x - c1.x_low) / c1.a) + c1.C;
-  const x_ist_pdf  = c2.x_low;
-  const fd_abs_pdf = isNFL
-    ? yFdSollPdf(x_ist_pdf) + (c2.y_low - catY_c1Pdf(x_ist_pdf))
-    : yFdSollPdf(x_ist_pdf) + rflFahrdrahtVerschiebung(c2, calcState.c_fd_ref, x_ist_pdf);
+  // Fahrdraht über SOK am Tiefpunkt — gleiche Funktion wie Diagramm und Zeichnung
+  const x_ist_pdf  = anzeigeKurve('T2').x_low;
+  const fd_abs_pdf = fdUeberSok(x_ist_pdf, calcState, { h1, h2, sh, L });
 
   const bodyHtml = `<div class="hdr">${_pdfLogo()}<div>
   <h1>${t('pdf.title')} &nbsp;(${sysName(isEl ? 'el' : isNFL ? 'nfl' : 'rfl')})</h1>
@@ -11121,7 +11149,7 @@ function _zeichnungBauen(stripInSvg) {
   const showFd = !isEl; // Fahrdraht für NFL und RFL
   const c3data = (showT3 && calcState.c3) ? (calcState.c3_vem ?? calcState.c3) : null;
   const cDisp  = (isNFL && calcState.c2_vem) ? calcState.c2_vem : c2;
-  const catY   = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
+  const catY   = (x, c) => kettenY(c, x);
 
   // SOK
   const sokL  = getSokMumLeft();
@@ -11141,12 +11169,7 @@ function _zeichnungBauen(stripInSvg) {
   // Fahrdraht-Höhe bei x (absolut): Solllage + Tragseil-Verschiebung.
   // N-FL gegenüber T1; R-FL gegenüber «neu, ohne Eis» (nachgespannt, keine
   // Temperaturwirkung — VEM 7.53a wie SBB-Excel).
-  const fdY = (x) => {
-    const fdSoll  = (h1 - sh) + (h2 - h1) * x / L;
-    const tsShift = isNFL ? catY(x, cDisp) - catY(x, c1)
-                  : isRFL ? rflFahrdrahtVerschiebung(c2, calcState.c_fd_ref, x) : 0;
-    return absY(x, fdSoll + tsShift);
-  };
+  const fdY = x => absY(x, fdUeberSok(x, calcState, { h1, h2, sh, L }));
 
   // Sample curves for Y-range (including Fd) + find sag-max position
   const N = 120;
@@ -12563,6 +12586,7 @@ function _koordAnwenden() {
 // ═══════════════════════════════════════════════════════════════
 let abschnitt = { masten: [], offen: null, mp: {} };
 let _abschnittSichtbar = false;
+let _absHinweisOffen = null;   // Erklärung zur Masttabelle: vom Nutzer auf-/zugeklappt (null = Vorgabe)
 
 function abschnittFelderAnzahl() { return Math.max(0, abschnitt.masten.length - 1); }
 function abschnittOffenesFeld() {
@@ -13225,7 +13249,7 @@ function renderAbschnitt() {
       <button class="${knopf}" onclick="abschnittExport('ifc')" ${m.length > 1 ? '' : 'disabled'}>${t('abs.ifc')}</button>
       <button class="${knopf}" onclick="abschnittExport('dxf')" ${m.length > 1 ? '' : 'disabled'}>${t('abs.dxf')}</button>
     </div>
-    <p class="abs-hinweis">${t('abs.hinweis')}</p>`;
+    <details class="abs-hinweis-box"${(_absHinweisOffen ?? !_handyBreite()) ? ' open' : ''} ontoggle="_absHinweisOffen = this.open"><summary>${t('abs.hinweis.titel')}</summary><p class="abs-hinweis">${t('abs.hinweis')}</p></details>`;
   if (m.length) html += _straengeHtml();
   if (!m.length) {
     html += `<p class="abs-leer">${t('abs.leer')}</p>`;
@@ -13547,7 +13571,7 @@ function modell3d(stuetzpunkte = 100) {
   const { c1, c2, L, h1, h2, T1, T2, sh, H_Fd, q_Fd, Lm, H_Ts } = calcState;
   const isNFL = sysMode === 'nfl', isEl = sysMode === 'el';
   const cDisp = (isNFL && calcState.c2_vem) ? calcState.c2_vem : c2;
-  const catY  = (x, c) => c.a * Math.cosh((x - c.x_low) / c.a) + c.C;
+  const catY  = (x, c) => kettenY(c, x);
 
   const achse = koordAchse();
   const sokL = getSokMumLeft(), sokR = getSokMumRight();
@@ -14820,6 +14844,11 @@ const LANG = {
     'ui.datei': 'Datei',
     'ui.reset.titel': 'Zurücksetzen auf Standardwerte',
     'ui.reset': 'Zurücksetzen',
+    'ui.mehr': 'Mehr',
+    'ui.darstellung': 'Darstellung',
+    'ui.thema.name.auto': 'automatisch',
+    'ui.thema.name.hell': 'hell',
+    'ui.thema.name.dunkel': 'dunkel',
     'ui.speichern': 'Speichern',
     'ui.reglage': 'Reglagetabelle',
     'ui.reglage.kurz': 'Reglage',
@@ -14963,6 +14992,7 @@ const LANG = {
     'exp.p.quelle': 'Erzeugt mit',
     'abs.tab': 'Abschnitt',
     'abs.titel': 'Abspannabschnitt',
+    'abs.hinweis.titel': 'Erklärung zur Masttabelle',
     'abs.hinweis': 'Masten in Reihenfolge erfassen. E/N = Aufhängepunkt des Leiters (LV95), Z = SOK m ü. M., Δ = Mastfuss − SOK (optional), h = Aufhängehöhe über SOK. L wird aus den Koordinaten oder der KM-Differenz berechnet, sonst bis zum nächsten Mast eingeben. Klick auf ein Feld öffnet es im Diagramm.',
     'abs.mast.hinzu': '+ Mast',
     'abs.csv.import': 'CSV importieren',
@@ -15048,6 +15078,7 @@ const LANG = {
     'hind.titel': 'H-Punkte: Hindernis (z. B. Unterkante Brücke / Bauwerk; beim Einzelleiter auch darunter)',
     'probe.h.sokfehlt': 'SOK fehlt',
     'probe.sok.link': 'SOK m ü. M. eintragen',
+    'probe.h.ohnesok': 'H-Punkte H1–H4 (Hindernisse) brauchen die SOK m ü. M.:',
     'probe.h.name': 'H-Punkte',
     'probe.h.einheit': 'm ü. M.',
     'probe.sperren': 'Messpunkt sperren (nicht verschieben oder löschen)',
@@ -15689,6 +15720,11 @@ const LANG = {
     'ui.datei': 'Fichier',
     'ui.reset.titel': 'Réinitialiser aux valeurs par défaut',
     'ui.reset': 'Réinitialiser',
+    'ui.mehr': 'Plus',
+    'ui.darstellung': 'Affichage',
+    'ui.thema.name.auto': 'automatique',
+    'ui.thema.name.hell': 'clair',
+    'ui.thema.name.dunkel': 'sombre',
     'ui.speichern': 'Enregistrer',
     'ui.reglage': 'Tableau de réglage',
     'ui.reglage.kurz': 'Réglage',
@@ -15832,6 +15868,7 @@ const LANG = {
     'exp.p.quelle': 'Généré avec',
     'abs.tab': 'Canton',
     'abs.titel': 'Canton de pose',
+    'abs.hinweis.titel': 'Explication du tableau des mâts',
     'abs.hinweis': 'Saisir les mâts dans l’ordre. E/N = point d’appui du conducteur (MN95), Z = DRS m s.n.m., Δ = pied de mât − DRS (facultatif), h = hauteur d’appui sur DRS. L est calculée à partir des coordonnées ou de la différence de KM, sinon la saisir jusqu’au mât suivant. Un clic sur une portée l’ouvre dans le diagramme.',
     'abs.mast.hinzu': '+ Mât',
     'abs.csv.import': 'Importer CSV',
@@ -15917,6 +15954,7 @@ const LANG = {
     'hind.titel': 'Points H : obstacle (p. ex. sous-face pont / ouvrage ; pour le conducteur simple aussi en dessous)',
     'probe.h.sokfehlt': 'DRS manquant',
     'probe.sok.link': 'Saisir le DRS m s.n.m.',
+    'probe.h.ohnesok': 'Les points H H1–H4 (obstacles) nécessitent le DRS m s.n.m. :',
     'probe.h.name': 'Points H',
     'probe.h.einheit': 'm s.n.m.',
     'probe.sperren': 'Verrouiller le point de mesure (ni déplacer ni supprimer)',
@@ -16558,6 +16596,11 @@ const LANG = {
     'ui.datei': 'File',
     'ui.reset.titel': 'Ripristina i valori predefiniti',
     'ui.reset': 'Ripristina',
+    'ui.mehr': 'Altro',
+    'ui.darstellung': 'Visualizzazione',
+    'ui.thema.name.auto': 'automatica',
+    'ui.thema.name.hell': 'chiara',
+    'ui.thema.name.dunkel': 'scura',
     'ui.speichern': 'Salva',
     'ui.reglage': 'Tabella di regolazione',
     'ui.reglage.kurz': 'Regolazione',
@@ -16701,6 +16744,7 @@ const LANG = {
     'exp.p.quelle': 'Generato con',
     'abs.tab': 'Tratta',
     'abs.titel': 'Tratta di regolazione',
+    'abs.hinweis.titel': 'Spiegazione della tabella dei pali',
     'abs.hinweis': 'Inserire i pali in ordine. E/N = punto d’aggancio del conduttore (MN95), Z = PRF m s.l.m., Δ = piede del palo − PRF (facoltativo), h = altezza d’aggancio sul PRF. L viene calcolata dalle coordinate o dalla differenza di KM, altrimenti inserirla fino al palo successivo. Un clic su una campata la apre nel diagramma.',
     'abs.mast.hinzu': '+ Palo',
     'abs.csv.import': 'Importa CSV',
@@ -16786,6 +16830,7 @@ const LANG = {
     'hind.titel': 'Punti H: ostacolo (p. es. intradosso ponte / opera; per il conduttore singolo anche sotto)',
     'probe.h.sokfehlt': 'PRF mancante',
     'probe.sok.link': 'Inserire il PRF m s.l.m.',
+    'probe.h.ohnesok': 'I punti H H1–H4 (ostacoli) richiedono il PRF m s.l.m.:',
     'probe.h.name': 'Punti H',
     'probe.h.einheit': 'm s.l.m.',
     'probe.sperren': 'Bloccare il punto di misura (né spostare né eliminare)',
@@ -16981,6 +17026,8 @@ function setLang(lang) {
   if (typeof _berechnungsartUI === 'function') _berechnungsartUI();
   const _thBtn = document.getElementById('thema-btn');
   if (_thBtn) _thBtn.title = t('ui.thema.' + (document.documentElement.dataset.themaWahl || 'auto'));
+  const _thName = document.getElementById('thema-name');
+  if (_thName) _thName.textContent = t('ui.darstellung') + ': ' + t('ui.thema.name.' + (document.documentElement.dataset.themaWahl || 'auto'));
   if (typeof renderObstacleList === 'function') renderObstacleList();
   if (typeof hfElSperre === 'function') hfElSperre();
   if (document.getElementById('hf-modal')?.classList.contains('open')) renderHf();
@@ -17159,6 +17206,8 @@ _mastangabenOeffnenFallsBelegt();
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape' || e.defaultPrevented) return;
   if (document.getElementById('rueckfrage')?.classList.contains('open')) return;
+  const mehr = document.getElementById('mehr-menu');
+  if (mehr && mehr.style.display !== 'none') { closeMehrMenu(); document.getElementById('mehr-btn')?.focus(); e.preventDefault(); return; }
   const offen = [...document.querySelectorAll('.modal-overlay.open')];
   if (offen.length) {
     const fenster = offen[offen.length - 1];
@@ -17196,10 +17245,33 @@ function themaAnwenden(wahl = _themaWahl()) {
   if (icon) icon.innerHTML = THEMA_ICONS[wahl];
   const btn = document.getElementById('thema-btn');
   if (btn) btn.title = t('ui.thema.' + wahl);
+  const name = document.getElementById('thema-name');
+  if (name) name.textContent = t('ui.darstellung') + ': ' + t('ui.thema.name.' + wahl);
   // Diagramm neu zeichnen (Canvas-Farben kommen nicht aus CSS)
   if (typeof berechnen === 'function' && typeof calcState !== 'undefined') berechnen();
   // Abschnitt: Strangfarben je Thema (Neon-Töne im Dunkelmodus)
   if (typeof renderAbschnitt === 'function' && _abschnittSichtbar) renderAbschnitt();
+}
+// Menü «Mehr ⋯»: öffnet unter dem Knopf, rechtsbündig, schliesst bei Klick daneben oder Escape
+function toggleMehrMenu(e) {
+  const menu = document.getElementById('mehr-menu'), knopf = document.getElementById('mehr-btn');
+  if (!menu) return;
+  if (e) e.stopPropagation();
+  const offen = getComputedStyle(menu).display !== 'none';
+  if (offen) { closeMehrMenu(); return; }
+  menu.style.display = 'block';
+  knopf?.setAttribute('aria-expanded', 'true');
+  const r = knopf.getBoundingClientRect(), vw = document.documentElement.clientWidth, mw = menu.offsetWidth;
+  menu.style.top = Math.round(r.bottom + 5) + 'px';
+  menu.style.left = Math.round(Math.max(8, Math.min(r.right - mw, vw - mw - 8))) + 'px';
+  setTimeout(() => document.addEventListener('click', function _zu(ev) {
+    if (!menu.contains(ev.target)) { closeMehrMenu(); document.removeEventListener('click', _zu); }
+  }), 0);
+}
+function closeMehrMenu() {
+  const menu = document.getElementById('mehr-menu');
+  if (menu) menu.style.display = 'none';
+  document.getElementById('mehr-btn')?.setAttribute('aria-expanded', 'false');
 }
 function wechsleThema() {
   const naechste = THEMA_WAHLEN[(THEMA_WAHLEN.indexOf(_themaWahl()) + 1) % THEMA_WAHLEN.length];
@@ -18274,7 +18346,7 @@ renderObstacleList();
       <!-- DE -->
       <div class="hb-lang hb-de">
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.6 &nbsp;Reglagetabelle — CSV Export / Import</p>
-        <p>Die Reglagetabelle (erreichbar über das Tabellensymbol im Header) zeigt für alle Einzelleitertypen die temperaturabhängige Reglagezugkraft von −20 °C bis +40 °C. Über die Schaltflächen im Header der Tabelle:</p>
+        <p>Die Reglagetabelle (erreichbar über das Menü «Mehr ⋯» in der Kopfleiste) zeigt für alle Einzelleitertypen die temperaturabhängige Reglagezugkraft von −20 °C bis +40 °C. Über die Schaltflächen im Header der Tabelle:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>Bearbeiten</strong> — schaltet alle Materialparameter (H bei −20 °C und L ref) zur Bearbeitung frei. Änderungen gelten für die gesamte Sitzung.</li>
           <li><strong>Export CSV</strong> — exportiert alle aktuellen H(−20 °C)- und L-ref-Werte als semikolongetrennte CSV-Datei (UTF-8 BOM, direkt in Excel öffenbar).</li>
@@ -18286,7 +18358,7 @@ renderObstacleList();
       <!-- FR -->
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.6 &nbsp;Tableau de réglage — Export / Import CSV</p>
-        <p>Le tableau de réglage (accessible via l'icône tableau dans l'en-tête) affiche pour tous les types de conducteurs simples la force de traction de réglage dépendante de la température de −20 °C à +40 °C. Via les boutons dans l'en-tête du tableau:</p>
+        <p>Le tableau de réglage (accessible via le menu «Plus ⋯» dans l'en-tête) affiche pour tous les types de conducteurs simples la force de traction de réglage dépendante de la température de −20 °C à +40 °C. Via les boutons dans l'en-tête du tableau:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>Modifier</strong> — déverrouille tous les paramètres matériaux (H à −20 °C et L ref) pour modification. Les modifications s'appliquent à toute la session.</li>
           <li><strong>Export CSV</strong> — exporte toutes les valeurs H(−20 °C) et L ref actuelles sous forme de fichier CSV séparé par des points-virgules (UTF-8 BOM, directement ouvrable dans Excel).</li>
@@ -18298,7 +18370,7 @@ renderObstacleList();
       <!-- IT -->
       <div class="hb-lang hb-it" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.6 &nbsp;Tabella di regolazione — Export / Import CSV</p>
-        <p>La tabella di regolazione (accessibile tramite l'icona tabella nell'intestazione) mostra per tutti i tipi di conduttori singoli la forza di trazione di regolazione dipendente dalla temperatura da −20 °C a +40 °C. Tramite i pulsanti nell'intestazione della tabella:</p>
+        <p>La tabella di regolazione (accessibile tramite il menu «Altro ⋯» nell'intestazione) mostra per tutti i tipi di conduttori singoli la forza di trazione di regolazione dipendente dalla temperatura da −20 °C a +40 °C. Tramite i pulsanti nell'intestazione della tabella:</p>
         <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
           <li><strong>Modifica</strong> — sblocca tutti i parametri materiale (H a −20 °C e L ref) per la modifica. Le modifiche si applicano all'intera sessione.</li>
           <li><strong>Export CSV</strong> — esporta tutti i valori H(−20 °C) e L ref attuali come file CSV separato da punti e virgola (UTF-8 BOM, apribile direttamente in Excel).</li>
@@ -18695,7 +18767,8 @@ SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
           <li><strong>Reiter</strong> über dem Diagramm: <em>Diagramm</em> (Berechnung), <em>Zeichnung</em> (massstäblich, PDF), <em>Abschnitt</em> (6.11) und <em>Foto</em>.</li>
           <li><strong>Zeichnung</strong>: Darstellung <em>bis SOK</em> oder nur <em>Kettenwerk</em> (Masten enden dann mit Bruchzeichen, SOK liegt darunter). Schalter <strong>hf<sub>min</sub> / hf<sub>max</sub></strong> (nur Kettenwerk): blendet die Werte aus der hf-Ansicht als Band über SOK ein und prüft die Soll-Fahrdrahthöhe an den Stützpunkten (h − sh), ausserhalb rot markiert — hf ist eine Auslegungshöhe, Durchhang und Anheben stecken bereits in den Zuschlägen; die Ist-Lage bei T<sub>2</sub> steht nur zur Information daneben; auch im PDF und im DXF (Layer HF_MIN / HF_MAX).</li>
           <li><strong>Foto</strong> ist bewusst zurückhaltend dargestellt: Die Foto-Auswertung ist <em>keine präzise Berechnung</em> und eignet sich nur zur Abschätzung des Durchhangs. Beim ersten Öffnen je App-Start erscheint ein Hinweis; im Foto-Ergebnis steht eine Warnzeile.</li>
-          <li><strong>Hell / Dunkel</strong>: Symbol im Kopf wechselt zwischen automatisch (wie das Gerät), hell und dunkel. PDF und Zeichnung werden immer hell ausgegeben.</li>
+          <li><strong>Menü «Mehr ⋯»</strong> in der Kopfleiste: Reglagetabelle, Handbuch, Darstellung und Zurücksetzen. <em>Darstellung</em> wechselt bei jedem Antippen zwischen automatisch (wie das Gerät), hell und dunkel; PDF und Zeichnung werden immer hell ausgegeben. <em>Zurücksetzen</em> fragt vorher nach.</li>
+          <li><strong>Kombination</strong>: Unter der Auswahl steht der Werkstoff; ein Klick darauf klappt die Reglagewerte auf. <strong>H-Punkte</strong> H1–H4 erscheinen erst mit eingetragener SOK m ü. M. — vorher steht nur ein Hinweis mit Link.</li>
           <li><strong>Ergebnisleiste</strong> (Tablet hochkant): Sobald Diagramm und Ergebniskarte aus dem Bild scrollen, zeigt eine Leiste unten Durchhang, Zugkraft und Höhe bei T<sub>2</sub> (und den T<sub>3</sub>-Vergleich). Antippen springt zum Diagramm; bei ungültiger Eingabe steht «Eingabe prüfen».</li>
           <li><strong>Sprache</strong> DE / FR / IT oben rechts; Fachbegriffe nach SBB-Glossar (Kap. 9).</li>
           <li><strong>Offline</strong>: Die App funktioniert nach dem ersten Laden ohne Internet und lässt sich installieren. Nach einer Aktualisierung erscheint «Eine neue Version ist verfügbar» — «Jetzt laden» wählen oder die Seite neu laden.</li>
@@ -18712,7 +18785,8 @@ SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
           <li><strong>Onglets</strong> au-dessus du diagramme : <em>Diagramme</em> (calcul), <em>Dessin</em> (à l’échelle, PDF), <em>Canton</em> (6.11) et <em>Photo</em>.</li>
           <li><strong>Dessin</strong> : représentation <em>jusqu’au DRS</em> ou seulement <em>Caténaire</em> (les mâts se terminent alors par un symbole de coupure, le DRS est en dessous). Interrupteur <strong>hf<sub>min</sub> / hf<sub>max</sub></strong> (caténaire seulement) : affiche les valeurs de la vue hf comme bande au-dessus du DRS et vérifie la hauteur théorique du fil de contact aux supports (h − sh), hors plage en rouge — hf est une hauteur de dimensionnement, flèche et soulèvement sont déjà compris dans les suppléments ; la position réelle à T<sub>2</sub> n’est indiquée qu’à titre d’information ; aussi dans le PDF et le DXF (calques HF_MIN / HF_MAX).</li>
           <li><strong>Photo</strong> est volontairement discret : l’analyse photo n’est <em>pas un calcul précis</em> et ne convient qu’à estimer la flèche. Une remarque apparaît à la première ouverture après chaque démarrage ; le résultat photo porte une ligne d’avertissement.</li>
-          <li><strong>Clair / sombre</strong> : le symbole dans l’en-tête alterne entre automatique (comme l’appareil), clair et sombre. PDF et dessin sont toujours clairs.</li>
+          <li><strong>Menu «Plus ⋯»</strong> dans l’en-tête : tableau de réglage, manuel, affichage et réinitialisation. <em>Affichage</em> alterne à chaque clic entre automatique (comme l’appareil), clair et sombre ; PDF et dessin sont toujours clairs. <em>Réinitialiser</em> demande une confirmation.</li>
+          <li><strong>Combinaison</strong> : sous la sélection figure le matériau ; un clic dessus affiche les valeurs de réglage. Les <strong>points H</strong> H1–H4 n’apparaissent qu’avec le DRS m s.n.m. saisi — avant, seule une remarque avec lien est affichée.</li>
           <li><strong>Barre de résultats</strong> (tablette en portrait) : dès que diagramme et carte de résultats sortent de l’écran, une barre en bas affiche flèche, force de traction et hauteur à T<sub>2</sub> (et la comparaison T<sub>3</sub>). Un appui ramène au diagramme ; en cas de saisie invalide : «Vérifier la saisie».</li>
           <li><strong>Langue</strong> DE / FR / IT en haut à droite ; termes techniques selon le glossaire CFF (chap. 9).</li>
           <li><strong>Hors ligne</strong> : après le premier chargement, l’application fonctionne sans Internet et peut être installée. Après une mise à jour apparaît «Une nouvelle version est disponible» — choisir «Charger maintenant» ou recharger la page.</li>
@@ -18729,7 +18803,8 @@ SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
           <li><strong>Schede</strong> sopra il diagramma: <em>Diagramma</em> (calcolo), <em>Disegno</em> (in scala, PDF), <em>Tratta</em> (6.11) e <em>Foto</em>.</li>
           <li><strong>Disegno</strong>: rappresentazione <em>fino al PRF</em> o solo <em>Catenaria</em> (i pali terminano allora con un simbolo di interruzione, il PRF è sotto). Interruttore <strong>hf<sub>min</sub> / hf<sub>max</sub></strong> (solo catenaria): mostra i valori della vista hf come banda sopra il PRF e verifica l’altezza teorica del filo di contatto ai sostegni (h − sh), fuori campo in rosso — hf è un’altezza di progetto, freccia e sollevamento sono già compresi nei supplementi; la posizione reale a T<sub>2</sub> è indicata solo come informazione; anche nel PDF e nel DXF (layer HF_MIN / HF_MAX).</li>
           <li><strong>Foto</strong> è volutamente discreta: l’analisi foto <em>non è un calcolo preciso</em> ed è adatta solo per stimare la freccia. Alla prima apertura dopo ogni avvio appare un avviso; il risultato foto riporta una riga di avvertimento.</li>
-          <li><strong>Chiaro / scuro</strong>: il simbolo nell’intestazione alterna tra automatico (come il dispositivo), chiaro e scuro. PDF e disegno sono sempre chiari.</li>
+          <li><strong>Menu «Altro ⋯»</strong> nell’intestazione: tabella di regolazione, manuale, visualizzazione e ripristino. <em>Visualizzazione</em> alterna a ogni clic tra automatico (come il dispositivo), chiaro e scuro; PDF e disegno sono sempre chiari. <em>Ripristina</em> chiede conferma.</li>
+          <li><strong>Combinazione</strong>: sotto la selezione è indicato il materiale; un clic mostra i valori di regolazione. I <strong>punti H</strong> H1–H4 compaiono solo con il PRF m s.l.m. inserito — prima appare solo un avviso con link.</li>
           <li><strong>Barra dei risultati</strong> (tablet verticale): quando diagramma e scheda dei risultati escono dallo schermo, una barra in basso mostra freccia, forza di trazione e altezza a T<sub>2</sub> (e il confronto T<sub>3</sub>). Un tocco riporta al diagramma; con dati non validi: «Controllare i dati inseriti».</li>
           <li><strong>Lingua</strong> DE / FR / IT in alto a destra; termini tecnici secondo il glossario FFS (cap. 9).</li>
           <li><strong>Offline</strong>: dopo il primo caricamento l’applicazione funziona senza Internet e può essere installata. Dopo un aggiornamento appare «È disponibile una nuova versione» — scegliere «Carica ora» o ricaricare la pagina.</li>
