@@ -40,7 +40,11 @@ https://ivanperic84.github.io/Durchhang/ (wird aus `main` veröffentlicht).
 ## Aufbau
 | Datei | Inhalt |
 |---|---|
-| `index.html` | Die ganze App: CSS, HTML, JS, Übersetzungen `LANG` (de/fr/it), Handbuch (~19 300 Zeilen) |
+| `index.html` | Seitengerüst: Eingabefelder, Ansichten, Dialoge (HTML, ~2 000 Zeilen) |
+| `app.css` | Gestaltung (Farben über Variablen, hell/dunkel) |
+| `i18n.js` | Übersetzungen `LANG` (de/fr/it) — wird vor `app.js` geladen |
+| `app.js` | Programm der Oberfläche (Eingaben, Diagramm, Zeichnung, Abschnitt, PDF, Projekte) |
+| `handbuch.html` | Handbuch DE/FR/IT — wird beim ersten Öffnen des Handbuchs geladen |
 | `rechenkern.js` | Reine Rechnung (Zustandsgleichungen N-FL/R-FL/EL, Kettenlinie), in Node testbar |
 | `abschnitt.js` | Abspannabschnitt: CSV, Feldlängen, KM, Stränge, Lastfälle, Abstandsprüfung |
 | `fahrdrahthoehe.js` | hf_min / hf_max (Logik wie SBB-Excel) |
@@ -53,19 +57,22 @@ https://ivanperic84.github.io/Durchhang/ (wird aus `main` veröffentlicht).
 ## Prüfen vor jedem Commit
 ```bash
 npm test                                   # Node-Tests (Stand: 89, alle grün)
-CHROMIUM_PFAD=/opt/pw-browsers/chromium npm run test:browser   # Browser (Stand: 58)
+CHROMIUM_PFAD=/opt/pw-browsers/chromium npm run test:browser   # Browser (Stand: 60)
 ```
 - Browser-Tests mit `timeout` starten (z. B. `timeout 900 …`); in Prüfskripten Playwright-
   Kontexte mit `serviceWorkers: 'block'`, sonst wird eine alte Fassung aus dem Cache geladen.
 - Barrierefreiheit: axe-core (0 Verstösse ist der Stand) — Vorgehen in docs/UEBERGABE.md.
 
 ## Konventionen beim Ändern
-- **Version** bei jeder Auslieferung an 4 Stellen erhöhen: `APP_VERSION` in index.html,
+- **Version** bei jeder Auslieferung an 4 Stellen erhöhen: `APP_VERSION` in app.js,
   `CACHE_VERSION` in sw.js (`durchhang-vX.Y.Z`), `package.json` und `package-lock.json`
   (Zeilen 3 und 9). Neue Dateien zusätzlich in `APP_DATEIEN` (sw.js) eintragen.
-- **Jede sichtbare Änderung dreisprachig** (de/fr/it in `LANG`, `data-i18n…`-Attribute)
-  und das **Handbuch** (im Dialog in index.html, je Sprache ein Block `hb-de/hb-fr/hb-it`)
-  nachführen.
+- **Jede sichtbare Änderung dreisprachig** (de/fr/it in `LANG` in `i18n.js`, `data-i18n…`-Attribute)
+  und das **Handbuch** (`handbuch.html`, je Sprache ein Block `hb-de/hb-fr/hb-it`) nachführen.
+- Neue Dateien: in `sw.js` (`APP_DATEIEN`) und, falls neuer Dateityp, im Testserver
+  `tests/browser/hilfe.js` (`TYPEN`) eintragen.
+- Funktionen im Modul `Projekte` (IIFE in app.js) sind nur über `window.…` global erreichbar —
+  neue, per `onclick` aufgerufene Funktionen dort exportieren.
 - Hell-/Dunkelmodus: Farben nur über CSS-Variablen (`:root` / `:root[data-thema="dunkel"]`).
   Canvas/SVG-Farben aus den Hilfsfunktionen (z. B. `diagrammFarben()`).
 - Alle Checkboxen sind app-weit Schalter (Toggle); Ausnahme Klasse `.auswahl` (Auswahlkästchen).

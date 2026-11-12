@@ -428,10 +428,10 @@ test('Handbuch: Kapitel links mit aktueller Stelle, Suche markiert und springt, 
 test('Kein Verweis auf das SBB-Excel in Handbuch, Hinweisen und PDFs; Schieber-Zahl in Temperaturfarbe', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
   await fensterAbfangen(seite);
-  const r = await seite.evaluate(() => {
+  const r = await seite.evaluate(async () => {
     const excel = /xlsm|SBB-Excel|Excel CFF|Excel FFS|\bVBA\b|Upro1|in der Excel|wie Excel|comme Excel|come Excel/i;
     const funde = [];
-    openHandbuch();
+    await openHandbuch();   // Inhalt wird beim ersten Öffnen geladen
     for (const l of ['de', 'fr', 'it']) {
       setLang(l);
       const m = document.getElementById('hb-text').innerText.match(excel);
@@ -473,7 +473,7 @@ test('Abschnitt: «Beispiel laden» setzt 5 Masten, IFC georeferenziert, Handbuc
     let datei = ''; const alt = window._dateiHerunterladen; window._dateiHerunterladen = x => { datei = x; };
     abschnittExport('ifc');
     window._dateiHerunterladen = alt;
-    openHandbuch();
+    await openHandbuch();
     const hb = document.getElementById('hb-text').innerText;
     closeHandbuch(); setCanvasView('diagramm');
     return { n, ifc: /IFCCABLESEGMENT/.test(datei), epsg: /EPSG:2056/.test(datei), felder: (datei.match(/Feld|CH_Durchhang/g) || []).length,
@@ -1361,6 +1361,75 @@ test('Gemeinsame Seillage: PDF-Messpunkte und Fahrdraht am Tiefpunkt wie Bildsch
   assert.notEqual(r.mitSok, 'none');
   assert.equal(r.fdPdf, r.sollFd, 'Fahrdraht am Tiefpunkt: PDF = Diagramm/Zeichnung');
   assert.equal(r.tsPdf, r.sollTs, 'Ts-Höhe am Messpunkt: PDF = Karte');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Datensicherheit: «Alles sichern» und wieder einlesen, Erinnerung nach 14 Tagen, Speicherzustand', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const w = ms => new Promise(res => setTimeout(res, ms));
+    localStorage.clear();
+    openProjectsModal(); saveCurrentCalc(); document.getElementById('temp2').value = 30; berechnen(); saveCurrentCalc();
+    const vorher = getProjMeta().filter(m => !m.isGroup).length;
+    const ungesichert = !!localStorage.getItem('dh_erste_ungesichert');
+    let datei = '', name = ''; const alt = window._dateiHerunterladen; window._dateiHerunterladen = (x, n) => { datei = x; name = n; };
+    sicherungExportieren(); window._dateiHerunterladen = alt;
+    const nachSicherung = { ungesichert: !!localStorage.getItem('dh_erste_ungesichert'), zeitpunkt: !!localStorage.getItem('dh_letzte_sicherung') };
+    await _speicherStatus();
+    const status = document.getElementById('speicher-status').textContent;
+    const inhalt = JSON.parse(datei);
+    // Browserdaten weg → Sicherung einlesen
+    localStorage.clear();
+    const input = document.getElementById('proj-import-input');
+    const dt = new DataTransfer(); dt.items.add(new File([datei], name, { type: 'application/json' })); input.files = dt.files;
+    importProjectFile(input); await w(300);
+    const nachher = getProjMeta().filter(m => !m.isGroup).length;
+    // Nochmals einlesen: nichts doppelt
+    const dt2 = new DataTransfer(); dt2.items.add(new File([datei], name, { type: 'application/json' })); input.files = dt2.files;
+    importProjectFile(input); await w(300);
+    const doppelt = getProjMeta().filter(m => !m.isGroup).length;
+    // Erinnerung: erste ungesicherte Änderung vor 15 Tagen
+    document.querySelectorAll('#meldungen .meldung').forEach(m => m.remove());
+    localStorage.setItem('dh_erste_ungesichert', String(Date.now() - 15 * 864e5));
+    _sicherungsErinnerung();
+    const erinnerung = [...document.querySelectorAll('#meldungen .meldung')].map(m => m.textContent).join(' ');
+    closeProjectsModal();
+    return { vorher, ungesichert, nachSicherung, typ: inhalt.type, anzahl: Object.keys(inhalt.projekte).length, name, nachher, doppelt,
+      erinnerung, status };
+  });
+  assert.equal(r.vorher, 2);
+  assert.equal(r.ungesichert, true, 'Änderung wird gemerkt');
+  assert.deepEqual(r.nachSicherung, { ungesichert: false, zeitpunkt: true });
+  assert.equal(r.typ, 'durchhang_sicherung');
+  assert.equal(r.anzahl, 2);
+  assert.match(r.name, /^durchhang_sicherung_\d{4}-\d{2}-\d{2}\.json$/);
+  assert.equal(r.nachher, 2, 'nach dem Einlesen wieder da');
+  assert.equal(r.doppelt, 2, 'erneutes Einlesen verdoppelt nichts');
+  assert.match(r.erinnerung, /15 Tagen/);
+  assert.match(r.erinnerung, /Jetzt sichern/);
+  assert.match(r.status, /Belegt: ca\. [\d.]+ MB/);
+  assert.match(r.status, /Letzte Sicherung/);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Aufbau: Gestaltung, Übersetzungen, Programm und Handbuch als eigene Dateien; Handbuch lädt beim Öffnen', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    const quellen = [...document.querySelectorAll('script[src], link[rel=stylesheet]')].map(e => e.getAttribute('src') || e.getAttribute('href'));
+    const leerVorher = document.querySelectorAll('#hb-text .hb-lang').length;
+    await openHandbuch();
+    const nachher = document.querySelectorAll('#hb-text .hb-lang').length;
+    const kapitel = document.querySelectorAll('#hb-nav a').length;
+    closeHandbuch();
+    return { quellen, leerVorher, nachher, kapitel, sprachen: Object.keys(LANG) };
+  });
+  for (const f of ['app.css', 'i18n.js', 'app.js', 'rechenkern.js']) assert.ok(r.quellen.includes(f), f);
+  assert.equal(r.leerVorher, 0);
+  assert.ok(r.nachher > 30, `Handbuch-Blöcke: ${r.nachher}`);
+  assert.ok(r.kapitel > 5, `Kapitelleiste: ${r.kapitel}`);
+  assert.deepEqual(r.sprachen, ['de', 'fr', 'it']);
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
