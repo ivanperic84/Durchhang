@@ -47,6 +47,7 @@
   --warn: #9a7b1a;  --warn-s: rgba(154,123,26,.10);
   --warn-text: #7a6114;   /* Schrift in Warnfarbe auf hellem Grund (Kontrast ≥ 4.5 : 1) */
   --fail: #a02020;  --fail-s: rgba(160,32,32,.08);
+  --hinweis: #8fd3b4;  --hinweis-s: #e6f6ee;   /* Hinweise (Vorgabewerte): Mintgrün pastell, Rand / Fläche */
   --scrim: rgba(0,0,0,.35);
   --shadow: 0 1px 2px rgba(16,18,24,.05);
   --shadow-pop: 0 8px 24px rgba(16,18,24,.12);
@@ -79,6 +80,7 @@
   --warn: #c9a84c;  --warn-s: rgba(201,168,76,.10);
   --warn-text: #c9a84c;
   --fail: #cf7070;  --fail-s: rgba(207,112,112,.10);
+  --hinweis: rgba(120,210,170,.40);  --hinweis-s: rgba(120,210,170,.13);
   --scrim: rgba(0,0,0,.55);
   --shadow: none;
   --shadow-pop: 0 12px 28px rgba(0,0,0,.38);
@@ -1976,14 +1978,14 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 .annahmen .ann-tr { color: var(--tertiary); }
 .annahmen .ann-legende { display: block; margin-top: .15rem; font-size: .68rem; color: var(--tertiary); }
 
-/* Vorgabewerte, die noch nicht geprüft wurden: Wert grau-kursiv auf zartblauem Feld */
+/* Vorgabewerte, die noch nicht geprüft wurden: Wert grau-kursiv auf mintgrünem Feld */
 .ungeprueft input, .ungeprueft select, input.ungeprueft, select.ungeprueft,
 .ungeprueft #temp2, .ungeprueft #span, .ungeprueft #preset-select, .ungeprueft #el-material-select {
-  font-style: italic; color: var(--tertiary); background: color-mix(in srgb, var(--primary) 14%, var(--s4));
+  font-style: italic; color: var(--tertiary); background: var(--hinweis-s);
 }
-.ungeprueft-muster { font-style: italic; color: var(--tertiary); padding: 0 .3rem; border-radius: 4px; background: color-mix(in srgb, var(--primary) 14%, var(--s4)); }
-.ungeprueft-hw { margin: 0 0 .6rem; padding: .35rem .55rem; border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent); border-radius: 6px;
-  background: var(--acc-s); color: var(--text2); font-size: .7rem; line-height: 1.45; }
+.ungeprueft-muster { font-style: italic; color: var(--tertiary); padding: 0 .3rem; border-radius: 4px; background: var(--hinweis-s); }
+.ungeprueft-hw { margin: 0 0 .6rem; padding: .35rem .55rem; border: 1px solid var(--hinweis); border-radius: 6px;
+  background: var(--hinweis-s); color: var(--text2); font-size: .7rem; line-height: 1.45; }
 .ungeprueft-hw .ungeprueft-muster { background: var(--card); }
 /* Handbuch: Abbildungen, beim Öffnen aus der laufenden App kopiert (keine Bilddateien) */
 .hb-abb { margin: .7rem 0 .9rem; }
