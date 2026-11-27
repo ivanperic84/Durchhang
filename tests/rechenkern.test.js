@@ -4,10 +4,9 @@
 // Zwei Arten von Prüfungen:
 //  1. Physikalische Plausibilität — gilt unabhängig von Referenzwerten
 //     (z. B. Kurve geht durch beide Aufhängepunkte, ΔT = 0 ändert nichts).
-//  2. Referenzfälle (referenzfaelle.json) — Ergebnisse der App, Stand v3.1.
+//  2. Referenzfälle (referenzfaelle.json) — eingefrorene Ergebnisse der App mit
+//     neutralen Beispiel-Zugkräften (v6.2; die Fälle mit SBB-Werten laufen lokal).
 //     Sie schützen davor, dass eine Änderung unbemerkt andere Zahlen liefert.
-//     Werden Werte aus der Excel-Vorlage (Durchhang 2026.xlsm) verfügbar,
-//     sollten sie dort als zusätzliche Fälle eingetragen werden.
 'use strict';
 const test   = require('node:test');
 const assert = require('node:assert/strict');

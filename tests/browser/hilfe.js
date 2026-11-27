@@ -41,11 +41,13 @@ async function browserStarten() {
 // Liefert { seite, fehler } — fehler sammelt Skriptfehler und console.error.
 async function appOeffnen(browser, url, optionen = {}) {
   // { dev: true }: Entwicklermodus (unfertige Funktionen wie hf_min / hf_max) vor dem Laden einschalten
-  const { dev = false, ...kontextOptionen } = optionen;
+  // { daten: {…} }: Betreiberdaten (Format betreiberdaten.js) vor dem Laden ins Gerät legen
+  const { dev = false, daten = null, ...kontextOptionen } = optionen;
   const kontext = await browser.newContext({
     viewport: { width: 1280, height: 900 }, serviceWorkers: 'block', acceptDownloads: true, ...kontextOptionen,
   });
   if (dev) await kontext.addInitScript(() => { try { localStorage.setItem('dh_dev', '1'); } catch (e) {} });
+  if (daten) await kontext.addInitScript(d => { try { localStorage.setItem('dh_betreiberdaten', d); } catch (e) {} }, JSON.stringify(daten));
   const seite = await kontext.newPage();
   const fehler = [];
   seite.on('pageerror', e => fehler.push('Skriptfehler: ' + e.message));

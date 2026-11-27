@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v6.1.0';
+const APP_VERSION = 'v6.2.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -335,73 +335,25 @@ function _rueckfrage({ text, titel, ok, abbrechen, eingabe, nurOk = false, alt =
 }
 
 // ═══════════════════════════════════════════════════════════════
-// MATERIALDATEN
-// Quelle: SBB «Durchhang 2026.xlsm»
-// H_reglage: Reglagezugkraft bei +10 °C, Lm=45 m, Berechnungsart «Ausgleichend»
-// Quelle: SBB 0161.1013.0001 (31.10.2024)
+// MATERIALDATEN (physikalisch: Gewichtskraft q [N/m], Ausdehnung alpha [1/K],
+// E-Modul [N/m²], Querschnitt AK [m²]). Reglagewerte kommen aus den
+// Betreiberdaten (betreiberdaten.js) und werden beim Start eingesetzt.
 // ═══════════════════════════════════════════════════════════════
 const MATERIALS = {
-  cu95:      { name: 'Cu 95 mm²',        q: 8.4239123,  alpha: 17e-6,   E: 108e9,        AK: 94.77e-6,  L_ref: 45, H_reglage: 3700, basis_kN: 6,  reglage_note: '6 kN Basiskraft (Rückleiter/Speiseleitung)', reglage_note_key: 'mat.rn.6kn.rl',
-    H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                       vals:  [6000,5500,5000,4600,4200,3900,3700,3400,3200,3100,2900,2800,2600] },
-    // Varianten gemäss Reglagetabelle SBB 0161.1013.0001
-    H_reglage_variants: [
-      { label: '6 kN', H_reglage: 3700, reglage_note: '6 kN Basiskraft (Rückleiter/Speiseleitung)', reglage_note_key: 'mat.rn.6kn.rl',
-        H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                           vals:  [6000,5500,5000,4600,4200,3900,3700,3400,3200,3100,2900,2800,2600] } },
-      { label: '8 kN', H_reglage: 4700, reglage_note: '8 kN Basiskraft (Westschweiz, bestehende Leitungen)', reglage_note_key: null,
-        H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                           vals:  [8000,7300,6700,6100,5600,5100,4700,4300,4000,3700,3500,3300,3100] } },
-    ] },
-  cu107:     { name: 'Cu 107 mm²',       q: 9.517,      alpha: 17e-6,   E: 108e9,        AK: 107e-6,    H_reglage: null, basis_kN: null, reglage_note: null, reglage_note_key: null },
-  cu150:     { name: 'Cu 150 mm²',       q: 13.4351100, alpha: 17e-6,   E: 108e9,        AK: 149.7e-6,  L_ref: 45, H_reglage: 5600, basis_kN: 9,  reglage_note: '9 kN Basiskraft (normale Zugkraft)',           reglage_note_key: 'mat.rn.9kn',
-    H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                       vals:  [9000,8200,7500,6900,6400,6000,5600,5300,5000,4700,4500,4300,4100] },
-    H_reglage_variants: [
-      { label: '9 kN', H_reglage: 5600, reglage_note: '9 kN Basiskraft (normale Zugkraft)', reglage_note_key: 'mat.rn.9kn',
-        H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                           vals:  [9000,8200,7500,6900,6400,6000,5600,5300,5000,4700,4500,4300,4100] } },
-      { label: '6 kN', H_reglage: 4300, reglage_note: '6 kN Basiskraft (reduzierte Zugkraft)', reglage_note_key: null,
-        H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                           vals:  [6000,5600,5300,5000,4700,4500,4300,4100,4000,3800,3700,3600,3400] } },
-    ] },
-  cu240:     { name: 'Cu 240 mm²',       q: 21.5746300, alpha: 17e-6,   E: 108e9,        AK: 239.4e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
-  cu300:     { name: 'Cu 300 mm²',       q: 26.2818220, alpha: 17e-6,   E: 108e9,        AK: 301.3e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
-  stcu50:    { name: 'StCu 50 mm²',      q: 4.0109198,  alpha: 11.5e-6, E: 159e9,        AK: 49.48e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
-  stcu92:    { name: 'StCu 92 mm²',      q: 8.2179727,  alpha: 16.2e-6, E: 124e9,        AK: 92.41e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
-  aldrey240: { name: 'Aldrey 240 mm²',   q: 6.5606488,  alpha: 23e-6,   E: 5.5897905e10, AK: 239.4e-6,  H_reglage: null, basis_kN: 6, reglage_note: null,
-    auto_variant_by_span: true,
-    H_reglage_variants: [
-      { label: 'c ≤ 35 m', c_max: 35,      L_ref: 30, H_reglage: null, reglage_note: '6 kN Basiszugkraft (c ≤ 35 m)', reglage_note_key: null },
-      { label: 'c > 35 m', c_max: Infinity, L_ref: 45, H_reglage: null, reglage_note: '6 kN Basiszugkraft (c > 35 m)', reglage_note_key: null },
-    ] },
-  aldrey300: { name: 'Aldrey 300 mm²',   q: 8.2670059,  alpha: 23e-6,   E: 5.5897905e10, AK: 301.3e-6,  H_reglage: 2200, basis_kN: 6,  reglage_note: '6 kN Basiskraft (c ≤ 35 m)', reglage_note_key: null,
-    auto_variant_by_span: true,
-    H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                       vals:  [6000,4800,3800,3200,2800,2400,2200,2000,1900,1700,1600,1500,1500] },
-    H_reglage_variants: [
-      { label: 'c ≤ 35 m', c_max: 35,       L_ref: 30, H_reglage: 2200, reglage_note: '6 kN Basiskraft (c ≤ 35 m)', reglage_note_key: null,
-        H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                           vals:  [6000,4800,3800,3200,2800,2400,2200,2000,1900,1700,1600,1500,1500] } },
-      { label: 'c > 35 m', c_max: Infinity,  L_ref: 45, H_reglage: 2900, reglage_note: '6 kN Basiskraft (c > 35 m)', reglage_note_key: null,
-        H_reglage_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                           vals:  [6000,5100,4400,3900,3500,3200,2900,2700,2600,2400,2300,2200,2100] } },
-    ] },
-  aldrey400: { name: 'Aldrey 400 mm²',   q: 11.0422870, alpha: 23e-6,   E: 5.5897905e10, AK: 402.9e-6,  H_reglage: null, basis_kN: 6, reglage_note: null,
-    auto_variant_by_span: true,
-    H_reglage_variants: [
-      { label: 'c ≤ 35 m', c_max: 35,      L_ref: 30, H_reglage: null, reglage_note: '6 kN Basiszugkraft (c ≤ 35 m)', reglage_note_key: null },
-      { label: 'c > 35 m', c_max: Infinity, L_ref: 45, H_reglage: null, reglage_note: '6 kN Basiszugkraft (c > 35 m)', reglage_note_key: null },
-    ] },
-  aldrey550: { name: 'Aldrey 550 mm²',   q: 15.0924340, alpha: 23e-6,   E: 5.5897905e10, AK: 550.6e-6,  H_reglage: null, basis_kN: 6, reglage_note: null,
-    auto_variant_by_span: true,
-    H_reglage_variants: [
-      { label: 'c ≤ 35 m', c_max: 35,      L_ref: 30, H_reglage: null, reglage_note: '6 kN Basiszugkraft (c ≤ 35 m)', reglage_note_key: null },
-      { label: 'c > 35 m', c_max: Infinity, L_ref: 45, H_reglage: null, reglage_note: '6 kN Basiszugkraft (c > 35 m)', reglage_note_key: null },
-    ] },
-  alum191:   { name: 'Alumin. 191 mm²',  q: 5.2465577,  alpha: 23e-6,   E: 5.88399e10,   AK: 191e-6,    H_reglage: null, basis_kN: null, reglage_note: null },
-  cusn95:    { name: 'CuSn 0.1 95 mm²',  q: 8.4268000,  alpha: 17e-6,   E: 105e9,        AK: 94.72e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
-  bziii50:   { name: 'BzIII 50 mm²',     q: 4.3752600,  alpha: 17e-6,   E: 113e9,        AK: 49.45e-6,  H_reglage: null, basis_kN: null, reglage_note: null },
+  cu95:      { name: 'Cu 95 mm²',        q: 8.4239123,  alpha: 17e-6,   E: 108e9,        AK: 94.77e-6 },
+  cu107:     { name: 'Cu 107 mm²',       q: 9.517,      alpha: 17e-6,   E: 108e9,        AK: 107e-6  },
+  cu150:     { name: 'Cu 150 mm²',       q: 13.4351100, alpha: 17e-6,   E: 108e9,        AK: 149.7e-6 },
+  cu240:     { name: 'Cu 240 mm²',       q: 21.5746300, alpha: 17e-6,   E: 108e9,        AK: 239.4e-6 },
+  cu300:     { name: 'Cu 300 mm²',       q: 26.2818220, alpha: 17e-6,   E: 108e9,        AK: 301.3e-6 },
+  stcu50:    { name: 'StCu 50 mm²',      q: 4.0109198,  alpha: 11.5e-6, E: 159e9,        AK: 49.48e-6 },
+  stcu92:    { name: 'StCu 92 mm²',      q: 8.2179727,  alpha: 16.2e-6, E: 124e9,        AK: 92.41e-6 },
+  aldrey240: { name: 'Aldrey 240 mm²',   q: 6.5606488,  alpha: 23e-6,   E: 5.5897905e10, AK: 239.4e-6 },
+  aldrey300: { name: 'Aldrey 300 mm²',   q: 8.2670059,  alpha: 23e-6,   E: 5.5897905e10, AK: 301.3e-6 },
+  aldrey400: { name: 'Aldrey 400 mm²',   q: 11.0422870, alpha: 23e-6,   E: 5.5897905e10, AK: 402.9e-6 },
+  aldrey550: { name: 'Aldrey 550 mm²',   q: 15.0924340, alpha: 23e-6,   E: 5.5897905e10, AK: 550.6e-6 },
+  alum191:   { name: 'Alumin. 191 mm²',  q: 5.2465577,  alpha: 23e-6,   E: 5.88399e10,   AK: 191e-6  },
+  cusn95:    { name: 'CuSn 0.1 95 mm²',  q: 8.4268000,  alpha: 17e-6,   E: 105e9,        AK: 94.72e-6 },
+  bziii50:   { name: 'BzIII 50 mm²',     q: 4.3752600,  alpha: 17e-6,   E: 113e9,        AK: 49.45e-6 },
 };
 
 // ── FL-Kombinationen (Quelldaten aus VBA Excel Durchhang 2026.xlsm) ──────────────
@@ -416,108 +368,34 @@ const FL_COMBINATIONS = {
   'stcu92_cu150': { MFL: 22.4572285,  MTS: 8.2179727, E: 1.24e11, AL: 16.2e-6,  AK: 9.240e-5,  qFdAbnutzung: 13.533177 },
 };
 
-// ── Kettenwerk-Kombinationen (Quelle: SBB 0161.1013.0001 / Durchhang 2026.xlsm) ──
-// N-FL (fixabgefangen): Ts belastet/unbelastet bei +10 °C, Lm=45 m, «Ausgleichend»
-//   sh=2.40 m → gestützte N-Fahrleitung, 6 kN Basiskraft
-//   sh=1.90 m → gehängte N-Fahrleitung,  8 kN Basiskraft
-//   Gotthard: StCu 92 + Cu 150, 10 kN, sh=2.40 m (SBB 0161.1013.0001, Abschn. 7.2)
-// R-FL (beweglich, Nachspannvorrichtung): H_Ts=12'000 N, H_Fd=10'000 N, temperaturunabhängig
+// ── Kettenwerke (Vorgaben) — aus den Betreiberdaten, siehe _betreiberdatenStart ──
+// N-FL (fixabgefangen): Ts belastet/unbelastet bei +10 °C, Reglagetabellen «normal»/«starr»
+// R-FL (beweglich, Nachspannvorrichtung): H_Ts konstant, temperaturunabhängig
+const KETTENWERK_PRESETS = {};
 
-const KETTENWERK_PRESETS = {
-
-  // ── N-FL ────────────────────────────────────────────────────────────────────
-  nfl_stcu50_cu107_240_6: {
-    label: 'StCu 50 + Cu 107 · 6 kN',
-    title: 'Ts: StCu 50 mm²  ·  Fd: Cu 107 mm²',
-    note:  'Reglage Ts: belastet 4\'500 N / unbelastet 1\'700 N bei +10 °C  ·  H Fd: 8\'500 N  (SBB 0161.1013.0001)',
-    note_ref: 'SBB 0161.1013.0001',
-    sysMode: 'nfl', matTs: 'stcu50', matFd: 'cu107',
-    sh: 2.40, H_Ts: 4500, H_Ts_ub: 1700, H_Fd: 8500, T1: 10, wear_max: 30,
-    // H_Ts_ub [N] gemäss Reglagetabelle SBB 0161.1013.0001 für T = -20…+40 °C (5 °C-Schritte)
-    H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                     vals:  [2500,2300,2100,2000,1900,1800,1700,1600,1600,1500,1400,1400,1300] },
-    // Berechnungsart «Starr»: SBB 0161.1013.0003_g (c = 25 m, Basiskraft bei −20 °C)
-    starr: { H_Ts: 3900, H_Ts_ub: 2100, note_ref: 'SBB 0161.1013.0003',
-             H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                              vals:  [4300,3800,3400,3100,2700,2400,2100,1900,1700,1500,1400,1200,1100] } },
-  },
-  nfl_stcu50_cu107_190_8: {
-    label: 'StCu 50 + Cu 107 · 8 kN',
-    title: 'Ts: StCu 50 mm²  ·  Fd: Cu 107 mm²',
-    note:  'Reglage Ts: belastet 6\'100 N / unbelastet 3\'500 N bei +10 °C  ·  H Fd: 8\'500 N  (SBB 0161.1013.0001)',
-    note_ref: 'SBB 0161.1013.0001',
-    sysMode: 'nfl', matTs: 'stcu50', matFd: 'cu107',
-    sh: 1.90, H_Ts: 6100, H_Ts_ub: 3500, H_Fd: 8500, T1: 10, wear_max: 30,
-    H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                     vals:  [5700,5300,4900,4500,4200,3800,3500,3200,3000,2700,2500,2300,2200] },
-    // Berechnungsart «Starr»: SBB 0161.1013.0003_g (c = 25 m, Basiskraft bei −20 °C)
-    starr: { H_Ts: 5600, H_Ts_ub: 4500, note_ref: 'SBB 0161.1013.0003',
-             H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                              vals:  [7100,6700,6200,5800,5400,4900,4500,4100,3700,3300,2900,2600,2300] } },
-  },
-  nfl_stcu92_cu107_240_6: {
-    label: 'StCu 92 + Cu 107 · 6 kN',
-    title: 'Ts: StCu 92 mm²  ·  Fd: Cu 107 mm²',
-    note:  'Reglage Ts: belastet 4\'300 N / unbelastet 2\'100 N bei +10 °C  ·  H Fd: 8\'500 N  (SBB 0161.1013.0001)',
-    note_ref: 'SBB 0161.1013.0001',
-    sysMode: 'nfl', matTs: 'stcu92', matFd: 'cu107',
-    sh: 2.40, H_Ts: 4300, H_Ts_ub: 2100, H_Fd: 8500, T1: 10, wear_max: 30,
-    H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                     vals:  [2600,2500,2400,2300,2200,2200,2100,2000,2000,1900,1900,1800,1800] },
-    // Berechnungsart «Starr»: SBB 0161.1013.0003_g (c = 25 m, Basiskraft bei −20 °C)
-    starr: { H_Ts: 3400, H_Ts_ub: 1700, note_ref: 'SBB 0161.1013.0003',
-             H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                              vals:  [2800,2500,2300,2100,1900,1800,1700,1600,1500,1500,1400,1300,1300] } },
-  },
-  nfl_stcu92_cu107_190_8: {
-    label: 'StCu 92 + Cu 107 · 8 kN',
-    title: 'Ts: StCu 92 mm²  ·  Fd: Cu 107 mm²',
-    note:  'Reglage Ts: belastet 5\'500 N / unbelastet 2\'900 N bei +10 °C  ·  H Fd: 8\'500 N  (SBB 0161.1013.0001)',
-    note_ref: 'SBB 0161.1013.0001',
-    sysMode: 'nfl', matTs: 'stcu92', matFd: 'cu107',
-    sh: 1.90, H_Ts: 5500, H_Ts_ub: 2900, H_Fd: 8500, T1: 10, wear_max: 30,
-    H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                     vals:  [4300,4000,3700,3400,3200,3100,2900,2800,2600,2500,2400,2300,2300] },
-    // Berechnungsart «Starr»: SBB 0161.1013.0003_g (c = 25 m, Basiskraft bei −20 °C)
-    starr: { H_Ts: 4400, H_Ts_ub: 2500, note_ref: 'SBB 0161.1013.0003',
-             H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                              vals:  [5500,4800,4200,3600,3200,2800,2500,2300,2100,1900,1800,1700,1600] } },
-  },
-  nfl_stcu92_cu150_gotthard: {
-    label: 'StCu 92 + Cu 150 · 10 kN (Gotthard)',
-    title: 'Ts: StCu 92 mm²  ·  Fd: Cu 150 mm²',
-    note:  'Reglage Ts: belastet 7\'100 N / unbelastet 3\'300 N bei +10 °C  ·  H Fd: 10\'000 N  (SBB 0161.1013.0001, 7.2)',
-    note_ref: 'SBB 0161.1013.0001, 7.2',
-    sysMode: 'nfl', matTs: 'stcu92', matFd: 'cu150',
-    sh: 2.40, H_Ts: 7100, H_Ts_ub: 3300, H_Fd: 10000, T1: 10, wear_max: 25,
-    H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                     vals:  [5200,4800,4400,4100,3800,3500,3300,3100,3000,2800,2700,2600,2500] },
-    // Berechnungsart «Starr»: SBB 0161.1013.0003_g (c = 25 m, Basiskraft bei −20 °C)
-    starr: { H_Ts: 5900, H_Ts_ub: 3400, note_ref: 'SBB 0161.1013.0003',
-             H_Ts_ub_table: { temps: [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40],
-                              vals:  [7600,6700,5900,5200,4500,3900,3400,3000,2700,2400,2200,2000,1900] } },
-  },
-
-  // ── R-FL ────────────────────────────────────────────────────────────────────
-  rfl_stcu92_cu107: {
-    label: 'StCu 92 + Cu 107',
-    title: 'Ts: StCu 92 mm²  ·  Fd: Cu 107 mm²',
-    note:  'H Ts: 12\'000 N konstant (Nachspannvorrichtung)  ·  H Fd: 10\'000 N  ·  Abnutzung max. 18 %',
-    sysMode: 'rfl', matTs: 'stcu92', matFd: 'cu107',
-    sh: 1.60, H_Ts: 12000, H_Fd: 10000, T1: 10, wear_max: 18,
-  },
-  rfl_stcu92_cu150: {
-    label: 'StCu 92 + Cu 150',
-    title: 'Ts: StCu 92 mm²  ·  Fd: Cu 150 mm²',
-    note:  'H Ts: 12\'000 N konstant (Nachspannvorrichtung)  ·  H Fd: 10\'000 N  ·  Abnutzung max. 25 %',
-    sysMode: 'rfl', matTs: 'stcu92', matFd: 'cu150',
-    sh: 1.60, H_Ts: 12000, H_Fd: 10000, T1: 10, wear_max: 25,
-  },
-};
+// ── Betreiberdaten: beim Start aus dem Gerät, sonst neutrale Beispielwerte ──
+let betreiberDaten = null;
+const _bdPruefer = () => ({
+  leiter: k => !!MATERIALS[k],
+  kombination: (ts, fd) => !!MATERIALS[ts] && !!MATERIALS[fd] && !!FL_COMBINATIONS[ts + '_' + fd],
+});
+function _betreiberdatenStart() {
+  let roh = null;
+  try { roh = JSON.parse(localStorage.getItem(BD_SPEICHER) || 'null'); } catch (e) {}
+  const geprueft = roh ? bdPruefen(roh, _bdPruefer()) : null;
+  betreiberDaten = geprueft && geprueft.daten ? geprueft.daten : bdPruefen(BEISPIEL_DATEN, _bdPruefer()).daten;
+  bdAnwenden(betreiberDaten, MATERIALS, KETTENWERK_PRESETS);
+  hfParameterSetzen(betreiberDaten.hf);
+}
+_betreiberdatenStart();
+// Basiskraft bei −20 °C für Leiter ohne eigene Reglagetabelle
+const elVorgabeN = () => betreiberDaten.einzelleiter.vorgabe_N;
+// Reglage-Notiz in der aktuellen Sprache
+const reglageNotiz = v => bdNotiz(v && v.reglage_note, typeof currentLang !== 'undefined' ? currentLang : 'de');
 
 // ── Reglagewerte eines Kettenwerks je Berechnungsart ──────────────────────────
-// Ausgleichend: Normal-Reglagetabelle SBB 0161.1013.0001 (c = 45 m)
-// Starr:        Starr-Reglagetabelle SBB 0161.1013.0003 (c = 25 m) — nur N-FL
+// Ausgleichend: Reglagetabelle «normal» der Betreiberdaten
+// Starr:        Reglagetabelle «starr» der Betreiberdaten — nur N-FL
 function _presetReglage(p) {
   const starr = p.sysMode === 'nfl' && p.starr && typeof elBerechnungsart !== 'undefined'
                 && elBerechnungsart === 'starr';
@@ -2807,7 +2685,129 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 // ── Ende Foto-Auswertung ───────────────────────────────────────────────────
 
-function openReglageModal()  { document.getElementById('reglage-modal').classList.add('open'); renderReglageElTable(); }
+function openReglageModal()  { document.getElementById('reglage-modal').classList.add('open'); _rglKettenwerkeZeigen(); renderReglageElTable(); }
+
+// Kettenwerk-Tabellen und Quellenzeile des Reglage-Fensters aus den Betreiberdaten
+function _rglKettenwerkeZeigen() {
+  const N = n => (n == null ? '—' : Number(n).toLocaleString('de-CH') + ' N');
+  const name = p => {
+    const [a, ...b] = String(p.label).split(' · ');
+    return escHtml(a) + (b.length ? ` <span style="color:var(--tertiary);font-size:.7rem">· ${escHtml(b.join(' · '))}</span>` : '');
+  };
+  const zeile = (p, mitte) => `<tr><td class="c-left">${name(p)}</td>`
+    + `<td class="c-ctr" style="color:var(--muted);white-space:nowrap">${Number(p.sh).toFixed(2)} m</td>${mitte}`
+    + `<td class="c-right">${N(p.H_Fd)}</td><td class="c-right" style="color:var(--muted)">${p.wear_max} %</td></tr>`;
+  const alle = Object.values(KETTENWERK_PRESETS);
+  const leer = `<tr><td class="c-left" colspan="6" style="color:var(--muted)">${t('ui.rgl.keine')}</td></tr>`;
+  const nfl = alle.filter(p => p.sysMode === 'nfl').map(p => zeile(p,
+    `<td class="c-right">${N(p.H_Ts)}</td><td class="c-right" style="color:var(--muted)">${N(p.H_Ts_ub)}</td>`)).join('');
+  const rfl = alle.filter(p => p.sysMode === 'rfl').map(p => zeile(p,
+    `<td class="c-right" colspan="2">${N(p.H_Ts)}</td>`)).join('');
+  document.getElementById('rgl-nfl-zeilen').innerHTML = nfl || leer;
+  document.getElementById('rgl-rfl-zeilen').innerHTML = rfl || leer;
+  const q = betreiberDaten.quellen.reglage;
+  document.getElementById('rgl-quelle').innerHTML = t('ui.rgl.quelle')
+    .replace('{daten}', escHtml(betreiberdatenText()) + (q ? ' (' + escHtml(q) + ')' : ''));
+}
+
+// «SBB-Daten, Stand 31.10.2024» bzw. «Beispielwerte – keine Vorgabe»
+function betreiberdatenText() {
+  if (!betreiberDaten || betreiberDaten.beispiel) return t('bd.beispiel.kurz');
+  return bdBezeichnung(betreiberDaten).replace(', Stand ', ', ' + t('bd.stand') + ' ');
+}
+
+// ── Fenster «Betreiberdaten» (Menü «Mehr») ──
+function openBetreiberdaten() {
+  _bdDialogFuellen();
+  document.getElementById('bd-modal').classList.add('open');
+}
+function closeBetreiberdaten() { document.getElementById('bd-modal').classList.remove('open'); }
+
+function _bdDialogFuellen() {
+  const d = betreiberDaten;
+  const leiter = Object.values(d.einzelleiter.leiter).filter(l => l.varianten.some(v => v.werte)).length;
+  document.getElementById('bd-name').textContent = betreiberdatenText();
+  document.getElementById('bd-inhalt').textContent = t('bd.inhalt')
+    .replace('{l}', leiter).replace('{k}', d.kettenwerke.length);
+  const q = [d.quellen.reglage, d.quellen.starr].filter(Boolean).join(' · ');
+  const qEl = document.getElementById('bd-quellen');
+  qEl.textContent = q; zeigeElement(qEl, !!q);
+  zeigeElement(document.getElementById('bd-entfernen'), !d.beispiel);
+  _bdFehlerZeigen(null);
+}
+
+function _bdFehlerZeigen(liste) {
+  const el = document.getElementById('bd-fehler');
+  if (!liste || !liste.length) { el.innerHTML = ''; zeigeElement(el, false); return; }
+  const mehr = liste.length > 12 ? `<li>… (${liste.length - 12})</li>` : '';
+  el.innerHTML = `<strong>${escHtml(t('bd.fehler'))}</strong><ul>${liste.slice(0, 12).map(f => `<li>${escHtml(f)}</li>`).join('')}${mehr}</ul>`;
+  zeigeElement(el, true);
+}
+
+// Datei wählen (Excel .xlsx oder JSON), prüfen, im Gerät speichern und anwenden
+async function betreiberdatenLaden(ev) {
+  const datei = ev.target.files && ev.target.files[0];
+  ev.target.value = '';
+  if (!datei) return;
+  let roh;
+  try {
+    const bytes = new Uint8Array(await datei.arrayBuffer());
+    const istZip = bytes[0] === 0x50 && bytes[1] === 0x4B;   // «PK»: Excel-Mappe
+    roh = istZip ? bdAusBlaettern(await xlsxLesen(bytes)) : JSON.parse(new TextDecoder('utf-8').decode(bytes));
+  } catch (e) {
+    _bdFehlerZeigen([t('bd.fehler.lesen'), e.message]);
+    return;
+  }
+  const { daten, fehler } = bdPruefen(roh, _bdPruefer());
+  if (!daten) { _bdFehlerZeigen(fehler); return; }
+  try { localStorage.setItem(BD_SPEICHER, JSON.stringify(daten)); }
+  catch (e) { _bdFehlerZeigen([t('bd.fehler.lesen'), e.message]); return; }
+  _betreiberdatenNeuAnwenden();
+  _bdDialogFuellen();
+  meldung(t('bd.geladen').replace('{d}', betreiberdatenText()), 'erfolg');
+}
+
+// Aktive Daten als Excel-Mappe oder JSON herunterladen (Beispielwerte = Vorlage)
+function betreiberdatenSpeichern(art) {
+  const d = betreiberDaten;
+  const basis = (d.beispiel ? 'betreiberdaten-vorlage' : d.titel + (d.stand ? '-' + d.stand : ''))
+    .replace(/[^\w.-]+/g, '_');
+  const blob = art === 'json'
+    ? new Blob([JSON.stringify(d, null, 2) + '\n'], { type: 'application/json' })
+    : new Blob([xlsxSchreiben(bdZuBlaettern(d))], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = basis + (art === 'json' ? '.json' : '.xlsx');
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+async function betreiberdatenEntfernen() {
+  if (!await frageBestaetigung(t('bd.entfernen.frage'), { titel: t('bd.titel'), ok: t('bd.entfernen') })) return;
+  try { localStorage.removeItem(BD_SPEICHER); } catch (e) {}
+  _betreiberdatenNeuAnwenden();
+  _bdDialogFuellen();
+}
+
+// Nach Laden/Entfernen: Tabellen neu einsetzen, Auswahl und Anzeige neu aufbauen
+function _betreiberdatenNeuAnwenden() {
+  for (const k of Object.keys(_RGL_ORIGINAL)) delete _RGL_ORIGINAL[k];
+  _betreiberdatenStart();
+  _reglageAnpassungenAnwenden();
+  if (sysMode === 'el') { elReglageHmaxOvr = null; elReglageLrefOvr = null; elMaterialChanged(); }
+  else rebuildPresetDropdown(sysMode);
+  bdHinweisAktualisieren();
+  if (document.getElementById('reglage-modal')?.classList.contains('open')) { _rglKettenwerkeZeigen(); renderReglageElTable(); }
+  berechnen();
+}
+
+// Hinweis unter der System-Auswahl, solange nur Beispielwerte aktiv sind
+function bdHinweisAktualisieren() {
+  const el = document.getElementById('bd-hinweis');
+  if (el) zeigeElement(el, !!betreiberDaten?.beispiel);
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bdHinweisAktualisieren);
+else bdHinweisAktualisieren();
 function closeReglageModal() { document.getElementById('reglage-modal').classList.remove('open'); }
 
 // Dropdown mit den zum aktiven Systemmodus passenden Kombinationen befüllen
@@ -3025,7 +3025,10 @@ function _zugkraftSperre(fotoAktiv = window._fotoTabActive) {
   if (!el) return;
   // Kettenwerk: Wert kommt aus der gewählten Kombination (N-FL Reglagetabelle, R-FL konstant);
   // Einzelleiter: aus der Reglage des Leiters
-  const reglage = sysMode === 'el' ? !!activePresetRef : !!document.getElementById('preset-select')?.value;
+  // Kettenwerk «aus Projekt» (fehlt in den Betreiberdaten): keine Reglage → Zugkraft frei
+  const _ps = document.getElementById('preset-select');
+  const _ausProjekt = !!_ps?.selectedOptions?.[0]?.dataset.ausProjekt;
+  const reglage = sysMode === 'el' ? !!activePresetRef : (!!_ps?.value && !_ausProjekt);
   // Einzelleiter: H bleibt von Hand überschreibbar (Rückweg «↺ Reglage»)
   const gesperrt = (reglage && sysMode !== 'el') || mode3pt || !!fotoAktiv;
   el.readOnly = gesperrt;
@@ -3832,10 +3835,10 @@ function applyElVariant(idx) {
     }
     _renderReglageTitle();
     document.getElementById('el-reglage-note').innerHTML =
-      variant.reglage_note_key ? t(variant.reglage_note_key) : (variant.reglage_note || '');
+      reglageNotiz(variant);
   } else {
     // Kein Preset: synthetische Tabelle aus 6 kN Voreinstellung aufbauen
-    const dftH = 6000, dftL = mat.L_ref ?? 45;
+    const dftH = elVorgabeN(), dftL = mat.L_ref ?? 45;
     if (mat.E && mat.AK && elReglageHmaxOvr === null && elReglageLrefOvr === null) {
       const _t = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40];
       const _v = _t.map(T => _rundeReglage(_reglageH(mat, dftH, dftL, T)));
@@ -4352,7 +4355,23 @@ function _setProjectStateIntern(s) {
     document.getElementById('preset-select').value = presetKey;
     // Korrektes gespeichertes Preset anwenden
     // (rebuildPresetDropdown hatte erstes Preset angewendet -> material-ts/fd, tension-fd, sh, tension falsch)
-    if (presetKey) {
+    const _ausProjekt = presetKey && !presetKey.startsWith('custom_') && !KETTENWERK_PRESETS[presetKey];
+    if (_ausProjekt) {
+      // Kettenwerk fehlt in den aktiven Betreiberdaten (z. B. Projekt mit anderen Daten
+      // gerechnet): Werte des Projekts übernehmen, ohne Reglagebindung (freie Eingabe).
+      const sel = document.getElementById('preset-select');
+      const opt = document.createElement('option');
+      opt.value = presetKey; opt.textContent = `${presetKey} (${t('bd.aus.projekt')})`; opt.dataset.ausProjekt = '1';
+      sel.appendChild(opt); sel.value = presetKey;
+      ['material-ts', 'material-fd', 'weight-ts', 'weight-fd', 'alpha-ts', 'alpha-fd'].forEach(id => {
+        const el = document.getElementById(id); if (el && flds[id] != null) el.value = flds[id];
+      });
+      activePresetRef = null; activePresetP = null;
+      if ((s.wearPct ?? 0) > 0) currentWearMax = s.wearPct;
+      const wl = document.getElementById('wear-max-label'); if (wl) wl.textContent = currentWearMax;
+      zeigeElement(document.getElementById('combo-info'), false);
+      meldung(t('bd.projekt.fehlt').replace('{k}', presetKey), 'warnung', 9000);
+    } else if (presetKey) {
       applyPreset();  // setzt material-ts/fd, weight-ts/fd, alpha-ts, tension-fd, sh, tension, temp1
     } else {
       const infoEl = document.getElementById('combo-info');
@@ -5294,7 +5313,7 @@ function updateH_Ts_ubFromT1() {
 let elReglageHmaxOvr = null;   // H bei −20 °C, Benutzer-Override
 let elReglageLrefOvr = null;   // L Referenzspannweite, Benutzer-Override
 let elReglageOpen    = false;  // Edit-Panel geöffnet
-// Berechnungsart nach SBB-Dok. 0161.1013.0005.1 — gilt für Einzelleiter und N-FL
+// Berechnungsart (Quelle: Betreiberdaten, quellen.spannweite) — gilt für Einzelleiter und N-FL
 // (Name historisch «el…»). R-FL hat konstante Zugkraft, dort entfällt die Wahl.
 //   Ausgleichend: Zugkraft mit Mittelspannweite c_m (Excel: Eingabe «c_m»)
 //   Starr:        Zugkraft mit Projektspannweite c_proj des Feldes (Excel: «c_proj»),
@@ -5349,7 +5368,7 @@ function _reglageBase() {
   const useRaw  = rawTbl && elReglageHmaxOvr === null && elReglageLrefOvr === null && elBerechnungsart !== 'starr';
   const matKey  = sel + (mat.H_reglage_variants && mat.H_reglage_variants.length > 1 ? '_' + elBasiskraftIdx : '');
   const matEdit = _elMatEdits[matKey];
-  const H_max   = elReglageHmaxOvr ?? matEdit?.H_max ?? (rawTbl ? rawTbl.vals[0] : 6000);
+  const H_max   = elReglageHmaxOvr ?? matEdit?.H_max ?? (rawTbl ? rawTbl.vals[0] : elVorgabeN());
   const lrefStarr = elBerechnungsart === 'starr' ? 25 : null;
   const L_ref   = elReglageLrefOvr ?? lrefStarr ?? matEdit?.L_ref ?? (variant?.L_ref ?? mat.L_ref ?? 45);
   return { mat, variant, tbl: useRaw ? rawTbl : null, H_max, L_ref };
@@ -5375,8 +5394,8 @@ function _elReglageBoxAktualisieren() {
   const schl = document.getElementById('el-material-select')?.value + (mat?.H_reglage_variants?.length > 1 ? '_' + elBasiskraftIdx : '');
   if (mat && _rglIstAngepasst(schl)) { notiz.textContent = t('ui.reglage.angepasst.box'); return; }
   notiz.textContent = !mat ? '' : (variant?.H_reglage != null)
-    ? (variant.reglage_note_key ? t(variant.reglage_note_key) : (variant.reglage_note || ''))
-    : t('mat.rn.6kn.vorgabe');
+    ? reglageNotiz(variant)
+    : t('mat.rn.6kn.vorgabe').replace('{kn}', (elVorgabeN() / 1000).toLocaleString('de-CH'));
 }
 
 // Hergeleitete Reglagewerte werden wie die SBB-Reglagetabellen auf 100 N gerundet —
@@ -5459,13 +5478,13 @@ function _applyReglageOvr() {
   const { mat, tbl, H_max, L_ref } = _reglageBase();
   if (tbl) {
     // Ohne Override und ausserhalb der Berechnungsart «Starr» ist die
-    // Reglagetabelle nach SBB 0161.1013.0001 massgebend — nicht neu herleiten.
+    // Reglagetabelle der Betreiberdaten massgebend — nicht neu herleiten.
     activePresetRef = { H_Ts_ub_table: tbl };
     updateH_Ts_ubFromT1();
   } else if (mat && H_max && mat.E && mat.AK) {
     // Override aktiv oder «Starr» (L_ref = 25 m): Werte aus H_max herleiten und wie
-    // die Reglagetabellen auf 100 N runden (bei Starr ergeben sich so exakt die Werte
-    // der Tabelle SBB 0161.1013.0003).
+    // die Reglagetabellen auf 100 N runden (bei Starr ergeben sich so die Werte
+    // einer Starr-Reglagetabelle).
     const temps = [-20,-15,-10,-5,0,5,10,15,20,25,30,35,40];
     const vals  = temps.map(T => _rundeReglage(_reglageH(mat, H_max, L_ref, T)));
     activePresetRef = { H_Ts_ub_table: { temps, vals } };
@@ -5491,7 +5510,7 @@ function _effHmax(mat, variant) {
   const key = mat._key + (variant && variant !== mat ? ('_' + mat.H_reglage_variants.indexOf(variant)) : '');
   if (_elMatEdits[key]?.H_max != null) return _elMatEdits[key].H_max;
   const tbl = variant?.H_reglage_table ?? mat.H_reglage_table;
-  return tbl ? tbl.vals[0] : (variant?.H_reglage ?? mat.H_reglage ?? 6000);
+  return tbl ? tbl.vals[0] : (variant?.H_reglage ?? mat.H_reglage ?? elVorgabeN());
 }
 function _effLref(mat, variant) {
   const key = mat._key + (variant && variant !== mat ? ('_' + mat.H_reglage_variants.indexOf(variant)) : '');
@@ -5521,7 +5540,7 @@ function renderReglageElTable() {
         const Lref = _effLref(mat, v);
         const H10  = _reglageHAt10(mat, v, Hmax, Lref);
         rows.push({ key: editKey, name: mat.name, label: v.label, Hmax, Lref, H10,
-          note: v.reglage_note ?? '', hasPreset: v.H_reglage != null });
+          note: reglageNotiz(v), hasPreset: v.H_reglage != null });
       });
     } else {
       const editKey = key;
@@ -5529,7 +5548,7 @@ function renderReglageElTable() {
       const Lref = _effLref(mat, mat);
       const H10  = _reglageHAt10(mat, mat, Hmax, Lref);
       rows.push({ key: editKey, name: mat.name, label: null, Hmax, Lref, H10,
-        note: mat.reglage_note ?? '', hasPreset: mat.H_reglage != null });
+        note: reglageNotiz(mat), hasPreset: mat.H_reglage != null });
     }
   }
 
@@ -5550,7 +5569,7 @@ function renderReglageElTable() {
     if (em) {
       tBody += `<tr>
         <td class="c-left">${nameCell}${angepasst}</td>
-        <td class="c-right"><input type="number" step="100" min="100" value="${r.Hmax ?? 6000}"
+        <td class="c-right"><input type="number" step="100" min="100" value="${r.Hmax ?? elVorgabeN()}"
           style="width:5rem;border:1px solid var(--border2);border-radius:5px;padding:.1rem .25rem;font-size:.71rem;text-align:right;font-family:inherit"
           oninput="_rglEditEingabe('${r.key}', 'H_max', this.value)"> N</td>
         <td class="c-right"><input type="number" step="1" min="1" max="300" value="${r.Lref}"
@@ -5665,8 +5684,8 @@ function _rglOriginal(k) {
   const f = o ? (z.vi >= 0 && o.v[z.vi] ? o.v[z.vi] : o.m)
               : _rglFelder(z.vi >= 0 && m.H_reglage_variants?.[z.vi] ? m.H_reglage_variants[z.vi] : m);
   const L_ref = f.l ?? fm.l ?? 45;   // Varianten erben die Bezugsspannweite des Leiters
-  // Leiter ohne SBB-Tabelle: wirksam ist die Herleitung aus 6 kN bei −20 °C (wie applyElVariant)
-  const vals = f.t?.vals ?? fm.t?.vals ?? _RGL_TEMPS.map(T => _rundeReglage(_reglageH(m, 6000, L_ref, T)));
+  // Leiter ohne eigene Tabelle: wirksam ist die Herleitung aus der Vorgabe-Basiskraft bei −20 °C (wie applyElVariant)
+  const vals = f.t?.vals ?? fm.t?.vals ?? _RGL_TEMPS.map(T => _rundeReglage(_reglageH(m, elVorgabeN(), L_ref, T)));
   return { vals, L_ref };
 }
 // Anpassung nur festhalten, wenn sie von den Originalwerten abweicht
@@ -5751,9 +5770,9 @@ function exportMaterialsCSV() {
       const tbl   = (variant !== mat ? variant?.H_reglage_table : null) ?? mat.H_reglage_table;
       const Hvals = temps.map(T => {
         if (tbl) { const i = tbl.temps.indexOf(T); if (i >= 0) return Math.round(tbl.vals[i]); }
-        return _rundeReglage(_reglageH(mat, H_max ?? 6000, L_ref, T));
+        return _rundeReglage(_reglageH(mat, H_max ?? elVorgabeN(), L_ref, T));
       });
-      const note  = (variant !== mat ? variant?.reglage_note : null) ?? mat.reglage_note ?? '';
+      const note  = reglageNotiz(variant !== mat && variant?.reglage_note ? variant : mat);
       lines.push([
         name, editKey,
         mat.q.toFixed(5),
@@ -8347,7 +8366,7 @@ ${(() => {
 </div>`;
 })()}
 
-<footer>${t('pdf.footer')} &nbsp;·&nbsp; ${APP_VERSION} &nbsp;|&nbsp; ${new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE')} &nbsp;|&nbsp; Fachentwicklung FS &nbsp;|&nbsp; ${t('pdf.quelle')}</footer>`;
+<footer>${t('pdf.footer')} &nbsp;·&nbsp; ${APP_VERSION} &nbsp;|&nbsp; ${new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : currentLang === 'it' ? 'it-IT' : 'de-DE')} &nbsp;|&nbsp; Fachentwicklung FS &nbsp;|&nbsp; ${t('pdf.quelle')}: ${escHtml(betreiberdatenText())}</footer>`;
   return bodyHtml;
 }
 
@@ -9063,7 +9082,7 @@ function _zeichnungBauen(stripInSvg) {
   <rect x="0" y="0" width="${VW}" height="0.8" fill="#4a5cb8"/>
   <line x1="0" y1="${titleH}" x2="${VW}" y2="${titleH}" stroke="#dde0e6" stroke-width="0.3"/>
   <text x="3" y="7.8" font-size="4.2" font-weight="700" fill="#111218">${mainTitle}</text>
-  <text x="${VW-3}" y="7.8" font-size="2.2" text-anchor="end" fill="#62656f">Durchhang ${APP_VERSION}  ·  ${dateS}</text>
+  <text x="${VW-3}" y="7.8" font-size="2.2" text-anchor="end" fill="#62656f">Durchhang ${APP_VERSION}  ·  ${dateS}  ·  ${escHtml(betreiberdatenText())}</text>
   ${_nameLine ? `<text x="3" y="12.5" font-size="2.7" fill="#3a3c48">${_nameLine}</text>` : ''}
   <text x="3" y="${_nameLine ? '17.5' : '13'}" font-size="2.45" fill="#5f616c">${_paramLine}</text>` : '';
 
@@ -11069,7 +11088,7 @@ ${bodyContent}
 const HF_KOMBINATIONEN = { stcu50_cu107: 'StCu 50 + Cu 107', stcu92_cu107: 'StCu 92 + Cu 107', stcu92_cu150: 'StCu 92 + Cu 150' };
 const HF_VORGABE = {
   typ: 'nfl', c: 30, v: 141, bue: false,
-  kombi: 'stcu50_cu107', Lm: 30, H_ub: 1700, T_montage: 10, H_Fd: 8500,
+  kombi: 'stcu50_cu107', Lm: 30, H_ub: 1500, T_montage: 10, H_Fd: 9000,
   un: 15, schotter: false, ebv: 2, f: 0, H: 0, Tmin: -5, zlMin: 7, cUebr: 0, p11: false, p12: false,
   lrp: false, Tmax: -20, zlMax: 0,
 };
@@ -11588,7 +11607,20 @@ function _sprachTag() {
 }
 
 function t(key) {
-  return (LANG[currentLang] && LANG[currentLang][key]) || LANG['de'][key] || key;
+  const s = (LANG[currentLang] && LANG[currentLang][key]) || LANG['de'][key] || key;
+  return s.includes('{q.') ? _quellenEinsetzen(s) : s;
+}
+
+// Quellenangaben der Betreiberdaten in Texte einsetzen:
+//   {q.name}     → « (Quelle)» bzw. nichts, wenn die Daten keine Quelle nennen
+//   {q.name:roh} → «Quelle» bzw. «Beispielwerte – keine Vorgabe»
+function _quellenEinsetzen(s) {
+  const q = (typeof betreiberDaten !== 'undefined' && betreiberDaten && betreiberDaten.quellen) || {};
+  return s.replace(/\{q\.(\w+)(:roh)?\}/g, (m, k, roh) => {
+    const v = String(q[k] || '').replace(/[<>&"]/g, '');
+    if (roh) return v || t('bd.beispiel.kurz');
+    return v ? ' (' + v + ')' : '';
+  });
 }
 
 function setLang(lang) {

@@ -7,7 +7,9 @@
 // Verglichen werden Durchhang, Zugkraft, Seillänge und Tiefpunkt jedes
 // Zustands (Toleranz 1e-9 relativ) sowie der Text des Ergebnisbereichs.
 //
-// Ändert sich ein Ergebnis gewollt (z. B. neue SBB-Vorgabe), Referenz neu
+// Gerechnet wird mit den neutralen Beispielwerten (betreiberdaten.js); die Fälle
+// mit SBB-Betreiberdaten laufen lokal (npm run test:sbb).
+// Ändert sich ein Ergebnis gewollt (z. B. neue Beispielwerte), Referenz neu
 // erzeugen und die Änderung im Commit begründen:
 //   REFERENZ_NEU=1 npm run test:browser
 'use strict';

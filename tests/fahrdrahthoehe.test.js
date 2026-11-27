@@ -1,56 +1,92 @@
-// Tests für fahrdrahthoehe.js — hf_min / hf_max wie SBB-Excel (Blätter hfmin_v11_D, hfmax_v11_D)
+// Tests für fahrdrahthoehe.js — Rechengang hf_min / hf_max mit den neutralen
+// Beispiel-Parametern (betreiberdaten.js). Die Vergleichsfälle mit echten
+// Betreiberdaten laufen lokal (npm run test:sbb).
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const HF = require('../fahrdrahthoehe.js');
 const kern = require('../rechenkern.js');
+const { BEISPIEL_DATEN } = require('../betreiberdaten.js');
+
+const P = BEISPIEL_DATEN.hf;
+HF.hfParameterSetzen(P);
 
 const nahe = (ist, soll, tol, text) =>
   assert.ok(Math.abs(ist - soll) <= tol, `${text}: ist ${ist}, soll ${soll} (±${tol})`);
 
 const STCU50_CU107 = { MFL: 13.87640975, MTS: 4.0109198, E: 1.59e11, AL: 11.5e-6, AK: 4.9450e-5, qFdAbnutzung: 9.1594111 };
 
-// In der Excel gespeicherter Fall: N-FL 50+107, c = 30 m, −5 °C mit 7 N/m,
-// EBV 2, schotterlos, 141 km/h, kein Bahnübergang, LRP «N»
-const EXCEL_FALL = {
+const FALL = {
   typ: 'nfl', c: 30, v: 141, bue: false,
   un: 15, schotter: false, ebv: 2, f: 0, H: 0, Tmin: -5, zlMin: 7, cUebr: 0, p11: false, p12: false,
   lrp: false, Tmax: -5, zlMax: 7,
-  nfl: { gk: 13.87640975, H_Fd: 8500, H_t0: 3860, H_Tmin: 5430, H_Tmax: 5430 },
+  nfl: { gk: 13.87640975, H_Fd: 9000, H_t0: 3600, H_Tmin: 5200, H_Tmax: 5200 },
 };
 
-test('Excel-Fall N-FL: hf_min 4927.95 mm, hf_max 6104.35 mm', () => {
-  const r = HF.hfBerechnen(EXCEL_FALL);
-  assert.deepEqual(r.fehler, []);
-  nahe(r.min.wert, 4927.950926503469, 1e-9, 'hf_min');
-  nahe(r.max.wert, 6104.350926503469, 1e-9, 'hf_max');
-  const z = Object.fromEntries(r.min.zeilen.map(x => [x.sym, x.wert]));
-  assert.deepEqual([z.fg, z.thu, z.fud, z.fuv, z.fFDmaxZL], [60, 10, 27, 0, 0]);
-  nahe(z.fFDmax40, 10.950926503469427, 1e-12, 'fFDmax40');
-  nahe(r.min.summe, 107.95092650346943, 1e-9, 'Z_hfmin');
-  assert.equal(r.min.absolut, 4670 + 0 + 150);
-  const zo = Object.fromEntries(r.max.zeilen.map(x => [x.sym, x.wert]));
-  nahe(zo.fudo, 21.6, 1e-12, 'fudo');
-  assert.equal(zo.fh, 75);
-  nahe(zo.fFDmin, -10.950926503469427, 1e-12, 'fFDmin');
-  nahe(r.max.summe, 95.64907349653056, 1e-9, 'Z_hfmax');
-  assert.equal(r.max.absolut, 6200);
+test('Ohne Parameter keine Rechnung (Fehler hf.err.param)', () => {
+  HF.hfParameterSetzen(null);
+  try {
+    assert.deepEqual(HF.hfBerechnen(FALL).fehler, ['hf.err.param']);
+  } finally { HF.hfParameterSetzen(P); }
 });
 
-test('N-FL-Zugkräfte aus dem Rechenkern = Excel «NFL-Tab» (Lm 30 m, 1700 N bei 10 °C)', () => {
-  const n = HF.hfNflZugkraefte(kern, { flCombo: STCU50_CU107, Lm: 30, H_ub: 1700, T_montage: 10, H_Fd: 8500,
+test('Zuschläge folgen den Parametern', () => {
+  assert.deepEqual([1, 2, 3, 4].map(HF.hfGrenzlinie), [P.grenzlinie.ebv1, P.grenzlinie.ebv2, P.grenzlinie.ebv3, P.grenzlinie.ebv4]);
+  assert.deepEqual([1, 2, 3, 4].map(HF.hfSicherheitszuschlag), [P.sicherheit.ebv1, P.sicherheit.ebv2, P.sicherheit.ebv3, P.sicherheit.ebv4]);
+  assert.deepEqual([HF.hfElektrAbstand(15), HF.hfElektrAbstand(25)], [P.elektr_abstand.andere, P.elektr_abstand.un25]);
+  assert.deepEqual([HF.hfGleishebung(true, false), HF.hfGleishebung(false, false), HF.hfGleishebung(true, true)],
+    [P.gleishebung.schotter, P.gleishebung.ohne_schotter, P.gleishebung.bue]);
+  const vg = P.montagetoleranz.v_grenze;
+  assert.deepEqual([HF.hfMontagetoleranz(vg), HF.hfMontagetoleranz(vg + 1)], [P.montagetoleranz.langsam, P.montagetoleranz.schnell]);
+  const vd = P.vordurchhang;
+  assert.equal(HF.hfVordurchhang('rfl', vd.c_grenze, vd.v_max), vd.gross);
+  assert.equal(HF.hfVordurchhang('rfl', vd.c_grenze - 1, vd.v_max), vd.klein);
+  assert.equal(HF.hfVordurchhang('rfl', 60, vd.v_max + 1), 0);
+  assert.equal(HF.hfVordurchhang('nfl', 60, 80), 0);
+});
+
+test('Andere Parameter ändern das Ergebnis entsprechend', () => {
+  const a = HF.hfBerechnen(FALL);
+  HF.hfParameterSetzen({ ...P, grenzlinie: { ...P.grenzlinie, ebv2: P.grenzlinie.ebv2 + 100 }, anhub: P.anhub + 5 });
+  try {
+    const b = HF.hfBerechnen(FALL);
+    nahe(b.min.wert - a.min.wert, 100, 1e-9, 'hf_min folgt der Grenzlinie');
+    nahe(a.max.wert - b.max.wert, 5, 1e-9, 'hf_max folgt dem Anhub');
+  } finally { HF.hfParameterSetzen(P); }
+});
+
+test('N-FL: Aufbau hf_min / hf_max aus Grundwerten und Zuschlägen', () => {
+  const r = HF.hfBerechnen(FALL);
+  assert.deepEqual(r.fehler, []);
+  const z = Object.fromEntries(r.min.zeilen.map(x => [x.sym, x.wert]));
+  assert.equal(z.fg, P.gleishebung.ohne_schotter);
+  assert.equal(z.thu, P.montagetoleranz.langsam);
+  assert.equal(z.fud, HF.hfSchwingung(30));
+  assert.deepEqual([z.fuv, z.fFDmaxZL], [0, 0]);
+  nahe(z.fFDmax40, HF.hfNflDurchhang(30, 7, { ...FALL.nfl, H_Tx: FALL.nfl.H_Tmin }), 1e-12, 'fFDmax40');
+  assert.equal(r.min.absolut, P.grenzlinie.ebv2 + P.sicherheit.ebv2 + P.elektr_abstand.andere);
+  nahe(r.min.wert, r.min.absolut + r.min.summe, 1e-9, 'hf_min = Grundwert + Z');
+  const zo = Object.fromEntries(r.max.zeilen.map(x => [x.sym, x.wert]));
+  nahe(zo.fudo, HF.hfSchwingung(30) * P.schwingung_oben_faktor, 1e-12, 'fudo');
+  assert.equal(zo.fh, P.anhub);
+  assert.equal(r.max.absolut, P.hf_max_absolut.lrp_nein);
+  nahe(r.max.wert, r.max.absolut - r.max.summe, 1e-9, 'hf_max = absolut − Z');
+});
+
+test('N-FL-Zugkräfte aus dem Rechenkern: kälter → höher, mit Eis → höher', () => {
+  const n = HF.hfNflZugkraefte(kern, { flCombo: STCU50_CU107, Lm: 30, H_ub: 1500, T_montage: 10, H_Fd: 9000,
     Tmin: -5, zlMin: 7, Tmax: -20, zlMax: 0 });
-  assert.equal(n.H_t0, 3860);
-  assert.equal(n.H_Tmin, 5430);
-  assert.equal(n.H_Tmax, 5665);
   assert.equal(n.gk, 13.87640975);
-  const r = HF.hfBerechnen({ ...EXCEL_FALL, Tmax: -20, zlMax: 0, nfl: n });
-  nahe(r.min.wert, 4927.950926503469, 1e-9, 'hf_min wie Excel-Fall');
+  assert.ok(n.H_t0 > 1500);
+  assert.ok(n.H_Tmin > n.H_t0);
+  assert.ok(n.H_Tmax > n.H_t0);
+  const r = HF.hfBerechnen({ ...FALL, Tmax: -20, zlMax: 0, nfl: n });
+  assert.deepEqual(r.fehler, []);
   // bei −20 °C hebt sich der Fahrdraht (negativer Durchhang) → hf_max kleiner
   assert.ok(r.max.zeilen.find(z => z.sym === 'fFDmin').wert > 0);
 });
 
-test('Schwingung nach unten / oben je Spannweite', () => {
+test('Schwingung nach unten je Spannweite', () => {
   assert.equal(HF.hfSchwingung(20), 16);
   assert.equal(HF.hfSchwingung(24), 19.2);
   assert.equal(HF.hfSchwingung(26), 21);
@@ -58,77 +94,39 @@ test('Schwingung nach unten / oben je Spannweite', () => {
   nahe(HF.hfSchwingung(50), 4 * 50 / 7 + 24, 1e-12, 'c = 50');
 });
 
-test('Zuschläge: Grenzlinie, k, be, Gleishebung, Montagetoleranz, Vordurchhang', () => {
-  assert.deepEqual([1, 2, 3, 4].map(HF.hfGrenzlinie), [4570, 4670, 4670, 4840]);
-  assert.deepEqual([1, 2, 3, 4].map(HF.hfSicherheitszuschlag), [70, 0, 0, 0]);
-  assert.deepEqual([HF.hfElektrAbstand(15), HF.hfElektrAbstand(25)], [150, 270]);
-  assert.deepEqual([HF.hfGleishebung(true, false), HF.hfGleishebung(false, false), HF.hfGleishebung(true, true)], [100, 60, 0]);
-  assert.deepEqual([HF.hfMontagetoleranz(140), HF.hfMontagetoleranz(141)], [20, 10]);
-  assert.equal(HF.hfVordurchhang('rfl', 42, 140), 50);
-  assert.equal(HF.hfVordurchhang('rfl', 41, 140), 30);
-  assert.equal(HF.hfVordurchhang('rfl', 60, 141), 0);
-  assert.equal(HF.hfVordurchhang('nfl', 60, 80), 0);
+test('R-FL: Eislast mit festem Zug, Fallprüfung P1.1–P1.3 und c_übr', () => {
+  const H = P.rfl_zug.H_Ts + P.rfl_zug.H_Fd;
+  nahe(HF.hfRflEislast(60, 7, 0, false, false), 7 * 3600 / (8 * H) * 1000, 1e-9, 'c = 60');
+  nahe(HF.hfRflEislast(60, 7, 20, false, true), 7 * 3600 / (8 * H) * 1000 * 40 / 60, 1e-9, 'P1.2 mit c_übr');
+  assert.equal(HF.hfRflEislast(60, 7, 0, true, false), 0);
+  assert.equal(HF.hfRflEislast(60, 7, 10, false, false), 0);
 });
 
-test('R-FL: Eislast mit 12 + 10 kN, Fallprüfung P1.1–P1.3 und c_übr', () => {
-  nahe(HF.hfRflEislast(60, 7, 0, false, false), 143.1818181818182, 1e-9, 'Excel Tabelle c = 60');
-  nahe(HF.hfRflEislast(44, 7, 0, false, false), 77, 1e-9, 'Excel Tabelle c = 44');
-  nahe(HF.hfRflEislast(60, 7, 20, false, true), 143.1818181818182 * 40 / 60, 1e-9, 'P1.2 mit c_übr');
-  assert.equal(HF.hfRflEislast(60, 7, 0, true, false), 0);      // P1.1/P1.3
-  assert.equal(HF.hfRflEislast(60, 7, 10, false, false), 0);    // wie Excel: sonst 0
-});
-
-test('R-FL gesamt, 120 km/h, Schotter, EBV 1, 25 kV, c = 60 m, Eis 7 N/m', () => {
-  const r = HF.hfBerechnen({ typ: 'rfl', c: 60, v: 120, bue: false, un: 25, schotter: true, ebv: 1, f: 0, H: 0,
-    Tmin: -5, zlMin: 7, cUebr: 0, p11: false, p12: false, lrp: true, Tmax: -20, zlMax: 0 });
-  nahe(r.min.wert, 4570 + 70 + 270 + 100 + 20 + (240 / 7 + 24) + 50 + 143.1818181818182, 1e-9, 'hf_min');
-  nahe(r.max.wert, 6050 - (20 + (240 / 7 + 24) * 0.8 - 50 + 75), 1e-9, 'hf_max');
-});
-
-test('Bahnübergang: 5510 + Zuschläge, ohne Gleishebung und Schwingung, mit Hinweisen', () => {
-  const r = HF.hfBerechnen({ ...EXCEL_FALL, bue: true });
-  nahe(r.min.wert, 5510 + 0 + 10 + 0 + 0 + 0 + 10.950926503469427, 1e-9, 'hf_min BÜ');
-  nahe(r.max.wert, 5510 + (10 + 0 + 0 + 75 - 10.950926503469427), 1e-9, 'hf_max BÜ');
+test('Bahnübergang: Mindesthöhe + Zuschläge, ohne Gleishebung und Schwingung, mit Hinweisen', () => {
+  const r = HF.hfBerechnen({ ...FALL, bue: true });
+  assert.equal(r.min.absolut, P.bue_min);
+  nahe(r.min.wert, P.bue_min + r.min.summe, 1e-9, 'hf_min BÜ');
+  nahe(r.max.wert, P.bue_min + r.max.summe, 1e-9, 'hf_max BÜ');
+  const z = Object.fromEntries(r.min.zeilen.map(x => [x.sym, x.wert]));
+  assert.deepEqual([z.fg, z.fud], [P.gleishebung.bue, 0]);
   assert.ok(r.hinweise.includes('hf.w.bue'));
   assert.ok(r.hinweise.includes('hf.w.buenfl'));
 });
 
 test('Eingabeprüfung: Spannweite, Temperatur, Zusatzlast nur bei −5 °C, N-FL-Zugkräfte', () => {
   assert.equal(HF.HF_SPANNWEITEN.length, 40);
-  assert.ok(HF.hfBerechnen({ ...EXCEL_FALL, c: 25 }).fehler.includes('hf.err.c'));
-  assert.ok(HF.hfBerechnen({ ...EXCEL_FALL, Tmin: 12 }).fehler.includes('hf.err.t.min'));
-  assert.ok(HF.hfBerechnen({ ...EXCEL_FALL, Tmax: 0 }).fehler.includes('hf.err.zlt.max'));
-  assert.ok(HF.hfBerechnen({ ...EXCEL_FALL, zlMin: 10 }).fehler.includes('hf.err.zl.min'));
-  assert.ok(HF.hfBerechnen({ ...EXCEL_FALL, nfl: null }).fehler.includes('hf.err.nfl'));
-  const r = HF.hfBerechnen({ ...EXCEL_FALL, c: 25 });
-  assert.equal(r.min, null);
-  // Hinweise zur Fallprüfung R-FL
-  const rfl = { ...EXCEL_FALL, typ: 'rfl', nfl: null };
+  assert.ok(HF.hfBerechnen({ ...FALL, c: 25 }).fehler.includes('hf.err.c'));
+  assert.ok(HF.hfBerechnen({ ...FALL, Tmin: 12 }).fehler.includes('hf.err.t.min'));
+  assert.ok(HF.hfBerechnen({ ...FALL, Tmax: 0 }).fehler.includes('hf.err.zlt.max'));
+  assert.ok(HF.hfBerechnen({ ...FALL, zlMin: 10 }).fehler.includes('hf.err.zl.min'));
+  assert.ok(HF.hfBerechnen({ ...FALL, nfl: null }).fehler.includes('hf.err.nfl'));
+  assert.equal(HF.hfBerechnen({ ...FALL, c: 25 }).min, null);
+  const rfl = { ...FALL, typ: 'rfl', nfl: null };
   assert.ok(HF.hfBerechnen({ ...rfl, p12: true, cUebr: 0 }).hinweise.includes('hf.w.p12j'));
   assert.ok(HF.hfBerechnen({ ...rfl, cUebr: 5 }).hinweise.includes('hf.w.p12n'));
   assert.ok(HF.hfBerechnen({ ...rfl, p11: true, cUebr: 5 }).hinweise.includes('hf.w.p11'));
   assert.ok(HF.hfBerechnen({ ...rfl, cUebr: 31 }).fehler.includes('hf.err.cuebr'));
-  assert.ok(HF.hfBerechnen({ ...EXCEL_FALL, Tmin: 60, zlMin: 0 }).hinweise.includes('hf.w.t56'));
-});
-
-// 480 Fälle, mit LibreOffice in der SBB-Excel nachgerechnet (Blätter hfmin/hfmax):
-// N-FL / R-FL, alle Spannweiten, v, BÜ, EBV, Spannung, Schotter, LRP, Temperatur,
-// Eis, f/H, Fallprüfung P1.1–P1.3 mit c_übr. Verglichen werden hf_min, hf_max
-// und jeder einzelne Zuschlag.
-test('480 Excel-Vergleichsfälle hf_min / hf_max: identisch mit der Excel', () => {
-  const { faelle } = require('./hf_excel_referenz.json');
-  assert.equal(faelle.length, 480);
-  const abweichend = [];
-  for (const [i, { e, xl }] of faelle.entries()) {
-    const nfl = e.typ === 'nfl' ? HF.hfNflZugkraefte(kern, { flCombo: STCU50_CU107, Lm: 30, H_ub: 1700, T_montage: 10, H_Fd: 8500,
-      Tmin: e.Tmin, zlMin: e.zlMin, Tmax: e.Tmax, zlMax: e.zlMax }) : null;
-    const r = HF.hfBerechnen({ ...e, nfl });
-    if (r.fehler.length) { abweichend.push(`Fall ${i}: App verweigert (${r.fehler})`); continue; }
-    const pruefe = (name, app, excel) => { if (Math.abs(app - (excel ?? 0)) > 1e-6) abweichend.push(`Fall ${i} ${name}: App ${app}, Excel ${excel}`); };
-    pruefe('hf_min', r.min.wert, xl.min);
-    pruefe('hf_max', r.max.wert, xl.max);
-    r.min.zeilen.forEach(z => pruefe(z.sym, z.wert, xl.zMin[z.sym]));
-    r.max.zeilen.forEach(z => pruefe(z.sym, z.wert, xl.zMax[z.sym]));
-  }
-  assert.equal(abweichend.length, 0, abweichend.slice(0, 10).join('\n'));
+  const ueber = Math.ceil((P.t_hinweis + 1) / 5) * 5;
+  assert.ok(HF.hfBerechnen({ ...FALL, Tmin: ueber, zlMin: 0 }).hinweise.includes('hf.w.t56'));
+  assert.ok(!HF.hfBerechnen({ ...FALL, Tmin: 40, zlMin: 0 }).hinweise.includes('hf.w.t56'));
 });

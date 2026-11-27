@@ -28,7 +28,13 @@ https://ivanperic84.github.io/Durchhang/ (wird aus `main` veröffentlicht).
 ## Unverrückbare Regeln
 - **Keine internen SBB-Unterlagen ins Repository** (Excel, PDFs, Reglagetabellen,
   Siemens-Buch). `.gitignore` schliesst `*.xlsm`, `*.xlsx`, `*.pdf`, `Grundlagen SBB/` aus.
-  Erlaubt sind nur daraus abgeleitete **Zahlen** (z. B. Testfälle) — so vom Nutzer freigegeben.
+- **Keine SBB-Betreiberdaten im Code** (seit v6.2, Entscheid des Nutzers): Reglagetabellen,
+  Kettenwerk-Vorgaben, hf-Parameter und SBB-Dokumentnummern kommen nur aus der Datei, die in
+  der App geladen wird (`betreiberdaten.js`, Fenster «Betreiberdaten»). Ohne Datei rechnet die
+  App mit neutralen `BEISPIEL_DATEN`. SBB-Testfälle (27 Beispiele, 480 hf-Fälle, 288 Rechenfälle
+  mit SBB-Werten) und `sbb-daten.json` liegen nur lokal in `tests-sbb/` (ausgeschlossen,
+  `npm run test:sbb`). Die Datei für den SharePoint liegt bei `Grundlagen SBB/sbb-daten.json` /
+  `.xlsx`. Physikalische Leiterdaten (q, E, α, A) und Kettenwerk-Gewichte bleiben im Code.
 - **Keine Bilder/Screenshots committen.** Prüfskripte nie im Repo-Ordner laufen lassen,
   sondern im Scratchpad/temp; vor jedem Commit `git status` prüfen (ist 2× passiert).
 - Tag `v1.0-stable` und die Tests nie löschen. Tests nie abschalten, um grün zu werden.
@@ -48,17 +54,21 @@ https://ivanperic84.github.io/Durchhang/ (wird aus `main` veröffentlicht).
 | `handbuch.html` | Handbuch DE/FR/IT — wird beim ersten Öffnen des Handbuchs geladen |
 | `rechenkern.js` | Reine Rechnung (Zustandsgleichungen N-FL/R-FL/EL, Kettenlinie), in Node testbar |
 | `abschnitt.js` | Abspannabschnitt: CSV, Feldlängen, KM, Stränge, Lastfälle, Abstandsprüfung |
-| `fahrdrahthoehe.js` | hf_min / hf_max (Logik wie SBB-Excel) |
+| `fahrdrahthoehe.js` | hf_min / hf_max (Rechengang wie SBB-Excel; Zahlenwerte über `hfParameterSetzen`) |
+| `betreiberdaten.js` | Betreiberdaten: Format, Prüfung `bdPruefen`, Übernahme `bdAnwenden`, Excel ↔ JSON, `BEISPIEL_DATEN` |
+| `xlsx.js` | Excel-Mappen (.xlsx) lesen/schreiben ohne fremde Bibliothek |
 | `export3d.js` | 3D-DXF (R12) und IFC4 (EPSG:2056) |
 | `sw.js` | Service Worker (offline), `CACHE_VERSION`, Liste `APP_DATEIEN` |
-| `tests/*.test.js` | Node-Tests (Rechenkern, 27 SBB-Beispiele, hf 480 Excel-Fälle, Export, Abschnitt) |
-| `tests/browser/*.test.js` | Playwright-Tests (Rundgang, 288 eingefrorene Rechenfälle) |
+| `tests/*.test.js` | Node-Tests mit Beispielwerten (Rechenkern, hf, Betreiberdaten/Excel, Export, Abschnitt) |
+| `tests/browser/*.test.js` | Playwright-Tests (Rundgang, Betreiberdaten, 288 eingefrorene Rechenfälle mit Beispielwerten) |
+| `tests-sbb/` | **Nur lokal** (ausgeschlossen): SBB-Testfälle und `sbb-daten.json`, `npm run test:sbb` |
 | `.github/workflows/tests.yml` | CI: beide Testläufe bei jedem Push/PR |
 
 ## Prüfen vor jedem Commit
 ```bash
-npm test                                   # Node-Tests (Stand: 89, alle grün)
-CHROMIUM_PFAD=/opt/pw-browsers/chromium npm run test:browser   # Browser (Stand: 72)
+npm test                                   # Node-Tests (Stand: 69, alle grün)
+CHROMIUM_PFAD=/opt/pw-browsers/chromium npm run test:browser   # Browser (Stand: 79)
+npm run test:sbb                           # nur lokal: SBB-Fälle (Node 42, Browser 12 inkl. 288 Rechenfälle)
 ```
 - Browser-Tests mit `timeout` starten (z. B. `timeout 900 …`); in Prüfskripten Playwright-
   Kontexte mit `serviceWorkers: 'block'`, sonst wird eine alte Fassung aus dem Cache geladen.

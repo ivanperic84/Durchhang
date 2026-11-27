@@ -1,5 +1,8 @@
 # ── Interne SBB-Unterlagen — gehören NICHT in ein öffentliches Repository ──
 Grundlagen SBB/
+# SBB-Testfälle und SBB-Betreiberdaten (nur lokal, npm run test:sbb)
+tests-sbb/
+sbb-daten*.json
 *.xlsm
 *.xlsx
 *.pdf
