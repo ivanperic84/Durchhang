@@ -80,7 +80,7 @@ test('Zeichnung: T₃ = T₂ nicht doppelt; Mastangaben, Hänger, Massstab, klar
   const m = await messen(seite);
   const r = await seite.evaluate(() => {
     const svg = document.querySelector('#scale-svg-container svg');
-    const haenger = [...svg.querySelectorAll('line')].filter(l => l.getAttribute('opacity') === '0.55').length;
+    const haenger = svg.querySelectorAll('line.haenger').length;
     return { haenger, L: calcState.L };
   });
   assert.ok(m.texteAlle.includes('101 · km 012.300'), 'Mastname und KM über dem Mast');
@@ -171,4 +171,36 @@ test('Start ohne Betreiberdaten: Hinweis auf das Datenpaket einmal je Gerät, Hi
   await b.seite.waitForTimeout(900);
   assert.equal(await b.seite.evaluate(() => document.getElementById('rueckfrage').classList.contains('open')), false);
   await b.kontext.close();
+});
+
+test('Zeichnung: Durchhang-Vermassung nach Bezug wie im Diagramm; Auswahl gekoppelt; Tiefpunkt bei steigender SOK', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { viewport: { width: 1440, height: 900 } });
+  await seite.evaluate(() => {
+    setSysMode('el');
+    const setze = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); };
+    setze('span', '60'); setze('sok-mum-left', '500'); onSokMumLeftInput();
+    setze('sok-mum-right', '503'); document.getElementById('sok-mum-right').dataset.userEdited = '1'; onSokMumRightInput();
+    berechnen(); setCanvasView('zeichnung');
+  });
+  const lies = () => seite.evaluate(() => ({
+    mass: [...document.querySelectorAll('#scale-svg-container text')].map(t => t.textContent).filter(t => /^(Δh|f) =/.test(t)),
+    diagramm: document.getElementById('mp-bezug').value,
+    f: calcState.c2.sag,
+  }));
+  const r = {};
+  for (const b of ['sehne', 'links', 'hoch']) { await seite.selectOption('#draw-mp-bezug', b); await seite.waitForTimeout(150); r[b] = await lies(); }
+  assert.deepEqual(r.sehne.mass, [`f = ${r.sehne.f.toFixed(2)} m`], 'Sehne: f wie gerechnet');
+  assert.equal(r.links.diagramm, 'links', 'Auswahl im Diagramm folgt der Zeichnung');
+  // Linker Punkt: Tiefpunkt liegt (wegen steigender SOK) nahe am linken Mast → Δh klein und ≥ 0
+  const dhL = parseFloat(r.links.mass[0]?.split('= ')[1]);
+  assert.ok(r.links.mass.length === 0 || (dhL >= 0 && dhL < 0.2), `Δh links ${r.links.mass}`);
+  const dhH = parseFloat(r.hoch.mass[0].split('= ')[1]);
+  assert.ok(dhH > 2.9, 'höchster Punkt: Δh zur Horizontalen durch den rechten (höheren) Aufhängepunkt');
+  // Ohne SOK-Anstieg: Δh links = Durchhang bei gleich hohen Aufhängepunkten
+  await seite.evaluate(() => { const e = document.getElementById('sok-mum-right'); e.value = '500'; onSokMumRightInput(); berechnen(); });
+  await seite.selectOption('#draw-mp-bezug', 'links'); await seite.waitForTimeout(150);
+  const eben = await lies();
+  assert.deepEqual(eben.mass, [`Δh = ${eben.f.toFixed(2)} m`]);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
 });

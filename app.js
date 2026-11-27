@@ -4235,7 +4235,7 @@ function _setProjectStateIntern(s) {
   _reglageAngepasst = JSON.parse(JSON.stringify(s.reglageAngepasst || {}));
   // Messpunkt-Bezug (ab v5.3; ältere Projekte: Vorgabe «höchster Punkt»)
   mpBezug = MP_BEZUEGE.includes(s.mpBezug) ? s.mpBezug : 'hoch';
-  { const sel = document.getElementById('mp-bezug'); if (sel) sel.value = mpBezug; }
+  for (const id of ['mp-bezug', 'draw-mp-bezug']) { const sel = document.getElementById(id); if (sel) sel.value = mpBezug; }
   _reglageAnpassungenAnwenden();
   // Globals (mode3pt + yCInputMode werden nach updateSysModeUI gesetzt)
   spanMode       = s.spanMode       ?? 'single';
@@ -6356,11 +6356,30 @@ function mpBezugHoehe(x, A1, A2, L) {
   if (mpBezug === 'sehne')  return A1 + (A2 - A1) * x / L;
   return Math.max(A1, A2);
 }
+// Masslinie am Tiefpunkt — gemeinsam für Diagramm und Zeichnung.
+// yAt(x): angezeigte Höhe der Kurve (inkl. SOK-Anstieg), A1/A2: angezeigte Aufhängepunkte.
+// Sehne: grösster Abstand zur Sehne (= f, Stelle x_low). Δh-Bezüge: am angezeigten
+// Tiefpunkt (bei steigender SOK nicht x_low). Liegt der Tiefpunkt an einem Mast
+// (kein Durchhang im Feld), gibt es keine Masslinie (null).
+function tiefpunktMass(yAt, c, A1, A2, L, n = 240) {
+  let x0;
+  if (mpBezug === 'sehne') x0 = Math.max(0, Math.min(L, c.x_low));
+  else {
+    let yMin = Infinity; x0 = 0;
+    for (let i = 0; i <= n; i++) { const x = L * i / n, y = yAt(x); if (y < yMin) { yMin = y; x0 = x; } }
+  }
+  if (x0 <= L * 0.005 || x0 >= L * 0.995) return null;
+  const yBot = yAt(x0), yRef = mpBezugHoehe(x0, A1, A2, L);
+  const wert = mpBezug === 'sehne' ? c.sag : yRef - yBot;
+  return Math.abs(yRef - yBot) < 0.001 ? null : { x0, yBot, yRef, wert };
+}
 function mpBezugKurz() { return mpBezug === 'sehne' ? 'f' : 'Δh'; }
 function mpBezugText() { return t('mp.bezug.' + mpBezug); }
 function setMpBezug(wert) {
   mpBezug = MP_BEZUEGE.includes(wert) ? wert : 'hoch';
-  const sel = document.getElementById('mp-bezug'); if (sel && sel.value !== mpBezug) sel.value = mpBezug;
+  for (const id of ['mp-bezug', 'draw-mp-bezug']) {
+    const sel = document.getElementById(id); if (sel && sel.value !== mpBezug) sel.value = mpBezug;
+  }
   berechnen();
 }
 
@@ -6803,10 +6822,9 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   // Masslinie am Tiefpunkt — Bezug wie bei den Messpunkten (Auswahl mpBezug):
   // Sehne (f) oder Horizontale durch den höchsten / linken / rechten Aufhängepunkt (Δh)
   function sagAnnotation(c, color, side) {
-    const x0     = Math.max(0, Math.min(L, c.x_low));
-    const yBot   = catYD(x0, c);
-    const yChord = mpBezugHoehe(x0, h1d, h2d, L);
-    if (Math.abs(yChord - yBot) < 0.001) return;
+    const m = tiefpunktMass(x => catYD(x, c), c, h1d, h2d, L);
+    if (!m) return;
+    const { x0, yBot, yRef: yChord } = m;
     const [bx, by, ty] = [cx(x0), cy(yBot), cy(yChord)];
     // Arrow line
     ctx.setLineDash([3, 3]); ctx.strokeStyle = color; ctx.lineWidth = 1.2;
@@ -6825,16 +6843,14 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     const mid = (by + ty) / 2;
     ctx.fillStyle = color; ctx.font = `bold 10px ${DIAGRAMM_SCHRIFT}`;
     ctx.textAlign = side === 'left' ? 'right' : 'left';
-    const wert = mpBezug === 'sehne' ? c.sag : yChord - yBot;
-    ctx.fillText(`${mpBezugKurz()} = ${wert.toFixed(2)} m`, bx + (side === 'left' ? -6 : 6), mid + 4);
+    ctx.fillText(`${mpBezugKurz()} = ${m.wert.toFixed(2)} m`, bx + (side === 'left' ? -6 : 6), mid + 4);
   }
 
   // Gestrichelte Linie (Sehne → Tiefpunkt) ohne Dreiecke und Label — immer sichtbar bei Messpunkt
   function sagLine(c, color) {
-    const x0     = Math.max(0, Math.min(L, c.x_low));
-    const yBot   = catYD(x0, c);
-    const yChord = mpBezugHoehe(x0, h1d, h2d, L);
-    if (Math.abs(yChord - yBot) < 0.001) return;
+    const m = tiefpunktMass(x => catYD(x, c), c, h1d, h2d, L);
+    if (!m) return;
+    const { x0, yBot, yRef: yChord } = m;
     const [bx, by, ty] = [cx(x0), cy(yBot), cy(yChord)];
     ctx.setLineDash([3, 3]); ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.5;
     ctx.beginPath(); ctx.moveTo(bx, ty); ctx.lineTo(bx, by); ctx.stroke();
@@ -8478,7 +8494,7 @@ function _zeichnungBauen(stripInSvg) {
   const _stripRowH_early  = 5.5;
   // H-Punkte (Hindernis) im Band: Kote H und Abstand a je Messpunkt (nur mit SOK)
   const _hBand = hasSok && [probeX1, probeX2, probeX3, probeX4].some((x, i) => x !== null && probeHWerte[i] !== null);
-  const _stripNRows_early = 2 + 1 + (c3data ? 1 : 0) + (hasSok ? 2 : 0) + (hasSok && c3data ? 1 : 0) + (_hBand ? 2 : 0);
+  const _stripNRows_early = 2 + 2 + (c3data ? 1 : 0) + (hasSok ? 2 : 0) + (hasSok && c3data ? 1 : 0) + (_hBand ? 2 : 0);
   const _stripH_early     = _stripNRows_early * _stripRowH_early + 0.5;
   // PDF: Datenstreifen steht unten im Rahmen — die Zeichnung erhält nur den Platz darüber
   // (vorher überdeckte der Streifen bei «Kettenwerk» den Fahrdraht).
@@ -8647,7 +8663,7 @@ function _zeichnungBauen(stripInSvg) {
     const n = Math.max(2, Math.ceil(L / HAENGER_ABSTAND_MAX));
     for (let i = 1; i < n; i++) {
       const x = L * i / n;
-      haengerSvg += `<line x1="${sx(x).toFixed(2)}" y1="${sy(absY(x, catY(x, cDisp))).toFixed(2)}" x2="${sx(x).toFixed(2)}" y2="${sy(fdY(x)).toFixed(2)}" stroke="${fdClr}" stroke-width="${(0.18*symSc).toFixed(3)}" opacity="0.55"/>`;
+      haengerSvg += `<line class="haenger" x1="${sx(x).toFixed(2)}" y1="${sy(absY(x, catY(x, cDisp))).toFixed(2)}" x2="${sx(x).toFixed(2)}" y2="${sy(fdY(x)).toFixed(2)}" stroke="${fdClr}" stroke-width="${(0.18*symSc).toFixed(3)}" opacity="0.55"/>`;
     }
   }
 
@@ -8692,20 +8708,29 @@ function _zeichnungBauen(stripInSvg) {
   <text x="${((sx(0)+sx(L))/2).toFixed(2)}" y="${(spanDimY-1.5).toFixed(2)}" font-size="${fs(2.4)}" text-anchor="middle" fill="${Z.massL}">L = ${L.toFixed(2)} m</text>`;
   }
 
-  // Sag annotation at T2 lowest point
-  const x0T2     = cDisp.x_low;
-  const y0T2     = absY(x0T2, catY(x0T2, cDisp));
-  const yChordT2 = h1abs + (h2abs - h1abs) * x0T2 / L;
-  const sagVal   = cDisp.sag;
-  // Beschriftung f rechts der Linie; überlappt sie eine andere, weicht sie nach dem
+  // Masslinie am Tiefpunkt (T₂) — Bezug wie im Diagramm und bei den Messpunkten (mpBezug):
+  // Sehne → f, sonst Δh zur Horizontalen durch den höchsten / linken / rechten Aufhängepunkt.
+  const _tm   = tiefpunktMass(x => absY(x, catY(x, cDisp)), cDisp, h1abs, h2abs, L);
+  const x0T2  = _tm ? _tm.x0 : 0;
+  const y0T2  = _tm ? _tm.yBot : 0;
+  const yRefT2 = _tm ? _tm.yRef : 0;
+  const sagVal = _tm ? _tm.wert : 0;
+  // Bezugslinie: Sehne zwischen den Aufhängepunkten bzw. Horizontale auf Höhe des Bezugspunkts
+  const _refY = mpBezug === 'sehne' ? null : mpBezugHoehe(0, h1abs, h2abs, L);
+  const refSvg = `<line x1="${sx(0).toFixed(2)}" y1="${sy(mpBezug === 'sehne' ? h1abs : _refY).toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${sy(mpBezug === 'sehne' ? h2abs : _refY).toFixed(2)}"
+    stroke="${Z.t1}" stroke-width="${(0.25*symSc).toFixed(3)}" stroke-dasharray="${(3.5*symSc).toFixed(2)},${(2.2*symSc).toFixed(2)}" opacity="0.55"/>`;
+  // Beschriftung rechts der Linie; überlappt sie eine andere, weicht sie nach dem
   // Zeichnen aus (_zeichnungEntflechten: links der Linie bzw. nach oben/unten)
-  const _fTxt = `f = ${sagVal.toFixed(2)} m`;
-  const _fY = (sy(yChordT2) + sy(y0T2)) / 2 + 0.9;
-  const sagSvg   = sagVal > 0.01 ? `
-  <line x1="${sx(x0T2).toFixed(2)}" y1="${sy(yChordT2).toFixed(2)}" x2="${sx(x0T2).toFixed(2)}" y2="${sy(y0T2).toFixed(2)}"
+  const _fTxt = `${mpBezugKurz()} = ${sagVal.toFixed(2)} m`;
+  const _fY = (sy(yRefT2) + sy(y0T2)) / 2 + 0.9;
+  const _pf = (y, dir) => { const a = 1.0 * symSc, b = 1.9 * symSc, x = sx(x0T2);
+    return `<polygon points="${x.toFixed(2)},${y.toFixed(2)} ${(x - a).toFixed(2)},${(y - dir * b).toFixed(2)} ${(x + a).toFixed(2)},${(y - dir * b).toFixed(2)}" fill="${t2clr}" opacity="0.85"/>`; };
+  const sagSvg   = _tm && Math.abs(yRefT2 - y0T2) > 0.01 ? `
+  <line x1="${sx(x0T2).toFixed(2)}" y1="${sy(yRefT2).toFixed(2)}" x2="${sx(x0T2).toFixed(2)}" y2="${sy(y0T2).toFixed(2)}"
     stroke="${t2clr}" stroke-width="${(0.25*symSc).toFixed(3)}" stroke-dasharray="${(1.2*symSc).toFixed(2)},${(0.8*symSc).toFixed(2)}" opacity="0.7"/>
+  ${_pf(sy(y0T2) - 0.15 * symSc, -1)}${_pf(sy(yRefT2) + 0.15 * symSc, 1)}
   <text class="zl-schieb" data-x2="${(sx(x0T2) - 1.5).toFixed(2)}" data-a2="end" x="${(sx(x0T2) + 1.5).toFixed(2)}" y="${_fY.toFixed(2)}" text-anchor="start"
-    font-size="${fs(2.2)}" fill="${t2clr}" opacity="0.85" stroke="${Z.hg}" stroke-width="${(0.45*symSc).toFixed(3)}" paint-order="stroke">${_fTxt}</text>` : '';
+    font-size="${fs(2.2)}" font-weight="600" fill="${t2clr}" opacity="0.9" stroke="${Z.hg}" stroke-width="${(0.45*symSc).toFixed(3)}" paint-order="stroke">${_fTxt}</text>` : '';
 
   // Mindestabstand-Kurven (parallel zur T2-Kurve, versetzt) — mit Schraffur-Füllung
   let minClearSvg = '';
@@ -8796,7 +8821,7 @@ function _zeichnungBauen(stripInSvg) {
   const stripRowH      = _stripRowH;
   const stripRowLabels = [
     // T₂ / T₃ mit tiefgestellter Ziffer; Farbe der Zeile über _istT2 / _istT3
-    t('draw.punkt'), 'x [m]', `T₂ ${t('draw.ueber')} ${SOK} [m]`,
+    t('draw.punkt'), 'x [m]', `${mpBezugKurz()} T₂ [m]`, `T₂ ${t('draw.ueber')} ${SOK} [m]`,
     ...(c3data ? [`T₃ ${t('draw.ueber')} ${SOK} [m]`] : []),
     ...(hasSok ? [`T₂ [${MUM}]`] : []),
     ...(hasSok && c3data ? [`T₃ [${MUM}]`] : []),
@@ -8864,9 +8889,11 @@ function _zeichnungBauen(stripInSvg) {
     <circle cx="${px.toFixed(2)}" cy="${py.toFixed(2)}" r="${(1.2*symSc).toFixed(2)}" fill="${t2clr}" stroke="${Z.hg}" stroke-width="${(0.35*symSc).toFixed(3)}"/>`;
 
       // Zellwerte (für SVG-Strip und HTML-Tabelle) [val, fontSize, fontWeight, color]
+      const _dh = mpBezugHoehe(xv, h1abs, h2abs, L) - y2abs;   // wie Karte und Diagramm
       const cellVals = [
         [badge,               '2.4', '700', t2clr],
         [xv.toFixed(2),       '2.0', '400', '#666'],
+        [_dh.toFixed(2),      '2.0', '600', t2clr],
         [tsHeight.toFixed(2), '2.0', '400', t2clr],
       ];
       if (c3data) cellVals.push([catY(xv, c3data).toFixed(2), '2.0', '400', t3clr]);
@@ -8937,15 +8964,16 @@ function _zeichnungBauen(stripInSvg) {
 
     // Strip cell values
     const cellVals = [
-      ['f',               '2.4', '700'],
+      [mpBezugKurz(),     '2.4', '700'],
       [xv.toFixed(2),     '2.0', '400'],
+      [(mpBezugHoehe(xv, h1abs, h2abs, L) - y2abs).toFixed(2), '2.0', '600'],
       [tsHeight.toFixed(2),'2.0','400'],
     ];
     if (c3data) cellVals.push([catY(xv, c3data).toFixed(2), '2.0', '400']);
-    if (hasSok) {
-      cellVals.push([y2abs.toFixed(2),   '2.0', '400']);
-      cellVals.push([sokKote.toFixed(2), '2.0', '400']);
-    }
+    // Reihenfolge wie die Zeilenbezeichnungen (T₃ in m ü. M. fehlte vorher → Werte verrutscht)
+    if (hasSok) cellVals.push([y2abs.toFixed(2), '2.0', '400']);
+    if (hasSok && c3data) cellVals.push([absY(xv, catY(xv, c3data)).toFixed(2), '2.0', '400']);
+    if (hasSok) cellVals.push([sokKote.toFixed(2), '2.0', '400']);
     _drawingProbeData.push({ xFrac: px / VW, cells: cellVals.map(([v]) => v) });
   }
 
@@ -9145,6 +9173,7 @@ function _zeichnungBauen(stripInSvg) {
   const _sagPdf    = cDisp.sag;
   let _paramLine = `h&#x2081; = ${h1.toFixed(2)} m    h&#x2082; = ${h2.toFixed(2)} m    f = ${_sagPdf.toFixed(2)} m    L = ${L.toFixed(2)} m    ${t('draw.masstab')} H 1:${scale}    ${t('draw.masstab')} V 1:${_vScalePdf}${vEx > 1 ? `  (${vEx}×)` : ''}    T&#x2081; = ${T1}°C    T&#x2082; = ${T2}°C`;
   if (c3data && t3v_pdf !== null) _paramLine += `    T&#x2083; = ${t3v_pdf}°C`;
+  _paramLine += `    ${escHtml(mpBezugText())}`;
   const titleSvg = stripInSvg ? `
   <rect x="0" y="0" width="${VW}" height="${titleH}" fill="#ffffff"/>
   <rect x="0" y="0" width="${VW}" height="0.8" fill="#4a5cb8"/>
@@ -9179,6 +9208,7 @@ function _zeichnungBauen(stripInSvg) {
   ${hfSvg}
   ${minClearSvg}
   ${anchLbl}
+  ${refSvg}
   ${sagSvg}
   ${probesSvg}
   ${obstSvg}

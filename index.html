@@ -850,6 +850,19 @@
           </div>
           <!-- Trennlinie -->
           <span style="width:1px;height:14px;background:var(--border);flex-shrink:0"></span>
+          <!-- Bezug der Durchhang-Vermassung (gekoppelt mit der Auswahl im Diagramm) -->
+          <div style="display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--muted)">
+            <span id="drawing-bezug-lbl" data-i18n="draw.bezug" style="white-space:nowrap">Bezug</span>
+            <select id="draw-mp-bezug" aria-labelledby="drawing-bezug-lbl" onpointerdown="this.dataset.maus = '1'" onchange="setMpBezug(this.value); if (this.dataset.maus) { this.dataset.maus = ''; this.blur(); }"
+              title="Bezug der Angabe am Messpunkt" data-i18n-title="mp.bezug.titel"
+              style="font-size:.72rem;padding:.15rem .3rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer">
+              <option value="hoch" data-i18n="mp.bezug.hoch">Δh zum höchsten Punkt</option>
+              <option value="links" data-i18n="mp.bezug.links">Δh zum linken Punkt</option>
+              <option value="rechts" data-i18n="mp.bezug.rechts">Δh zum rechten Punkt</option>
+              <option value="sehne" data-i18n="mp.bezug.sehne">Durchhang (Sehne)</option>
+            </select>
+          </div>
+          <span style="width:1px;height:14px;background:var(--border);flex-shrink:0"></span>
           <!-- Darstellung (vertikaler Ausschnitt) -->
           <div style="display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--muted)">
             <span id="drawing-darstellung-lbl" data-i18n="draw.darstellung" style="white-space:nowrap">Darstellung</span>
