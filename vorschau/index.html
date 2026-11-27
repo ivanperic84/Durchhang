@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<!-- ══ VORSCHAU ══════════════════════════════════════════════════════════════
+     Probe-Kopie für das neue Design (Systemdesign, drei Bereiche).
+     - Eigener Speicher: alle Einträge in localStorage/sessionStorage erhalten
+       das Präfix «vorschau:» — Projekte der produktiven App bleiben unberührt.
+     - Kein Service Worker (offline nicht verfügbar), kein Installieren.
+     - Nicht für Nachweise verwenden. -->
+<meta name="robots" content="noindex">
+<script>
+window.DH_VORSCHAU = true;
+(function () {
+  const P = 'vorschau:', S = Storage.prototype;
+  const g = S.getItem, s = S.setItem, r = S.removeItem, k = S.key;
+  const laenge = Object.getOwnPropertyDescriptor(S, 'length').get;   // Original, vor dem Ersetzen
+  const eigene = st => { const a = []; for (let i = 0; i < laenge.call(st); i++) { const n = k.call(st, i); if (n && n.startsWith(P)) a.push(n.slice(P.length)); } return a; };
+  S.getItem = function (n) { return g.call(this, P + n); };
+  S.setItem = function (n, v) { return s.call(this, P + n, v); };
+  S.removeItem = function (n) { return r.call(this, P + n); };
+  S.key = function (i) { return eigene(this)[i] ?? null; };
+  S.clear = function () { eigene(this).forEach(n => r.call(this, P + n)); };
+  Object.defineProperty(S, 'length', { configurable: true, get() { return eigene(this).length; } });
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>VORSCHAU – Durchhang N-FL / R-FL Kettenwerk</title>
+
+<!-- ── Installierbare Anwendung (PWA) ──────────────────────────────────────
+     Das Manifest gibt der App eine eigene Kennung (id). Ohne diese leiten
+     Browser die Identität aus der Startadresse ab — mehrere Anwendungen unter
+     derselben Herkunft (z. B. ivanperic84.github.io) verdrängen sich dann
+     gegenseitig in der Taskleiste. -->
+<meta name="theme-color" content="#ffffff">
+<!-- Thema vor dem ersten Zeichnen setzen: Auto (Gerät) / Hell / Dunkel -->
+<script>
+(function () {
+  var wahl = 'auto';
+  try { wahl = localStorage.getItem('dh_thema') || 'auto'; } catch (e) {}
+  var dunkel = wahl === 'dunkel' ||
+    (wahl === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.dataset.thema = dunkel ? 'dunkel' : 'hell';
+  document.documentElement.dataset.themaWahl = wahl;
+  // Entwicklermodus (3× aufs App-Symbol): unfertige Funktionen wie hf_min / hf_max
+  try { if (localStorage.getItem('dh_dev') === '1') document.documentElement.classList.add('dev'); } catch (e) {}
+})();
+</script>
+<meta name="description" content="Berechnung des Durchhangs von Fahrleitungen und Einzelleitern mit Temperatureinfluss, Zeichnungsansicht und Abspannabschnitten.">
+<link rel="icon" type="image/svg+xml" href="icon-v2.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32-v2.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192-v2.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-v2.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Durchhang">
+<!-- Schrift «Inter» wird mit der App ausgeliefert (fonts/, Lizenz: SIL OFL 1.1)
+     statt von Google geladen: funktioniert offline, blockiert den Start nicht
+     bei schlechtem Netz und sendet keine Daten an Dritte. -->
+<link rel="preload" href="fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+
+<div class="header" role="banner">
+  <div class="header-icon">
+    <!-- Logo: gleiches Motiv wie das App-Icon (icon-v2.svg, dunkler Stil), Farben hier aus dem Thema -->
+    <svg width="28" height="28" viewBox="14 20 72 64" fill="none" stroke-linecap="round" aria-hidden="true">
+      <line x1="20" y1="26" x2="20" y2="78" style="stroke:var(--xdim)" stroke-width="4.2"/>
+      <line x1="80" y1="26" x2="80" y2="78" style="stroke:var(--xdim)" stroke-width="4.2"/>
+      <g class="kette-teil" style="stroke:var(--xdim)" stroke-width="1.6">
+        <line x1="35" y1="40.6" x2="35" y2="56"/><line x1="50" y1="44.5" x2="50" y2="56"/><line x1="65" y1="40.6" x2="65" y2="56"/>
+      </g>
+      <line class="kette-teil" x1="20" y1="56" x2="80" y2="56" style="stroke:var(--muted)" stroke-width="3"/>
+      <path d="M20 30 Q50 59 80 30" style="stroke:var(--primary)" stroke-width="6"/>
+      <!-- Entwicklermodus: Wäscheleine – drei Wäschestücke am Seil (schaukeln beim Einschalten) -->
+      <g class="waesche nur-dev" stroke="none">
+        <g class="w-shirt"><path d="M26 41 L30 39.5 Q33 41.5 36 39.5 L40 41 L43 46 L39.5 47.5 L39.5 56 L26.5 56 L26.5 47.5 L23 46 Z" fill="#e2584d"/>
+          <rect x="31.8" y="37.3" width="2.4" height="4" rx="1" fill="#6b4f2a"/></g>
+        <g class="w-socke"><path d="M47 44 L53 44 L53 54 L57.5 56.5 Q58.5 60 55 60 L48.5 58.5 Q47 57.5 47 55.5 Z" fill="#f2b631"/>
+          <rect x="48.8" y="41.8" width="2.4" height="4" rx="1" fill="#6b4f2a"/></g>
+        <g class="w-hose"><path d="M60.5 40.5 L73.5 40.5 L74.5 57 L69.2 57 L67 46.5 L64.8 57 L59.5 57 Z" fill="#3aa676"/>
+          <rect x="65.8" y="37.3" width="2.4" height="4" rx="1" fill="#6b4f2a"/></g>
+      </g>
+    </svg>
+  </div>
+  <span class="vorschau-schild" title="Probe-Version des neuen Designs – nicht für Nachweise verwenden. Projekte werden getrennt von der App gespeichert.">VORSCHAU</span>
+  <span id="dev-schild" class="dev-schild nur-dev" title="Entwicklermodus aktiv" data-i18n-title="dev.titel">DEV</span>
+  <div style="flex:1;min-width:0">
+    <h1 id="app-title">Durchhang N-FL</h1>
+    <p id="app-subtitle" style="display:none">Kettenwerk — Seillinie mit Temperatureinfluss</p>
+    <p id="proj-name-badge" style="display:none;margin:0;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">
+      <span style="color:var(--muted);font-weight:500" data-i18n="ui.projekt.label">Projekt: </span><span id="proj-name-group" style="color:var(--primary);font-weight:700"></span><span id="proj-name-sep" style="color:var(--muted);font-weight:400"> / </span><span id="proj-name-text" style="color:var(--primary);font-weight:700"></span>
+    </p>
+  </div>
+  <button onclick="openProjectsModal()" class="header-manual-link" title="Datei" data-i18n-title="ui.datei" style="background:none;border:none;cursor:pointer;">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+    <span class="header-manual-text" data-i18n="ui.datei">Datei</span>
+  </button>
+  <button id="quick-save-btn" onclick="quickSave()" title="Speichern" data-i18n-title="ui.speichern"
+    style="display:flex;align-items:center;gap:.3rem;padding:.28rem .45rem;border-radius:7px;
+           border:none;background:none;color:var(--text);font-size:.78rem;font-weight:500;
+           cursor:pointer;transition:background .15s;white-space:nowrap"
+    onmouseover="this.style.background = 'var(--s3)'"
+    onmouseout="this.style.background = 'none'">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+      <path d="M13.5 4.5L11.5 2.5H3A1.5 1.5 0 001.5 4v8A1.5 1.5 0 003 13.5h10A1.5 1.5 0 0014.5 12V5l-1-0.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+      <rect x="5" y="1.5" width="5" height="3.5" rx=".5" stroke="currentColor" stroke-width="1.2"/>
+      <rect x="4" y="8.5" width="8" height="4" rx=".5" stroke="currentColor" stroke-width="1.2"/>
+    </svg>
+    <span id="quick-save-label" style="display:none"></span>
+    <span class="header-manual-text header-label" data-i18n="ui.speichern">Speichern</span>
+  </button>
+  <button id="share-btn" onclick="toggleShareMenu(event)" class="header-manual-link" title="Export / Teilen" data-i18n-title="ui.export.teilen"
+    style="background:none;border:none;cursor:pointer;color:var(--text2)">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 12h10M8 3v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 6l3-3 3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="header-manual-text header-label" data-i18n="share.btn">Teilen</span>
+  </button>
+  <button onclick="openHf()" id="hf-btn" class="header-manual-link nur-dev" title="Fahrdrahthöhe hf_min / hf_max" data-i18n-title="hf.titel" style="background:none;border:none;cursor:pointer;color:var(--text2)">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1.5 14.5h13M8 2v9.5M5.8 4.2L8 2l2.2 2.2M5.8 9.3L8 11.5l2.2-2.2M1.5 2h13"/></svg>
+    <span class="header-manual-text header-label" data-i18n="hf.kurz">hf min/max</span>
+  </button>
+  <button id="hb-btn" onclick="openHandbuch()" class="header-manual-link" type="button" title="Handbuch" data-i18n-title="ui.handbuch" style="background:none;border:none;cursor:pointer;color:var(--text2)">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M8 4C6.5 2.8 4.3 2.5 2 2.8v9.6c2.3-.3 4.5 0 6 1.2 1.5-1.2 3.7-1.5 6-1.2V2.8c-2.3-.3-4.5 0-6 1.2zM8 4v9.6"/></svg>
+    <span class="header-manual-text header-label" data-i18n="ui.handbuch">Handbuch</span>
+  </button>
+  <!-- Seltene Befehle im Menü «Mehr ⋯» (beschriftet statt nur Symbole) -->
+  <button id="mehr-btn" class="header-manual-link" onclick="toggleMehrMenu(event)" type="button" aria-haspopup="true" aria-expanded="false"
+    title="Mehr" data-i18n-title="ui.mehr" style="background:none;border:none;cursor:pointer;color:var(--text2)">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="3" cy="8" r="1.4"/><circle cx="8" cy="8" r="1.4"/><circle cx="13" cy="8" r="1.4"/></svg>
+    <span class="header-manual-text header-label" data-i18n="ui.mehr">Mehr</span>
+  </button>
+  <div class="lang-switcher">
+    <button class="lang-btn active" id="lang-de" onclick="setLang('de')">DE</button>
+    <button class="lang-btn"        id="lang-fr" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn"        id="lang-it" onclick="setLang('it')">IT</button>
+  </div>
+</div>
+
+<div id="mehr-menu" class="kopf-menu" style="display:none">
+  <button class="share-item" type="button" onclick="closeMehrMenu();openReglageModal()">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="3" width="12" height="2" rx="1" fill="currentColor"/><rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor"/><rect x="2" y="11" width="8" height="2" rx="1" fill="currentColor"/></svg>
+    <span data-i18n="ui.reglage">Reglagetabelle</span>
+  </button>
+  <button class="share-item" type="button" id="bd-menu-btn" onclick="closeMehrMenu();openBetreiberdaten()">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><ellipse cx="8" cy="3.8" rx="5.5" ry="2" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 3.8v8.4c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2V3.8M2.5 8c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2" stroke="currentColor" stroke-width="1.5"/></svg>
+    <span data-i18n="bd.titel">Betreiberdaten</span>
+  </button>
+  <button class="share-item" type="button" id="thema-btn" onclick="event.stopPropagation();wechsleThema()" title="Darstellung">
+    <svg id="thema-icon" width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
+    <span id="thema-name">Darstellung</span>
+  </button>
+  <div class="kopf-menu-trenner" role="separator"></div>
+  <button class="share-item" id="reset-btn" type="button" onclick="closeMehrMenu();totalReset()" title="Zurücksetzen auf Standardwerte" data-i18n-title="ui.reset.titel">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 1 1.1 3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><polyline points="2.5,4.5 2.5,8 6,8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span data-i18n="ui.reset">Zurücksetzen</span>
+  </button>
+</div>
+
+<div id="share-menu" style="display:none;position:fixed;z-index:1100;background:var(--bg);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:215px;overflow:hidden">
+            <button class="share-item" id="share-item-calc-pdf" onclick="closeShareMenu();pdfMitPruefung('berechnung')">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Berechnung PDF
+            </button>
+            <button class="share-item" onclick="exportDxf();closeShareMenu()">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 2V14M2 5.5L14 5.5M2 10.5L14 10.5" stroke="currentColor" stroke-width="1" stroke-linejoin="round" opacity="0.5"/></svg>
+              <span data-i18n="exp.dxf">3D-DXF</span>
+            </button>
+            <button class="share-item" onclick="exportIfc();closeShareMenu()">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 8L14 5.5M8 8L2 5.5M8 8V14" stroke="currentColor" stroke-width="1" stroke-linejoin="round" opacity="0.5"/></svg>
+              <span data-i18n="exp.ifc">IFC4 (BIM)</span>
+            </button>
+            <div style="height:1px;background:var(--border);margin:.1rem 0"></div>
+            <button class="share-item" id="share-item-draw-pdf" onclick="closeShareMenu();pdfMitPruefung('zeichnung')">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Zeichnung PDF
+            </button>
+            <button class="share-item" id="share-foto-dl" onclick="fotoSaveImage();closeShareMenu()" style="display:none">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Fotoaufnahme PNG
+            </button>
+          </div>
+
+<div class="layout" role="main">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-scroll">
+
+    <!-- 1. System & Kombination -->
+    <div class="card">
+      <p id="ungeprueft-hw" class="ungeprueft-hw" role="note" style="display:none" data-i18n-html="ungeprueft.hw">Werte in <span class="ungeprueft-muster">grauer Schrift</span> sind noch Startwerte — bitte prüfen (antippen genügt, wenn der Wert stimmt).</p>
+      <div class="card-title" id="card-title-sys" data-i18n="card.system">System</div>
+      <div class="seg-ctrl">
+        <button class="seg-btn"        id="seg-el" data-i18n="sys.el"  onclick="sysWaehlen('el')">Einzelleiter</button>
+        <button class="seg-btn"        id="seg-rfl" onclick="sysWaehlen('rfl')" data-i18n="sys.rfl.kurz">R-FL</button>
+        <button class="seg-btn active" id="seg-nfl" onclick="sysWaehlen('nfl')" data-i18n="sys.nfl.kurz">N-FL</button>
+      </div>
+      <p id="sys-info" style="font-size:.72rem;color:var(--muted);margin-top:.35rem;margin-bottom:.75rem">
+        Tragseil fix abgefangen — Zugkraft temperaturabhängig (Zustandsgleichung)
+      </p>
+      <!-- Kombination (N-FL / R-FL) -->
+      <div id="combo-row">
+        <div class="field">
+          <label id="combo-label" data-i18n="sys.kombination">Kombination</label>
+          <div style="display:flex;gap:.4rem;align-items:stretch">
+            <div class="input-wrap" style="flex:1">
+              <select id="preset-select" aria-labelledby="combo-label" onchange="applyPreset()" style="padding-right:.75rem"></select>
+            </div>
+            <button onclick="openCustomModal()" title="Eigenes Kettenwerk definieren" data-i18n-title="ui.kw.eigen" style="flex-shrink:0;background:none;border:1px solid var(--border);border-radius:8px;padding:.2rem .45rem;font-size:.72rem;color:var(--muted);cursor:pointer;line-height:1;transition:border-color .15s,color .15s" onmouseover="this.style.color = 'var(--text)';this.style.borderColor = 'var(--primary)'" onmouseout="this.style.color = 'var(--muted)';this.style.borderColor = 'var(--border)'">＋</button>
+          </div>
+        </div>
+        <div class="rgl-wrap">
+        <details id="combo-info" class="reglage-info-box" style="display:none;margin-top:.5rem">
+          <summary><span class="info-title" id="combo-title"></span></summary>
+          <div class="info-note" id="combo-note"></div>
+        </details>
+        <!-- «i» neben (nicht in) der Titelzeile: kein Knopf im Knopf -->
+        <button type="button" class="rgl-i" onclick="openReglageModal()"
+          title="Reglagetabelle anzeigen" data-i18n-title="ui.reglage.zeigen" aria-label="Reglagetabelle anzeigen" data-i18n-aria="ui.reglage.zeigen">i</button>
+        </div>
+      </div>
+
+      <!-- Einzelleiter: Leitermaterial direkt wählbar -->
+      <div id="el-material-row" style="display:none">
+        <div class="field">
+          <label id="el-material-label" data-i18n="sys.material">Leitermaterial</label>
+          <div style="display:flex;gap:.4rem;align-items:stretch">
+            <div class="input-wrap" style="flex:1">
+              <select id="el-material-select" aria-labelledby="el-material-label" onchange="elMaterialChanged()" style="padding-right:.75rem">
+                <option value="cu95">Cu 95 mm²</option>
+                <option value="cu107">Cu 107 mm²</option>
+                <option value="cu150">Cu 150 mm²</option>
+                <option value="cu240">Cu 240 mm²</option>
+                <option value="cu300">Cu 300 mm²</option>
+                <option value="cusn95">CuSn 0.1 95 mm²</option>
+                <option value="stcu50">StCu 50 mm²</option>
+                <option value="stcu92">StCu 92 mm²</option>
+                <option value="bziii50">BzIII 50 mm²</option>
+                <option value="aldrey240">Aldrey 240 mm²</option>
+                <option value="aldrey300">Aldrey 300 mm²</option>
+                <option value="aldrey400">Aldrey 400 mm²</option>
+                <option value="aldrey550">Aldrey 550 mm²</option>
+                <option value="alum191">Alumin. 191 mm²</option>
+              </select>
+            </div>
+            <button onclick="openElMaterialModal()" title="Eigenes Material definieren" data-i18n-title="ui.mat.eigen" style="flex-shrink:0;background:none;border:1px solid var(--border);border-radius:8px;padding:.2rem .45rem;font-size:.72rem;color:var(--muted);cursor:pointer;line-height:1;transition:border-color .15s,color .15s" onmouseover="this.style.color = 'var(--text)';this.style.borderColor = 'var(--primary)'" onmouseout="this.style.color = 'var(--muted)';this.style.borderColor = 'var(--border)'">＋</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Einzelleiter: Basiskraft-Variante (nur cu95 / cu150) -->
+      <div id="el-basis-row" style="display:none;margin-top:.4rem">
+        <div class="seg-ctrl" id="el-basis-btns" style="width:100%"></div>
+      </div>
+
+      <!-- Einzelleiter: Reglagewert-Info — gleich gestaltet wie die Kombination (N-FL / R-FL) -->
+      <div class="rgl-wrap">
+      <details id="el-reglage-info" class="reglage-info-box" style="display:none;margin-top:.5rem">
+        <summary><span class="info-title" id="el-reglage-title"></span></summary>
+        <div class="info-note" id="el-reglage-note"></div>
+        <div id="el-reglage-edit-panel" style="display:none"></div>
+      </details>
+      <button type="button" class="rgl-i" id="el-reglage-info-btn" onclick="toggleReglageEdit()"
+        title="Reglagetabelle anzeigen" data-i18n-title="ui.reglage.zeigen" aria-label="Reglagetabelle anzeigen" data-i18n-aria="ui.reglage.zeigen">i</button>
+      </div>
+      <!-- Hinweis, solange H frei eingegeben ist (Reglage nicht wirksam) -->
+      <div id="el-reglage-inaktiv" class="rgl-inaktiv" style="display:none" data-i18n="ui.reglage.inaktiv">Nicht aktiv – H freie Eingabe</div>
+
+      <!-- Hinweis, solange nur neutrale Beispielwerte aktiv sind (keine Betreiberdaten geladen) -->
+      <div id="bd-hinweis" class="bd-hinweis" role="note" style="display:none">
+        <span data-i18n="bd.hinweis.beispiel">Beispielwerte – keine Vorgabe</span>
+        <button type="button" class="bd-hinweis-knopf" onclick="openBetreiberdaten()" data-i18n="bd.hinweis.laden">Betreiberdaten laden</button>
+        <span class="bd-hinweis-ort" data-i18n="bd.hinweis.ort">Datenpaket: SharePoint – Anlagedokumentation</span>
+      </div>
+
+      <!-- Berechnungsart (Einzelleiter und N-FL) -->
+      <div id="berechnungsart-row" style="display:none;margin-top:.5rem">
+        <label id="berechnungsart-label" data-i18n="par.berechnungsart" style="font-size:.72rem;font-weight:500;color:var(--muted);display:block;margin-bottom:.25rem">Berechnungsart</label>
+        <div class="seg-ctrl" style="width:100%">
+          <button class="seg-btn active" id="seg-ba-ausg" data-i18n="par.ba.ausg" onclick="setBerechnungsart('ausgleichend')">Ausgleichend</button>
+          <button class="seg-btn"        id="seg-ba-starr" data-i18n="par.ba.starr" onclick="setBerechnungsart('starr')">Starr</button>
+        </div>
+        <div id="ba-hint" style="font-size:.65rem;color:var(--tertiary);margin-top:.25rem"></div>
+      </div>
+
+      <div id="wear-row" style="display:none;margin-top:.6rem">
+        <label id="wear-label" data-i18n="sys.abnutzung" style="font-size:.72rem;color:var(--muted)">Abnutzung Fahrdraht</label>
+        <div class="seg-ctrl" style="margin-top:.25rem">
+          <button class="seg-btn active" id="wear-btn-0" data-i18n="sys.wear.new" onclick="setWear(0)">Neu (0%)</button>
+          <button class="seg-btn" id="wear-btn-max" onclick="setWear(currentWearMax)">Abgenutzt (<span id="wear-max-label">30</span>%)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- hidden material state (set by preset) -->
+    <input type="hidden" id="material-ts"  value="stcu92">
+    <input type="hidden" id="weight-ts"    value="8.218">
+    <input type="hidden" id="alpha-ts"     value="16.2">
+    <input type="hidden" id="material-fd"  value="cu107">
+    <input type="hidden" id="weight-fd"    value="9.517">
+    <input type="hidden" id="tension-fd"   value="8500">
+    <!-- Benutzerdefinierte Materialwerte (nur für custom-ts / custom-fd) -->
+    <input type="hidden" id="ea-ts"     value="">
+    <input type="hidden" id="ea-fd"     value="">
+    <input type="hidden" id="alpha-fd"  value="">
+    <span  id="material-ts-info"  style="display:none"></span>
+    <span  id="material-fd-info"  style="display:none"></span>
+
+    <!-- 2. Temperatur — direkt unter «System», weil sie am häufigsten geändert
+         wird und so auch auf dem PC ohne Scrollen der Seitenleiste sichtbar ist -->
+    <div class="card" id="temp-card">
+      <div class="card-title" id="card-title-temp" data-i18n="card.temperatur">Temperatur</div>
+      <div class="field-group">
+        <div class="field-row">
+          <div class="field" id="t1-field">
+            <label for="temp1" id="t1-label">Temperatur T<sub>1</sub> <span style="font-weight:400;color:var(--tertiary);font-size:.75em">(Montage)</span></label>
+            <div class="input-wrap">
+              <input type="number" id="temp1" value="10" step="1" oninput="updateH_Ts_ubFromT1(); berechnenEntprellt()" onchange="updateH_Ts_ubFromT1(); berechnen()">
+              <span class="input-unit">°C</span>
+            </div>
+          </div>
+          <div class="field" id="t2-field">
+            <label for="temp2" id="t2-label" data-i18n-html="par.T2">Temperatur T<sub>2</sub></label>
+            <div class="input-wrap">
+              <input type="number" id="temp2" value="-20" min="-20" max="80" step="1"
+                     oninput="onT2Input(this.value)"
+                     onchange="onT2Input(this.value)">
+              <span class="input-unit">°C</span>
+            </div>
+          </div>
+        </div>
+        <!-- T2-Slider — volle Sidebar-Breite -->
+        <div style="margin:.4rem 0 .8rem">
+          <!-- Massstab + Labels: padding = halber Thumb (7px) damit -20° und 80° gleich abstehen -->
+          <div style="padding:0 7px">
+            <!-- Beschriftung: HTML-Spans, dynamisch skalierbar -->
+            <div style="position:relative;height:16px;margin-bottom:2px">
+              <span class="t2-lbl" data-val="-20" style="left:0%">−20°</span>
+              <span class="t2-lbl" data-val="-10" style="left:10%">−10°</span>
+              <span class="t2-lbl" data-val="0"   style="left:20%">0°</span>
+              <span class="t2-lbl" data-val="10"  style="left:30%">10°</span>
+              <span class="t2-lbl" data-val="20"  style="left:40%">20°</span>
+              <span class="t2-lbl" data-val="30"  style="left:50%">30°</span>
+              <span class="t2-lbl" data-val="40"  style="left:60%">40°</span>
+              <span class="t2-lbl" data-val="50"  style="left:70%">50°</span>
+              <span class="t2-lbl" data-val="60"  style="left:80%">60°</span>
+              <span class="t2-lbl" data-val="70"  style="left:90%">70°</span>
+              <span class="t2-lbl" data-val="80"  style="left:100%">80°</span>
+            </div>
+            <svg width="100%" height="8" viewBox="0 0 200 8" preserveAspectRatio="none"
+                 style="display:block;overflow:visible">
+              <line x1="0"   y1="0" x2="0"   y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="10"  y1="0" x2="10"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="20"  y1="0" x2="20"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="30"  y1="0" x2="30"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="40"  y1="0" x2="40"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="50"  y1="0" x2="50"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="60"  y1="0" x2="60"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="70"  y1="0" x2="70"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="80"  y1="0" x2="80"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="90"  y1="0" x2="90"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="100" y1="0" x2="100" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="110" y1="0" x2="110" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="120" y1="0" x2="120" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="130" y1="0" x2="130" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="140" y1="0" x2="140" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="150" y1="0" x2="150" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="160" y1="0" x2="160" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="170" y1="0" x2="170" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="180" y1="0" x2="180" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="190" y1="0" x2="190" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="200" y1="0" x2="200" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+            </svg>
+          </div>
+          <input type="range" id="temp2-slider" aria-labelledby="t2-label" min="-20" max="80" step="5" value="80"
+                 style="width:100%;accent-color:var(--primary);cursor:pointer;display:block;margin-top:2px"
+                 oninput="onT2Slider(this.value,true)"
+                 onchange="onT2Slider(this.value,false)"
+                 onmouseup="onT2SliderEnd()"
+                 ontouchend="onT2SliderEnd()">
+        </div>
+        <!-- Eislast — dynamisch sichtbar bei N-FL und T<sub>2</sub> = −5°C -->
+        <div class="field" id="eislast-row" style="display:none">
+          <div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;font-size:.72rem;font-weight:500;color:var(--muted)">
+            <span id="eis-label-main" data-i18n-html="par.eislast">Eislast Z<sub>L</sub></span>
+            <span id="eis-label-sub" data-i18n-html="par.eislast.sub" style="font-weight:400;color:var(--tertiary);font-size:.75em">(bei T<sub>2</sub> = −5 °C)</span>
+            <span style="position:relative;display:inline-flex">
+              <button id="eis-info-btn" onclick="toggleEislastInfo(event)"
+                style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.2);background:none;color:var(--muted);font-size:.6rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"
+                title="Hinweis zur Eislast / Schneelast" data-i18n-title="ui.eis.hinweis.titel">i</button>
+              <div id="eis-info-popup" style="display:none;position:fixed;z-index:200;width:270px;background:var(--card);border:1px solid color-mix(in srgb, var(--primary) 20%, transparent);border-radius:10px;padding:.65rem .8rem;box-shadow:0 4px 20px rgba(0,0,0,.11);font-size:.72rem;color:var(--text);text-transform:none;font-weight:400;letter-spacing:0">
+                <div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.45rem">
+                  <span style="width:18px;height:18px;border-radius:50%;background:var(--primary);color:var(--on-acc);font-size:.65rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">i</span>
+                  <span style="font-weight:600;color:var(--primary);font-size:.73rem">Hinweis / Remarque / Nota</span>
+                </div>
+                <p id="eis-popup-text" data-i18n-html="par.eislast.hint" style="margin:0;line-height:1.55;color:var(--text)">Zusatzlast durch Eis/Schnee [N/m] — wird nur bei T<sub>2</sub> = −5 °C angerechnet.</p>
+              </div>
+            </span>
+          </div>
+          <div style="display:flex;gap:.35rem;margin-bottom:.3rem">
+            <button onclick="document.getElementById('zl-eis').value=0;berechnen()"
+              style="flex:1;padding:.2rem 0;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:.7rem;cursor:pointer;line-height:1;transition:background .15s,color .15s"
+              onmouseover="this.style.background = 'var(--s3)';this.style.color = 'var(--text)'"
+              onmouseout="this.style.background = 'none';this.style.color = 'var(--muted)'">0 N/m</button>
+            <button onclick="document.getElementById('zl-eis').value=7;berechnen()"
+              style="flex:1;padding:.2rem 0;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:.7rem;cursor:pointer;line-height:1;transition:background .15s,color .15s"
+              onmouseover="this.style.background = 'var(--s3)';this.style.color = 'var(--text)'"
+              onmouseout="this.style.background = 'none';this.style.color = 'var(--muted)'">7 N/m</button>
+            <button onclick="document.getElementById('zl-eis').value=15;berechnen()"
+              style="flex:1;padding:.2rem 0;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:.7rem;cursor:pointer;line-height:1;transition:background .15s,color .15s"
+              onmouseover="this.style.background = 'var(--s3)';this.style.color = 'var(--text)'"
+              onmouseout="this.style.background = 'none';this.style.color = 'var(--muted)'">15 N/m</button>
+          </div>
+          <div class="input-wrap">
+            <input type="number" id="zl-eis" aria-labelledby="eis-label-main eis-label-sub" value="0" step="0.1" min="0"
+                   oninput="berechnenEntprellt()" onchange="berechnen()">
+            <span class="input-unit">N/m</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- 3. Spannweite -->
+    <div class="card">
+      <div class="card-title" style="display:flex;align-items:center;gap:.4rem">
+        <span id="card-title-span" data-i18n="card.spannweite">Spannweite</span>
+        <span style="position:relative;display:inline-flex">
+          <button id="span-info-btn" onclick="toggleSpanInfo(event)"
+            style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.2);background:none;color:var(--muted);font-size:.6rem;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"
+            title="Hinweis zur Spannweite" data-i18n-title="ui.hinweis.spannweite">i</button>
+          <div id="span-info-popup" style="display:none;position:fixed;z-index:200;width:270px;background:var(--card);border:1px solid color-mix(in srgb, var(--primary) 20%, transparent);border-radius:10px;padding:.65rem .8rem;box-shadow:0 4px 20px rgba(0,0,0,.11);font-size:.72rem;color:var(--text);text-transform:none;font-weight:400;letter-spacing:0">
+            <div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.45rem">
+              <span style="width:18px;height:18px;border-radius:50%;background:var(--primary);color:var(--on-acc);font-size:.65rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">i</span>
+              <span id="span-popup-title" data-i18n="span.info.title" style="font-weight:600;color:var(--primary);font-size:.73rem">Zu beachten</span>
+            </div>
+            <p id="span-popup-text" data-i18n-html="span.info.text" style="margin:0;line-height:1.55;color:var(--text)">Bei der Eingabe von c<sub>proj</sub> oder c<sub>m</sub> ist gemäss den Vorgaben des Betreibers vorzugehen.</p>
+          </div>
+        </span>
+      </div>
+      <div class="seg-ctrl">
+        <button class="seg-btn active" id="seg-single" data-i18n="span.einzel" onclick="setSpanMode('single')">Einzelspannweite</button>
+        <button class="seg-btn"        id="seg-ruling" data-i18n="span.mittel" onclick="setSpanMode('ruling')">Mittelspannweite</button>
+      </div>
+
+      <!-- Einzelspannweite -->
+      <div id="panel-single">
+        <div class="field">
+          <label for="span" id="span-L-label" data-i18n="span.L.label">Spannweite L</label>
+          <div class="input-wrap">
+            <input type="number" id="span" value="45" min="0.1" step="0.1" oninput="berechnenEntprellt()" onchange="berechnen()">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mittelspannweite -->
+      <div id="panel-ruling" style="display:none">
+        <div class="stepper-row" style="margin-bottom:.5rem">
+          <label id="span-count-label" data-i18n="span.count">Anzahl Felder</label>
+          <div class="stepper">
+            <button onclick="changeSpanCount(-1)">−</button>
+            <span class="stepper-val" id="span-count-val">3</span>
+            <button onclick="changeSpanCount(+1)">+</button>
+          </div>
+        </div>
+        <div class="span-list" id="spans-list"></div>
+        <!-- Formel-Toggle + Formelhinweis -->
+        <div style="margin-top:.4rem;margin-bottom:.05rem">
+          <span id="lm-formel-label" data-i18n="lm.formel" style="font-size:.62rem;color:var(--muted);display:block;margin-bottom:.2rem">Formel</span>
+          <div class="seg-ctrl" id="lm-formula-btns" style="margin-bottom:0">
+            <button class="seg-btn active" id="seg-lm-arith" data-i18n="lm.arith"  onclick="setLmFormula('arith')"  style="font-size:.68rem;white-space:nowrap">Arithmetisch</button>
+            <button class="seg-btn"        id="seg-lm-ruling" data-i18n="lm.ruling" onclick="setLmFormula('ruling')" style="font-size:.68rem;white-space:nowrap">Ideelle Spannweite</button>
+          </div>
+          <div id="lm-formula-hint" style="font-size:.65rem;color:var(--tertiary);margin-top:.15rem;letter-spacing:.01em">Lm = &#x03A3;L / n</div>
+        </div>
+        <!-- Lm-Feld: immer editierbar; sobald Wert getippt → Buttons ausgegraut -->
+        <div style="display:flex;align-items:center;gap:.3rem;margin-top:.3rem">
+          <label style="font-size:.72rem;font-weight:500;color:var(--muted);white-space:nowrap;min-width:2rem">Lm</label>
+          <div class="input-wrap" style="flex:1">
+            <input type="number" id="lm-display" step="0.1" min="1"
+              oninput="onLmInput(this.value)"
+              onblur="if(lmOvr!==null&&this.value.trim())this.value=parseFloat(this.value).toFixed(2);else if(lmOvr===null){this.value='';updateLm();}"
+              onfocus="this.select()">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+        <div style="font-size:.65rem;color:var(--tertiary);margin-top:.12rem;padding-left:2.3rem" data-i18n="ui.lm.ueberschreibbar">Wert überschreibbar — Feld leeren zum Zurücksetzen</div>
+        <div class="field" style="margin-top:.5rem">
+          <label id="span-display-label" data-i18n="span.display">Dargestelltes Feld</label>
+          <div class="input-wrap">
+            <select id="display-span" onchange="highlightActiveSpan();berechnen()" style="padding-right:.75rem"></select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Befestigungspunkte + Mastangaben (zusammengeführt) -->
+    <div class="card" id="foto-sidebar-card">
+      <div class="card-title"><span id="card-title-bp" data-i18n="card.befestigung">Höheneingabe</span> <span id="bp-card-sub" data-i18n="card.befestigung.sub" style="font-weight:400;color:var(--tertiary)"></span></div>
+
+      <!-- Masthöhe h1 / h2 -->
+      <div class="field-row">
+        <div class="field">
+          <label for="h1" id="h1-label">Höhe Leiter h&#x2081; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über SOK</span></label>
+          <div class="input-wrap">
+            <input type="text" inputmode="decimal" id="h1" value="7.00" oninput="onSokMumInput();berechnenEntprellt()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="h2" id="h2-label">Höhe Leiter h&#x2082; <span style="font-weight:400;color:var(--tertiary);font-size:.7em">über SOK</span></label>
+          <div class="input-wrap">
+            <input type="text" inputmode="decimal" id="h2" value="7.00" oninput="onSokMumInput();berechnenEntprellt()" onchange="onSokMumInput();berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);" onfocus="this.select()">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+      </div>
+      <div id="h-hf-hw" class="feld-reglage-hw nur-dev" role="status" style="display:none"></div>
+
+      <!-- Mastlänge (für Foto-Kalibrierung) — nur im Foto-Tab sichtbar -->
+      <div id="mastlaenge-row" class="field-row" style="display:none;margin-top:.5rem">
+        <div class="field">
+          <label id="foto-mastlaenge-li-lbl" data-i18n="foto.mast.li">Mastlänge links</label>
+          <div class="input-wrap">
+            <input type="text" inputmode="decimal" id="foto-hmast-L" placeholder="m"
+              onblur="const v=parseFloat(this.value);if(!isNaN(v)&&v>0)this.value=v;const r=document.getElementById('foto-hmast-R');if(r&&!r.value)r.value=this.value;fotoRecalcIfReady();"
+              onchange="fotoRecalcIfReady()">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+        <div class="field">
+          <label id="foto-mastlaenge-re-lbl">Mastlänge rechts <span id="foto-mastlaenge-re-sub" style="font-weight:400;color:var(--tertiary);font-size:.8em">leer = links</span></label>
+          <div class="input-wrap">
+            <input type="text" inputmode="decimal" id="foto-hmast-R" data-i18n-ph="foto.mast.re.placeholder" placeholder="= links" data-placeholder-key="foto.mast.re.placeholder"
+              onblur="const v=parseFloat(this.value);if(!isNaN(v)&&v>0)this.value=v;fotoRecalcIfReady();"
+              onchange="fotoRecalcIfReady()">
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Optionale Mastangaben: eingeklappt, öffnen sich automatisch, sobald
+           ein Wert vorhanden ist (siehe _mastangabenOeffnenFallsBelegt) -->
+      <details id="mastangaben" class="mast-details">
+        <summary data-i18n="ui.mastangaben">Mastangaben: SOK m ü. M., Name, KM, Koordinaten</summary>
+      <!-- SOK m ü. M. (optional) -->
+      <div style="margin-top:.65rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem">
+          <label id="sok-optional-label" data-i18n="bp.sok.label" style="font-size:.72rem;color:var(--muted)">SOK m ü. M. (optional)</label>
+          <button id="sok-clear-btn" data-i18n="bp.sok.clear" onclick="clearSokMum()" title="SOK-Referenz löschen" data-i18n-title="ui.sok.loeschen.titel"
+            style="padding:.15rem .4rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:.7rem;cursor:pointer;line-height:1">&#x2715; löschen</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem">
+          <div class="input-wrap">
+            <input type="number" id="sok-mum-left" placeholder="— m ü.M." step="0.001"
+              style="font-size:.78rem"
+              oninput="onSokMumLeftInput()" onchange="onSokMumLeftInput()">
+            <span class="input-unit" style="font-size:.7rem">m</span>
+          </div>
+          <div class="input-wrap">
+            <input type="number" id="sok-mum-right" placeholder="— m ü.M." step="0.001"
+              style="font-size:.78rem"
+              oninput="this.dataset.userEdited='1';onSokMumRightInput()" onchange="this.dataset.userEdited='1';onSokMumRightInput()">
+            <span class="input-unit" style="font-size:.7rem">m</span>
+          </div>
+        </div>
+      </div>
+      <div id="sok-mum-info" style="display:none;margin-top:.35rem;font-size:.7rem;color:var(--muted)"></div>
+
+      <!-- Δ Mastfuss − SOK (optional): Mastfuss = SOK + Δ (Foto-Messung, Mastmodelle) -->
+      <div style="margin-top:.6rem">
+        <label id="mast-delta-lbl" data-i18n="bp.delta.label" title="Δ positiv = Mastfuss liegt höher als SOK, negativ = tiefer" data-i18n-title="koord.delta.titel" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.28rem">Δ Mastfuss − SOK (optional)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem">
+          <div class="input-wrap">
+            <input type="number" id="mast-delta-sok-left" step="0.01" autocomplete="off" placeholder="0.00" style="font-size:.78rem" aria-labelledby="mast-delta-lbl koord-lbl-li" oninput="berechnenEntprellt()" onchange="berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
+            <span class="input-unit" style="font-size:.7rem">m</span>
+          </div>
+          <div class="input-wrap">
+            <input type="number" id="mast-delta-sok-right" step="0.01" autocomplete="off" placeholder="0.00" style="font-size:.78rem" aria-labelledby="mast-delta-lbl koord-lbl-re" oninput="berechnenEntprellt()" onchange="berechnen()" onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value=v.toFixed(2);">
+            <span class="input-unit" style="font-size:.7rem">m</span>
+          </div>
+        </div>
+        <p id="mast-delta-info" data-i18n="bp.delta.info" style="margin:.25rem 0 0;font-size:.68rem;color:var(--tertiary)">Mastfuss = SOK + Δ (positiv = Mastfuss höher, negativ = tiefer). Für die Foto-Messung; die Berechnung braucht nur die SOK.</p>
+      </div>
+
+      <!-- Mastbezeichnung: Name/Nr. + KM -->
+      <div style="margin-top:.6rem">
+        <label id="bp-bez-label" style="font-size:.72rem;color:var(--muted);display:block;margin-bottom:.28rem">Bezeichnung <span id="bp-bez-optional" style="font-weight:400;color:var(--tertiary)">(optional)</span></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.25rem .4rem">
+          <span id="bp-name-li-lbl" data-i18n="bp.name.li" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem">Name / Nr. links</span>
+          <span id="bp-name-re-lbl" data-i18n="bp.name.re" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem">Name / Nr. rechts</span>
+          <input type="text" id="mast-num-left" placeholder="Nr."
+            oninput="_syncMastNames();berechnenEntprellt()"
+            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%">
+          <input type="text" id="mast-num-right" placeholder="Nr."
+            oninput="_syncMastNames();berechnenEntprellt()"
+            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%">
+          <span id="bp-km-li-lbl" data-i18n="bp.km.li" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM links</span>
+          <span id="bp-km-re-lbl" data-i18n="bp.km.re" style="font-size:.65rem;color:var(--tertiary);padding-left:.15rem;margin-top:.2rem">KM rechts</span>
+          <input type="text" id="mast-km-left" placeholder="000.000"
+            oninput="_triggerDrawingRebuild()" onchange="this.value=kmFormat(this.value);_triggerDrawingRebuild()"
+            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%;letter-spacing:.03em">
+          <input type="text" id="mast-km-right" placeholder="000.000"
+            oninput="_triggerDrawingRebuild()" onchange="this.value=kmFormat(this.value);_triggerDrawingRebuild()"
+            style="border:1px solid var(--border);border-radius:6px;padding:.22rem .4rem;font-size:.75rem;font-family:inherit;color:var(--text);width:100%;letter-spacing:.03em">
+        </div>
+      </div>
+
+      <!-- Koordinaten LV95 (optional): E/N = Aufhängepunkt des Leiters.
+           Eingeschaltet: Spannweite L und SOK werden daraus berechnet (siehe _koordAnwenden). -->
+      <div class="koord-block">
+        <label class="schalter-zeile" for="koord-aktiv">
+          <input type="checkbox" id="koord-aktiv" role="switch" autocomplete="off" onchange="koordSchalten(this.checked)">
+          <span class="schalter" aria-hidden="true"></span>
+          <span data-i18n="koord.schalter">Koordinaten LV95</span>
+        </label>
+        <div id="koord-felder" style="display:none">
+          <p class="koord-hinweis" data-i18n-html="koord.hinweis">E/N [m] = Aufhängepunkt des Leiters (Ausleger/Joch). Die Spannweite L wird daraus berechnet; die Höhe (SOK m ü. M.) steht oben.</p>
+          <div class="koord-grid">
+            <span></span>
+            <span id="koord-lbl-li" class="koord-kopf" data-i18n="koord.links">links</span>
+            <span id="koord-lbl-re" class="koord-kopf" data-i18n="koord.rechts">rechts</span>
+            <span id="koord-lbl-e" data-i18n="koord.e">E</span>
+            <input type="number" id="koord-e-left"  class="koord-inp" step="0.001" autocomplete="off" placeholder="2'600'000" aria-labelledby="koord-lbl-e koord-lbl-li" oninput="berechnenEntprellt()" onchange="berechnen()">
+            <input type="number" id="koord-e-right" class="koord-inp" step="0.001" autocomplete="off" placeholder="2'600'000" aria-labelledby="koord-lbl-e koord-lbl-re" oninput="berechnenEntprellt()" onchange="berechnen()">
+            <span id="koord-lbl-n" data-i18n="koord.n">N</span>
+            <input type="number" id="koord-n-left"  class="koord-inp" step="0.001" autocomplete="off" placeholder="1'200'000" aria-labelledby="koord-lbl-n koord-lbl-li" oninput="berechnenEntprellt()" onchange="berechnen()">
+            <input type="number" id="koord-n-right" class="koord-inp" step="0.001" autocomplete="off" placeholder="1'200'000" aria-labelledby="koord-lbl-n koord-lbl-re" oninput="berechnenEntprellt()" onchange="berechnen()">
+          </div>
+          <p id="koord-info" class="koord-info" aria-live="polite"></p>
+        </div>
+      </div>
+
+      </details>
+
+      <p id="bp-drag-hint" data-i18n="bp.drag.hint" style="display:none;font-size:.72rem;color:var(--tertiary);margin-top:.5rem;font-style:italic"></p>
+    </div>
+
+    <!-- T3 — Vergleichskurve -->
+    <div id="t3-card" class="card" style="padding:0">
+    <div id="t3-wrapper" style="padding:.55rem 1rem .6rem">
+      <button id="t3-toggle-btn" onclick="toggleT3()"
+        style="width:100%;padding:.28rem .6rem;border-radius:7px;border:1px solid var(--border);
+               background:none;color:var(--muted);font-size:.74rem;font-weight:500;cursor:pointer;
+               display:flex;align-items:center;justify-content:center;gap:.35rem;transition:background .15s,color .15s,border-color .15s"
+        onmouseover="this.style.background = 'var(--s3)'"
+        onmouseout="this.style.background = 'none'">
+        <svg id="t3-toggle-icon" width="22" height="8" viewBox="0 0 22 8" style="flex-shrink:0">
+          <line x1="0" y1="4" x2="22" y2="4" stroke="currentColor" stroke-width="1.8" stroke-dasharray="5,3" stroke-linecap="round"/>
+        </svg>
+        <span id="t3-toggle-txt">T<sub>3</sub> Vergleichskurve einblenden</span>
+      </button>
+      <div id="t3-section" style="display:none;margin-top:.55rem">
+        <div class="field">
+          <label data-i18n-html="ui.temp.t3">Temperatur T<sub>3</sub></label>
+          <div class="input-wrap">
+            <input type="number" id="temp3" value="80" min="-20" max="80" step="1"
+                   oninput="onT3Input(this.value)"
+                   onchange="onT3Input(this.value)">
+            <span class="input-unit">°C</span>
+          </div>
+        </div>
+        <div style="margin:.4rem 0 .8rem">
+          <div style="padding:0 7px">
+            <div style="position:relative;height:16px;margin-bottom:2px">
+              <span class="t3-lbl" data-val="-20" style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:0%">−20°</span>
+              <span class="t3-lbl" data-val="-10" style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:10%">−10°</span>
+              <span class="t3-lbl" data-val="0"   style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:20%">0°</span>
+              <span class="t3-lbl" data-val="10"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:30%">10°</span>
+              <span class="t3-lbl" data-val="20"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:40%">20°</span>
+              <span class="t3-lbl" data-val="30"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:50%">30°</span>
+              <span class="t3-lbl" data-val="40"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:60%">40°</span>
+              <span class="t3-lbl" data-val="50"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:70%">50°</span>
+              <span class="t3-lbl" data-val="60"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:80%">60°</span>
+              <span class="t3-lbl" data-val="70"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:90%">70°</span>
+              <span class="t3-lbl" data-val="80"  style="position:absolute;transform:translateX(-50%);font-size:.6rem;font-weight:400;color:var(--tertiary);white-space:nowrap;left:100%">80°</span>
+            </div>
+            <svg width="100%" height="8" viewBox="0 0 200 8" preserveAspectRatio="none" style="display:block;overflow:visible">
+              <line x1="0"   y1="0" x2="0"   y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="10"  y1="0" x2="10"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="20"  y1="0" x2="20"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="30"  y1="0" x2="30"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="40"  y1="0" x2="40"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="50"  y1="0" x2="50"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="60"  y1="0" x2="60"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="70"  y1="0" x2="70"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="80"  y1="0" x2="80"  y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="90"  y1="0" x2="90"  y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="100" y1="0" x2="100" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="110" y1="0" x2="110" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="120" y1="0" x2="120" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="130" y1="0" x2="130" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="140" y1="0" x2="140" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="150" y1="0" x2="150" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="160" y1="0" x2="160" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="170" y1="0" x2="170" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="180" y1="0" x2="180" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+              <line x1="190" y1="0" x2="190" y2="4" stroke-width="0.8" style="stroke:var(--border2)"/>
+              <line x1="200" y1="0" x2="200" y2="7" stroke-width="1" style="stroke:var(--xdim)"/>
+            </svg>
+          </div>
+          <input type="range" id="temp3-slider" aria-label="T3" min="-20" max="80" step="5" value="80"
+                 style="width:100%;cursor:pointer;display:block;margin-top:2px"
+                 oninput="onT3Slider(this.value,true)"
+                 onchange="onT3Slider(this.value,false)"
+                 onmouseup="onT3SliderEnd()"
+                 ontouchend="onT3SliderEnd()">
+        </div>
+      </div>
+    </div>
+    </div><!-- /card T3 -->
+
+    <!-- 5. Parameter -->
+    <div class="card">
+      <div class="card-title" id="card-title-par" data-i18n="card.parameter">Parameter</div>
+      <div class="field-group">
+        <div class="field-row">
+          <div class="field" id="sh-field">
+            <label for="sh" id="sh-label" data-i18n="par.sh">Systemhöhe sh</label>
+            <div class="input-wrap">
+              <input type="number" id="sh" value="2.4" min="0.1" step="0.1" oninput="berechnenEntprellt()" onchange="berechnen()">
+              <span class="input-unit">m</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="tension" id="tension-label">
+              <span id="tension-label-txt">H Ts unbelastet</span>
+            </label>
+            <!-- Feld + Knopf «↺» rechts daneben (nur bei freier Eingabe / Foto-Aufnahme sichtbar) -->
+            <div class="feld-mit-knopf">
+              <div class="input-wrap" id="tension-wrap">
+                <input type="number" id="tension" value="2100" min="0.1" step="1" oninput="_hEingabe(); berechnenEntprellt()" onchange="berechnen()">
+                <span class="input-unit">N</span>
+              </div>
+              <button type="button" id="tension-reset-btn" class="feld-knopf-reset" onclick="resetHToReglage()" style="display:none"
+                title="H auf Reglagetabellenwert zurücksetzen" data-i18n-title="ui.reglage.reset.titel"
+                aria-label="H auf Reglagetabellenwert zurücksetzen" data-i18n-aria="ui.reglage.reset.titel">&#x21BA;</button>
+            </div>
+            <div id="tension-reglage-hw" class="feld-reglage-hw" style="display:none"></div>
+            <!-- Delta + Info: unter dem Feld, nur bei Foto-Override -->
+            <div id="tension-foto-note" style="display:none;margin-top:.25rem;font-size:.67rem;color:var(--warn);background:var(--warn-s);border:1px solid var(--warn);border-radius:4px;padding:.28rem .5rem;line-height:1.4">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:.4rem;white-space:nowrap">
+                <span style="font-weight:600" data-i18n="ui.foto.feldaufnahme">Foto-Feldaufnahme</span>
+                <button onclick="resetHToReglage()" title="H auf Reglagetabellenwert zurücksetzen" data-i18n-title="ui.reglage.reset.titel"
+                  style="background:none;border:none;padding:0;font-size:.67rem;color:var(--warn);cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;text-decoration:underline;line-height:1" data-i18n="ui.reglage.reset">&#x21BA; Reglage</button>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:.3rem;margin-top:.15rem">
+                <span id="tension-delta" style="display:none;font-size:.82rem;font-weight:700;line-height:1"></span>
+                <span style="font-size:.63rem;color:var(--warn)" data-i18n="ui.vs.reglage">vs. Reglagewert bei T&#x2081;</span>
+              </div>
+            </div>
+            <!-- N-FL: berechnete Belastet-Zugkraft (passiv) -->
+            <div id="h-belastet-display" style="margin-top:.4rem">
+              <label for="tension-belastet" id="h-belastet-lbl" style="font-size:.72rem;font-weight:500;color:var(--muted)">H Ts belastet <span style="font-weight:400;color:var(--tertiary)">(berechnet, bei 10 °C)</span></label>
+              <div class="input-wrap" style="margin-top:.18rem">
+                <input type="number" id="tension-belastet" readonly tabindex="-1"
+                  style="background:var(--bg);color:var(--muted);cursor:default;pointer-events:none">
+                <span class="input-unit">N</span>
+              </div>
+            </div>
+            <!-- 3-Punkte-Toggle -->
+            <button id="three-pt-btn" onclick="toggle3pt()"
+              style="margin-top:.5rem;padding:.18rem .5rem .18rem .35rem;border-radius:6px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:.68rem;cursor:pointer;transition:background .15s,color .15s,border-color .15s;display:inline-flex;align-items:center;gap:.3rem;line-height:1.3">
+              <span style="font-size:.72rem;opacity:.7">⊕</span> <span id="three-pt-btn-label" data-i18n="par.3pt">3-Punkte-Messung</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3-Punkte-Eingabe (ausgeklappt) -->
+        <div id="three-pt-panel" style="display:none;margin-top:.6rem;padding:.7rem .75rem .65rem;background:var(--bg);border:1px solid var(--border);border-radius:10px">
+          <!-- Header: Titel + Untertitel untereinander -->
+          <div style="margin-bottom:.55rem">
+            <div style="font-size:.72rem;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:.3rem">
+              <span>⊕</span> <span id="three-pt-hdr" data-i18n="par.3pt.hdr">3-Punkte-Messung</span>
+            </div>
+            <div id="three-pt-subtitle" data-i18n="par.3pt.sub" style="font-size:.67rem;font-weight:400;color:var(--tertiary);margin-top:.15rem">Punkt C zwischen den Masten</div>
+          </div>
+          <!-- Felder untereinander -->
+          <div class="field">
+            <label><span data-i18n-html="ui.position.xc">Position x<sub>C</sub></span> <span id="xC-from-label" data-i18n="par.3pt.xC" style="font-weight:400;color:var(--tertiary)">ab Mast A</span></label>
+            <div class="input-wrap">
+              <input type="number" id="xC" value="" placeholder="—" step="0.5" min="0"
+                oninput="on3ptInput()" onchange="on3ptInput()">
+              <span class="input-unit">m</span>
+            </div>
+          </div>
+          <div class="field" style="margin-top:.45rem">
+            <label id="yC-label">Durchhang y<sub>C</sub> <span style="font-weight:400;color:var(--tertiary)">unter Sehne</span></label>
+            <div style="display:flex;gap:.3rem;margin-bottom:.3rem">
+              <button id="yc-btn-sag" onclick="setYCMode('sag')"
+                style="flex:1;padding:.22rem .3rem;font-size:.68rem;border-radius:6px;border:1px solid var(--border);background:var(--s4);color:var(--text);cursor:pointer;font-weight:600"><span id="yc-btn-sag-text" data-i18n="par.3pt.btn.sag">Durchhang</span></button>
+              <button id="yc-btn-sok" onclick="setYCMode('sok')"
+                style="flex:1;padding:.22rem .3rem;font-size:.68rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer"><span id="yc-btn-sok-text" data-i18n="par.3pt.btn.sok">Höhe ab SOK</span></button>
+              <button id="yc-btn-mum" onclick="setYCMode('mum')"
+                style="flex:1;padding:.22rem .3rem;font-size:.68rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;display:none"><span id="yc-btn-mum-text" data-i18n="par.3pt.btn.mum">m ü. M.</span></button>
+            </div>
+            <div class="input-wrap">
+              <input type="number" id="yC" value="" placeholder="—" step="0.01"
+                oninput="on3ptInput()" onchange="on3ptInput()">
+              <span class="input-unit">m</span>
+            </div>
+          </div>
+          <div id="three-pt-result" style="margin-top:.45rem;font-size:.72rem;color:var(--text);min-height:1.4em"></div>
+        </div>
+      </div>
+    </div>
+
+
+    </div><!-- /sidebar-scroll -->
+  </aside>
+
+  <!-- ── Canvas ── -->
+  <div class="canvas-card">
+    <div class="canvas-header">
+      <div style="display:flex;align-items:center;gap:.6rem;min-width:0;flex:1">
+        <div class="seg-ctrl canvas-view-seg" style="flex-shrink:0">
+          <button class="seg-btn active" id="view-seg-diagramm" data-i18n="canvas.title"  onclick="ansichtWechseln(() => setCanvasView('diagramm'))">Diagramm</button>
+          <button class="seg-btn"        id="view-seg-zeichnung" data-i18n="btn.drawing" onclick="ansichtWechseln(() => setCanvasView('zeichnung'))">Zeichnung</button>
+          <button class="seg-btn"        id="view-seg-abschnitt" data-i18n="abs.tab"  onclick="ansichtWechseln(abschnittAnsicht)">Abschnitt</button>
+          <button class="seg-btn seg-neben nur-dev" id="view-seg-foto" data-i18n="btn.foto" data-i18n-title="ui.foto.genau.kurz" title="Nur Abschätzung — keine präzise Berechnung" onclick="ansichtWechseln(() => setCanvasView('foto'))">Foto</button>
+        </div>
+        <!-- Schnellauswahl Feld (nur mit Abspannabschnitt): ◀ Liste ▶ -->
+        <div class="feld-wahl" id="feld-wahl" style="display:none" role="group" aria-label="Feld" data-i18n-aria="abs.feldwahl">
+          <button type="button" class="feld-wahl-pfeil" id="feld-vor" onclick="feldSchritt(-1)" title="Vorheriges Feld" data-i18n-title="abs.feld.vor" aria-label="Vorheriges Feld" data-i18n-aria="abs.feld.vor">◀</button>
+          <select id="feld-select" class="feld-wahl-liste" onchange="feldWaehlen(this.value)" aria-label="Feld" data-i18n-aria="abs.feldwahl"></select>
+          <button type="button" class="feld-wahl-pfeil" id="feld-nach" onclick="feldSchritt(1)" title="Nächstes Feld" data-i18n-title="abs.feld.nach" aria-label="Nächstes Feld" data-i18n-aria="abs.feld.nach">▶</button>
+        </div>
+        <!-- Status-Info (nur im Foto-Tab sichtbar) -->
+        <span id="foto-status" style="display:none;font-size:.71rem;color:var(--primary);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" data-i18n="ui.foto.laden.hinweis">Foto laden, dann Punkte klicken</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <span class="drag-hint" id="canvas-drag-hint" data-i18n="canvas.drag" style="display:none"></span>
+        <!-- Teilen: in der Kopfleiste; hier nur im Vollbild (Kopfleiste dann verdeckt) -->
+        <button id="share-btn-fs" class="nur-vollbild zoom-btn" onclick="toggleShareMenu(event)" title="Export / Teilen" data-i18n-title="ui.export.teilen"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 12h10M8 3v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 6l3-3 3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button id="fullscreen-btn" onclick="toggleCanvasFullscreen()"
+          title="Vollbild" data-i18n-title="ui.vollbild"
+          style="padding:.25rem .4rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s"
+          onmouseover="this.style.background = 'var(--s3)';this.style.color = 'var(--text)'"
+          onmouseout="this.style.background = 'none';this.style.color = 'var(--muted)'">
+          <svg id="fullscreen-icon-enter" width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M1 6V1h5M15 6V1h-5M1 10v5h5M15 10v5h-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <svg id="fullscreen-icon-exit" width="14" height="14" viewBox="0 0 16 16" fill="none" style="display:none">
+            <path d="M6 1v5H1M10 1v5h5M6 15v-5H1M10 15v-5h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <canvas id="main-canvas" width="700" height="380"></canvas>
+    <div id="scale-view">
+      <div id="scale-toolbar">
+        <div class="zoom-controls">
+          <button class="zoom-btn" onclick="adjustDrawingZoom(drawingZoom - 0.25)" title="Verkleinern" data-i18n-title="ui.verkleinern">−</button>
+          <button class="zoom-btn" onclick="adjustDrawingZoom(drawingZoom + 0.25)" title="Vergrössern" data-i18n-title="ui.vergroessern">+</button>
+          <span class="zoom-level-lbl" id="drawing-zoom-label">100%</span>
+          <button class="zoom-reset-btn" onclick="adjustDrawingZoom(1)" title="Zoom zurücksetzen" data-i18n-title="ui.zoom.reset">↺</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:.6rem">
+          <!-- Überhöhung -->
+          <div style="display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--muted)">
+            <span id="drawing-ueberhoeung-lbl" data-i18n="draw.ueberhoeung" style="white-space:nowrap">Überhöhung</span>
+            <select id="vex-select" aria-labelledby="drawing-ueberhoeung-lbl" onpointerdown="this.dataset.maus = '1'" onchange="setDrawingVEx(this.value); if (this.dataset.maus) { this.dataset.maus = ''; this.blur(); }"
+              style="font-size:.72rem;padding:.15rem .3rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer">
+              <option value="1">1:1</option>
+              <option value="2">2×</option>
+              <option value="5" selected>5×</option>
+              <option value="10">10×</option>
+            </select>
+          </div>
+          <!-- Trennlinie -->
+          <span style="width:1px;height:14px;background:var(--border);flex-shrink:0"></span>
+          <!-- Bezug der Durchhang-Vermassung (gekoppelt mit der Auswahl im Diagramm) -->
+          <div style="display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--muted)">
+            <span id="drawing-bezug-lbl" data-i18n="draw.bezug" style="white-space:nowrap">Bezug</span>
+            <select id="draw-mp-bezug" aria-labelledby="drawing-bezug-lbl" onpointerdown="this.dataset.maus = '1'" onchange="setMpBezug(this.value); if (this.dataset.maus) { this.dataset.maus = ''; this.blur(); }"
+              title="Bezug der Angabe am Messpunkt" data-i18n-title="mp.bezug.titel"
+              style="font-size:.72rem;padding:.15rem .3rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer">
+              <option value="hoch" data-i18n="mp.bezug.hoch">Δh zum höchsten Punkt</option>
+              <option value="links" data-i18n="mp.bezug.links">Δh zum linken Punkt</option>
+              <option value="rechts" data-i18n="mp.bezug.rechts">Δh zum rechten Punkt</option>
+              <option value="sehne" data-i18n="mp.bezug.sehne">Durchhang (Sehne)</option>
+            </select>
+          </div>
+          <span style="width:1px;height:14px;background:var(--border);flex-shrink:0"></span>
+          <!-- Darstellung (vertikaler Ausschnitt) -->
+          <div style="display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--muted)">
+            <span id="drawing-darstellung-lbl" data-i18n="draw.darstellung" style="white-space:nowrap">Darstellung</span>
+            <div style="display:flex;gap:.2rem">
+              <button id="seg-ext-sok" data-i18n="draw.bis.sok" onclick="setDrawingExtent('sok')"
+                class="zoom-btn active" style="width:auto;padding:0 .45rem;font-size:.65rem"
+                title="Vollständige Darstellung bis SOK" data-i18n-title="ui.bis.sok.titel">bis SOK</button>
+              <button id="seg-ext-cat" data-i18n="draw.kettenwerk" onclick="setDrawingExtent('catenary')"
+                class="zoom-btn" style="width:auto;padding:0 .45rem;font-size:.65rem"
+                title="Nur Kettenwerk / Einzelleiter" data-i18n-title="ui.nur.kw.titel">Kettenwerk</button>
+            </div>
+          </div>
+          <!-- hf_min / hf_max als Band (nur Kettenwerk) -->
+          <span class="draw-hf-teil nur-dev" style="width:1px;height:14px;background:var(--border);flex-shrink:0"></span>
+          <label class="schalter-zeile draw-hf-teil nur-dev" style="font-size:.7rem;color:var(--muted)" title="hf_min / hf_max aus der hf-Ansicht einblenden" data-i18n-title="draw.hf.titel">
+            <input type="checkbox" role="switch" id="draw-hf" onchange="setDrawingHf(this.checked);if(this.checked)hfNachfrage()"><span class="schalter" aria-hidden="true"></span><span>hf<sub>min</sub> / hf<sub>max</sub></span>
+          </label>
+        </div>
+      </div>
+      <div id="drawing-viewport">
+        <div id="scale-svg-container"></div>
+        <div id="edge-indicators-left"  class="edge-strip edge-left"></div>
+        <div id="edge-indicators-right" class="edge-strip edge-right"></div>
+        <div id="drawing-legend-overlay"></div>
+      </div>
+      <div id="scale-data-strip" style="display:none"></div>
+      <div id="scale-sok-note" style="display:none;padding:.3rem .7rem;font-size:.65rem;font-style:italic;border-top:1px solid var(--border);background:var(--s2);flex-direction:column;align-items:flex-start;gap:.2rem">
+        <span style="color:var(--tertiary)" data-i18n="ui.sok.hinweis">ⓘ SOK zwischen den Eingabepunkten wird interpoliert und entspricht nicht der effektiven Höhenlage.</span>
+        <span id="scale-min-clearance-note" style="display:none;color:var(--text2);font-weight:600;white-space:nowrap"></span>
+      </div>
+    </div>
+
+    <!-- ── Foto-Tab-Panel ── -->
+    <div id="foto-view" style="display:none;flex-direction:column;overflow:hidden">
+
+      <!-- Toolbar -->
+      <div style="display:flex;gap:.32rem;align-items:center;padding:.38rem .6rem;border-bottom:1px solid var(--border);background:var(--s2);flex-wrap:wrap">
+        <label style="cursor:pointer;background:var(--text2);border:1px solid var(--text2);border-radius:6px;padding:.28rem .8rem;font-size:.72rem;font-weight:600;color:var(--on-acc);white-space:nowrap;letter-spacing:.02em;box-shadow:0 1px 3px rgba(0,0,0,.18)">
+          <span id="foto-load-label-txt" data-i18n="foto.load.btn">Foto laden</span>
+          <input type="file" accept="image/*" capture="environment" onchange="fotoLoadImage(event)" style="display:none">
+        </label>
+        <select id="foto-mode" onchange="fotoModeChanged()"
+          style="border:1px solid var(--border);border-radius:6px;padding:.2rem .38rem;font-size:.71rem;font-family:inherit;background:var(--bg);color:var(--text);cursor:pointer">
+          <option value="single">7-Klick Modus</option>
+          <option value="multi">Kurven-Fit (6+)</option>
+        </select>
+        <div style="display:flex;gap:.28rem;flex-shrink:0;flex-wrap:wrap;margin-left:auto">
+          <button id="foto-catenary-toggle" onclick="fotoToggleCatenary()"
+            style="background:none;border:1px solid var(--border);border-radius:6px;padding:.2rem .55rem;font-size:.71rem;color:var(--muted);cursor:pointer;font-family:inherit">Seillinie einblenden</button>
+          <button id="foto-grid-toggle" onclick="fotoToggleGrid()"
+            style="background:none;border:1px solid var(--border);border-radius:6px;padding:.2rem .55rem;font-size:.71rem;color:var(--muted);cursor:pointer;font-family:inherit">Raster</button>
+
+        </div>
+      </div>
+
+      <!-- Messungen-Dropdown -->
+      <div id="foto-messungen-panel" style="display:none;background:var(--s2);border-bottom:1px solid var(--border);padding:.32rem .65rem">
+        <ul id="foto-messungen-list" style="list-style:none;margin:0;padding:0"></ul>
+      </div>
+
+      <!-- Klick-Ziel Buttons -->
+      <div id="foto-role-btns" style="display:flex;flex-wrap:wrap;gap:.28rem;padding:.32rem .6rem;border-bottom:1px solid var(--border);background:var(--s2);align-items:center">
+        <span id="foto-klickziel-lbl" data-i18n="foto.klickziel" style="font-size:.66rem;color:var(--muted);white-space:nowrap">Klick-Ziel:</span>
+        <button id="foto-btn-top_L"  onclick="fotoSetRole('top_L')"  class="foto-role-btn">&#9650; L</button>
+        <button id="foto-btn-base_L" onclick="fotoSetRole('base_L')" class="foto-role-btn">&#9660; L</button>
+        <span class="foto-trenner" style="color:var(--border);font-size:.65rem">|</span>
+        <button id="foto-btn-top_R"  onclick="fotoSetRole('top_R')"  class="foto-role-btn">&#9650; R</button>
+        <button id="foto-btn-base_R" onclick="fotoSetRole('base_R')" class="foto-role-btn">&#9660; R</button>
+        <span class="foto-trenner" style="color:var(--tertiary);font-size:.65rem">|</span>
+        <button id="foto-btn-p1"     onclick="fotoSetRole('p1')"     class="foto-role-btn">P1</button>
+        <button id="foto-btn-p2"     onclick="fotoSetRole('p2')"     class="foto-role-btn">P2</button>
+        <span class="foto-trenner" style="color:var(--tertiary);font-size:.65rem">|</span>
+        <button id="foto-btn-cmid"   onclick="fotoSetRole('cmid')"   class="foto-role-btn" data-i18n="foto.btn.cmid">f Leiter</button>
+        <button id="foto-btn-curve"  onclick="fotoSetRole('curve')"  class="foto-role-btn" style="display:none">+ Kurve</button>
+        <span id="foto-status-fs" style="font-size:.7rem;color:var(--muted);display:none;margin-left:.3rem"></span>
+        <span class="foto-trenner" style="color:var(--tertiary);font-size:.65rem;margin-left:.15rem">|</span>
+        <button id="foto-reset-btn" data-i18n="foto.reset.btn" onclick="fotoReset()" title="Alle Klick-Eingaben zurücksetzen" data-i18n-title="ui.foto.reset.titel"
+          style="background:none;border:1px solid var(--border);border-radius:6px;padding:.18rem .45rem;font-size:.69rem;color:var(--muted);cursor:pointer;font-family:inherit;white-space:nowrap">Reset</button>
+        <button id="foto-refresh-btn" data-i18n="foto.refresh.btn" onclick="fotoRefresh()" title="Darstellung aktualisieren" data-i18n-title="ui.foto.refresh.titel"
+          style="background:none;border:1px solid var(--border);border-radius:6px;padding:.18rem .45rem;font-size:.69rem;color:var(--muted);cursor:pointer;font-family:inherit;white-space:nowrap">Refresh</button>
+      </div>
+
+      <!-- Zoom-Steuerung -->
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="fotoZoomOut()" title="Verkleinern" data-i18n-title="ui.verkleinern">−</button>
+        <button class="zoom-btn" onclick="fotoZoomIn()" title="Vergrössern" data-i18n-title="ui.vergroessern">+</button>
+        <span id="foto-zoom-lbl" class="zoom-level-lbl">100%</span>
+        <button class="zoom-reset-btn" onclick="fotoZoomReset()" title="Zoom zurücksetzen" data-i18n-title="ui.zoom.reset">↺</button>
+        <button id="foto-pan-lock-btn" onclick="fotoPanLockToggle()" class="zoom-btn" title="Bildausschnitt einfrieren" data-i18n-title="ui.foto.pan.titel" style="margin-left:.15rem">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+            <rect x="3" y="7.5" width="10" height="7.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M5.5 7.5V5a2.5 2.5 0 015 0v2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <span style="width:1px;height:14px;background:var(--border);margin:0 .2rem;flex-shrink:0"></span>
+        <button id="foto-opacity-btn" onclick="fotoOpacityCycle()" class="zoom-btn" title="Foto-Transparenz" data-i18n-title="ui.foto.opacity.titel" style="width:auto;padding:0 .38rem;font-size:.65rem;letter-spacing:.01em;flex-shrink:0">100%</button>
+        <span style="width:1px;height:14px;background:var(--border);margin:0 .2rem;flex-shrink:0"></span>
+        <a id="foto-geoadmin-btn" href="#" target="_blank" rel="noopener"
+          title="Fotostandort auf map.geo.admin.ch" data-i18n-title="ui.foto.geo.titel"
+          style="display:flex;align-items:center;gap:.28rem;padding:.18rem .42rem;border-radius:5px;border:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:.68rem;font-family:inherit;pointer-events:none;opacity:.35;white-space:nowrap">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="6.5" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 2a4.5 4.5 0 010 9C5 11 2 8.5 8 2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+          </svg>
+          geo.admin
+        </a>
+      </div>
+
+      <!-- Canvas + GPS + Multi-berechnen -->
+      <div id="foto-canvas-area">
+        <div id="foto-multi-btns" style="display:none;padding:.3rem .6rem;border-bottom:1px solid var(--border)">
+          <button id="foto-calculate-btn" data-i18n="foto.calc.btn" onclick="fotoCalculate()" style="background:var(--text2);color:var(--on-acc);border:none;border-radius:6px;padding:.22rem .7rem;font-size:.73rem;cursor:pointer;font-family:inherit">
+            Berechnen (ab 3 Kurvenpunkten)
+          </button>
+          <span id="foto-curve-count" style="font-size:.72rem;color:var(--muted);margin-left:.5rem"></span>
+        </div>
+        <div id="foto-canvas-wrap" style="position:relative;background:var(--s4);overflow:hidden;aspect-ratio:1/1">
+          <canvas id="foto-canvas"
+            onmousedown="fotoCanvasDown(event)"
+            onmousemove="fotoCanvasMove(event)"
+            onmouseup="fotoCanvasUp(event)"
+            onmouseleave="fotoLoupeHide()"
+            ontouchstart="fotoCanvasDown(event)" ontouchmove="fotoCanvasMove(event)" ontouchend="fotoCanvasUp(event)"
+            style="display:block;width:100%;height:100%;cursor:crosshair;user-select:none;touch-action:none"></canvas>
+          <div id="foto-canvas-placeholder" data-i18n="foto.no.image" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;color:var(--tertiary);pointer-events:none">
+            Kein Foto geladen
+          </div>
+          <div id="foto-status-overlay" style="display:none;position:absolute;top:.55rem;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);color:var(--on-acc);font-size:.68rem;font-family:inherit;padding:.22rem .65rem;border-radius:20px;white-space:nowrap;pointer-events:none;z-index:5;letter-spacing:.01em"></div>
+          <canvas id="foto-loupe" width="300" height="300"
+            style="display:none;position:absolute;width:180px;height:180px;border-radius:50%;box-shadow:0 0 0 2px var(--text2),0 2px 10px rgba(0,0,0,.4);pointer-events:none;z-index:10"></canvas>
+
+          <!-- Mastlänge-Popup (absolut positioniert am Mastfuss-Punkt) -->
+          <div id="foto-mast-prompt"
+            style="display:none;position:absolute;z-index:20;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:.45rem .6rem;min-width:168px">
+            <div style="font-size:.67rem;color:var(--muted);font-weight:600;letter-spacing:.03em;text-transform:uppercase;margin-bottom:.3rem;white-space:nowrap">
+              <span id="foto-mast-prompt-lbl" data-i18n="foto.mast.popup">Mastlänge</span> <span id="foto-mast-prompt-side">links</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:.3rem">
+              <input type="number" id="foto-mast-prompt-val" min="0.5" step="0.1" placeholder="—"
+                style="width:5rem;background:var(--s4);border:1px solid var(--border);border-radius:8px;padding:.24rem .4rem;font-size:.83rem;font-family:inherit;font-weight:500;color:var(--text);outline:none"
+                onkeydown="if(event.key==='Enter')_fotoMastPromptConfirm();else if(event.key==='Escape')_fotoMastPromptDismiss()">
+              <span style="font-size:.72rem;color:var(--muted)">m</span>
+              <button onclick="_fotoMastPromptConfirm()"
+                style="background:var(--text2);color:var(--on-acc);border:none;border-radius:6px;padding:.24rem .6rem;font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit">OK</button>
+              <button onclick="_fotoMastPromptDismiss()"
+                style="background:none;border:none;padding:.1rem .2rem;font-size:.8rem;color:var(--muted);cursor:pointer;line-height:1;opacity:.7">&#x2715;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ergebnis-Panel -->
+      <!-- Ergebnis-Karte (gleiche Optik wie Diagramm-Ergebnisse) -->
+      <div id="foto-result" style="display:none">
+        <div class="results-card" style="margin:.5rem .5rem .4rem;padding:1rem 1.1rem .9rem">
+          <p class="foto-genau-hinweis" role="note">⚠ <span data-i18n="ui.foto.genau.kurz">Nur Abschätzung — keine präzise Berechnung</span></p>
+
+          <!-- Hauptwerte + Montage: 2-Spalten-Grid wie Diagramm -->
+          <div class="results-grid">
+            <!-- Linke Spalte: Messwerte -->
+            <div>
+              <div class="results-col-title" style="display:flex;justify-content:space-between;align-items:center">
+                <span id="foto-col-messung" data-i18n="foto.col.messung">Messung</span>
+                <span id="foto-result-temp" style="font-style:italic;font-weight:400;text-transform:none;letter-spacing:0;font-size:.69rem;color:var(--muted)">—</span>
+              </div>
+              <div class="metric-list">
+                <div id="foto-mast-names-row" class="metric-row" style="display:none">
+                  <span class="metric-label" id="foto-label-masten" data-i18n="foto.label.masten">Masten</span>
+                  <span id="foto-mast-names" class="metric-value" style="font-size:.78rem;color:var(--primary)">—</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label" id="foto-label-f" data-i18n="foto.label.f">Durchhang f</span>
+                  <span id="foto-f" class="metric-value">—</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label" id="foto-label-H" data-i18n="foto.label.H">Zugkraft H</span>
+                  <span id="foto-H" class="metric-value warm">—</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label" id="foto-label-xC" data-i18n-html="foto.label.xC" style="font-size:.72rem;color:var(--tertiary)">Position x&#x1D436;</span>
+                  <span id="foto-xC" class="metric-value ref">—</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label" id="foto-label-dh" data-i18n="foto.label.dh" style="font-size:.72rem;color:var(--tertiary)">Höhendiff. dh</span>
+                  <span id="foto-dh" class="metric-value ref">—</span>
+                </div>
+                <div class="metric-row" style="display:none" id="foto-k-row">
+                  <span class="metric-label" id="foto-label-k" data-i18n="foto.label.k" style="font-size:.65rem;color:var(--tertiary)">Skala k</span>
+                  <span id="foto-k" class="metric-value ref" style="font-size:.72rem">—</span>
+                </div>
+              </div>
+              <p id="foto-xc-hint" style="margin:.3rem .3rem 0;font-size:.65rem;color:var(--tertiary);line-height:1.3"></p>
+              <p style="margin:.4rem .3rem 0;font-size:.63rem;color:var(--tertiary);line-height:1.4;font-style:italic">
+                <span id="foto-t2-hint" data-i18n="foto.t2.hint">T₂-Regler in der Sidebar anpassen um andere Temperaturen zu berechnen.</span>
+              </p>
+            </div>
+
+            <!-- Rechte Spalte: Montage + Soll/Ist -->
+            <div>
+              <div class="results-col-title" id="foto-col-referenz" data-i18n="foto.col.referenz">Referenz</div>
+              <div class="metric-list">
+                <div id="foto-montage-ref" class="metric-row">
+                  <span class="metric-label" id="foto-label-montage" data-i18n="foto.label.montage">Montage (10 °C)</span>
+                  <strong id="foto-H-mont" class="metric-value">—</strong>
+                </div>
+              </div>
+
+              <!-- Soll / Ist (nur wenn Reglagetabelle vorhanden) -->
+              <div id="foto-soll-ist-wrap" style="display:none;margin-top:.6rem">
+                <div class="results-col-title" style="display:flex;justify-content:space-between;align-items:center">
+                  <span id="foto-col-soll-ist" data-i18n="foto.col.soll.ist">Soll / Ist</span>
+                  <span id="foto-lref-note" style="font-style:italic;font-weight:400;text-transform:none;letter-spacing:0;font-size:.69rem">—</span>
+                </div>
+                <div class="metric-list">
+                  <div class="metric-row">
+                    <span id="foto-H-bei-T-label" data-i18n="foto.label.H.t2" class="metric-label">H bei T&#x2082;</span>
+                    <span style="display:flex;gap:.5rem;align-items:baseline">
+                      <span id="foto-H-ist"     class="metric-value" style="font-size:.83rem">—</span>
+                      <span id="foto-H-reglage" class="metric-value ref">—</span>
+                      <span id="foto-delta-H"   class="metric-value" style="font-size:.78rem">—</span>
+                    </span>
+                  </div>
+                  <div class="metric-row">
+                    <span class="metric-label" id="foto-label-f-half" data-i18n="foto.label.f.half">f bei L/2</span>
+                    <span style="display:flex;gap:.5rem;align-items:baseline">
+                      <span id="foto-f-ist"     class="metric-value" style="font-size:.83rem">—</span>
+                      <span id="foto-f-reglage" class="metric-value ref">—</span>
+                      <span id="foto-delta-f"   class="metric-value" style="font-size:.78rem">—</span>
+                    </span>
+                  </div>
+                </div>
+                <!-- Spannweiten-Hinweis wenn L ≠ L₀ -->
+                <p id="foto-span-hint" style="display:none;margin:.35rem .3rem 0;font-size:.63rem;color:var(--tertiary);line-height:1.3"></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aktion -->
+          <div style="margin-top:.85rem;border-top:1px solid var(--border);padding-top:.75rem">
+            <button id="foto-apply-btn" data-i18n="foto.apply.btn" onclick="fotoApplyToCalc()"
+              style="background:none;color:var(--text);border:1px solid var(--border);border-radius:6px;padding:.3rem .9rem;font-size:.76rem;cursor:pointer;font-family:inherit;font-weight:500;transition:background .15s"
+              onmouseover="this.style.background = 'var(--s3)'" onmouseout="this.style.background = 'none'">
+              In App übernehmen
+            </button>
+          </div>
+        </div>
+
+        <!-- Versteckte Spans (werden von JS beschrieben, nicht angezeigt) -->
+        <span id="foto-temp-slider-wrap" style="display:none">
+          <span id="foto-T-slider-val"></span>
+          <span id="foto-H-temp"></span>
+          <span id="foto-f-temp"></span>
+          <span id="foto-T1-result"></span>
+        </span>
+      </div>
+
+      <!-- Versteckte State-Inputs (werden von Sidebar synchronisiert) -->
+      <div style="display:none">
+        <input type="number" id="foto-L">
+        <select id="foto-mat"></select>
+        <input type="number" id="foto-T1">
+        <input type="number" id="foto-elev-L">
+        <input type="number" id="foto-elev-R">
+        <!-- Mastnamen-Brücke: gespiegelt von mast-num-left/right via _syncMastNames() -->
+        <input type="text" id="foto-name-L">
+        <input type="text" id="foto-name-R">
+      </div>
+
+    </div><!-- /#foto-view -->
+
+    <div class="legend" id="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--xdim)"></div><span id="leg-ts1">Ts bei T<sub>1</sub></span></div>
+      <div class="legend-item" id="leg-ts2-item"><div class="legend-dot"></div><span id="leg-ts2-label">Ts bei T<sub>2</sub></span></div>
+      <div class="legend-item" id="leg-ts3-item" style="display:none"><div class="legend-dot" id="leg-ts3-dot" style="border:2px dashed var(--xdim);background:transparent"></div><span id="leg-ts3-label">Ts bei T<sub>3</sub></span></div>
+      <div class="legend-item" id="leg-fd-solllage-item" style="display:none"><div class="legend-dot" style="background:var(--muted);opacity:.35"></div><span id="leg-fd-solllage-label" data-i18n-html="leg.fd.solllage">Fd Solllage (T<sub>1</sub>)</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--muted);opacity:.7"></div><span id="leg-sehne-label" data-i18n="leg.sehne">Sehnenlinie</span></div>
+      <div class="legend-item" id="leg-lf-item" style="display:none"><div class="legend-dot" style="background:rgba(95,97,108,.35)"></div><span data-i18n="leg.lastfaelle">Bereich Lastfälle</span></div>
+      <label class="schalter-zeile legend-item nur-dev" id="leg-hf-item"><input type="checkbox" role="switch" id="diagramm-hf" onchange="setDiagrammHf(this.checked);if(this.checked)hfNachfrage()"><span class="schalter" aria-hidden="true"></span><span data-i18n-html="leg.hf">Fahrdraht Soll/Ist + hf<sub>min</sub>/hf<sub>max</sub></span></label>
+    </div>
+    <div id="abschnitt-view" style="display:none"></div>
+    <div id="canvas-scroll-area">
+    <div class="probe-readout">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.4rem">
+        <div class="probe-hint-small" id="probe-hint" data-i18n="canvas.probe.hint">Messpunkte: ins Diagramm klicken / ziehen oder x-Wert eingeben</div>
+        <!-- Bezug der Angabe am Messpunkt (Diagramm, Karten, Leiste, PDF) -->
+        <select id="mp-bezug" class="mp-bezug" onchange="setMpBezug(this.value)" title="Bezug der Angabe am Messpunkt" data-i18n-title="mp.bezug.titel" aria-label="Bezug der Angabe am Messpunkt" data-i18n-aria="mp.bezug.titel">
+          <option value="hoch" data-i18n="mp.bezug.hoch">Δh zum höchsten Punkt</option>
+          <option value="links" data-i18n="mp.bezug.links">Δh zum linken Punkt</option>
+          <option value="rechts" data-i18n="mp.bezug.rechts">Δh zum rechten Punkt</option>
+          <option value="sehne" data-i18n="mp.bezug.sehne">Durchhang (Sehne)</option>
+        </select>
+        <button id="probe-reset-btn" data-i18n="canvas.probe.reset" onclick="clearMesspunkte()" title="Messpunkte löschen" data-i18n-title="ui.mp.loeschen.titel"
+          style="font-size:.72rem;padding:.22rem .65rem;border-radius:7px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;line-height:1.4">
+          ✕ Reset
+        </button>
+      </div>
+      <!-- M-Eingaben -->
+      <div class="probe-m-zeile">
+        <div class="probe-m-group">
+          <span class="probe-mp-badge m1">M1</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-x1" class="probe-mp-xinput" placeholder="x₁" step="0.5" min="0">
+            <span class="probe-mp-unit">m</span>
+            <button type="button" class="probe-lock" id="probe-lock-1" onclick="messpunktSperren(1)" aria-pressed="false" data-i18n-title="probe.sperren" title="Messpunkt sperren"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="7" width="10" height="7.5" rx="1.5"/><path class="bügel" d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0"/></svg></button>
+          </div>
+        </div>
+        <div class="probe-m-group">
+          <span class="probe-mp-badge m2">M2</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-x2" class="probe-mp-xinput" placeholder="x₂" step="0.5" min="0">
+            <span class="probe-mp-unit">m</span>
+            <button type="button" class="probe-lock" id="probe-lock-2" onclick="messpunktSperren(2)" aria-pressed="false" data-i18n-title="probe.sperren" title="Messpunkt sperren"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="7" width="10" height="7.5" rx="1.5"/><path class="bügel" d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0"/></svg></button>
+          </div>
+        </div>
+        <div class="probe-m-group">
+          <span class="probe-mp-badge m3">M3</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-x3" class="probe-mp-xinput" placeholder="x₃" step="0.5" min="0">
+            <span class="probe-mp-unit">m</span>
+            <button type="button" class="probe-lock" id="probe-lock-3" onclick="messpunktSperren(3)" aria-pressed="false" data-i18n-title="probe.sperren" title="Messpunkt sperren"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="7" width="10" height="7.5" rx="1.5"/><path class="bügel" d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0"/></svg></button>
+          </div>
+        </div>
+        <div class="probe-m-group">
+          <span class="probe-mp-badge m4">M4</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-x4" class="probe-mp-xinput" placeholder="x₄" step="0.5" min="0">
+            <span class="probe-mp-unit">m</span>
+            <button type="button" class="probe-lock" id="probe-lock-4" onclick="messpunktSperren(4)" aria-pressed="false" data-i18n-title="probe.sperren" title="Messpunkt sperren"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="7" width="10" height="7.5" rx="1.5"/><path class="bügel" d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <!-- H-Punkte: Hindernishöhe je Messpunkt (m ü. M.), z. B. Unterkante Brücke -->
+      <div class="probe-h-zeile" id="probe-h-section">
+        <div class="probe-m-group">
+          <span class="probe-h-badge">H1</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-h1" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H1 [m ü. M.]" aria-describedby="probe-h-rel-1" oninput="setProbeH(1,this.value)">
+            <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
+          </div>
+          <span class="probe-h-rel" id="probe-h-rel-1"></span>
+        </div>
+        <div class="probe-m-group">
+          <span class="probe-h-badge">H2</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-h2" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H2 [m ü. M.]" aria-describedby="probe-h-rel-2" oninput="setProbeH(2,this.value)">
+            <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
+          </div>
+          <span class="probe-h-rel" id="probe-h-rel-2"></span>
+        </div>
+        <div class="probe-m-group">
+          <span class="probe-h-badge">H3</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-h3" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H3 [m ü. M.]" aria-describedby="probe-h-rel-3" oninput="setProbeH(3,this.value)">
+            <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
+          </div>
+          <span class="probe-h-rel" id="probe-h-rel-3"></span>
+        </div>
+        <div class="probe-m-group">
+          <span class="probe-h-badge">H4</span>
+          <div class="probe-input-wrap">
+            <input type="number" id="probe-h4" class="probe-h-input" placeholder="Höhe" step="0.01" aria-label="H4 [m ü. M.]" aria-describedby="probe-h-rel-4" oninput="setProbeH(4,this.value)">
+            <span class="probe-h-unit" data-i18n="probe.h.einheit">m ü. M.</span>
+          </div>
+          <span class="probe-h-rel" id="probe-h-rel-4"></span>
+        </div>
+      </div>
+      <p class="probe-sok-hinweis" id="probe-sok-hinweis" style="display:none"><span data-i18n="probe.h.ohnesok">H-Punkte H1–H4 (Hindernisse) brauchen die SOK m ü. M.:</span>
+        <button type="button" class="probe-sok-link" id="probe-sok-link" onclick="sokEintragen()" style="display:none" data-i18n="probe.sok.link">SOK m ü. M. eintragen</button></p>
+    </div>
+    <div class="obs-section" id="obs-section" style="display:none"></div>
+    </div><!-- /canvas-scroll-area -->
+  </div>
+
+  <!-- ── Results ── -->
+  <div class="results-card" id="result-card" style="grid-column: 2">
+    <div id="error-box" class="alert alert-error hidden"></div>
+    <div id="warn-box"  class="alert alert-warn  hidden"></div>
+    <div id="highlight-card"></div>
+    <div id="annahmen" class="annahmen" role="note" style="display:none"></div>
+    <div id="hf-pruefzeile" class="hf-pruefzeile nur-dev" role="status" style="display:none"></div>
+    <div id="results"></div>
+  </div>
+
+</div>
+
+<div id="drag-tooltip"></div>
+
+<!-- Meldungen (ersetzt alert) -->
+<div id="meldungen" aria-live="polite"></div>
+<!-- Mitlaufende Ergebnisleiste (nur schmale Bildschirme, siehe updateErgebnisleiste) -->
+<button id="ergebnisleiste" type="button" onclick="zumDiagramm()" data-i18n-title="ui.leiste.titel" title="Zum Diagramm">
+  <span class="el-inhalt" aria-live="polite"></span>
+  <svg class="el-pfeil" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10l4-4 4 4"/></svg>
+</button>
+
+<!-- Rückfrage (ersetzt confirm / prompt) -->
+<!-- ── Ansicht: Fahrdrahthöhe hf_min / hf_max (fahrdrahthoehe.js) ── -->
+<div class="modal-overlay nur-dev" id="hf-modal" role="dialog" aria-modal="true" aria-labelledby="hf-titel" onclick="if(event.target===this)closeHf()" style="align-items:flex-start;padding:1.5rem 1rem;overflow-y:auto">
+  <div class="modal-card" style="max-width:980px;width:100%;max-height:none">
+    <div class="modal-header">
+      <h2 class="modal-title" id="hf-titel" data-i18n="hf.titel" style="margin:0">Fahrdrahthöhe hf_min / hf_max</h2>
+      <button class="modal-close" onclick="closeHf()" title="Schliessen" data-i18n-title="ui.schliessen" aria-label="Schliessen">✕</button>
+    </div>
+    <div id="hf-inhalt"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="lastfall-modal" role="dialog" aria-modal="true" aria-labelledby="lf-titel" onclick="if(event.target===this)closeLastfaelle()">
+  <div class="modal-card" style="max-width:460px;width:100%">
+    <div class="modal-header">
+      <div class="modal-title" id="lf-titel" data-i18n="lf.titel">Lastfälle Abstandsprüfung</div>
+      <button class="modal-close" onclick="closeLastfaelle()" title="Schliessen" data-i18n-title="ui.schliessen" aria-label="Schliessen">✕</button>
+    </div>
+    <div style="padding:.6rem 1.25rem 1.1rem;font-size:.8rem;color:var(--text)">
+      <p style="margin:0 0 .6rem;color:var(--muted);line-height:1.5" data-i18n="lf.hinweis">Je Leitersystem getrennt einstellbar. Die App rechnet alle Lastfälle durch und zeigt den ungünstigsten (kleinster Abstand zum Hindernis). Nachweis erfüllt, wenn dieser Abstand den Mindestabstand a einhält.</p>
+      <div class="seg-ctrl" style="margin-bottom:.4rem">
+        <button class="seg-btn" id="lf-seg-nfl" onclick="lastfallSystem('nfl')" data-i18n="sys.nfl.kurz">N-FL</button>
+        <button class="seg-btn" id="lf-seg-rfl" onclick="lastfallSystem('rfl')" data-i18n="sys.rfl.kurz">R-FL</button>
+        <button class="seg-btn" id="lf-seg-el"  onclick="lastfallSystem('el')"  data-i18n="sys.el">Einzelleiter</button>
+      </div>
+      <label class="lf-zeile" for="lf-temps"><span data-i18n="lf.temps" style="min-width:9rem">Temperaturen [°C]</span>
+        <input type="text" id="lf-temps" autocomplete="off" style="flex:1;min-width:0" oninput="_lastfallAusFormular();_lastfallFormular(true)" onchange="_lastfallFormular()"></label>
+      <p style="margin:-.3rem 0 .4rem 9.5rem;font-size:.66rem;color:var(--tertiary)" data-i18n="lf.temps.hinweis">getrennt durch ; oder Leerzeichen (−50 … +120)</p>
+      <div class="lf-zeile">
+        <label style="display:flex;align-items:center;gap:.4rem;min-width:9rem"><input type="checkbox" id="lf-eis" onchange="_lastfallAusFormular();_lastfallFormular()"> <span data-i18n="lf.eis">Eislast bei −5 °C</span></label>
+        <label style="display:flex;align-items:center;gap:.35rem">Z<sub>L</sub> <input type="number" id="lf-zl" min="0" step="1" style="width:4.5rem" oninput="_lastfallAusFormular(true);_lastfallFormular()"> N/m</label>
+      </div>
+      <p style="margin:-.3rem 0 .5rem 9.5rem;font-size:.66rem;color:var(--tertiary)" data-i18n="lf.zl.hinweis">Zusatzlast wird nur bei −5 °C angerechnet, nicht bei den übrigen Temperaturen.</p>
+      <div class="lf-zeile" id="lf-abn-zeile">
+        <label style="display:flex;align-items:center;gap:.4rem"><input type="checkbox" id="lf-abn" onchange="_lastfallAusFormular();_lastfallFormular()"> <span data-i18n="lf.abnutzung">Fahrdraht neu und abgenutzt prüfen</span></label>
+      </div>
+      <p id="lf-anzahl" style="margin:.4rem 0 .8rem;font-size:.72rem;color:var(--muted)"></p>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end">
+        <button class="rf-btn" onclick="lastfallVorgabe()" data-i18n="lf.vorgabe" style="padding:.35rem .8rem;border-radius:7px;border:1px solid var(--border);background:var(--s2);color:var(--text);cursor:pointer;font-family:inherit">Vorgabe</button>
+        <button onclick="lastfallUebernehmen()" data-i18n="lf.uebernehmen" style="padding:.35rem .9rem;border-radius:7px;border:none;background:var(--primary);color:var(--on-acc);cursor:pointer;font-family:inherit">Übernehmen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="rueckfrage" role="dialog" aria-modal="true" aria-labelledby="rf-titel">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title" id="rf-titel"></div>
+    </div>
+    <div class="rf-text" id="rf-text"></div>
+    <input type="text" class="rf-eingabe" id="rf-eingabe" style="display:none">
+    <div class="rf-knoepfe">
+      <button class="rf-btn"     id="rf-abbrechen"></button>
+      <button class="rf-btn"     id="rf-alt" style="display:none"></button>
+      <button class="rf-btn pri" id="rf-ok"></button>
+    </div>
+  </div>
+</div>
+
+<script src="rechenkern.js"></script>
+<script src="export3d.js"></script>
+<script src="abschnitt.js"></script>
+<script src="fahrdrahthoehe.js"></script>
+<script src="betreiberdaten.js"></script>
+<script src="xlsx.js"></script>
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+
+<!-- ── Modal: Projekte ── -->
+<div class="modal-overlay" id="projects-modal" role="dialog" aria-modal="true" aria-labelledby="proj-modal-title-txt" onclick="if(event.target===this)closeProjectsModal()">
+  <div class="modal-card" style="max-width:560px">
+    <div class="modal-header">
+      <div class="modal-title">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:-.15em;margin-right:.4rem"><path d="M1.5 4.5A1.5 1.5 0 013 3h3.586a1 1 0 01.707.293l.914.914H13A1.5 1.5 0 0114.5 5.5v6A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5v-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        <span id="proj-modal-title-txt" data-i18n="proj.modal.title">Datei</span>
+      </div>
+      <button class="modal-close" onclick="closeProjectsModal()" title="Schliessen" data-i18n-title="ui.schliessen">✕</button>
+    </div>
+
+    <div class="proj-warning">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L14.5 13H1.5L8 1.5z" stroke-width="1.4" stroke-linejoin="round" style="stroke:var(--warn)"/><path d="M8 6v3.5M8 11.5v.5" stroke-width="1.4" stroke-linecap="round" style="stroke:var(--warn)"/></svg>
+      <span id="proj-warning-txt"><strong id="proj-warning-title">Lokale Speicherung:</strong> Projektdaten werden im Browser-Cache gespeichert und gehen beim Löschen der Browserdaten verloren. Regelmässig mit «Alles sichern» eine Sicherungsdatei erstellen.</span>
+    </div>
+
+    <!-- Berechnung speichern -->
+    <div class="proj-save-block">
+      <div class="proj-save-section-title" id="proj-save-title" data-i18n="proj.save.title">Neue Berechnung speichern</div>
+      <!-- Speicherort -->
+      <div style="margin-bottom:.38rem">
+        <div class="proj-save-label" id="proj-speicherort-lbl" data-i18n="proj.speicherort">Speicherort</div>
+        <select id="proj-group-sel" aria-labelledby="proj-speicherort-lbl" class="proj-save-inp" onchange="onProjGroupSelChange()"></select>
+      </div>
+      <!-- Neues Projekt — nur bei "__new__" sichtbar -->
+      <div id="proj-new-grp-row" style="display:none;margin-bottom:.38rem">
+        <div class="proj-save-label" id="proj-name-lbl" data-i18n="proj.projektname">Projektname</div>
+        <input type="text" id="proj-new-grp-name" class="proj-save-inp" placeholder="Projekt A" data-i18n-ph="ui.proj.platzhalter"
+               onkeydown="if(event.key==='Enter')saveCurrentCalc()">
+      </div>
+      <!-- Bezeichnung -->
+      <div style="margin-bottom:.45rem">
+        <div class="proj-save-label" id="proj-bez-lbl" data-i18n="proj.bez.label">Bezeichnung</div>
+        <input type="text" id="proj-calc-name" class="proj-save-inp" placeholder="N-FL 1"
+               onkeydown="if(event.key==='Enter')saveCurrentCalc()">
+      </div>
+      <button class="proj-btn cta" id="proj-save-cta" data-i18n="proj.save.btn" onclick="saveCurrentCalc()">Speichern</button>
+    </div>
+
+    <!-- Projektliste -->
+    <div id="proj-list-container" class="proj-list" style="max-height:360px"></div>
+
+    <hr class="proj-separator">
+
+    <div class="proj-footer">
+      <button class="proj-btn" onclick="document.getElementById('proj-import-input').click()">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-.1em;margin-right:.25rem"><path d="M3 10v3h10v-3M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="proj-import-lbl" data-i18n="proj.import.btn">JSON importieren</span>
+      </button>
+      <input type="file" id="proj-import-input" accept=".json" style="display:none" onchange="importProjectFile(this)">
+      <button class="proj-btn" id="sicherung-btn" type="button" onclick="sicherungExportieren()" title="Alle Berechnungen in eine Datei sichern" data-i18n-title="sich.alle.titel">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-.1em;margin-right:.25rem" aria-hidden="true"><path d="M3 10v3h10v-3M8 10V2M5 5l3-3 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span data-i18n="sich.alle">Alles sichern</span>
+      </button>
+      <span style="font-size:.7rem;color:var(--muted);flex:1;text-align:right">
+        <span id="proj-local-note" data-i18n="proj.local.note">Daten werden nur lokal im Browser gespeichert</span>
+      </span>
+    </div>
+    <p class="speicher-status" id="speicher-status" aria-live="polite"></p>
+  </div>
+</div>
+
+<!-- ── Modal: Foto-Auswertung (Anleitung) ── -->
+<div class="modal-overlay" id="foto-modal" onclick="if(event.target===this)closeFotoModal()" style="align-items:center;padding:1.5rem 1rem">
+  <div class="modal-card" style="max-width:480px;width:100%">
+    <div class="modal-header">
+      <div class="modal-title" data-i18n="ui.foto.ablauf.titel">Foto-Auswertung — Ablauf</div>
+      <button class="modal-close" onclick="closeFotoModal()" title="Schliessen" data-i18n-title="ui.schliessen">✕</button>
+    </div>
+    <div style="padding:.75rem 1.25rem 1.25rem;font-size:.82rem;line-height:1.65;color:var(--text)">
+      <p style="margin-bottom:.5rem"><strong data-i18n="ui.foto.ablauf.modus">Ablauf (7-Klick Modus):</strong></p>
+      <ol style="margin:.3rem 0 .65rem 1.3rem;line-height:1.8">
+        <li data-i18n="ui.foto.ablauf.1">Mastspitze links → Mastfuss links</li>
+        <li data-i18n="ui.foto.ablauf.2">Mastspitze rechts → Mastfuss rechts</li>
+        <li data-i18n="ui.foto.ablauf.3">Ankerpunkt links (P1) → Ankerpunkt rechts (P2)</li>
+        <li data-i18n="ui.foto.ablauf.4">Führungslinie bei L/2 erscheint — Leiter dort anklicken</li>
+      </ol>
+      <p style="margin-bottom:.35rem"><strong data-i18n="ui.foto.hinweise">Hinweise:</strong></p>
+      <ul style="margin:.3rem 0 .6rem 1.3rem;line-height:1.7">
+        <li data-i18n="ui.foto.hinweis.1">Mastlänge in der Sidebar unter «Foto — Mastangaben» eintragen</li>
+        <li data-i18n="ui.foto.hinweis.2">L, Material und Temperatur werden aus der Sidebar übernommen</li>
+        <li data-i18n="ui.foto.hinweis.3">Kamera waagrecht halten — horizontaler Winkel irrelevant</li>
+        <li data-i18n="ui.foto.hinweis.4">Punkte können nach dem Setzen verschoben werden</li>
+      </ul>
+      <button onclick="closeFotoModal()"
+        style="margin-top:.35rem;background:var(--primary);color:var(--on-acc);border:none;border-radius:6px;padding:.3rem 1rem;font-size:.78rem;cursor:pointer;font-family:inherit" data-i18n="ui.schliessen">Schliessen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Handbuch ── -->
+<div class="modal-overlay" id="handbuch-modal" role="dialog" aria-modal="true" aria-labelledby="handbuch-modal-title" onclick="if(event.target===this)closeHandbuch()">
+  <div class="modal-card hb-karte">
+    <div class="modal-header">
+      <h2 class="modal-title" id="handbuch-modal-title" style="margin:0">Handbuch — Kettenwerk Rechner N-FL / R-FL</h2>
+      <button class="modal-close" onclick="closeHandbuch()" title="Schliessen" data-i18n-title="ui.schliessen">✕</button>
+    </div>
+    <div class="hb-rahmen">
+      <!-- Seitenleiste: Suche + Kapitel (Handy: Aufklappmenü oben) -->
+      <div class="hb-seite" id="hb-seite">
+        <div class="hb-such">
+          <input type="search" id="hb-suche" class="hb-such-feld" autocomplete="off" spellcheck="false"
+            placeholder="Im Handbuch suchen" data-i18n-ph="hb.suche" aria-label="Im Handbuch suchen" data-i18n-aria="hb.suche"
+            oninput="hbSucheEingabe()" onkeydown="hbSucheTaste(event)">
+          <div class="hb-such-leiste">
+            <span id="hb-such-zahl" class="hb-such-zahl" aria-live="polite"></span>
+            <button type="button" class="hb-such-knopf" onclick="hbTrefferGehe(-1)" title="Vorheriger Treffer" data-i18n-title="hb.vorher" aria-label="Vorheriger Treffer" data-i18n-aria="hb.vorher">↑</button>
+            <button type="button" class="hb-such-knopf" onclick="hbTrefferGehe(1)" title="Nächster Treffer" data-i18n-title="hb.naechster" aria-label="Nächster Treffer" data-i18n-aria="hb.naechster">↓</button>
+          </div>
+        </div>
+        <button type="button" class="hb-kapitel-knopf" id="hb-kapitel-knopf" aria-expanded="false" aria-controls="hb-nav" onclick="hbKapitelMenue()">
+          <span aria-hidden="true">☰</span> <span id="hb-kapitel-aktuell"></span>
+        </button>
+        <nav id="hb-nav" class="hb-nav" aria-label="Inhalt" data-i18n-aria="hb.inhalt"></nav>
+      </div>
+    <div class="hb-text" id="hb-text" tabindex="0" role="region" aria-labelledby="handbuch-modal-title">
+      <p class="hb-laden" id="hb-laden">…</p>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Benutzerdefiniertes Kettenwerk ── -->
+<div class="modal-overlay" id="custom-modal" role="dialog" aria-modal="true" aria-labelledby="cm-modal-title" onclick="if(event.target===this)closeCustomModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title" id="cm-modal-title" data-i18n="cm.title">Eigenes Kettenwerk</div>
+      <button class="modal-close" onclick="closeCustomModal()" title="Schliessen" data-i18n-title="ui.schliessen">✕</button>
+    </div>
+
+    <div class="field">
+      <label id="cm-bezeichnung-label" data-i18n="cm.bezeichnung">Bezeichnung</label>
+      <div class="input-wrap">
+        <input type="text" id="cm-label" data-i18n-ph="cm.label.placeholder" placeholder="z. B. StCu 120 + Cu 120 · sh 2.20 m" style="font-size:.82rem">
+      </div>
+    </div>
+
+    <div style="margin-top:.65rem">
+      <label id="cm-system-label" data-i18n="cm.system" style="font-size:.72rem;font-weight:500;color:var(--muted)">System</label>
+      <div class="seg-ctrl" style="margin-top:.25rem">
+        <button class="seg-btn active" id="cm-seg-nfl" onclick="cmSetMode('nfl')">N-FL</button>
+        <button class="seg-btn"        id="cm-seg-rfl" onclick="cmSetMode('rfl')">R-FL</button>
+      </div>
+    </div>
+
+    <div class="modal-section-label" id="cm-sec-ts" data-i18n="cm.ts">Tragseil</div>
+    <div class="field-row">
+      <div class="field">
+        <label id="cm-q-ts-label" data-i18n="cm.eigengewicht">Eigengewicht q</label>
+        <div class="input-wrap">
+          <input type="number" id="cm-q-ts" step="0.001" min="0" placeholder="8.218">
+          <span class="input-unit">N/m</span>
+        </div>
+      </div>
+      <div class="field">
+        <label id="cm-alpha-ts-label" data-i18n="cm.waerme">Wärmedehnzahl α</label>
+        <div class="input-wrap">
+          <input type="number" id="cm-alpha-ts" step="0.1" min="0" placeholder="16.2">
+          <span class="input-unit">×10⁻⁶/K</span>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label id="cm-ea-ts-label" data-i18n="cm.steif">Steifigkeit E·A</label>
+      <div class="input-wrap">
+        <input type="number" id="cm-ea-ts" step="0.01" min="0" placeholder="11.46">
+        <span class="input-unit">MN</span>
+      </div>
+    </div>
+
+    <div class="modal-section-label" id="cm-sec-fd" data-i18n="cm.fd">Fahrdraht</div>
+    <div class="field-row">
+      <div class="field">
+        <label id="cm-q-fd-label" data-i18n="cm.eigengewicht">Eigengewicht q</label>
+        <div class="input-wrap">
+          <input type="number" id="cm-q-fd" step="0.001" min="0" placeholder="9.517">
+          <span class="input-unit">N/m</span>
+        </div>
+      </div>
+      <div class="field">
+        <label id="cm-wear-modal-label" data-i18n="cm.abnutzung">Abnutzung max</label>
+        <div class="input-wrap">
+          <input type="number" id="cm-wear" aria-labelledby="cm-wear-modal-label" step="1" min="0" max="100" value="30">
+          <span class="input-unit">%</span>
+        </div>
+      </div>
+    </div>
+    <div id="cm-fd-nfl-fields">
+      <div class="field-row">
+        <div class="field">
+          <label id="cm-alpha-fd-label"><span data-i18n="cm.waerme">Wärmedehnzahl α</span> <span style="font-size:.7em;color:var(--tertiary)">(N-FL)</span></label>
+          <div class="input-wrap">
+            <input type="number" id="cm-alpha-fd" step="0.1" min="0" placeholder="17.0">
+            <span class="input-unit">×10⁻⁶/K</span>
+          </div>
+        </div>
+        <div class="field">
+          <label id="cm-ea-fd-label"><span data-i18n="cm.steif">Steifigkeit E·A</span> <span style="font-size:.7em;color:var(--tertiary)">(N-FL)</span></label>
+          <div class="input-wrap">
+            <input type="number" id="cm-ea-fd" step="0.01" min="0" placeholder="11.56">
+            <span class="input-unit">MN</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-section-label" id="cm-sec-reg" data-i18n="cm.reg">Reglage</div>
+    <div class="field-row">
+      <div class="field">
+        <label id="cm-sh-label" data-i18n="cm.sh">Systemhöhe sh</label>
+        <div class="input-wrap">
+          <input type="number" id="cm-sh" aria-labelledby="cm-sh-label" step="0.05" min="0.1" value="2.40">
+          <span class="input-unit">m</span>
+        </div>
+      </div>
+      <div class="field">
+        <label id="cm-h-ts-label" data-i18n="cm.h.ts.ub">H Ts unbelastet</label>
+        <div class="input-wrap">
+          <input type="number" id="cm-h-ts" step="1" min="0" placeholder="2100">
+          <span class="input-unit">N</span>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label id="cm-h-fd-label" data-i18n="cm.h.fd">H Fd</label>
+      <div class="input-wrap">
+        <input type="number" id="cm-h-fd" step="1" min="0" placeholder="8500">
+        <span class="input-unit">N</span>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-danger-text" id="cm-reset-btn" data-i18n="cm.delete" onclick="resetCustomPresets()" style="display:none">Alle eigenen löschen</button>
+      <div class="modal-footer-actions">
+        <button class="btn btn-secondary" id="cm-cancel-btn" data-i18n="cm.cancel" onclick="closeCustomModal()">Abbrechen</button>
+        <button class="btn btn-primary"   id="cm-save-btn" data-i18n="cm.save"   onclick="saveCustomPreset()">Speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Benutzerdefiniertes Leitermaterial ── -->
+<div class="modal-overlay" id="el-material-modal" role="dialog" aria-modal="true" aria-labelledby="elm-modal-title" onclick="if(event.target===this)closeElMaterialModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title" id="elm-modal-title" data-i18n="ui.elm.titel">Eigenes Leitermaterial</div>
+      <button class="modal-close" onclick="closeElMaterialModal()" title="Schliessen" data-i18n-title="ui.schliessen">✕</button>
+    </div>
+
+    <div class="field">
+      <label data-i18n="cm.bezeichnung">Bezeichnung</label>
+      <div class="input-wrap">
+        <input type="text" id="elm-label" placeholder="z. B. Al 240 mm²" data-i18n-ph="ui.elm.platzhalter" style="font-size:.82rem">
+      </div>
+    </div>
+
+    <div class="modal-section-label" data-i18n="ui.leiterkennwerte">Leiterkennwerte</div>
+    <div class="field-row">
+      <div class="field">
+        <label data-i18n="cm.eigengewicht">Eigengewicht q</label>
+        <div class="input-wrap">
+          <input type="number" id="elm-q" step="0.001" min="0" placeholder="8.424">
+          <span class="input-unit">N/m</span>
+        </div>
+      </div>
+      <div class="field">
+        <label data-i18n="cm.waerme">Wärmedehnzahl α</label>
+        <div class="input-wrap">
+          <input type="number" id="elm-alpha" step="0.1" min="0" placeholder="17.0">
+          <span class="input-unit">×10⁻⁶/K</span>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label><span data-i18n="cm.steif">Steifigkeit E·A</span> <span style="font-size:.7em;color:var(--tertiary)" data-i18n="ui.optional">(optional)</span></label>
+      <div class="input-wrap">
+        <input type="number" id="elm-ea" step="0.01" min="0" placeholder="10.24">
+        <span class="input-unit">MN</span>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-danger-text" id="elm-reset-btn" onclick="resetCustomElMaterials()" style="display:none" data-i18n="ui.elm.alle.loeschen">Alle eigenen löschen</button>
+      <div class="modal-footer-actions">
+        <button class="btn btn-secondary" onclick="closeElMaterialModal()" data-i18n="ui.abbrechen">Abbrechen</button>
+        <button class="btn btn-primary" onclick="saveCustomElMaterial()" data-i18n="ui.speichern">Speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Betreiberdaten (Reglagetabellen, Kettenwerke, hf-Werte aus Datei) ── -->
+<div class="modal-overlay" id="bd-modal" role="dialog" aria-modal="true" aria-labelledby="bd-titel" onclick="if(event.target===this)closeBetreiberdaten()">
+  <div class="modal-card" style="max-width:560px;width:100%">
+    <div class="modal-header">
+      <div class="modal-title" id="bd-titel" data-i18n="bd.titel">Betreiberdaten</div>
+      <button class="modal-close" onclick="closeBetreiberdaten()" title="Schliessen" data-i18n-title="ui.schliessen" aria-label="Schliessen" data-i18n-aria="ui.schliessen">✕</button>
+    </div>
+    <div class="bd-inhalt-box">
+      <p class="bd-einleitung" data-i18n="bd.einleitung">Reglagetabellen, Kettenwerk-Vorgaben und hf-Werte stammen aus einer Datei des Betreibers (Excel oder JSON). Sie wird einmal geladen und bleibt in diesem Gerät gespeichert, auch offline. Ohne Datei rechnet die App mit Beispielwerten.</p>
+      <div class="bd-aktiv">
+        <div class="bd-label" data-i18n="bd.aktiv">Aktive Daten</div>
+        <div class="bd-name" id="bd-name"></div>
+        <div class="bd-zeile" id="bd-inhalt"></div>
+        <div class="bd-zeile" id="bd-quellen" style="display:none"></div>
+      </div>
+      <div class="bd-knoepfe">
+        <button type="button" class="rgl-knopf rgl-knopf-pri" onclick="document.getElementById('bd-datei').click()" data-i18n="bd.laden">Datei laden (Excel oder JSON)</button>
+        <input type="file" id="bd-datei" accept=".xlsx,.json,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onchange="betreiberdatenLaden(event)" style="display:none" aria-hidden="true" tabindex="-1">
+        <button type="button" class="rgl-knopf" onclick="betreiberdatenSpeichern('xlsx')" data-i18n="bd.excel">Als Excel speichern</button>
+        <button type="button" class="rgl-knopf" onclick="betreiberdatenSpeichern('json')" data-i18n="bd.json">Als JSON speichern</button>
+        <button type="button" class="rgl-knopf rgl-knopf-warn" id="bd-entfernen" onclick="betreiberdatenEntfernen()" data-i18n="bd.entfernen" style="display:none">Beispielwerte verwenden</button>
+      </div>
+      <p class="rgl-note" data-i18n="bd.speichern.hw">Gespeichert werden die aktiven Daten — mit Beispielwerten als Vorlage zum Ausfüllen.</p>
+      <div class="bd-fehler" id="bd-fehler" role="alert" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Reglagetabelle ── -->
+<div class="modal-overlay" id="reglage-modal" role="dialog" aria-modal="true" aria-labelledby="reglage-modal-title" onclick="if(event.target===this)closeReglageModal()" style="align-items:flex-start;padding:2rem 1rem;overflow-y:auto">
+  <div class="modal-card" style="max-width:720px;width:100%;max-height:none">
+    <div class="modal-header">
+      <div class="modal-title" id="reglage-modal-title" data-i18n="reglage.modal.title">Reglagewerte — Übersicht</div>
+      <button class="modal-close" onclick="closeReglageModal()" title="Schliessen" data-i18n-title="ui.schliessen">✕</button>
+    </div>
+    <div style="padding:.5rem 1.25rem 1.25rem">
+
+      <!-- Quelle -->
+      <p id="rgl-quelle" style="font-size:.72rem;color:var(--tertiary);margin-bottom:1.1rem"></p>
+
+      <!-- Gemeinsame Tabellenstile -->
+      <style>
+        .rgl-tbl { width:100%; border-collapse:collapse; font-size:.76rem; table-layout:fixed; }
+        .rgl-tbl th { background:var(--s2); border-bottom:1px solid var(--border2); padding:.4rem .55rem; font-weight:600; color:var(--text); white-space:nowrap; }
+        .rgl-tbl td { padding:.42rem .55rem; border-bottom:1px solid var(--border2); }
+        .rgl-tbl tr:nth-child(even) td { background:var(--s2); }
+        .rgl-tbl .c-left  { text-align:left; }
+        .rgl-tbl .c-right { text-align:right; font-variant-numeric:tabular-nums; }
+        .rgl-tbl .c-ctr   { text-align:center; }
+        .rgl-section { font-size:.7rem; font-weight:600; color:var(--muted); margin-bottom:.45rem; letter-spacing:.06em; text-transform:uppercase; }
+        .rgl-note { font-size:.68rem; color:var(--tertiary); margin-top:.35rem; }
+      </style>
+
+      <!-- N-FL -->
+      <div style="margin-bottom:1.3rem">
+        <div class="rgl-section" id="rgl-nfl-titel" data-i18n="ui.rgl.nfl.titel">N-FL — Normale Fahrleitung</div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch" tabindex="0" role="region" aria-labelledby="rgl-nfl-titel">
+        <table class="rgl-tbl" style="min-width:580px">
+          <colgroup>
+            <col style="width:32%">
+            <col style="width:8%">
+            <col style="width:14%">
+            <col style="width:14%">
+            <col style="width:14%">
+            <col style="width:12%">
+          </colgroup>
+          <thead><tr>
+            <th class="c-left" data-i18n="ui.kombination">Kombination</th>
+            <th class="c-ctr">sh</th>
+            <th class="c-right" data-i18n-html="ui.rgl.hts.bel">H<sub>Ts</sub> belastet</th>
+            <th class="c-right" data-i18n-html="ui.rgl.hts.ub">H<sub>Ts</sub> unbelastet</th>
+            <th class="c-right">H<sub>Fd</sub></th>
+            <th class="c-right" data-i18n="ui.abnutzung">Abnutzung</th>
+          </tr></thead>
+          <tbody id="rgl-nfl-zeilen"></tbody>
+        </table>
+        </div>
+        <p class="rgl-note" data-i18n-html="ui.rgl.nfl.note">H<sub>Ts</sub> belastet = mit Fahrdraht &nbsp;·&nbsp; H<sub>Ts</sub> unbelastet = ohne Fahrdraht &nbsp;·&nbsp; bei +10 °C</p>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border2);margin:0 0 1.1rem">
+
+      <!-- R-FL -->
+      <div style="margin-bottom:1.3rem">
+        <div class="rgl-section" id="rgl-rfl-titel" data-i18n="ui.rgl.rfl.titel">R-FL — Regelfahrleitung</div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch" tabindex="0" role="region" aria-labelledby="rgl-rfl-titel">
+        <table class="rgl-tbl" style="min-width:580px">
+          <colgroup>
+            <col style="width:32%">
+            <col style="width:8%">
+            <col style="width:14%">
+            <col style="width:14%">
+            <col style="width:14%">
+            <col style="width:12%">
+          </colgroup>
+          <thead><tr>
+            <th class="c-left" data-i18n="ui.kombination">Kombination</th>
+            <th class="c-ctr">sh</th>
+            <th class="c-right" colspan="2" data-i18n-html="ui.rgl.hts.konst">H<sub>Ts</sub> konstant</th>
+            <th class="c-right">H<sub>Fd</sub></th>
+            <th class="c-right" data-i18n="ui.abnutzung">Abnutzung</th>
+          </tr></thead>
+          <tbody id="rgl-rfl-zeilen"></tbody>
+        </table>
+        </div>
+        <p class="rgl-note" data-i18n-html="ui.rgl.rfl.note">H<sub>Ts</sub> konstant via Nachspannvorrichtung &nbsp;·&nbsp; temperaturunabhängig</p>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border2);margin:0 0 1.1rem">
+
+      <!-- Einzelleiter -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.45rem">
+          <div class="rgl-section" id="rgl-el-titel" style="margin-bottom:0" data-i18n="ui.rgl.el.titel">Einzelleiter — Reglagezugkraft</div>
+          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+            <button type="button" id="rgl-el-sbb-btn" class="rgl-knopf rgl-knopf-warn" onclick="reglageSbbWiederherstellen()" style="display:none" data-i18n="ui.rgl.sbb">↺ Vorgabewerte</button>
+            <button type="button" id="rgl-el-edit-btn" class="rgl-knopf" onclick="toggleReglageElEdit()" data-i18n="ui.bearbeiten">Bearbeiten</button>
+            <button type="button" class="rgl-knopf" onclick="exportMaterialsCSV()" data-i18n="ui.export.csv">Export CSV</button>
+            <!-- Dateiwahl als Label: gleiche Gestaltung wie die Knöpfe daneben -->
+            <label class="rgl-knopf" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.querySelector('input').click()}"><span data-i18n="ui.import.csv">Import CSV</span><input type="file" accept=".csv,.txt" onchange="importMaterialsCSV(event)" style="display:none"></label>
+          </div>
+        </div>
+        <div id="rgl-el-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch" tabindex="0" role="region" aria-labelledby="rgl-el-titel"></div>
+        <p class="rgl-note" id="rgl-el-note" data-i18n-html="ui.rgl.el.note">Reglagezugkraft bei +10 °C, Lm = 45 m, Berechnungsart «Ausgleichend»</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── PDF Button: inline in delta-bar (alle Bildschirmgrössen) ── -->
+<style>
+  #pdf-btn {
+    display: flex;
+    align-items: center; justify-content: center; gap: .4rem;
+    grid-column: 1 / -1;   /* Zeile 2, volle Breite */
+    padding: .22rem .7rem;
+    border-radius: 980px; border: 1px solid rgba(0,0,0,.15);
+    background: rgba(0,0,0,.05); color: var(--text2);
+    font-size: .76rem; font-weight: 500; font-family: inherit;
+    cursor: pointer; white-space: nowrap;
+    transition: background .15s;
+  }
+  #pdf-btn:hover { background: rgba(0,0,0,.10); }
+  #dxf-btn {
+    display: flex;
+    align-items: center; justify-content: center; gap: .4rem;
+    grid-column: 1 / -1;
+    padding: .22rem .7rem;
+    border-radius: 980px; border: 1px solid rgba(0,0,0,.15);
+    background: rgba(0,0,0,.05); color: var(--text2);
+    font-size: .76rem; font-weight: 500; font-family: inherit;
+    cursor: pointer; white-space: nowrap;
+    transition: background .15s;
+  }
+  #dxf-btn:hover { background: rgba(0,0,0,.10); }
+</style>
+
+<footer style="text-align:center;padding:1.5rem 1rem 2rem;color:var(--tertiary);font-size:.72rem;letter-spacing:.02em">
+  Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; <span class="app-version"></span>
+</footer>
+
+</body>
+</html>
