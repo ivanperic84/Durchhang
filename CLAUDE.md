@@ -3,6 +3,7 @@
 Diese Datei liest Claude Code in jeder Sitzung in diesem Repository automatisch.
 Ausführliche Übergabe (Stand, Fachlogik, Verlauf, Offenes): **docs/UEBERGABE.md** —
 vor der ersten Änderung lesen.
+Lokal / anderer Account: **uebergabe/START.md** (Start-Text) und `bash uebergabe/abgleich.sh` (Abgleich mit GitHub).
 
 ## Projekt in einem Satz
 «Durchhang N-FL / R-FL / Einzelleiter» ist eine Web-App (PWA, offline-fähig) zur

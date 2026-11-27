@@ -1,4 +1,4 @@
-# Übergabe Durchhang — Stand v6.0.3 (12. November 2026)
+# Übergabe Durchhang — Stand v6.0.3 (27. November 2026)
 
 Ziel dieser Datei: Eine neue Claude-Sitzung (auch unter einem anderen Account) kann
 ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLAUDE.md`
@@ -7,6 +7,11 @@ ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLA
 ---
 
 ## 1. Erste Schritte für eine neue Sitzung
+
+> **Lokal weiterarbeiten / anderer Account:** Startanleitung mit Start-Text und Abgleich-Skript
+> in `uebergabe/START.md` bzw. `uebergabe/abgleich.sh` (lokaler Ordner des Nutzers:
+> `~/projekte/claude-code-test` in WSL Ubuntu). Der Ordner `uebergabe/` gehört nicht zur App
+> und darf auf Wunsch des Nutzers wieder gelöscht werden.
 
 1. Repo `ivanperic84/Durchhang` ist eingebunden? Sonst muss der Nutzer im neuen Account
    GitHub verbinden (claude.ai → Einstellungen → Connectors/GitHub) und der Claude-GitHub-App
@@ -271,7 +276,7 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 
 | v5.3.0 | #32 | Messpunkt-Bezug wählbar (`mpBezug`: hoch [Vorgabe] / links / rechts / sehne) — eine Stelle `mpBezugHoehe()` für Diagramm (Referenzlinie + Masslinie), Karten, Ergebnisleiste und PDF (vorher PDF = Sehne, Bildschirm = links); im Projekt gespeichert, ältere Projekte → hoch. Auswahl `#mp-bezug` neben «Reset» der Messpunkte |
 | v6.0.0 | #32 | **Produktiv**: Wasserzeichen «BETA – nicht verifiziert» entfernt (Bildschirm, PDFs, Handbuch). hf_min / hf_max nur im **Entwicklermodus** (3× aufs App-Symbol, `localStorage dh_dev`, Schild «DEV», Animation beim Antippen): UI mit `.nur-dev`, `hfGrenzenM()` → `null`, Schalter Diagramm/Zeichnung wirken nur mit `entwicklerModus`; Handbuch-Kapitel 6.14 nur im Entwicklermodus. Gespeicherte hf-Eingaben bleiben erhalten. |
 | v6.0.1 | #32 | Stränge: Auswahlkästchen (18 px, Touch mit unsichtbar grösserer Tippfläche) und Farbfeld kompakt; Farbfeld von der Touch-Mindesthöhe ausgenommen |
-| v6.0.2 | – | Entwicklermodus: App-Symbol wird zur Wäscheleine (T-Shirt, Socke, Hose am Seil; Hänger/Fahrdraht ausgeblendet), Wäsche schaukelt beim Einschalten und Antippen (`.waesche`, `.kette-teil`) |
-| v6.0.3 | – | Diagramm ohne Messpunkt: Masslinie am Tiefpunkt (T₁/T₂) und Referenzlinie folgen ebenfalls `mpBezug` (Δh bzw. f); Ergebnis «Durchhang f» der Rechnung unverändert |
+| v6.0.2 | #33 | Entwicklermodus: App-Symbol wird zur Wäscheleine (T-Shirt, Socke, Hose am Seil; Hänger/Fahrdraht ausgeblendet), Wäsche schaukelt beim Einschalten und Antippen (`.waesche`, `.kette-teil`) |
+| v6.0.3 | #33 | Diagramm ohne Messpunkt: Masslinie am Tiefpunkt (T₁/T₂) und Referenzlinie folgen ebenfalls `mpBezug` (Δh bzw. f); Ergebnis «Durchhang f» der Rechnung unverändert |
 
 Issue #20: NIS (später).
