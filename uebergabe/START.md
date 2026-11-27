@@ -81,13 +81,15 @@ inkl. 288 eingefrorene Rechenfälle).
 1. **hf_min / hf_max fertigstellen** – zurzeit nur im Entwicklermodus sichtbar
    (3× schnell aufs App-Symbol → Schild «DEV», Wäscheleine). Zum Freigeben die
    Ausblendung entfernen (steht in `CLAUDE.md`).
-2. **Referenzblätter prüfen** (0161.1013.0001 «normal», 0161.1013.0003 «starr»,
-   0161.1013.0005.1 c_proj/c_m, 0161.1010.0011/0012/0201, Zeichnung 0162.1020.0006,
-   AB-EBV 2024) – braucht die Originale im Ordner `Grundlagen SBB`.
-   Bereits bekannt: 0161.1013.0003 fehlt im Quellenverzeichnis des Handbuchs.
+2. **Referenzblätter prüfen** – Werte der SBB-Betreiberdaten (`Grundlagen SBB/sbb-daten.xlsx`)
+   gegen die Originale im Ordner `Grundlagen SBB` abgleichen (Liste der Dokumente lokal in
+   `tests-sbb/SBB-NOTIZEN.md`).
 3. **Systemhöhe vs. Spannweite** – wartet auf die Seiten aus dem Siemens-Buch.
 4. **NIS-Berechnung** – nur als GitHub-Issue #20 festgehalten, nicht umsetzen ohne Auftrag.
-5. Kleinigkeiten: nicht aktive Stränge im Dunkelmodus kräftiger (Angebot offen);
+5. **Weg zu v7.0** (Entscheide vom 27.11.2026): Gesamtprüfung der App, Kleinigkeiten, Release-Notiz.
+   SBB-Betreiberdaten auf den SharePoint stellen; Mitarbeitende laden sie in der App
+   (Menü «Mehr» → «Betreiberdaten»).
+6. Kleinigkeiten: nicht aktive Stränge im Dunkelmodus kräftiger (Angebot offen);
    Strang-/Masttabelle am Handy breiter als der Bildschirm (bisher akzeptiert).
 
 ---

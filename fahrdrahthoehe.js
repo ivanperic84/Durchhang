@@ -1,9 +1,10 @@
 /* Fahrdrahthöhe — minimale und maximale Auslegungsfahrdrahthöhe hf_min / hf_max
  *
- * Nachbildung der SBB-Excel «Durchhang 2026», Blätter hfmin_v11_D und
- * hfmax_v11_D (AB-EBV 2024, Art. 5.2.1 und 5.2.2) mit den Hilfsblättern
- * «FD-Schwingung nach unten/oben», «R-Fl_<140kmh», «R-Fl_Durchhang_d_hfmin»
- * und «N-Fl_Durchhang_N1_für_hfmin/hfmax». Alle Längen in mm.
+ * Rechengang wie die SBB-Excel «Durchhang 2026» (Blätter hfmin_v11_D und
+ * hfmax_v11_D, AB-EBV 2024, Art. 5.2.1 und 5.2.2). Alle Längen in mm.
+ * Die Zahlenwerte (Grenzlinie, Zuschläge, Toleranzen, Absolutwerte …) stammen
+ * aus den Betreiberdaten (betreiberdaten.js, Gruppe «hf») und werden mit
+ * hfParameterSetzen() übergeben — ohne Parameter ist keine Rechnung möglich.
  *
  *   hf_min = GfA + k + be + f + H + Z_hfmin
  *            Z_hfmin = fg + thu + fud + fuv + fFDmaxZL + fFDmax40
@@ -18,7 +19,7 @@
  *   - N-FL: Zugkraft Ts bei 10 °C (H_t0) und bei der Temperatur (H_Tx) aus der
  *     Zustandsgleichung (rechenkern.js, gleiche Werte wie Excel «NFL-Tab»),
  *     neuer Fahrdraht (ohne Abnutzung).
- *   - R-FL: Durchhang bei Eislast mit fest H_Ts 12 kN + H_Fd 10 kN.
+ *   - R-FL: Durchhang bei Eislast mit festem Zug (Parameter rfl_zug).
  *
  * Ohne Seite (DOM); Prüfung ohne Browser: npm test.
  * Nach Änderungen an dieser Datei: CACHE_VERSION in sw.js erhöhen.
@@ -29,15 +30,19 @@ const HF_SPANNWEITEN = [...Array(35)].map((_, i) => 60 - i).concat([24, 20, 16, 
 const HF_TEMPERATUREN = [...Array(21)].map((_, i) => -20 + 5 * i);
 const HF_ZUSATZLASTEN = [0, 7, 15];
 const HF_EIS_TEMPERATUR = -5;
-const HF_BUE_MIN = 5510;                      // 5.50 m (AB-EBV) + 10 mm Bodenplatten
-const HF_RFL_ZUG = { H_Ts: 12000, H_Fd: 10000 };
+
+// Parameter aus den Betreiberdaten (Gruppe «hf»), siehe HF_SCHLUESSEL in betreiberdaten.js
+let HF_P = null;
+function hfParameterSetzen(p) { HF_P = p || null; }
+const _hfP = () => { if (!HF_P) throw new Error('hf-Parameter fehlen'); return HF_P; };
 
 // ── Einzelne Zuschläge ──
-const hfGrenzlinie = ebv => (ebv === 1 ? 4570 : ebv === 4 ? 4840 : 4670);
-const hfSicherheitszuschlag = ebv => (ebv === 1 ? 70 : 0);
-const hfElektrAbstand = un => (un === 25 ? 270 : 150);
-const hfGleishebung = (schotter, bue) => (bue ? 0 : schotter ? 100 : 60);
-const hfMontagetoleranz = v => (v > 140 ? 10 : 20);
+const _hfEbv = ebv => 'ebv' + ([1, 2, 3, 4].includes(ebv) ? ebv : 2);
+const hfGrenzlinie = ebv => _hfP().grenzlinie[_hfEbv(ebv)];
+const hfSicherheitszuschlag = ebv => _hfP().sicherheit[_hfEbv(ebv)];
+const hfElektrAbstand = un => (un === 25 ? _hfP().elektr_abstand.un25 : _hfP().elektr_abstand.andere);
+const hfGleishebung = (schotter, bue) => (bue ? _hfP().gleishebung.bue : schotter ? _hfP().gleishebung.schotter : _hfP().gleishebung.ohne_schotter);
+const hfMontagetoleranz = v => (v > _hfP().montagetoleranz.v_grenze ? _hfP().montagetoleranz.schnell : _hfP().montagetoleranz.langsam);
 
 // Dynamische Schwingung des Fahrdrahts nach unten (Siemens, Bild 6.60; DB Ebs 02.05.17)
 function hfSchwingung(c) {
@@ -46,16 +51,17 @@ function hfSchwingung(c) {
        + (c > 45 ? 4 * c / 7 + 24 : 0);
 }
 
-// Vordurchhang Fahrdraht (Zeichnung 0162.1020.0006): nur R-FL bis 140 km/h
+// Vordurchhang Fahrdraht: nur R-FL bis zur Geschwindigkeitsgrenze
 function hfVordurchhang(typ, c, v) {
-  if (typ !== 'rfl' || v > 140) return 0;
-  return c >= 42 ? 50 : 30;
+  const p = _hfP().vordurchhang;
+  if (typ !== 'rfl' || v > p.v_max) return 0;
+  return c >= p.c_grenze ? p.gross : p.klein;
 }
 
-// R-FL: Fahrdraht-Durchhang bei Eislast am Tragseil, Fallprüfung P1.1–P1.3
-// (Regelung 0161.1010.0012, Bl. 14). Zug fest 12 kN + 10 kN.
+// R-FL: Fahrdraht-Durchhang bei Eislast am Tragseil, Fallprüfung P1.1–P1.3.
+// Zug fest (Parameter rfl_zug).
 function hfRflEislast(c, zl, cUebr, p11, p12) {
-  const H = HF_RFL_ZUG.H_Ts + HF_RFL_ZUG.H_Fd;
+  const H = _hfP().rfl_zug.H_Ts + _hfP().rfl_zug.H_Fd;
   if (!p11 && !p12 && cUebr === 0) return zl * c * c / (8 * H) * 1000;
   if (!p11 && p12) return ((c - cUebr) / c) * zl * c * c / (8 * H) * 1000;
   return 0;
@@ -71,6 +77,7 @@ function hfNflDurchhang(c, zl, n) {
 // Liefert Schlüssel für Fehler (Rechnung nicht möglich) und Hinweise.
 function hfPruefen(e) {
   const fehler = [], hinweise = [];
+  if (!HF_P) return { fehler: ['hf.err.param'], hinweise };
   if (e.typ !== 'nfl' && e.typ !== 'rfl') fehler.push('hf.err.typ');
   if (!HF_SPANNWEITEN.includes(e.c)) fehler.push('hf.err.c');
   if (!Number.isFinite(e.v) || e.v <= 0) fehler.push('hf.err.v');
@@ -90,7 +97,7 @@ function hfPruefen(e) {
     else if (!e.p11 && e.p12 && cu === 0) hinweise.push('hf.w.p12j');
     else if (!e.p11 && !e.p12 && cu !== 0) hinweise.push('hf.w.p12n');
   }
-  if (e.typ === 'nfl' && e.Tmin > 56) hinweise.push('hf.w.t56');
+  if (e.typ === 'nfl' && e.Tmin > HF_P.t_hinweis) hinweise.push('hf.w.t56');
   return { fehler, hinweise };
 }
 
@@ -127,23 +134,23 @@ function hfBerechnen(e) {
   ];
   const absMin = basisMin.reduce((s, z) => s + z.wert, 0);
   const min = {
-    wert: bue ? HF_BUE_MIN + summeMin : absMin + summeMin,
-    bue, absolut: bue ? HF_BUE_MIN : absMin, basis: bue ? [] : basisMin, zeilen: zMin, summe: summeMin,
+    wert: bue ? HF_P.bue_min + summeMin : absMin + summeMin,
+    bue, absolut: bue ? HF_P.bue_min : absMin, basis: bue ? [] : basisMin, zeilen: zMin, summe: summeMin,
   };
 
   // hf_max
   const zMax = [
     { sym: 'tho',     wert: hfMontagetoleranz(v),              schluessel: 'hf.z.tho' },
-    { sym: 'fudo',    wert: bue ? 0 : hfSchwingung(c) * 0.8,   schluessel: 'hf.z.fudo' },
+    { sym: 'fudo',    wert: bue ? 0 : hfSchwingung(c) * HF_P.schwingung_oben_faktor, schluessel: 'hf.z.fudo' },
     { sym: 'fuv',     wert: -hfVordurchhang(typ, c, v),        schluessel: 'hf.z.fuvo' },
-    { sym: 'fh',      wert: 75,                                schluessel: 'hf.z.fh' },
+    { sym: 'fh',      wert: HF_P.anhub,                        schluessel: 'hf.z.fh' },
     { sym: 'fFDmin',  wert: nfl ? -hfNflDurchhang(c, e.zlMax, { ...e.nfl, H_Tx: e.nfl.H_Tmax }) : 0, schluessel: 'hf.z.ffdmin' },
   ];
   const summeMax = zMax.reduce((s, z) => s + z.wert, 0);
-  const absMax = e.lrp ? 6050 : 6200;
+  const absMax = e.lrp ? HF_P.hf_max_absolut.lrp_ja : HF_P.hf_max_absolut.lrp_nein;
   const max = {
-    wert: bue ? HF_BUE_MIN + summeMax : absMax - summeMax,
-    bue, absolut: bue ? HF_BUE_MIN : absMax, basis: [], zeilen: zMax, summe: summeMax,
+    wert: bue ? HF_P.bue_min + summeMax : absMax - summeMax,
+    bue, absolut: bue ? HF_P.bue_min : absMax, basis: [], zeilen: zMax, summe: summeMax,
   };
 
   if (bue) hinweise.push('hf.w.bue');
@@ -166,7 +173,7 @@ function hfNflZugkraefte(kern, { flCombo, Lm, H_ub, T_montage, H_Fd, Tmin, zlMin
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
-    HF_SPANNWEITEN, HF_TEMPERATUREN, HF_ZUSATZLASTEN, HF_EIS_TEMPERATUR, HF_BUE_MIN, HF_RFL_ZUG,
+    HF_SPANNWEITEN, HF_TEMPERATUREN, HF_ZUSATZLASTEN, HF_EIS_TEMPERATUR, hfParameterSetzen,
     hfGrenzlinie, hfSicherheitszuschlag, hfElektrAbstand, hfGleishebung, hfMontagetoleranz,
     hfSchwingung, hfVordurchhang, hfRflEislast, hfNflDurchhang, hfPruefen, hfBerechnen, hfNflZugkraefte,
   };

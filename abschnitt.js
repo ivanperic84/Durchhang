@@ -23,7 +23,7 @@
 
 // ── Lastfälle für die Abstandsprüfung (je Leitersystem frei einstellbar) ──
 // Eislast nach Höhenlage der Strecke (von Hand gewählt): unter 1000 m ü. M.
-// 7 N/m (SBB 0161.1013.0004), ab 1000 m ü. M. 15 N/m.
+// 7 N/m, ab 1000 m ü. M. 15 N/m (übliche Zusatzlast Schnee/Eis, im Fenster «Lastfälle» änderbar).
 const EISLAST_HOEHENLAGE = { unter: 7, ueber: 15 };
 const LASTFALL_VORGABE = {
   nfl: { temperaturen: [-20, 80], eis: true, hoehenlage: 'ueber', zl: 15, abnutzung: true },

@@ -3,16 +3,16 @@
       <!-- ══ 1 Übersicht ══ -->
       <h3 id="hb-uebersicht" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.2rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem">1 &nbsp;<span id="hb-s1">Übersicht</span></h3>
       <div class="hb-lang hb-de">
-        <p>Diese Applikation berechnet die Kettenliniengeometrie von SBB-Oberleitungen für drei Systemtypen:</p>
+        <p>Diese Applikation berechnet die Kettenliniengeometrie von Fahrleitungen für drei Systemtypen:</p>
         <ul style="margin:.4rem 0 .5rem 1.2rem">
           <li><strong>N-FL</strong> — fixabgefangen: Tragseil + Fahrdraht + Hänger, temperaturabhängige Ts-Zugkraft (Zustandsgleichung)</li>
           <li><strong>R-FL</strong> — beweglich abgefangen (Nachspannvorrichtung): konstante Zugkraft, keine Temperaturkorrektur nötig</li>
           <li><strong>Einzelleiter</strong> — einfache Kettenlinienberechnung eines einzelnen Leiters (Speiseleiter, Rückleiter o. ä.) ohne Fahrdraht und Hänger</li>
         </ul>
-        <p>Das Berechnungsmodell folgt dem SBB-Rechengang für Kettenwerke und verwendet für bekannte FL-Kombinationen die <strong>VEM Handbuch Formeln 7.82 + 7.66</strong> für den Fahrdraht-Durchhang (effektive Spannweite L<sub>T1</sub> bei Höhendifferenz).</p>
+        <p>Das Berechnungsmodell folgt dem üblichen Rechengang für Kettenwerke (Zustandsgleichung) und verwendet für bekannte FL-Kombinationen die <strong>VEM Handbuch Formeln 7.82 + 7.66</strong> für den Fahrdraht-Durchhang (effektive Spannweite L<sub>T1</sub> bei Höhendifferenz).</p>
         <p style="font-weight:600;margin:.7rem 0 .2rem">Funktionen im Überblick</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
-          <li>Rechengang geprüft an 27 verifizierten SBB-Referenzbeispielen (Kap. 3)</li>
+          <li>Rechengang geprüft an 27 verifizierten Referenzbeispielen (Kap. 3)</li>
           <li>Berechnungsart <em>ausgleichend</em> / <em>starr</em> für N-FL und Einzelleiter (6.8); Fahrdraht neu / abgenutzt; Eislast</li>
           <li>Messpunkte, 3-Punkte-Messung, SOK-Bezug (6.1–6.3); H-Punkte H1–H4 bei den Messpunkten: Abstand zu Hindernissen oberhalb über alle Lastfälle, Schloss je Messpunkt (6.1, 6.12)</li>
           <li>Abspannabschnitt mit Masttabelle, CSV-Import, mehreren Strängen und Längsprofil (6.11)</li>
@@ -23,16 +23,16 @@
         </ul>
       </div>
       <div class="hb-lang hb-fr" style="display:none">
-        <p>Cette application calcule la géométrie caténaire des lignes de contact SBB pour trois types de systèmes&nbsp;:</p>
+        <p>Cette application calcule la géométrie caténaire des lignes de contact pour trois types de systèmes&nbsp;:</p>
         <ul style="margin:.4rem 0 .5rem 1.2rem">
           <li><strong>LC N</strong> — ancrage fixe&nbsp;: câble porteur + fil de contact + suspensions, force de traction du CP dépendante de la température (équation d'état)</li>
           <li><strong>LC R</strong> — ancrage mobile (tendeur automatique)&nbsp;: force de traction constante, aucune correction thermique nécessaire</li>
           <li><strong>Conducteur simple</strong> — calcul caténaire simple d'un conducteur unique (câble d'alimentation, câble de retour, etc.) sans fil de contact ni suspensions</li>
         </ul>
-        <p>Le modèle de calcul suit la méthode de calcul CFF pour les caténaires et utilise pour les combinaisons FL connues la <strong>formule VEM Manuel 7.66</strong> pour la flèche du fil de contact.</p>
+        <p>Le modèle de calcul suit la méthode de calcul usuelle pour les caténaires (équation d’état) et utilise pour les combinaisons FL connues la <strong>formule VEM Manuel 7.66</strong> pour la flèche du fil de contact.</p>
         <p style="font-weight:600;margin:.7rem 0 .2rem">Fonctions en bref</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
-          <li>Méthode de calcul vérifiée sur 27 exemples de référence CFF validés (chap. 3)</li>
+          <li>Méthode de calcul vérifiée sur 27 exemples de référence validés (chap. 3)</li>
           <li>Mode de calcul <em>compensé</em> / <em>rigide</em> pour LC N et conducteur simple (6.8) ; fil de contact neuf / usé ; charge de glace</li>
           <li>Points de mesure, mesure 3 points, référence DRS (6.1–6.3) ; points H H1–H4 aux points de mesure : distance aux obstacles au-dessus pour tous les cas de charge, cadenas par point de mesure (6.1, 6.12)</li>
           <li>Canton de pose avec tableau des mâts, import CSV, plusieurs lignes et profil en long (6.11)</li>
@@ -43,16 +43,16 @@
         </ul>
       </div>
       <div class="hb-lang hb-it" style="display:none">
-        <p>Questa applicazione calcola la geometria della catenaria delle linee di contatto FFS per tre tipi di sistema:</p>
+        <p>Questa applicazione calcola la geometria della catenaria delle linee di contatto per tre tipi di sistema:</p>
         <ul style="margin:.4rem 0 .5rem 1.2rem">
           <li><strong>LC N</strong> — ancoraggio fisso: filo portante + filo di contatto + ballerine, forza di trazione del FP dipendente dalla temperatura (equazione di stato)</li>
           <li><strong>LC R</strong> — ancoraggio mobile (tendifilo automatico): forza di trazione costante, nessuna correzione termica necessaria</li>
           <li><strong>Conduttore singolo</strong> — calcolo semplice della catenaria di un singolo conduttore (cavo di alimentazione, cavo di ritorno, ecc.) senza filo di contatto né ballerine</li>
         </ul>
-        <p>Il modello di calcolo segue il metodo di calcolo FFS per le catenarie e utilizza per le combinazioni FL note la <strong>formula VEM Manuale 7.66</strong> per la freccia del filo di contatto.</p>
+        <p>Il modello di calcolo segue il metodo di calcolo usuale per le catenarie (equazione di stato) e utilizza per le combinazioni FL note la <strong>formula VEM Manuale 7.66</strong> per la freccia del filo di contatto.</p>
         <p style="font-weight:600;margin:.7rem 0 .2rem">Funzioni in breve</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
-          <li>Metodo di calcolo verificato su 27 esempi di riferimento FFS convalidati (cap. 3)</li>
+          <li>Metodo di calcolo verificato su 27 esempi di riferimento convalidati (cap. 3)</li>
           <li>Modalità di calcolo <em>compensato</em> / <em>rigido</em> per LC N e conduttore singolo (6.8); filo di contatto nuovo / usurato; carico di ghiaccio</li>
           <li>Punti di misura, misura 3 punti, riferimento PRF (6.1–6.3); punti H H1–H4 ai punti di misura: distanza da ostacoli sopra per tutti i casi di carico, lucchetto per punto di misura (6.1, 6.12)</li>
           <li>Tratta di regolazione con tabella dei pali, importazione CSV, più linee e profilo longitudinale (6.11)</li>
@@ -76,7 +76,7 @@
           </tr>
           <tr><td style="padding:3px 8px;color:var(--muted)">h<sub>1</sub> / h<sub>2</sub></td><td style="padding:3px 8px">Befestigungshöhen Ts links/rechts <strong>über Schienenoberkante (SOK)</strong> [m]. Diese Werte bleiben immer in «über SOK» — unabhängig davon, ob SOK m ü. M. eingegeben ist.</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">SOK m ü. M. (optional)</td><td style="padding:3px 8px">Absolute Höhe der Schienenoberkante in Metern über Meer [m ü. M.], separat für Mast links und Mast rechts. Wenn gesetzt, werden alle Koordinaten im Diagramm, in den Messpunkt-Callouts und in der Tiefpunktanzeige als m ü. M. dargestellt. Der rechte Wert wird automatisch vom linken übernommen, kann aber unabhängig angepasst werden (Gefällestrecken).</td></tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">L / Lm</td><td style="padding:3px 8px">Spannweite L [m] oder Mittelspannweite Lm [m] für Mehrfeldberechnung. Hinweis: Bei Eingabe von c<sub>proj</sub> oder c<sub>m</sub> ist gemäss Dokument <strong>0161.1013.0005.1</strong> vorzugehen (ⓘ-Schaltfläche beim Feld).</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">L / Lm</td><td style="padding:3px 8px">Spannweite L [m] oder Mittelspannweite Lm [m] für Mehrfeldberechnung. Hinweis: Bei Eingabe von c<sub>proj</sub> oder c<sub>m</sub> ist gemäss den Vorgaben des Betreibers vorzugehen (ⓘ-Schaltfläche beim Feld).</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">sh</td><td style="padding:3px 8px">Systemhöhe: vertikaler Abstand Ts-Aufhängepunkt → Fd-Höhe am Mast [m]. N-FL gestützt: 2.40 m; N-FL gehängt: 1.90 m; R-FL: 1.60 m</td></tr>
         </table>
         <p id="hb-s2-2-label" style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">2.2 &nbsp;Zugkräfte &amp; Temperaturen (N-FL)</p>
@@ -87,7 +87,7 @@
           </tr>
           <tr><td style="padding:3px 8px;color:var(--muted)">H Ts unbelastet</td><td style="padding:3px 8px">Ts-Zugkraft beim Einziehen (ohne Fd und Hänger) bei T<sub>1</sub> [N] — nur N-FL</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">H Ts belastet</td><td style="padding:3px 8px">Ts-Zugkraft nach Anhängen aller Lasten — automatisch via Zustandsgleichung berechnet [N]</td></tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">H Fd</td><td style="padding:3px 8px">Fahrdrahtzug — konstant (N-FL: i. d. R. 8 500 N; Gotthard / R-FL: 10 000 N) [N]</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">H Fd</td><td style="padding:3px 8px">Fahrdrahtzug — konstant (Wert aus den Betreiberdaten, Kap. 5.2) [N]</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">T<sub>1</sub> / T<sub>2</sub></td><td style="padding:3px 8px">Montagetemperatur T<sub>1</sub> (Reglagetemperatur) und Zieltemperatur T<sub>2</sub> [°C] — nur N-FL</td></tr>
           <tr><td style="padding:3px 8px;color:var(--muted)">Eislast Z<sub>L</sub></td><td style="padding:3px 8px">Zusatzlast durch Eisansatz [N/m] — erscheint automatisch bei N-FL und T<sub>2</sub> = −5 °C</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Abnutzung</td><td style="padding:3px 8px">Fahrdraht-Abnutzung in % (Schieberegler). Reduziert das Eigengewicht q<sub>Fd</sub> proportional. Einfärbt das Diagramm bei Überschreitung des zulässigen Grenzwerts für das gewählte Kettenwerk.</td></tr>
@@ -105,7 +105,7 @@
           </tr>
           <tr><td style="padding:3px 8px;color:var(--muted)">h<sub>1</sub> / h<sub>2</sub></td><td style="padding:3px 8px">Hauteurs des points d’appui CP gauche/droite <strong>au-dessus du dessus du rail (DRS)</strong> [m]. Ces valeurs restent toujours en «au-dessus DRS» — indépendamment de si les DRS m s.n.m. sont saisis.</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">DRS m s.n.m. (optionnel)</td><td style="padding:3px 8px">Hauteur absolue du dessus du rail en mètres sur niveau de la mer [m s.n.m.], séparément pour le mât gauche et le mât droit. Si défini, toutes les coordonnées dans le diagramme, les callouts des points de mesure et l'affichage du point le plus bas sont présentés en m s.n.m. La valeur droite est automatiquement reprise de la gauche, mais peut être ajustée indépendamment (tronçons en pente).</td></tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">L / Lm</td><td style="padding:3px 8px">Portée L [m] ou portée moyenne Lm [m] pour calcul multi-portées. Note: pour la saisie de c<sub>proj</sub> ou c<sub>m</sub>, procéder selon le document <strong>0161.1013.0005.1</strong> (bouton ⓘ du champ).</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">L / Lm</td><td style="padding:3px 8px">Portée L [m] ou portée moyenne Lm [m] pour calcul multi-portées. Note: pour la saisie de c<sub>proj</sub> ou c<sub>m</sub>, procéder selon les prescriptions de l’exploitant (bouton ⓘ du champ).</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">sh</td><td style="padding:3px 8px">Hauteur de système: distance verticale entre le point d’appui CP et la hauteur FC au mât [m]. LC N suspendu: 2.40 m; LC N pendu: 1.90 m; LC R: 1.60 m</td></tr>
         </table>
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">2.2 &nbsp;Forces de traction &amp; températures (LC N)</p>
@@ -116,7 +116,7 @@
           </tr>
           <tr><td style="padding:3px 8px;color:var(--muted)">H CP non chargé</td><td style="padding:3px 8px">Force de traction CP lors de la pose (sans FC et suspensions) à T<sub>1</sub> [N] — LC N seulement</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">H CP chargé</td><td style="padding:3px 8px">Force de traction CP après fixation de toutes les charges — calculée automatiquement via l'équation d'état [N]</td></tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">H FC</td><td style="padding:3px 8px">Traction du fil de contact — constante (LC N: généralement 8 500 N; Gothard / LC R: 10 000 N) [N]</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">H FC</td><td style="padding:3px 8px">Traction du fil de contact — constante (valeur des données de l’exploitant, chap. 5.2) [N]</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">T<sub>1</sub> / T<sub>2</sub></td><td style="padding:3px 8px">Température de pose T<sub>1</sub> (température de réglage) et température cible T<sub>2</sub> [°C] — LC N seulement</td></tr>
           <tr><td style="padding:3px 8px;color:var(--muted)">Charge de glace Z<sub>L</sub></td><td style="padding:3px 8px">Charge additionnelle due au givrage [N/m] — apparaît automatiquement pour LC N à T<sub>2</sub> = −5 °C</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Usure</td><td style="padding:3px 8px">Usure du fil de contact en % (curseur). Réduit le poids propre q<sub>FC</sub> proportionnellement. Colore le diagramme lors du dépassement de la valeur limite admissible pour la caténaire choisie.</td></tr>
@@ -134,7 +134,7 @@
           </tr>
           <tr><td style="padding:3px 8px;color:var(--muted)">h<sub>1</sub> / h<sub>2</sub></td><td style="padding:3px 8px">Altezze dei punti d’aggancio FP sinistra/destra <strong>sopra il piano del ferro (PRF)</strong> [m]. Questi valori restano sempre in «sopra PRF» — indipendentemente da se il PRF m s.l.m. è inserito.</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">PRF m s.l.m. (opzionale)</td><td style="padding:3px 8px">Altezza assoluta del piano del ferro in metri sul livello del mare [m s.l.m.], separatamente per il palo sinistro e il palo destro. Se impostato, tutte le coordinate nel diagramma, nelle callout dei punti di misura e nella visualizzazione del punto più basso sono presentate in m s.l.m. Il valore destro viene automaticamente ripreso da quello sinistro, ma può essere adattato indipendentemente (tratti in pendenza).</td></tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">L / Lm</td><td style="padding:3px 8px">Campata L [m] o lunghezza media Lm [m] per il calcolo multi-campata. Nota: per l'inserimento di c<sub>proj</sub> o c<sub>m</sub>, procedere secondo il documento <strong>0161.1013.0005.1</strong> (pulsante ⓘ del campo).</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">L / Lm</td><td style="padding:3px 8px">Campata L [m] o lunghezza media Lm [m] per il calcolo multi-campata. Nota: per l'inserimento di c<sub>proj</sub> o c<sub>m</sub>, procedere secondo le prescrizioni del gestore (pulsante ⓘ del campo).</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">sh</td><td style="padding:3px 8px">Altezza di sistema: distanza verticale tra il punto d’aggancio FP e l'altezza FC al palo [m]. LC N sostenuto: 2.40 m; LC N appeso: 1.90 m; LC R: 1.60 m</td></tr>
         </table>
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">2.2 &nbsp;Forze di trazione &amp; temperature (LC N)</p>
@@ -145,7 +145,7 @@
           </tr>
           <tr><td style="padding:3px 8px;color:var(--muted)">H FP non caricato</td><td style="padding:3px 8px">Forza di trazione FP durante la posa (senza FC e ballerine) a T<sub>1</sub> [N] — solo LC N</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">H FP caricato</td><td style="padding:3px 8px">Forza di trazione FP dopo il montaggio di tutti i carichi — calcolata automaticamente tramite l'equazione di stato [N]</td></tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">H FC</td><td style="padding:3px 8px">Trazione del filo di contatto — costante (LC N: generalmente 8 500 N; Gottardo / LC R: 10 000 N) [N]</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">H FC</td><td style="padding:3px 8px">Trazione del filo di contatto — costante (valore dai dati del gestore, cap. 5.2) [N]</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">T<sub>1</sub> / T<sub>2</sub></td><td style="padding:3px 8px">Temperatura di posa T<sub>1</sub> (temperatura di regolazione) e temperatura obiettivo T<sub>2</sub> [°C] — solo LC N</td></tr>
           <tr><td style="padding:3px 8px;color:var(--muted)">Carico di ghiaccio Z<sub>L</sub></td><td style="padding:3px 8px">Carico aggiuntivo dovuto alla formazione di ghiaccio [N/m] — appare automaticamente per LC N a T<sub>2</sub> = −5 °C</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Usura</td><td style="padding:3px 8px">Usura del filo di contatto in % (cursore). Riduce il peso proprio q<sub>FC</sub> proporzionalmente. Colora il diagramma al superamento del valore limite ammissibile per la catenaria scelta.</td></tr>
@@ -187,11 +187,11 @@
 
         <p style="font-weight:600;margin-top:.7rem">Berechnungsart, R-FL und Einzelleiter</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
-          <li><strong>Ausgleichend</strong>: Zugkraft mit der Mittelspannweite c<sub>m</sub> (Lm) aller Felder; Durchhang je Feld mit seiner Länge (SBB 0161.1013.0005.1). <strong>Starr</strong>: jedes Feld mit seiner Projektspannweite c<sub>proj</sub>; N-FL mit den Reglagewerten «starr» (SBB 0161.1013.0003), Einzelleiter mit L<sub>ref</sub> = 25 m (siehe 6.8).</li>
+          <li><strong>Ausgleichend</strong>: Zugkraft mit der Mittelspannweite c<sub>m</sub> (Lm) aller Felder; Durchhang je Feld mit seiner Länge. <strong>Starr</strong>: jedes Feld mit seiner Projektspannweite c<sub>proj</sub>; N-FL mit den Reglagewerten «starr», Einzelleiter mit L<sub>ref</sub> = 25 m (siehe 6.8).</li>
           <li><strong>R-FL</strong>: Tragseil und Fahrdraht nachgespannt — konstante Zugkraft, die Temperatur wirkt nicht. Eislast und Abnutzung teilen sich auf Ts und Fd auf: q = MFL + (Z<sub>L</sub> − q<sub>Abn</sub>)·H<sub>Ts</sub>/(H<sub>Ts</sub>+H<sub>Fd</sub>). Der Fahrdraht liegt in der Solllage und folgt dem Tragseil nur bei Eislast bzw. Abnutzung (VEM 7.53a): Absenkung ≈ L²/8 · Z<sub>L</sub>/(H<sub>Ts</sub>+H<sub>Fd</sub>).</li>
           <li><strong>Einzelleiter</strong>: Zustandsgleichung mit α und E·A des Leiters, Reglagezugkraft aus der Tabelle (6.5); Eislast bei −5 °C mit eisfreiem Ausgangszustand.</li>
         </ul>
-        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Verifikation:</strong> 27 verifizierte SBB-Referenzbeispiele (N-FL normal und starr, R-FL, Einzelleiter, mit Eis und Abnutzung) sind als automatische Tests hinterlegt und werden bei jeder Änderung nachgerechnet (Toleranz 7.5 mm), zusammen mit 288 weiteren eingefrorenen Rechenfällen.</p>
+        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Verifikation:</strong> 27 verifizierte Referenzbeispiele (N-FL normal und starr, R-FL, Einzelleiter, mit Eis und Abnutzung) sind als automatische Tests hinterlegt und werden bei jeder Änderung nachgerechnet (Toleranz 7.5 mm), zusammen mit 288 weiteren eingefrorenen Rechenfällen.</p>
       </div><!-- /hb-de -->
 
       <!-- FR -->
@@ -225,11 +225,11 @@
 
         <p style="font-weight:600;margin-top:.7rem">Mode de calcul, LC R et conducteur simple</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
-          <li><strong>Compensé</strong> : force de traction avec la portée moyenne c<sub>m</sub> (Lm) de toutes les portées ; flèche par portée avec sa longueur (CFF 0161.1013.0005.1). <strong>Rigide</strong> : chaque portée avec sa portée du projet c<sub>proj</sub> ; LC N avec les valeurs de réglage «rigide» (CFF 0161.1013.0003), conducteur simple avec L<sub>réf</sub> = 25 m (voir 6.8).</li>
+          <li><strong>Compensé</strong> : force de traction avec la portée moyenne c<sub>m</sub> (Lm) de toutes les portées ; flèche par portée avec sa longueur. <strong>Rigide</strong> : chaque portée avec sa portée du projet c<sub>proj</sub> ; LC N avec les valeurs de réglage «rigide», conducteur simple avec L<sub>réf</sub> = 25 m (voir 6.8).</li>
           <li><strong>LC R</strong> : câble porteur et fil de contact tendus automatiquement — force de traction constante, la température n’a pas d’effet. Charge de glace et usure se répartissent sur CP et FC : q = MFL + (Z<sub>L</sub> − q<sub>usure</sub>)·H<sub>CP</sub>/(H<sub>CP</sub>+H<sub>FC</sub>). Le fil de contact est en position nominale et ne suit le câble porteur qu’en cas de glace resp. d’usure (VEM 7.53a) : abaissement ≈ L²/8 · Z<sub>L</sub>/(H<sub>CP</sub>+H<sub>FC</sub>).</li>
           <li><strong>Conducteur simple</strong> : équation d’état avec α et E·A du conducteur, force de réglage selon le tableau (6.5) ; charge de glace à −5 °C avec état initial sans glace.</li>
         </ul>
-        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Vérification :</strong> 27 exemples de référence CFF validés (LC N normale et rigide, LC R, conducteur simple, avec glace et usure) sont enregistrés comme tests automatiques et recalculés à chaque modification (tolérance 7.5 mm), avec 288 autres cas de calcul figés.</p>
+        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Vérification :</strong> 27 exemples de référence validés (LC N normale et rigide, LC R, conducteur simple, avec glace et usure) sont enregistrés comme tests automatiques et recalculés à chaque modification (tolérance 7.5 mm), avec 288 autres cas de calcul figés.</p>
       </div><!-- /hb-fr -->
 
       <!-- IT -->
@@ -263,18 +263,18 @@
 
         <p style="font-weight:600;margin-top:.7rem">Modalità di calcolo, LC R e conduttore singolo</p>
         <ul style="margin:.3rem 0 .5rem 1.2rem;font-size:.82rem">
-          <li><strong>Compensato</strong>: forza di trazione con la lunghezza media c<sub>m</sub> (Lm) di tutte le campate; freccia per campata con la sua lunghezza (FFS 0161.1013.0005.1). <strong>Rigido</strong>: ogni campata con la sua campata del progetto c<sub>proj</sub>; LC N con i valori di regolazione «rigido» (FFS 0161.1013.0003), conduttore singolo con L<sub>rif</sub> = 25 m (vedi 6.8).</li>
+          <li><strong>Compensato</strong>: forza di trazione con la lunghezza media c<sub>m</sub> (Lm) di tutte le campate; freccia per campata con la sua lunghezza. <strong>Rigido</strong>: ogni campata con la sua campata del progetto c<sub>proj</sub>; LC N con i valori di regolazione «rigido», conduttore singolo con L<sub>rif</sub> = 25 m (vedi 6.8).</li>
           <li><strong>LC R</strong>: filo portante e filo di contatto tensionati automaticamente — forza di trazione costante, la temperatura non ha effetto. Carico di ghiaccio e usura si ripartiscono su FP e FC: q = MFL + (Z<sub>L</sub> − q<sub>usura</sub>)·H<sub>FP</sub>/(H<sub>FP</sub>+H<sub>FC</sub>). Il filo di contatto è in posizione nominale e segue il filo portante solo con ghiaccio risp. usura (VEM 7.53a): abbassamento ≈ L²/8 · Z<sub>L</sub>/(H<sub>FP</sub>+H<sub>FC</sub>).</li>
           <li><strong>Conduttore singolo</strong>: equazione di stato con α ed E·A del conduttore, forza di regolazione dalla tabella (6.5); carico di ghiaccio a −5 °C con stato iniziale senza ghiaccio.</li>
         </ul>
-        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Verifica:</strong> 27 esempi di riferimento FFS convalidati (LC N normale e rigida, LC R, conduttore singolo, con ghiaccio e usura) sono registrati come test automatici e ricalcolati a ogni modifica (tolleranza 7.5 mm), insieme ad altri 288 casi di calcolo congelati.</p>
+        <p style="margin-top:.6rem;font-size:.8rem;background:var(--acc-s);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0"><strong>Verifica:</strong> 27 esempi di riferimento convalidati (LC N normale e rigida, LC R, conduttore singolo, con ghiaccio e usura) sono registrati come test automatici e ricalcolati a ogni modifica (tolleranza 7.5 mm), insieme ad altri 288 casi di calcolo congelati.</p>
       </div><!-- /hb-it -->
 
       <!-- ══ 4 Leiterkennwerte ══ -->
       <h3 id="hb-leiter" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.2rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem">4 &nbsp;<span id="hb-s4">Vordefinierte Leiterkennwerte</span></h3>
-      <div class="hb-lang hb-de"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.4rem">Alle Werte gemäss SBB 0161.1013.0001 und Herstellerangaben. E·A = Dehnsteifigkeit.</p></div>
-      <div class="hb-lang hb-fr" style="display:none"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.4rem">Toutes les valeurs selon SBB 0161.1013.0001 et données fabricant. E·A = rigidité en extension.</p></div>
-      <div class="hb-lang hb-it" style="display:none"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.4rem">Tutti i valori secondo SBB 0161.1013.0001 e dati del produttore. E·A = rigidezza a trazione.</p></div>
+      <div class="hb-lang hb-de"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.4rem">Physikalische Werte nach Herstellerangaben. E·A = Dehnsteifigkeit.</p></div>
+      <div class="hb-lang hb-fr" style="display:none"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.4rem">Valeurs physiques selon les données du fabricant. E·A = rigidité en extension.</p></div>
+      <div class="hb-lang hb-it" style="display:none"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.4rem">Valori fisici secondo i dati del produttore. E·A = rigidezza a trazione.</p></div>
 
       <div class="hb-lang hb-de"><p style="font-weight:600;font-size:.83rem;margin:.6rem 0 .2rem">Fahrdraht (Fd)</p></div>
       <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.6rem 0 .2rem">Fil de contact (FC)</p></div>
@@ -365,46 +365,40 @@
         <tr><td style="padding:3px 8px">StCu 92 + Cu 150</td><td style="padding:3px 8px;text-align:right">22.4572</td><td style="padding:3px 8px;text-align:right">8.2180</td><td style="padding:3px 8px;text-align:right">124</td><td style="padding:3px 8px;text-align:right">16.2</td><td style="padding:3px 8px;text-align:right">9.240</td></tr>
       </table>
 
-      <div class="hb-lang hb-de"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.2 &nbsp;N-FL — Reglagewerte (Quelle: SBB 0161.1013.0001)</p></div>
-      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.2 &nbsp;LC N — Valeurs de réglage (source: SBB 0161.1013.0001)</p></div>
-      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.2 &nbsp;LC N — Valori di regolazione (fonte: SBB 0161.1013.0001)</p></div>
-      <table style="width:100%;border-collapse:collapse;font-size:.8rem">
-        <tr style="background:var(--text2);color:white">
-          <td style="padding:4px 8px;font-weight:600">Kombination / Anwendung</td>
-          <td style="padding:4px 8px;font-weight:600;text-align:right">sh [m]</td>
-          <td style="padding:4px 8px;font-weight:600;text-align:right">H<sub>Ts,ub</sub> [N]</td>
-          <td style="padding:4px 8px;font-weight:600;text-align:right">H<sub>Ts,b</sub> [N]</td>
-          <td style="padding:4px 8px;font-weight:600;text-align:right">H<sub>Fd</sub> [N]</td>
-          <td style="padding:4px 8px;font-weight:600;text-align:right">Abnutzung max.</td>
-        </tr>
-        <tr><td style="padding:3px 8px">StCu 50 + Cu 107 &nbsp;<span style="color:var(--muted)">gestützt, 6 kN</span></td><td style="padding:3px 8px;text-align:right">2.40</td><td style="padding:3px 8px;text-align:right">1 700</td><td style="padding:3px 8px;text-align:right">4 500</td><td style="padding:3px 8px;text-align:right">8 500</td><td style="padding:3px 8px;text-align:right">30 %</td></tr>
-        <tr style="background:var(--s2)"><td style="padding:3px 8px">StCu 50 + Cu 107 &nbsp;<span style="color:var(--muted)">gehängt, 8 kN</span></td><td style="padding:3px 8px;text-align:right">1.90</td><td style="padding:3px 8px;text-align:right">3 500</td><td style="padding:3px 8px;text-align:right">6 100</td><td style="padding:3px 8px;text-align:right">8 500</td><td style="padding:3px 8px;text-align:right">30 %</td></tr>
-        <tr><td style="padding:3px 8px">StCu 92 + Cu 107 &nbsp;<span style="color:var(--muted)">gestützt, 6 kN</span></td><td style="padding:3px 8px;text-align:right">2.40</td><td style="padding:3px 8px;text-align:right">2 100</td><td style="padding:3px 8px;text-align:right">4 300</td><td style="padding:3px 8px;text-align:right">8 500</td><td style="padding:3px 8px;text-align:right">30 %</td></tr>
-        <tr style="background:var(--s2)"><td style="padding:3px 8px">StCu 92 + Cu 107 &nbsp;<span style="color:var(--muted)">gehängt, 8 kN</span></td><td style="padding:3px 8px;text-align:right">1.90</td><td style="padding:3px 8px;text-align:right">2 900</td><td style="padding:3px 8px;text-align:right">5 500</td><td style="padding:3px 8px;text-align:right">8 500</td><td style="padding:3px 8px;text-align:right">30 %</td></tr>
-        <tr><td style="padding:3px 8px">StCu 92 + Cu 150 &nbsp;<span style="color:var(--muted)">Gotthard, 10 kN</span></td><td style="padding:3px 8px;text-align:right">2.40</td><td style="padding:3px 8px;text-align:right">3 500</td><td style="padding:3px 8px;text-align:right">7 100</td><td style="padding:3px 8px;text-align:right">10 000</td><td style="padding:3px 8px;text-align:right">25 %</td></tr>
-      </table>
-
-      <div class="hb-lang hb-de"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.3 &nbsp;R-FL — Reglagewerte</p></div>
-      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.3 &nbsp;LC R — Valeurs de réglage</p></div>
-      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.3 &nbsp;LC R — Valori di regolazione</p></div>
-      <table style="width:100%;border-collapse:collapse;font-size:.8rem">
-        <tr style="background:var(--text2);color:white">
-          <td style="padding:4px 8px;font-weight:600">Kombination</td>
-          <td style="padding:4px 8px;font-weight:600;text-align:right">sh [m]</td>
-          <td style="padding:4px 8px;font-weight:600;text-align:right">H<sub>Ts</sub> [N]</td>
-          <td style="padding:4px 8px;font-weight:600;text-align:right">H<sub>Fd</sub> [N]</td>
-          <td style="padding:4px 8px;font-weight:600;text-align:right">Abnutzung max.</td>
-        </tr>
-        <tr><td style="padding:3px 8px">StCu 92 + Cu 107</td><td style="padding:3px 8px;text-align:right">1.60</td><td style="padding:3px 8px;text-align:right">12 000</td><td style="padding:3px 8px;text-align:right">10 000</td><td style="padding:3px 8px;text-align:right">18 %</td></tr>
-        <tr style="background:var(--s2)"><td style="padding:3px 8px">StCu 92 + Cu 150</td><td style="padding:3px 8px;text-align:right">1.60</td><td style="padding:3px 8px;text-align:right">12 000</td><td style="padding:3px 8px;text-align:right">10 000</td><td style="padding:3px 8px;text-align:right">25 %</td></tr>
-      </table>
-
-      <div class="hb-lang hb-de"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.4 &nbsp;Einzelleiter — Basiszugkraft bei −20 °C</p>
-      <p style="font-size:.82rem">Für Einzelleiter ohne tabellarische Herstellerwerte gilt 6 000 N als Basiszugkraft. Leiter mit offizieller Reglagetabelle (z. B. Cu 95 / Cu 150) verwenden diese Tabelle direkt. Alle Werte können in der Reglagetabelle oder in der Seitenleiste per <em>Bearbeiten</em> überschrieben werden (→ Abschn. 6.5 / 6.6).</p></div>
-      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.4 &nbsp;Conducteur simple — Force de base à −20 °C</p>
-      <p style="font-size:.82rem">Pour les conducteurs simples sans valeurs tabulaires du fabricant, 6 000 N est appliqué comme force de base. Les conducteurs avec un tableau de réglage officiel (p. ex. Cu 95 / Cu 150) utilisent directement ce tableau. Toutes les valeurs peuvent être remplacées dans le tableau de réglage ou dans la barre latérale via <em>Modifier</em> (→ sect. 6.5 / 6.6).</p></div>
-      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.4 &nbsp;Conduttore singolo — Forza di base a −20 °C</p>
-      <p style="font-size:.82rem">Per i conduttori singoli senza valori tabulari del produttore, 6 000 N viene applicato come forza di base. I conduttori con una tabella di regolazione ufficiale (es. Cu 95 / Cu 150) utilizzano direttamente questa tabella. Tutti i valori possono essere sostituiti nella tabella di regolazione o nella barra laterale tramite <em>Modifica</em> (→ sez. 6.5 / 6.6).</p></div>
+      <!-- 5.2 Betreiberdaten (seit v6.2): Reglagetabellen, Kettenwerke und hf-Werte aus einer Datei -->
+      <div class="hb-lang hb-de"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.2 &nbsp;Betreiberdaten: Reglagetabellen, Kettenwerke, hf-Werte</p>
+      <p>Reglagetabellen, Kettenwerk-Vorgaben (Systemhöhe, H<sub>Ts</sub>, H<sub>Fd</sub>, Abnutzung) und die Zahlenwerte für hf<sub>min</sub> / hf<sub>max</sub> sind nicht im Programm enthalten. Sie stammen aus einer Datei des Betreibers (Excel oder JSON), die über <em>Mehr ⋯ → Betreiberdaten → Datei laden</em> einmal geladen wird. Die Datei wird geprüft und bleibt in diesem Gerät gespeichert, auch offline.</p>
+      <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+        <li><strong>Ohne Datei</strong> rechnet die App mit neutralen <em>Beispielwerten</em>. Ein Hinweis «Beispielwerte – keine Vorgabe» steht dann unter der Systemauswahl; für Nachweise sind die Betreiberdaten zu laden.</li>
+        <li><strong>Datenstand</strong> (Titel und Stand) steht im Fenster <em>Betreiberdaten</em>, im Fenster <em>Reglagetabelle</em> und in der Fusszeile jedes Berechnungs-PDF; im Zeichnungs-PDF im Schriftfeld.</li>
+        <li><strong>Pflege</strong>: <em>Als Excel speichern</em> liefert die aktiven Daten als Mappe mit den Blättern <em>Info</em>, <em>Einzelleiter</em>, <em>Kettenwerke</em> und <em>hf</em> — mit Beispielwerten als Vorlage zum Ausfüllen. Werte je Temperatur von −20 bis +40 °C in 5-K-Schritten, Stand als JJJJ-MM-TT. <em>Als JSON speichern</em> liefert dieselben Daten als Textdatei.</li>
+        <li><strong>Fehlerhafte Datei</strong>: Sie wird nicht übernommen; die App nennt die Fehler (z. B. fehlende Werte, unbekannter Leiter), die aktiven Daten bleiben unverändert.</li>
+        <li><strong>Projekte</strong> speichern die verwendeten Werte. Fehlt das Kettenwerk eines Projekts in den aktiven Daten, übernimmt die App die Werte aus dem Projekt («aus Projekt»), die Zugkraft ist dann frei eingebbar.</li>
+        <li><em>Beispielwerte verwenden</em> entfernt die geladenen Daten aus dem Gerät.</li>
+      </ul>
+      <p>Die Werte der aktiven Daten zeigt <em>Mehr ⋯ → Reglagetabelle</em>. Für Leiter ohne eigene Tabelle gilt die Vorgabe-Basiskraft bei −20 °C aus den Betreiberdaten; daraus leitet die App die Reglage über die Zustandsgleichung her (auf 100 N gerundet).</p></div>
+      <div class="hb-lang hb-fr" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.2 &nbsp;Données de l’exploitant : tableaux de réglage, caténaires, valeurs hf</p>
+      <p>Les tableaux de réglage, les caténaires prescrites (hauteur du système, H<sub>CP</sub>, H<sub>FC</sub>, usure) et les valeurs pour hf<sub>min</sub> / hf<sub>max</sub> ne font pas partie du programme. Elles proviennent d’un fichier de l’exploitant (Excel ou JSON), chargé une fois via <em>Plus ⋯ → Données de l’exploitant → Charger un fichier</em>. Le fichier est vérifié et reste enregistré sur cet appareil, aussi hors ligne.</p>
+      <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+        <li><strong>Sans fichier</strong>, l’application calcule avec des <em>valeurs d’exemple</em> neutres. La remarque «Valeurs d’exemple – aucune prescription» figure alors sous le choix du système ; pour les justificatifs, charger les données de l’exploitant.</li>
+        <li><strong>État des données</strong> (titre et date) : dans la fenêtre <em>Données de l’exploitant</em>, dans la fenêtre <em>Tableau de réglage</em> et en pied de page de chaque PDF de calcul ; dans le cartouche du PDF du dessin.</li>
+        <li><strong>Mise à jour</strong> : <em>Enregistrer en Excel</em> fournit les données actives sous forme de classeur avec les feuilles <em>Info</em>, <em>Einzelleiter</em>, <em>Kettenwerke</em> et <em>hf</em> — avec les valeurs d’exemple comme modèle à remplir. Valeurs par température de −20 à +40 °C par pas de 5 K, date au format AAAA-MM-JJ. <em>Enregistrer en JSON</em> fournit les mêmes données en fichier texte.</li>
+        <li><strong>Fichier erroné</strong> : il n’est pas repris ; l’application indique les erreurs (p. ex. valeurs manquantes, conducteur inconnu), les données actives restent inchangées.</li>
+        <li><strong>Projets</strong> : ils enregistrent les valeurs utilisées. Si la caténaire d’un projet manque dans les données actives, l’application reprend les valeurs du projet («du projet») et la force de traction est en saisie libre.</li>
+        <li><em>Utiliser les valeurs d’exemple</em> supprime les données chargées de l’appareil.</li>
+      </ul>
+      <p>Les valeurs des données actives sont affichées sous <em>Plus ⋯ → Tableau de réglage</em>. Pour les conducteurs sans tableau propre, la force de base à −20 °C des données de l’exploitant s’applique ; l’application en déduit le réglage par l’équation d’état (arrondi à 100 N).</p></div>
+      <div class="hb-lang hb-it" style="display:none"><p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .25rem">5.2 &nbsp;Dati del gestore: tabelle di regolazione, catenarie, valori hf</p>
+      <p>Tabelle di regolazione, catenarie prescritte (altezza del sistema, H<sub>FP</sub>, H<sub>FC</sub>, usura) e i valori per hf<sub>min</sub> / hf<sub>max</sub> non fanno parte del programma. Provengono da un file del gestore (Excel o JSON), caricato una volta tramite <em>Altro ⋯ → Dati del gestore → Carica file</em>. Il file viene verificato e resta salvato su questo dispositivo, anche offline.</p>
+      <ul style="margin:.25rem 0 .4rem 1.2rem;font-size:.82rem">
+        <li><strong>Senza file</strong> l’applicazione calcola con <em>valori di esempio</em> neutri. Sotto la scelta del sistema compare allora la nota «Valori di esempio – nessuna prescrizione»; per le verifiche caricare i dati del gestore.</li>
+        <li><strong>Stato dei dati</strong> (titolo e data): nella finestra <em>Dati del gestore</em>, nella finestra <em>Tabella di regolazione</em> e nel piè di pagina di ogni PDF di calcolo; nel cartiglio del PDF del disegno.</li>
+        <li><strong>Aggiornamento</strong>: <em>Salva in formato Excel</em> fornisce i dati attivi come cartella con i fogli <em>Info</em>, <em>Einzelleiter</em>, <em>Kettenwerke</em> e <em>hf</em> — con i valori di esempio come modello da compilare. Valori per temperatura da −20 a +40 °C a passi di 5 K, data nel formato AAAA-MM-GG. <em>Salva come JSON</em> fornisce gli stessi dati come file di testo.</li>
+        <li><strong>File errato</strong>: non viene ripreso; l’applicazione indica gli errori (p. es. valori mancanti, conduttore sconosciuto), i dati attivi restano invariati.</li>
+        <li><strong>Progetti</strong>: salvano i valori utilizzati. Se la catenaria di un progetto manca nei dati attivi, l’applicazione riprende i valori dal progetto («dal progetto») e la forza di trazione è a inserimento libero.</li>
+        <li><em>Usa valori di esempio</em> rimuove i dati caricati dal dispositivo.</li>
+      </ul>
+      <p>I valori dei dati attivi sono visibili in <em>Altro ⋯ → Tabella di regolazione</em>. Per i conduttori senza tabella propria vale la forza di base a −20 °C dei dati del gestore; l’applicazione ne ricava la regolazione con l’equazione di stato (arrotondata a 100 N).</p></div>
 
       <!-- ══ 6 Diagnosewerkzeuge & Sonderfunktionen ══ -->
       <h3 id="hb-werkzeuge" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.2rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem">6 &nbsp;<span id="hb-s6">Diagnosewerkzeuge &amp; Sonderfunktionen</span></h3>
@@ -540,7 +534,7 @@
       <!-- DE -->
       <div class="hb-lang hb-de">
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.5 &nbsp;Einzelleiter — Reglagewerte &amp; Basiszugkraft</p>
-        <p>Im Modus <em>Einzelleiter</em> zeigt die Seitenleiste unter der Leiterauswahl eine aufklappbare Infobox mit dem Bezugswert der Reglage bei +10 °C (beim H-Feld steht der Wert bei T<sub>1</sub>). Das <strong>i</strong> rechts in der Titelzeile blendet die Reglagetabelle ein. Gibt es für den Leiter keine SBB-Tabelle oder gilt «Starr», leitet die App die Werte aus der Basiskraft bei −20 °C her und rundet sie wie die Tabellen auf 100 N; Box, Tabelle und H-Feld zeigen dieselben Werte.</p>
+        <p>Im Modus <em>Einzelleiter</em> zeigt die Seitenleiste unter der Leiterauswahl eine aufklappbare Infobox mit dem Bezugswert der Reglage bei +10 °C (beim H-Feld steht der Wert bei T<sub>1</sub>). Das <strong>i</strong> rechts in der Titelzeile blendet die Reglagetabelle ein. Gibt es für den Leiter keine Tabelle in den Betreiberdaten oder gilt «Starr», leitet die App die Werte aus der Basiskraft bei −20 °C her und rundet sie wie die Tabellen auf 100 N; Box, Tabelle und H-Feld zeigen dieselben Werte.</p>
         <p><strong>Freie Eingabe der Zugkraft:</strong> «H Leiter (direkt)» folgt der Reglage bei T<sub>1</sub>, lässt sich aber frei überschreiben. Das Feld erhält dann einen Rahmen in Warnfarbe mit dem Hinweis «Freie Eingabe»; die Reglage-Infobox oben wird ausgegraut und als «Nicht aktiv – H freie Eingabe» markiert. Der Knopf <strong>↺</strong> rechts neben dem Feld stellt den Reglagewert wieder her. Der Handwert wird mit dem Projekt gespeichert; ein Wechsel von Leiter, Basiskraft, Berechnungsart oder Reglagewerten setzt ihn zurück. Bei N-FL und R-FL bleibt H an die Reglage der Kombination gebunden.</p>
         <p>Um Referenzparameter zu ändern, die globale <strong>Reglagetabelle</strong> (Menü «Mehr ⋯» → Reglage) öffnen und auf <strong>Bearbeiten</strong> klicken:</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
@@ -551,14 +545,14 @@
           <tr><td style="padding:3px 8px;color:var(--muted)">H (−20 °C)</td><td style="padding:3px 8px">Basiszugkraft bei −20 °C [N]. Voreinstellung: tabellarische Herstellerwerte; bei Leitern ohne Tabelle 6 000 N.</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">L ref</td><td style="padding:3px 8px">Referenzspannweite [m], auf die die Zustandsgleichung angewendet wird. Standard: 45 m (Cu); 30 m (Aldrey c ≤ 35 m).</td></tr>
         </table>
-        <p>Die Änderungen wirken sofort auf die Rechnung des Einzelleiters (N-FL und R-FL sind nicht betroffen). Angepasste Werte gehören zum <strong>Projekt</strong>: Sie werden mit der Berechnung gespeichert und beim Laden wiederhergestellt; andere Projekte rechnen weiter mit den SBB-Werten. Angepasste Leiter sind in der Tabelle mit «angepasst» markiert, die Infobox in der Seitenleiste zeigt «Angepasste Reglagewerte». <strong>↺ SBB-Werte</strong> stellt die SBB-Tabellen wieder her.</p>
+        <p>Die Änderungen wirken sofort auf die Rechnung des Einzelleiters (N-FL und R-FL sind nicht betroffen). Angepasste Werte gehören zum <strong>Projekt</strong>: Sie werden mit der Berechnung gespeichert und beim Laden wiederhergestellt; andere Projekte rechnen weiter mit den Werten der Betreiberdaten. Angepasste Leiter sind in der Tabelle mit «angepasst» markiert, die Infobox in der Seitenleiste zeigt «Angepasste Reglagewerte». <strong>↺ Vorgabewerte</strong> stellt die Tabellen der Betreiberdaten wieder her.</p>
         <p style="font-size:.82rem;color:var(--muted)">Für Aldrey-Leiter (240 / 300 / 400 / 550 mm²) wird die Reglagevariante <strong>automatisch</strong> nach der Mittelspannweite Lm gewählt: c ≤ 35 m → 30 m Referenz; c > 35 m → 45 m Referenz.</p>
       </div><!-- /hb-de -->
 
       <!-- FR -->
       <div class="hb-lang hb-fr" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.5 &nbsp;Conducteur simple — Valeurs de réglage &amp; force de base</p>
-        <p>En mode <em>Conducteur simple</em>, la barre latérale affiche sous le choix du conducteur une boîte dépliable avec la valeur de référence du réglage à +10 °C (le champ H indique la valeur à T<sub>1</sub>). Le <strong>i</strong> à droite de la ligne de titre affiche le tableau de réglage. S’il n’existe pas de tableau CFF pour le conducteur ou en mode «Rigide», l’application déduit les valeurs de la force de base à −20 °C et les arrondit comme les tableaux à 100 N ; boîte, tableau et champ H affichent les mêmes valeurs.</p>
+        <p>En mode <em>Conducteur simple</em>, la barre latérale affiche sous le choix du conducteur une boîte dépliable avec la valeur de référence du réglage à +10 °C (le champ H indique la valeur à T<sub>1</sub>). Le <strong>i</strong> à droite de la ligne de titre affiche le tableau de réglage. S’il n’existe pas de tableau dans les données de l’exploitant pour le conducteur ou en mode «Rigide», l’application déduit les valeurs de la force de base à −20 °C et les arrondit comme les tableaux à 100 N ; boîte, tableau et champ H affichent les mêmes valeurs.</p>
         <p><strong>Saisie libre de la force de traction :</strong> «H conducteur (direct)» suit le réglage à T<sub>1</sub>, mais peut être librement remplacé. Le champ reçoit alors un cadre de couleur d'avertissement avec la mention «Saisie libre» ; la boîte de réglage en haut est grisée et marquée «Pas actif – H saisie libre». Le bouton <strong>↺</strong> à droite du champ rétablit la valeur de réglage. La valeur saisie est enregistrée avec le projet ; un changement de conducteur, de force de base, de mode de calcul ou de valeurs de réglage la remet à zéro. En LC N et LC R, H reste lié au réglage de la combinaison.</p>
         <p>Pour modifier les paramètres de référence, ouvrir le <strong>Tableau de réglage</strong> global (menu «Plus ⋯» → Réglage) et cliquer sur <strong>Modifier</strong>:</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
@@ -569,14 +563,14 @@
           <tr><td style="padding:3px 8px;color:var(--muted)">H (−20 °C)</td><td style="padding:3px 8px">Force de base à −20 °C [N]. Valeur par défaut: valeurs tabulaires du fabricant; pour les conducteurs sans table 6 000 N.</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">L ref</td><td style="padding:3px 8px">Portée de référence [m] sur laquelle l'équation d'état est appliquée. Standard: 45 m (Cu); 30 m (Aldrey c ≤ 35 m).</td></tr>
         </table>
-        <p>Les modifications agissent immédiatement sur le calcul du conducteur simple (LC N et LC R ne sont pas concernées). Les valeurs adaptées appartiennent au <strong>projet</strong> : elles sont enregistrées avec le calcul et restaurées au chargement ; les autres projets continuent avec les valeurs CFF. Les conducteurs adaptés sont marqués «adapté» dans le tableau, la boîte de la barre latérale indique «Valeurs de réglage adaptées». <strong>↺ Valeurs CFF</strong> rétablit les tableaux CFF.</p>
+        <p>Les modifications agissent immédiatement sur le calcul du conducteur simple (LC N et LC R ne sont pas concernées). Les valeurs adaptées appartiennent au <strong>projet</strong> : elles sont enregistrées avec le calcul et restaurées au chargement ; les autres projets continuent avec les valeurs des données de l’exploitant. Les conducteurs adaptés sont marqués «adapté» dans le tableau, la boîte de la barre latérale indique «Valeurs de réglage adaptées». <strong>↺ Valeurs prescrites</strong> rétablit les tableaux des données de l’exploitant.</p>
         <p style="font-size:.82rem;color:var(--muted)">Pour les conducteurs Aldrey (240 / 300 / 400 / 550 mm²), la variante de réglage est sélectionnée <strong>automatiquement</strong> selon la portée moyenne Lm: c ≤ 35 m → référence 30 m; c > 35 m → référence 45 m.</p>
       </div><!-- /hb-fr -->
 
       <!-- IT -->
       <div class="hb-lang hb-it" style="display:none">
         <p style="font-weight:600;font-size:.83rem;margin:.8rem 0 .2rem">6.5 &nbsp;Conduttore singolo — Valori di regolazione &amp; forza di base</p>
-        <p>In modalità <em>Conduttore singolo</em>, la barra laterale mostra sotto la scelta del conduttore una casella apribile con il valore di riferimento della regolazione a +10 °C (il campo H indica il valore a T<sub>1</sub>). La <strong>i</strong> a destra nella riga del titolo mostra la tabella di regolazione. Se per il conduttore non esiste una tabella FFS o vale «Rigido», l’app ricava i valori dalla forza di base a −20 °C e li arrotonda come le tabelle a 100 N; casella, tabella e campo H mostrano gli stessi valori.</p>
+        <p>In modalità <em>Conduttore singolo</em>, la barra laterale mostra sotto la scelta del conduttore una casella apribile con il valore di riferimento della regolazione a +10 °C (il campo H indica il valore a T<sub>1</sub>). La <strong>i</strong> a destra nella riga del titolo mostra la tabella di regolazione. Se per il conduttore non esiste una tabella nei dati del gestore o vale «Rigido», l’app ricava i valori dalla forza di base a −20 °C e li arrotonda come le tabelle a 100 N; casella, tabella e campo H mostrano gli stessi valori.</p>
         <p><strong>Inserimento libero della forza di trazione:</strong> «H conduttore (diretto)» segue la regolazione a T<sub>1</sub>, ma può essere sovrascritta liberamente. Il campo riceve allora una cornice nel colore di avviso con la nota «Inserimento libero»; la casella di regolazione in alto viene ingrigita e marcata «Non attivo – H inserimento libero». Il pulsante <strong>↺</strong> a destra del campo ripristina il valore di regolazione. Il valore inserito viene salvato con il progetto; un cambio di conduttore, forza di base, metodo di calcolo o valori di regolazione lo azzera. Per LC N e LC R, H resta legata alla regolazione della combinazione.</p>
         <p>Per modificare i parametri di riferimento, aprire la <strong>Tabella di regolazione</strong> globale (menu «Altro ⋯» → Regolazione) e fare clic su <strong>Modifica</strong>:</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin:.3rem 0 .5rem">
@@ -587,7 +581,7 @@
           <tr><td style="padding:3px 8px;color:var(--muted)">H (−20 °C)</td><td style="padding:3px 8px">Forza di base a −20 °C [N]. Valore predefinito: valori tabulari del produttore; per conduttori senza tabella 6 000 N.</td></tr>
           <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">L ref</td><td style="padding:3px 8px">Campata di riferimento [m] su cui viene applicata l'equazione di stato. Standard: 45 m (Cu); 30 m (Aldrey c ≤ 35 m).</td></tr>
         </table>
-        <p>Le modifiche agiscono subito sul calcolo del conduttore singolo (LC N e LC R non sono interessate). I valori adattati appartengono al <strong>progetto</strong>: vengono salvati con il calcolo e ripristinati al caricamento; gli altri progetti continuano con i valori FFS. I conduttori adattati sono marcati «adattato» nella tabella, la casella nella barra laterale indica «Valori di regolazione adattati». <strong>↺ Valori FFS</strong> ripristina le tabelle FFS.</p>
+        <p>Le modifiche agiscono subito sul calcolo del conduttore singolo (LC N e LC R non sono interessate). I valori adattati appartengono al <strong>progetto</strong>: vengono salvati con il calcolo e ripristinati al caricamento; gli altri progetti continuano con i valori dei dati del gestore. I conduttori adattati sono marcati «adattato» nella tabella, la casella nella barra laterale indica «Valori di regolazione adattati». <strong>↺ Valori prescritti</strong> ripristina le tabelle dei dati del gestore.</p>
         <p style="font-size:.82rem;color:var(--muted)">Per i conduttori Aldrey (240 / 300 / 400 / 550 mm²), la variante di regolazione viene selezionata <strong>automaticamente</strong> in base alla lunghezza media Lm: c ≤ 35 m → riferimento 30 m; c > 35 m → riferimento 45 m.</p>
       </div><!-- /hb-it -->
 
@@ -602,7 +596,7 @@
           <li><strong>Export CSV</strong> — exportiert alle aktuellen H(−20 °C)- und L-ref-Werte als semikolongetrennte CSV-Datei (UTF-8 BOM, direkt in Excel öffenbar).</li>
           <li><strong>Import CSV</strong> — lädt eine zuvor exportierte CSV-Datei und setzt alle Werte entsprechend. Unbekannte Spalten werden ignoriert; nur gültige Zahlen werden übernommen.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)">Importierte Werte, die von den SBB-Werten abweichen, gelten als Anpassung des Projekts und werden mit der Berechnung gespeichert. Unveränderte Zeilen bleiben SBB-Werte.</p>
+        <p style="font-size:.8rem;color:var(--muted)">Importierte Werte, die von den Werten der Betreiberdaten abweichen, gelten als Anpassung des Projekts und werden mit der Berechnung gespeichert. Unveränderte Zeilen bleiben Werte der Betreiberdaten.</p>
       </div><!-- /hb-de -->
 
       <!-- FR -->
@@ -614,7 +608,7 @@
           <li><strong>Export CSV</strong> — exporte toutes les valeurs H(−20 °C) et L ref actuelles sous forme de fichier CSV séparé par des points-virgules (UTF-8 BOM, directement ouvrable dans Excel).</li>
           <li><strong>Import CSV</strong> — charge un fichier CSV précédemment exporté et applique toutes les valeurs. Les colonnes inconnues sont ignorées; seuls les nombres valides sont repris.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)">Les valeurs importées qui diffèrent des valeurs CFF sont considérées comme adaptation du projet et enregistrées avec le calcul. Les lignes inchangées restent des valeurs CFF.</p>
+        <p style="font-size:.8rem;color:var(--muted)">Les valeurs importées qui diffèrent des valeurs des données de l’exploitant sont considérées comme adaptation du projet et enregistrées avec le calcul. Les lignes inchangées restent des valeurs des données de l’exploitant.</p>
       </div><!-- /hb-fr -->
 
       <!-- IT -->
@@ -626,7 +620,7 @@
           <li><strong>Export CSV</strong> — esporta tutti i valori H(−20 °C) e L ref attuali come file CSV separato da punti e virgola (UTF-8 BOM, apribile direttamente in Excel).</li>
           <li><strong>Import CSV</strong> — carica un file CSV precedentemente esportato e applica tutti i valori. Le colonne sconosciute vengono ignorate; vengono accettati solo numeri validi.</li>
         </ul>
-        <p style="font-size:.8rem;color:var(--muted)">I valori importati che differiscono dai valori FFS valgono come adattamento del progetto e vengono salvati con il calcolo. Le righe invariate restano valori FFS.</p>
+        <p style="font-size:.8rem;color:var(--muted)">I valori importati che differiscono dai valori dei dati del gestore valgono come adattamento del progetto e vengono salvati con il calcolo. Le righe invariate restano valori dei dati del gestore.</p>
       </div><!-- /hb-it -->
 
 
@@ -644,7 +638,7 @@
             <td class="hb-tab-desc" style="padding:4px 8px;font-weight:600">Beschreibung</td>
           </tr>
           <tr><td style="padding:3px 8px;color:var(--muted)">Arithmetisch</td><td style="padding:3px 8px">Lm = ΣL / n — einfaches Mittel aller Spannweiten. Schnelle Überschlagsrechnung.</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Ideelle Spannweite</td><td style="padding:3px 8px">Lm = √(ΣL³ / ΣL) — SBB-Standard nach EN 50119. Gewichtet lange Felder stärker.</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Ideelle Spannweite</td><td style="padding:3px 8px">Lm = √(ΣL³ / ΣL) — nach EN 50119. Gewichtet lange Felder stärker.</td></tr>
         </table>
         <p>Das Lm-Feld ist <strong>frei überschreibbar</strong>: eigenen Wert eintippen → Feld wird blau, Formel-Buttons grau. Feld leeren → automatische Berechnung wird wiederhergestellt. Der manuelle Wert wird mit dem Projekt gespeichert.</p>
       </div><!-- /hb-de -->
@@ -660,7 +654,7 @@
             <td style="padding:4px 8px;font-weight:600">Description</td>
           </tr>
           <tr><td style="padding:3px 8px;color:var(--muted)">Arithmétique</td><td style="padding:3px 8px">Lm = ΣL / n — moyenne simple de toutes les portées. Calcul rapide approximatif.</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Portée idéale</td><td style="padding:3px 8px">Lm = √(ΣL³ / ΣL) — standard SBB selon EN 50119. Pondère davantage les grandes portées.</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Portée idéale</td><td style="padding:3px 8px">Lm = √(ΣL³ / ΣL) — selon EN 50119. Pondère davantage les grandes portées.</td></tr>
         </table>
         <p>Le champ Lm est <strong>librement modifiable</strong>: entrer sa propre valeur → le champ devient bleu, les boutons de formule gris. Vider le champ → le calcul automatique est rétabli. La valeur manuelle est sauvegardée avec le projet.</p>
       </div><!-- /hb-fr -->
@@ -676,7 +670,7 @@
             <td style="padding:4px 8px;font-weight:600">Descrizione</td>
           </tr>
           <tr><td style="padding:3px 8px;color:var(--muted)">Aritmetica</td><td style="padding:3px 8px">Lm = ΣL / n — media semplice di tutte le campate. Calcolo approssimativo rapido.</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Campata ideale</td><td style="padding:3px 8px">Lm = √(ΣL³ / ΣL) — standard SBB secondo EN 50119. Pondera maggiormente le campate lunghe.</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Campata ideale</td><td style="padding:3px 8px">Lm = √(ΣL³ / ΣL) — secondo EN 50119. Pondera maggiormente le campate lunghe.</td></tr>
         </table>
         <p>Il campo Lm è <strong>liberamente modificabile</strong>: inserire un valore proprio → il campo diventa blu, i pulsanti formula grigi. Svuotare il campo → il calcolo automatico viene ripristinato. Il valore manuale viene salvato con il progetto.</p>
       </div><!-- /hb-it -->
@@ -693,8 +687,8 @@
             <td class="hb-tab-param" style="padding:4px 8px;font-weight:600;width:32%">Einstellung</td>
             <td class="hb-tab-desc" style="padding:4px 8px;font-weight:600">Wirkung</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">Ausgleichend</td><td style="padding:3px 8px">Zugkraft mit der Mittelspannweite c<sub>m</sub>, Durchhang je Feld. N-FL: Reglagewerte «normal» (SBB 0161.1013.0001). Einzelleiter: L<sub>ref</sub> = Materialwert (45 m Cu, 30 m Aldrey). Mittelspannweite-Modus verfügbar.</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Starr</td><td style="padding:3px 8px">Jedes Feld mit seiner Projektspannweite c<sub>proj</sub>. N-FL: Reglagewerte «starr» (SBB 0161.1013.0003). Einzelleiter: L<sub>ref</sub> = 25 m (fixiert). Mittelspannweite-Modus deaktiviert.</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">Ausgleichend</td><td style="padding:3px 8px">Zugkraft mit der Mittelspannweite c<sub>m</sub>, Durchhang je Feld. N-FL: Reglagewerte «normal». Einzelleiter: L<sub>ref</sub> = Materialwert (45 m Cu, 30 m Aldrey). Mittelspannweite-Modus verfügbar.</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Starr</td><td style="padding:3px 8px">Jedes Feld mit seiner Projektspannweite c<sub>proj</sub>. N-FL: Reglagewerte «starr». Einzelleiter: L<sub>ref</sub> = 25 m (fixiert). Mittelspannweite-Modus deaktiviert.</td></tr>
         </table>
         <p style="font-size:.82rem;color:var(--muted)">Die Berechnungsart beeinflusst die Reglagezugkraft-Tabelle und den aus T<sub>1</sub> abgeleiteten H-Wert. Bei «Starr» wird die Zustandsgleichung mit L<sub>ref</sub> = 25 m gerechnet, unabhängig vom Materialwert.</p>
       </div><!-- /hb-de -->
@@ -708,8 +702,8 @@
             <td style="padding:4px 8px;font-weight:600;width:32%">Paramètre</td>
             <td style="padding:4px 8px;font-weight:600">Effet</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">Compensé</td><td style="padding:3px 8px">Force de traction avec la portée moyenne c<sub>m</sub>, flèche par portée. LC N : valeurs de réglage «normal» (CFF 0161.1013.0001). Conducteur simple : L<sub>réf</sub> = valeur matériau (45 m Cu, 30 m Aldrey). Mode portée moyenne disponible.</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Rigide</td><td style="padding:3px 8px">Chaque portée avec sa portée du projet c<sub>proj</sub>. LC N : valeurs de réglage «rigide» (CFF 0161.1013.0003). Conducteur simple : L<sub>réf</sub> = 25 m (fixe). Mode portée moyenne désactivé.</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">Compensé</td><td style="padding:3px 8px">Force de traction avec la portée moyenne c<sub>m</sub>, flèche par portée. LC N : valeurs de réglage «normal». Conducteur simple : L<sub>réf</sub> = valeur matériau (45 m Cu, 30 m Aldrey). Mode portée moyenne disponible.</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Rigide</td><td style="padding:3px 8px">Chaque portée avec sa portée du projet c<sub>proj</sub>. LC N : valeurs de réglage «rigide». Conducteur simple : L<sub>réf</sub> = 25 m (fixe). Mode portée moyenne désactivé.</td></tr>
         </table>
         <p style="font-size:.82rem;color:var(--muted)">Le mode de calcul influence le tableau des forces de traction de réglage et la valeur H dérivée de T<sub>1</sub>. En mode «Rigide», l'équation d'état est calculée avec L<sub>réf</sub> = 25 m.</p>
       </div><!-- /hb-fr -->
@@ -723,8 +717,8 @@
             <td style="padding:4px 8px;font-weight:600;width:32%">Impostazione</td>
             <td style="padding:4px 8px;font-weight:600">Effetto</td>
           </tr>
-          <tr><td style="padding:3px 8px;color:var(--muted)">Compensato</td><td style="padding:3px 8px">Forza di trazione con la lunghezza media c<sub>m</sub>, freccia per campata. LC N: valori di regolazione «normale» (FFS 0161.1013.0001). Conduttore singolo: L<sub>rif</sub> = valore materiale (45 m Cu, 30 m Aldrey). Modalità lunghezza media disponibile.</td></tr>
-          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Rigido</td><td style="padding:3px 8px">Ogni campata con la sua campata del progetto c<sub>proj</sub>. LC N: valori di regolazione «rigido» (FFS 0161.1013.0003). Conduttore singolo: L<sub>rif</sub> = 25 m (fisso). Modalità lunghezza media disattivata.</td></tr>
+          <tr><td style="padding:3px 8px;color:var(--muted)">Compensato</td><td style="padding:3px 8px">Forza di trazione con la lunghezza media c<sub>m</sub>, freccia per campata. LC N: valori di regolazione «normale». Conduttore singolo: L<sub>rif</sub> = valore materiale (45 m Cu, 30 m Aldrey). Modalità lunghezza media disponibile.</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:3px 8px;color:var(--muted)">Rigido</td><td style="padding:3px 8px">Ogni campata con la sua campata del progetto c<sub>proj</sub>. LC N: valori di regolazione «rigido». Conduttore singolo: L<sub>rif</sub> = 25 m (fisso). Modalità lunghezza media disattivata.</td></tr>
         </table>
         <p style="font-size:.82rem;color:var(--muted)">La modalità di calcolo influenza la tabella delle forze di trazione di regolazione e il valore H derivato da T<sub>1</sub>. Con «Rigido» l'equazione di stato viene calcolata con L<sub>rif</sub> = 25 m.</p>
       </div><!-- /hb-it -->
@@ -1041,7 +1035,7 @@ SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
           <li><strong>Menü «Mehr ⋯»</strong> in der Kopfleiste: Reglagetabelle, Handbuch, Darstellung und Zurücksetzen. <em>Darstellung</em> wechselt bei jedem Antippen zwischen automatisch (wie das Gerät), hell und dunkel; PDF und Zeichnung werden immer hell ausgegeben. <em>Zurücksetzen</em> fragt vorher nach.</li>
           <li><strong>Kombination</strong>: Unter der Auswahl steht der Werkstoff; ein Klick darauf klappt die Reglagewerte auf, das «i» rechts öffnet die Reglagetabelle. Beim Einzelleiter sieht die Box gleich aus und steht an derselben Stelle. <strong>H-Punkte</strong> H1–H4 erscheinen erst mit eingetragener SOK m ü. M. — vorher steht nur ein Hinweis mit Link.</li>
           <li><strong>Ergebnisleiste</strong> (Tablet hochkant): Sobald Diagramm und Ergebniskarte aus dem Bild scrollen, zeigt eine Leiste unten Durchhang, Zugkraft und Höhe bei T<sub>2</sub> (und den T<sub>3</sub>-Vergleich). Antippen springt zum Diagramm; bei ungültiger Eingabe steht «Eingabe prüfen».</li>
-          <li><strong>Sprache</strong> DE / FR / IT oben rechts; Fachbegriffe nach SBB-Glossar (Kap. 9).</li>
+          <li><strong>Sprache</strong> DE / FR / IT oben rechts; Fachbegriffe nach dem Glossar (Kap. 9).</li>
           <li><strong>Offline</strong>: Die App funktioniert nach dem ersten Laden ohne Internet und lässt sich installieren. Nach einer Aktualisierung erscheint «Eine neue Version ist verfügbar» — «Jetzt laden» wählen oder die Seite neu laden.</li>
           <li><strong>Schalter</strong> statt Kästchen: Ein-/Aus-Optionen sind überall als Schalter dargestellt.</li>
           <li><strong>Escape</strong> schliesst offene Fenster.</li>
@@ -1058,7 +1052,7 @@ SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
           <li><strong>Menu «Plus ⋯»</strong> dans l’en-tête : tableau de réglage, manuel, affichage et réinitialisation. <em>Affichage</em> alterne à chaque clic entre automatique (comme l’appareil), clair et sombre ; PDF et dessin sont toujours clairs. <em>Réinitialiser</em> demande une confirmation.</li>
           <li><strong>Combinaison</strong> : sous la sélection figure le matériau ; un clic dessus affiche les valeurs de réglage, le «i» à droite ouvre le tableau de réglage. Pour le conducteur simple, la boîte a le même aspect et la même position. Les <strong>points H</strong> H1–H4 n’apparaissent qu’avec le DRS m s.n.m. saisi — avant, seule une remarque avec lien est affichée.</li>
           <li><strong>Barre de résultats</strong> (tablette en portrait) : dès que diagramme et carte de résultats sortent de l’écran, une barre en bas affiche flèche, force de traction et hauteur à T<sub>2</sub> (et la comparaison T<sub>3</sub>). Un appui ramène au diagramme ; en cas de saisie invalide : «Vérifier la saisie».</li>
-          <li><strong>Langue</strong> DE / FR / IT en haut à droite ; termes techniques selon le glossaire CFF (chap. 9).</li>
+          <li><strong>Langue</strong> DE / FR / IT en haut à droite ; termes techniques selon le glossaire (chap. 9).</li>
           <li><strong>Hors ligne</strong> : après le premier chargement, l’application fonctionne sans Internet et peut être installée. Après une mise à jour apparaît «Une nouvelle version est disponible» — choisir «Charger maintenant» ou recharger la page.</li>
           <li><strong>Interrupteurs</strong> au lieu de cases à cocher : les options oui/non sont partout représentées par des interrupteurs.</li>
           <li><strong>Échap</strong> ferme les fenêtres ouvertes.</li>
@@ -1075,7 +1069,7 @@ SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
           <li><strong>Menu «Altro ⋯»</strong> nell’intestazione: tabella di regolazione, manuale, visualizzazione e ripristino. <em>Visualizzazione</em> alterna a ogni clic tra automatico (come il dispositivo), chiaro e scuro; PDF e disegno sono sempre chiari. <em>Ripristina</em> chiede conferma.</li>
           <li><strong>Combinazione</strong>: sotto la selezione è indicato il materiale; un clic mostra i valori di regolazione, la «i» a destra apre la tabella di regolazione. Per il conduttore singolo la casella ha lo stesso aspetto e la stessa posizione. I <strong>punti H</strong> H1–H4 compaiono solo con il PRF m s.l.m. inserito — prima appare solo un avviso con link.</li>
           <li><strong>Barra dei risultati</strong> (tablet verticale): quando diagramma e scheda dei risultati escono dallo schermo, una barra in basso mostra freccia, forza di trazione e altezza a T<sub>2</sub> (e il confronto T<sub>3</sub>). Un tocco riporta al diagramma; con dati non validi: «Controllare i dati inseriti».</li>
-          <li><strong>Lingua</strong> DE / FR / IT in alto a destra; termini tecnici secondo il glossario FFS (cap. 9).</li>
+          <li><strong>Lingua</strong> DE / FR / IT in alto a destra; termini tecnici secondo il glossario (cap. 9).</li>
           <li><strong>Offline</strong>: dopo il primo caricamento l’applicazione funziona senza Internet e può essere installata. Dopo un aggiornamento appare «È disponibile una nuova versione» — scegliere «Carica ora» o ricaricare la pagina.</li>
           <li><strong>Interruttori</strong> al posto delle caselle: le opzioni sì/no sono ovunque rappresentate da interruttori.</li>
           <li><strong>Esc</strong> chiude le finestre aperte.</li>
@@ -1197,12 +1191,9 @@ SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
       <h3 id="hb-quellen" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.2rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem">8 &nbsp;<span id="hb-s8">Quellenangaben</span></h3>
       <div class="hb-lang hb-de">
         <ul style="margin:.4rem 0 .4rem 1.2rem;font-size:.82rem;color:var(--muted)">
-          <li>SBB 0161.1013.0001 — Technische Spezifikation N-FL (Reglagewerte, Materialien)</li>
-          <li>SBB 0161.1013.0005.1 — Vorgabe zur Eingabe von c<sub>proj</sub> / c<sub>m</sub> (Mittelspannweite / Einzelspannweite)</li>
-          <li>SBB 0161.1013.0003 — Reglagetabelle N-FL «starr»</li>
-          <li>SBB 0161.1013.0004 — Zusatzlast Schnee/Eis 7 N/m; Vorgabe in der App 15 N/m (SBB-Vorgabe Fachentwicklung)</li>
+          <li>Reglagetabellen, Kettenwerk-Vorgaben und hf-Werte: aus den geladenen Betreiberdaten (Quellen stehen in der Datei, Kap. 5.2)</li>
           <li>VEM Handbuch — Formel 7.53a (R-FL: Durchhang Tragseil mit Fahrdraht und Zusatzlast)</li>
-          <li>Validierung: 27 verifizierte SBB-Referenzbeispiele als automatische Tests</li>
+          <li>Validierung: 27 verifizierte Referenzbeispiele als automatische Tests</li>
           <li>ISO 16739-1:2018 (IFC4), EPSG:2056 CH1903+ / LV95, Höhen LN02 — für Export und Georeferenz</li>
           <li>VEM Handbuch Freileitungen — Formel 7.66 / 7.82; kombiniertes TS+Fd-System</li>
           <li>Bronštejn/Semendjajev — Mathematisches Handbuch (exakte Kettenlinienformeln)</li>
@@ -1210,12 +1201,9 @@ SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
       </div>
       <div class="hb-lang hb-fr" style="display:none">
         <ul style="margin:.4rem 0 .4rem 1.2rem;font-size:.82rem;color:var(--muted)">
-          <li>SBB 0161.1013.0001 — Spécification technique LC N (valeurs de réglage, matériaux)</li>
-          <li>SBB 0161.1013.0005.1 — Prescriptions pour la saisie de c<sub>proj</sub> / c<sub>m</sub> (portée moyenne / portée individuelle)</li>
-          <li>CFF 0161.1013.0003 — Tableau de réglage LC N «rigide»</li>
-          <li>CFF 0161.1013.0004 — Charge additionnelle neige/glace 7 N/m ; valeur par défaut dans l’application 15 N/m (prescription CFF)</li>
+          <li>Tableaux de réglage, caténaires prescrites et valeurs hf : données de l’exploitant chargées (sources indiquées dans le fichier, chap. 5.2)</li>
           <li>Manuel VEM — formule 7.53a (LC R : flèche du câble porteur avec fil de contact et charge additionnelle)</li>
-          <li>Validation : 27 exemples de référence CFF vérifiés, sous forme de tests automatiques</li>
+          <li>Validation : 27 exemples de référence vérifiés, sous forme de tests automatiques</li>
           <li>ISO 16739-1:2018 (IFC4), EPSG:2056 CH1903+ / MN95, altitudes NF02 — pour l’export et le géoréférencement</li>
           <li>VEM Manuel des lignes aériennes — formule 7.66 / 7.82; système combiné CP+FC</li>
           <li>Bronštejn/Semendjajev — Manuel de mathématiques (formules caténaires exactes)</li>
@@ -1223,12 +1211,9 @@ SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
       </div>
       <div class="hb-lang hb-it" style="display:none">
         <ul style="margin:.4rem 0 .4rem 1.2rem;font-size:.82rem;color:var(--muted)">
-          <li>SBB 0161.1013.0001 — Specifiche tecniche LC N (valori di regolazione, materiali)</li>
-          <li>SBB 0161.1013.0005.1 — Prescrizioni per l'inserimento di c<sub>proj</sub> / c<sub>m</sub> (lunghezza media / campata singola)</li>
-          <li>FFS 0161.1013.0003 — Tabella di regolazione LC N «rigido»</li>
-          <li>FFS 0161.1013.0004 — Carico aggiuntivo neve/ghiaccio 7 N/m; valore predefinito nell’app 15 N/m (prescrizione FFS)</li>
+          <li>Tabelle di regolazione, catenarie prescritte e valori hf: dati del gestore caricati (fonti indicate nel file, cap. 5.2)</li>
           <li>Manuale VEM — formula 7.53a (LC R: freccia del filo portante con filo di contatto e carico aggiuntivo)</li>
-          <li>Validazione: 27 esempi di riferimento FFS verificati, come test automatici</li>
+          <li>Validazione: 27 esempi di riferimento verificati, come test automatici</li>
           <li>ISO 16739-1:2018 (IFC4), EPSG:2056 CH1903+ / MN95, altezze RN02 — per esportazione e georeferenziazione</li>
           <li>VEM Manuale delle linee aeree — formula 7.66 / 7.82; sistema combinato FP+FC</li>
           <li>Bronštejn/Semendjajev — Manuale di matematica (formule caténarie esatte)</li>
@@ -1237,9 +1222,9 @@ SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
 
       <!-- ══ 9 Glossar ══ -->
       <h3 id="hb-glossar" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.2rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem">9 &nbsp;<span id="hb-s9">Glossar DE / FR / IT</span></h3>
-      <div class="hb-lang hb-de"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">Dreisprachige Fachbegriffe gemäss SBB-Norm. Abkürzungen: Ts = Tragseil, Fd = Fahrdraht, SOK = Schienenoberkante.</p></div>
-      <div class="hb-lang hb-fr" style="display:none"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">Termes techniques trilingues selon la norme SBB. Abréviations: CP = câble porteur, FC = fil de contact, DRS = dessus du rail.</p></div>
-      <div class="hb-lang hb-it" style="display:none"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">Terminologia tecnica trilingue secondo la norma FFS. Abbreviazioni: FP = filo portante, FC = filo di contatto, PRF = piano del ferro.</p></div>
+      <div class="hb-lang hb-de"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">Dreisprachige Fachbegriffe der Fahrleitungstechnik. Abkürzungen: Ts = Tragseil, Fd = Fahrdraht, SOK = Schienenoberkante.</p></div>
+      <div class="hb-lang hb-fr" style="display:none"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">Termes techniques trilingues des lignes de contact. Abréviations: CP = câble porteur, FC = fil de contact, DRS = dessus du rail.</p></div>
+      <div class="hb-lang hb-it" style="display:none"><p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">Terminologia tecnica trilingue delle linee di contatto. Abbreviazioni: FP = filo portante, FC = filo di contatto, PRF = piano del ferro.</p></div>
 
       <style>
         .gl { width:100%; border-collapse:collapse; font-size:.8rem; margin-bottom:.9rem; }
@@ -1327,7 +1312,6 @@ SPL;102;2600049.980;1199999.200;540.080;0.30;10.50;012.350</pre></li>
       </table>
 
       <p style="font-size:.75rem;color:var(--tertiary);margin-top:1rem;border-top:1px solid var(--border);padding-top:.75rem">
-        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; <span class="app-version"></span> &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
-        Quelle Reglage: SBB 0161.1013.0001
+        Kettenwerk Rechner N-FL / R-FL / Einzelleiter &nbsp;·&nbsp; <span class="app-version"></span> &nbsp;·&nbsp; Fachentwicklung FS &nbsp;·&nbsp; © 2026
       </p>
     

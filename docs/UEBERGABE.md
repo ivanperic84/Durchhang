@@ -20,10 +20,9 @@ ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLA
    neu aufsetzen (`git fetch origin main && git checkout -B <zweig> origin/main`).
 3. `npm ci` (lädt Playwright), dann `npm test` und die Browser-Tests laufen lassen
    (siehe Abschnitt 6). Alles muss grün sein, bevor etwas geändert wird.
-4. Interne SBB-Unterlagen (Excel «Durchhang 2026.xlsm», Reglagetabellen 0161.1013.0001/0003,
-   Prüfliste «Überprüfung Durchhang FACDA») lagen nur als Upload in der alten Sitzung vor
-   und sind **nicht** im Repo. Werden sie wieder gebraucht, muss der Nutzer sie erneut
-   hochladen. Daraus abgeleitete Zahlen stecken bereits in den Tests.
+4. Interne SBB-Unterlagen liegen nur lokal im Ordner `Grundlagen SBB/` (ausgeschlossen, für
+   Claude nur lesbar). SBB-Betreiberdaten (`sbb-daten.json` / `.xlsx`) und SBB-Testfälle liegen
+   nur lokal (`Grundlagen SBB/`, `tests-sbb/`) — nie ins Repository (siehe CLAUDE.md).
 
 ---
 
@@ -109,37 +108,44 @@ Einzelleiter (EL, z. B. Speise-/Rückleiter).
 
 ## 4. Fachlogik (verifiziert — nicht ohne Grund ändern)
 
-**N-FL wie SBB-Excel «Durchhang 2026.xlsm»**
+**Betreiberdaten (seit v6.2)**: Reglagetabellen, Kettenwerk-Vorgaben und hf-Werte kommen aus
+einer Datei (Excel oder JSON), die im Fenster «Betreiberdaten» geladen und in `localStorage`
+(`dh_betreiberdaten`) gespeichert wird; beim Start setzt `_betreiberdatenStart()` sie in
+`MATERIALS` / `KETTENWERK_PRESETS` / `hfParameterSetzen` ein. Ohne Datei: `BEISPIEL_DATEN`
+(Hinweis «Beispielwerte – keine Vorgabe», auch im PDF). Format und Prüfung: `betreiberdaten.js`.
+
+**N-FL wie SBB-Excel «Durchhang 2026.xlsm»** (Rechengang; Werte aus den Betreiberdaten)
 - Bezugszustand F0 = Tragseil belastet bei **10 °C** (`NFL_BEZUGSTEMPERATUR`), auf 10 N
   gerundet (`runde10`); Zugkraft bei T: `nflZugkraftBei` rundet auf 5 N (mit Eis 10 N).
 - Abnutzung Fahrdraht über `mflAbgenutzt` (qFdAbnutzung Cu107 9.1594111, Cu150 13.533177).
-- Starr: Reglagetabelle «starr» (SBB 0161.1013.0003), Mittelspannweite gesperrt.
+- Starr: Reglagetabelle «starr» der Betreiberdaten, Mittelspannweite gesperrt.
   EL starr: Referenzspannweite 25 m. Alle hergeleiteten EL-Reglagewerte (auch Leiter ohne
-  SBB-Tabelle: 6 kN bei −20 °C) werden auf 100 N gerundet (`_rundeReglage`, seit v5.1.1).
-- Reglagetabelle «normal» 0161.1013.0001: Referenzspannweite 45 m gilt für die
-  Reglage-**Zugkraft**, nicht für die Systemhöhe.
+  eigene Tabelle: Vorgabe-Basiskraft bei −20 °C, `elVorgabeN()`) werden auf 100 N gerundet
+  (`_rundeReglage`, seit v5.1.1).
+- Reglagetabelle «normal»: Referenzspannweite 45 m gilt für die Reglage-**Zugkraft**, nicht
+  für die Systemhöhe.
 - R-FL: Abnutzung als negative Zusatzlast × H_Ts/(H_Ts+H_Fd); Fahrdraht-Verschiebung
   nach VEM 7.53a (`rflFahrdrahtVerschiebung`).
-- Verifikation: **27 SBB-Beispielrechnungen** (Toleranz 7.5 mm) als Test
-  `tests/beispiele_sbb.test.js` / `referenzfaelle.json`; 288 Rechenfälle im Browser
-  eingefroren (`tests/browser/rechenfaelle_referenz.json`).
+- Verifikation: **27 SBB-Beispielrechnungen** (Toleranz 7.5 mm), SBB-Referenzfälle und 288
+  Rechenfälle mit SBB-Daten — nur lokal in `tests-sbb/` (`npm run test:sbb`). Auf GitHub laufen
+  dieselben Prüfungen mit Beispielwerten (`tests/referenzfaelle.json`,
+  `tests/browser/rechenfaelle_referenz.json`).
 
 **Lastfälle (Abstandsprüfung)**, je System einstellbar: Temperaturen Vorgabe −20 °C und
 +80 °C; Eislast Z_L **nur bei −5 °C** (Vorgabe 15 N/m, überschreibbar); Fahrdraht neu/
 abgenutzt (nicht bei EL). Mindestabstand a wird berücksichtigt. Schalter «Alle Lastfälle»
 aus ⇒ nur aktueller Zustand T₂.
 
-**hf_min / hf_max** (`fahrdrahthoehe.js`, wie Excel; 480 Vergleichsfälle identisch)
-- hf_min = GfA + k + be + f + H + Zhf_min; GfA: EBV1 4570, EBV2/3 4670, EBV4 4840;
-  k: EBV1 70 sonst 0; be: 25 kV 270 sonst 150.
-- Zhf_min = fg + thu + fud + fuv + fFDmaxZL + fFDmax40 (fg Schotter N 60 / J 100, BÜ 0;
-  thu v>140 → 10 sonst 20; fud stückweise aus c; fuv nur R-FL und v ≤ 140 (Tabelle);
-  fFDmaxZL nur R-FL mit festen 12 + 10 kN; fFDmax40 nur N-FL:
-  c²/8 · (gk + ZL − gk·H_Tx/H_t0)/(H_Fd + H_Tx) · 1000 mit H_t0/H_Tx aus dem Rechenkern).
-- hf_max = 6050 (LRP J) / 6200 (LRP N) − Zhf_max (tho, fudo = 0.8·fud, −fuv, fh 75, −fFDmin).
-- BÜ: 5510 + Z (Hinweise wie Excel). Spannweiten c nur aus der Liste 60…26, 24, 20, 16,
-  12, 8; Temperaturen −20…80 in 5-K-Schritten; ZL 0/7/15 nur bei −5 °C.
-- Excel-Testfall: N-FL 50+107, c 30, tx −5, ZL 7 → hf_min 4927.95, hf_max 6104.35.
+**hf_min / hf_max** (`fahrdrahthoehe.js`, Rechengang wie Excel; mit SBB-Daten 480 Vergleichsfälle identisch, lokal)
+- hf_min = GfA + k + be + f + H + Zhf_min; Zhf_min = fg + thu + fud + fuv + fFDmaxZL + fFDmax40
+  (fud stückweise aus c; fuv nur R-FL bis zur Geschwindigkeitsgrenze; fFDmaxZL nur R-FL mit festem
+  Zug; fFDmax40 nur N-FL: c²/8 · (gk + ZL − gk·H_Tx/H_t0)/(H_Fd + H_Tx) · 1000, H_t0/H_Tx aus dem Rechenkern).
+- hf_max = hf_max,absolut (LRP J/N) − Zhf_max (tho, fudo = Faktor·fud, −fuv, fh, −fFDmin); BÜ: Mindesthöhe + Z.
+- **Alle Zahlenwerte** (GfA je EBV, k, be, fg, Toleranzen, Vordurchhang, R-FL-Zug, BÜ, hf_max absolut,
+  fh, Faktor, Temperaturhinweis) kommen aus den Betreiberdaten (Gruppe `hf`, `HF_SCHLUESSEL`).
+  SBB-Werte und Excel-Testfall: `tests-sbb/SBB-NOTIZEN.md` (lokal).
+- Spannweiten c nur aus der Liste 60…26, 24, 20, 16, 12, 8; Temperaturen −20…80 in 5-K-Schritten;
+  ZL 0/7/15 nur bei −5 °C.
 - Zulässige Anschlusshöhe: hf_min + sh ≤ h ≤ hf_max + sh (nach innen auf cm gerundet).
 
 **Höhen**: Z der Masten = SOK m ü. M. (seit v4.4.0; vorher Mastfuss). Mastfuss = SOK + Δ.
@@ -196,8 +202,9 @@ mit SOK-Differenz (seit v4.4.0; vorher wurde die SOK-Differenz ignoriert).
 
 ```bash
 npm ci
-npm test                                                     # 89 Node-Tests
-CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 Browser-Tests
+npm test                                                     # 69 Node-Tests
+CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 79 Browser-Tests
+npm run test:sbb                                             # nur lokal: 42 Node + 12 Browser (SBB-Daten)
 ```
 - In der Claude-Cloud-Umgebung ist Chromium unter `/opt/pw-browsers/chromium`
   vorinstalliert (nicht `playwright install` ausführen). CI (GitHub Actions) installiert
@@ -239,6 +246,11 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 
    bisher akzeptiert.
 5. Hinweis an den Nutzer bereits gegeben: Foto-Messung berücksichtigt seit v4.4.0 die
    SOK-Differenz (kann andere Werte als früher ergeben).
+7. **Betreiberdaten (v6.2)**: Handbuch Kap. 7 (Rechenbeispiel) rechnet noch mit H_Ts,ub 1 700 N und
+   H_Fd 8 500 N — Rückfrage an den Nutzer offen, ob neutral neu gerechnet werden soll.
+   Komplettsicherung («Alles sichern») enthält die Betreiberdaten nicht (sie kommen vom SharePoint).
+   Lokale SBB-Tests in `tests-sbb/` haben keine Versionsgeschichte — Vorschlag an den Nutzer:
+   privates GitHub-Repository für SBB-Daten und -Tests.
 6. Releases: Tags `v1.0-stable`, `v4.0`, `vor-verbesserungen-2026-09-26` existieren.
    Tags kann Claude über den Proxy nicht pushen und Zweige nicht löschen — der Nutzer
    macht das auf GitHub (Releases bzw. «Delete branch»).
@@ -279,5 +291,6 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 
 | v6.0.2 | #33 | Entwicklermodus: App-Symbol wird zur Wäscheleine (T-Shirt, Socke, Hose am Seil; Hänger/Fahrdraht ausgeblendet), Wäsche schaukelt beim Einschalten und Antippen (`.waesche`, `.kette-teil`) |
 | v6.0.3 | #33 | Diagramm ohne Messpunkt: Masslinie am Tiefpunkt (T₁/T₂) und Referenzlinie folgen ebenfalls `mpBezug` (Δh bzw. f); Ergebnis «Durchhang f» der Rechnung unverändert |
 | v6.1.0 | – | Foto-Messung nur noch im **Entwicklermodus** (Reiter `.nur-dev`, `setCanvasView('foto')` fällt ohne Entwicklermodus auf das Diagramm zurück, Ausschalten verlässt die Foto-Ansicht; Handbuch-Stellen `nur-dev`). Gespeicherte Foto-Daten und H aus Foto bleiben im Projekt erhalten. |
+| v6.2.0 | – | **Betreiberdaten**: SBB-Reglagetabellen, Kettenwerk-Vorgaben, hf-Parameter und Dokumentnummern aus dem Code entfernt; Laden als Excel/JSON (Fenster «Betreiberdaten» im Menü «Mehr», `betreiberdaten.js`, `xlsx.js`), gespeichert im Gerät, Datenstand in Reglage-Fenster und PDFs. Ohne Datei neutrale Beispielwerte mit Hinweis. Reglage-Fenster aus den Daten erzeugt (vorher feste HTML-Tabelle). Projekte mit fehlendem Kettenwerk: Werte aus dem Projekt, Zugkraft frei. Handbuch Kap. 5.2 neu, SBB-Verweise neutral. SBB-Tests nach `tests-sbb/` (lokal), neutrale Tests und Referenzen für GitHub. |
 
 Issue #20: NIS (später).

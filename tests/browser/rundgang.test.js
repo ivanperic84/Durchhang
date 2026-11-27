@@ -212,12 +212,12 @@ test('Dunkelmodus: keine hellen Eingabefelder (H-Punkte, Mindestabstand, Mastang
   await kontext.close();
 });
 
-test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', async () => {
+test('Fahrdrahthöhe hf_min / hf_max: Beispielfall, Sprachen, PDF, Speichern', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true });
   await fensterAbfangen(seite);
   const r = await seite.evaluate(() => {
-    // In der Excel gespeicherter Fall (hfmin_v11_D / hfmax_v11_D): N-FL StCu 50 + Cu 107, c = L_m = 30 m,
-    // Ts unbelastet 1700 N bei 10 °C, H_Fd 8500 N — diese Werte kommen fest aus der Durchhang-Berechnung
+    // Beispielwerte: N-FL StCu 50 + Cu 107, c = L_m = 30 m, Ts unbelastet 1500 N bei 10 °C,
+    // H_Fd 9000 N — diese Werte kommen fest aus der Durchhang-Berechnung (Fall mit SBB-Daten: lokal)
     document.getElementById('span').value = '30'; document.getElementById('temp1').value = '10';
     updateH_Ts_ubFromT1(); berechnen();
     document.getElementById('hf-btn').click();
@@ -251,12 +251,12 @@ test('Fahrdrahthöhe hf_min / hf_max: Excel-Fall, Sprachen, PDF, Speichern', asy
     return { offen, fest, keineFelder, zusammenfassung, excel, zlGesperrt, cFrei, cAusL, rfl, grafiken, texte, pdf, geladen };
   });
   assert.equal(r.offen, true);
-  assert.deepEqual(r.fest, { kombi: 'stcu50_cu107', Lm: 30, c: 30, H_ub: 1700, T_montage: 10, H_Fd: 8500 });
+  assert.deepEqual(r.fest, { kombi: 'stcu50_cu107', Lm: 30, c: 30, H_ub: 1500, T_montage: 10, H_Fd: 9000 });
   assert.equal(r.keineFelder, true, 'feste Werte nicht separat eingebbar');
-  assert.match(r.zusammenfassung, /Aus der Durchhang-Berechnung \(fest\): N-FL · L = 30.00 m · StCu 50 \+ Cu 107 · Lm = 30.00 m · Ts unbelastet \(Montage\) 1'700 N bei T1 = \+10 °C · HFd 8'500 N/);
+  assert.match(r.zusammenfassung, /Aus der Durchhang-Berechnung \(fest\): N-FL · L = 30.00 m · StCu 50 \+ Cu 107 · Lm = 30.00 m · Ts unbelastet \(Montage\) 1'500 N bei T1 = \+10 °C · HFd 9'000 N/);
   assert.equal(r.cFrei, true);
   assert.equal(r.cAusL, true, 'c folgt L (33.4 m → 34 m)');
-  assert.deepEqual(r.excel.map(s => s.split(' mm')[0]), ["4'928", "6'104"]);
+  assert.deepEqual(r.excel.map(s => s.split(' mm')[0]), ["4'856", "6'087"]);   // Beispiel-Parameter (SBB-Fall: lokal)
   assert.equal(r.zlGesperrt, true);
   assert.equal(r.rfl, true);
   for (const [l, text] of Object.entries(r.texte)) {
@@ -754,9 +754,9 @@ test('Systemwechsel sanft (Hauptansicht), ohne Einfluss auf die Rechnung; hf-Gra
   // Box «Zusammensetzung»: je Grösse Formel mit allen Anteilen, darunter Zahlen
   assert.deepEqual(r.zeile, [
     '= GfA + k + be + f + H + (fg + thu + fud + fuv + fFD,max,ZL + fFD,max)',
-    "= 4'670 + 0 + 150 + 0 + 0 + (60 + 10 + 49.5 + 0 + 0 + 25.5) = 4'965 mm",
+    "= 4'600 + 0 + 150 + 0 + 0 + (50 + 20 + 49.5 + 0 + 0 + 20.7) = 4'890.2 mm",   // Beispiel-Parameter
     '= hfmax,abs − (tho + fudo + fuv + fh + fFD,min)',
-    "= 6'200 − (10 + 39.6 + 0 + 75 + 80.2) = 5'995.2 mm",
+    "= 6'200 − (20 + 39.6 + 0 + 80 + 80.1) = 5'980.3 mm",
   ]);
   assert.ok(r.titel >= 8, 'Tooltips an den Streifen');
   assert.deepEqual(fehler, []);
@@ -801,7 +801,7 @@ test('Projektliste: Auswahl als normale Box; Kopfleiste kompakt mit «Teilen»',
   assert.deepEqual(r.auswahl, { klasse: true, appearance: 'none', quadratisch: true });
   assert.equal(r.teilenImKopf, true);
   assert.equal(r.teilenImDiagramm, false);
-  assert.equal(r.symbole.length, 4, 'Reglage, Handbuch, Darstellung, Zurücksetzen');
+  assert.equal(r.symbole.length, 5, 'Reglage, Betreiberdaten, Handbuch, Darstellung, Zurücksetzen');
   for (const b of r.symbole) assert.deepEqual(b, { text: true, sichtbar: true });
   assert.equal(r.mehrOffen, true);
   assert.equal(r.mehrZu, true, 'Escape schliesst das Menü');
@@ -839,10 +839,11 @@ test('Diagramm: Schalter «Fahrdraht + hf», Prüfzeile im Ergebnis, Speichern',
     const yHi0 = view.yHi, sc0 = view.scaleY;
     setDiagrammHf(true);
     const erweitert = view.scaleY < sc0;                    // Ausschnitt reicht jetzt bis zum Fahrdraht
-    // Aufhängung 7.40 m, sh 2.40 → Fahrdraht um 5.0 m: innerhalb 4.965 … 5.995
+    // Beispielwerte: Aufhängung 7.40 m, sh 2.00 → Fahrdraht 5.40 m: innerhalb 4.890 … 5.980;
+    // Aufhängung 6.80 m → 4.80 m: unter hf_min
     document.getElementById('h1').value = '7.40'; document.getElementById('h2').value = '7.40'; berechnen();
     const ok = zeile();
-    document.getElementById('h1').value = '7.00'; document.getElementById('h2').value = '7.00'; berechnen();
+    document.getElementById('h1').value = '6.80'; document.getElementById('h2').value = '6.80'; berechnen();
     const nok = zeile(), text = document.getElementById('hf-pruefzeile').textContent;
     const stand = getProjectState();
     setDiagrammHf(false);
@@ -878,7 +879,7 @@ test('Zeichnung: hf-Beschriftungen überlagern sich nicht; Höhenleiter erklärt
     const texte = [...document.querySelectorAll('#scale-svg-container svg text')].filter(t => /^hf(min|max) = /.test(t.textContent));
     const [a, b] = texte.map(t => t.getBoundingClientRect());
     const getrennt = a && b && (a.bottom <= b.top + 0.5 || b.bottom <= a.top + 0.5);
-    const pruef = [...document.querySelectorAll('#scale-svg-container svg text')].find(t => /Solllage/.test(t.textContent) && /Soll 4\.60 \/ 4\.60 m · Ist T2/.test(t.textContent));
+    const pruef = [...document.querySelectorAll('#scale-svg-container svg text')].find(t => /Solllage/.test(t.textContent) && /Soll 5\.00 \/ 5\.00 m · Ist T2/.test(t.textContent));   // Beispiel: h 7.00 − sh 2.00
     setCanvasView('diagramm');
     openHf();
     const svg = document.querySelector('#hf-erg .hf-svg').textContent;
@@ -933,19 +934,19 @@ test('hf-Prüfung: Soll-Fahrdrahthöhe an den Stützpunkten (h − sh), Ist bei 
   const r = await seite.evaluate(() => {
     setDiagrammHf(true);
     const zeile = () => document.getElementById('hf-pruefzeile');
-    // h1 = h2 = 7.40, sh 2.40 → Soll 5.00 m: innerhalb 4.965 … 5.995; Ist bei T2 (−20 °C) liegt höher
+    // Beispielwerte: h1 = h2 = 7.40, sh 2.00 → Soll 5.40 m: innerhalb 4.890 … 5.980; Ist bei T2 (−20 °C) liegt höher
     document.getElementById('h1').value = '7.40'; document.getElementById('h2').value = '7.40'; berechnen();
     const a = { klasse: zeile().className, text: zeile().textContent.replace(/\s+/g, ' ') };
-    // Ungleiche Höhen: rechts 8.50 → Soll 6.10 m > hf_max
+    // Ungleiche Höhen: rechts 8.50 → Soll 6.50 m > hf_max
     document.getElementById('h2').value = '8.50'; berechnen();
     const b = { klasse: zeile().className, text: zeile().textContent.replace(/\s+/g, ' ') };
     return { a, b };
   });
   assert.equal(r.a.klasse, 'hf-pruefzeile ok');
-  assert.match(r.a.text, /Fahrdraht Soll an den Stützpunkten \(h − sh\) 5\.00 \/ 5\.00 m über SOK — innerhalb/);
+  assert.match(r.a.text, /Fahrdraht Soll an den Stützpunkten \(h − sh\) 5\.40 \/ 5\.40 m über SOK — innerhalb/);
   assert.match(r.a.text, /Ist-Lage bei T2: .* \(Info/);
   assert.equal(r.b.klasse, 'hf-pruefzeile nok');
-  assert.match(r.b.text, /5\.00 \/ 6\.10 m über SOK — über hfmax/);
+  assert.match(r.b.text, /5\.40 \/ 6\.50 m über SOK — über hfmax/);
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
@@ -1001,7 +1002,8 @@ test('hf: zulässige Anschlusshöhe, Rückfrage nur mit Anschlusshöhe; Systemh�
     const warte = () => new Promise(r => setTimeout(r, 50));
     const vorher = hh.getClientRects().length > 0 || pz.getClientRects().length > 0;
     const zuoberst = pz.nextElementSibling?.id === 'results';
-    // h1 = h2 = 7.00, sh 2.40, hf 4.965 … 5.995 → h zulässig 7.37 … 8.39 m
+    // Beispielwerte: h1 = h2 = 6.80, sh 2.00, hf 4.890 … 5.980 → h zulässig 6.90 … 7.98 m
+    h1.value = '6.80'; h2.value = '6.80'; berechnen();
     const cb = document.getElementById('diagramm-hf');
     cb.checked = true; cb.dispatchEvent(new Event('change')); await warte();
     const dialog = document.getElementById('rf-text').textContent;
@@ -1010,10 +1012,10 @@ test('hf: zulässige Anschlusshöhe, Rückfrage nur mit Anschlusshöhe; Systemh�
     const gelassen = [h1.value, h2.value, sh.value];
     const infoH = { nok: hh.classList.contains('nok'), text: hh.textContent.replace(/\s+/g, ' ').trim() };
     const pzAn = pz.getClientRects().length > 0;
-    hh.querySelector('button').click();                                     // h → 7.37 übernehmen
+    hh.querySelector('button').click();                                     // h → 6.90 übernehmen
     const nachKnopf = [h1.value, h2.value, sh.value, hh.classList.contains('nok')];
     // Rückfrage bestätigen
-    h1.value = '8.80'; h2.value = '7.00'; berechnen();
+    h1.value = '8.80'; h2.value = '6.80'; berechnen();
     cb.checked = false; cb.dispatchEvent(new Event('change'));
     const pzAus = pz.getClientRects().length > 0;
     cb.checked = true; cb.dispatchEvent(new Event('change')); await warte();
@@ -1023,15 +1025,15 @@ test('hf: zulässige Anschlusshöhe, Rückfrage nur mit Anschlusshöhe; Systemh�
   });
   assert.equal(r.vorher, false);
   assert.equal(r.zuoberst, true, 'Prüfzeile vor den Ergebnissen');
-  assert.match(r.dialog, /Anschlusshöhe h₁ 7\.00 → 7\.37 m, h₂ 7\.00 → 7\.37 m/);
+  assert.match(r.dialog, /Anschlusshöhe h₁ 6\.80 → 6\.90 m, h₂ 6\.80 → 6\.90 m/);
   assert.doesNotMatch(r.dialog, /Systemhöhe sh 2/);
   assert.deepEqual(r.knoepfe, ['Anschlusshöhe anpassen', 'So lassen']);
-  assert.deepEqual(r.gelassen, ['7.00', '7.00', '2.4']);
-  assert.deepEqual(r.infoH, { nok: true, text: 'Anschlusshöhe h zulässig 7.37 … 8.39 m über SOK (aus hf)→ h₁ = 7.37 m, h₂ = 7.37 m übernehmen' });
+  assert.deepEqual(r.gelassen, ['6.80', '6.80', '2']);
+  assert.deepEqual(r.infoH, { nok: true, text: 'Anschlusshöhe h zulässig 6.90 … 7.98 m über SOK (aus hf)→ h₁ = 6.90 m, h₂ = 6.90 m übernehmen' });
   assert.equal(r.pzAn, true);
-  assert.deepEqual(r.nachKnopf, ['7.37', '7.37', '2.4', false]);
+  assert.deepEqual(r.nachKnopf, ['6.90', '6.90', '2', false]);
   assert.equal(r.pzAus, false, 'Prüfzeile aus mit dem Schalter');
-  assert.deepEqual(r.bestaetigt, ['8.39', '7.37', '2.4'], 'jede Seite auf den nächsten zulässigen Wert, sh bleibt');
+  assert.deepEqual(r.bestaetigt, ['7.98', '6.90', '2'], 'jede Seite auf den nächsten zulässigen Wert, sh bleibt');
   assert.equal(r.shHinweis, false);
   assert.deepEqual(fehler, []);
   await kontext.close();
@@ -1049,7 +1051,7 @@ test('Exporte mit hf: Berechnungs-PDF mit Prüfung, Zeichnungs-PDF mit Version, 
   });
   assert.match(dxf, /\nHF_MIN\n/); assert.match(dxf, /\nHF_MAX\n/);
   assert.match(r[0], /Fahrdraht Soll an den Stützpunkten/);
-  assert.match(r[0], /Anschlusshöhe h zulässig 7\.37 … 8\.39 m/);
+  assert.match(r[0], /Anschlusshöhe h zulässig 6\.90 … 7\.98 m/);   // Beispielwerte
   assert.match(r[1], new RegExp('Durchhang ' + (await seite.evaluate(() => APP_VERSION)).replace(/\./g, '\\.')));
   assert.deepEqual(fehler, []);
   await kontext.close();
@@ -1522,16 +1524,16 @@ test('Einzelleiter: H freie Eingabe, «↺» rechts daneben, Infobox ausgegraut,
     const nfl = { frei: !H().readOnly };
     return { start, hand, nachT1, geladen, zurueck, nfl, sagHand };
   });
-  assert.equal(r.start.H, '3700'); assert.ok(r.start.frei, 'Einzelleiter: H ist eintippbar');
+  assert.equal(r.start.H, '3200'); assert.ok(r.start.frei, 'Einzelleiter: H ist eintippbar');   // Beispiel Cu 95, 5 kN, +10 °C
   assert.ok(!r.start.reset, 'ohne Handwert kein «↺ Reglage»');
   assert.equal(r.hand.H, '4500'); assert.ok(r.hand.reset, '«↺ Reglage» erscheint beim Handwert');
-  assert.match(r.hand.hw, /Freie Eingabe/); assert.doesNotMatch(r.hand.hw, /%|3'700/, 'kein Bezug zur Reglage');
+  assert.match(r.hand.hw, /Freie Eingabe/); assert.doesNotMatch(r.hand.hw, /%|3'200/, 'kein Bezug zur Reglage');
   assert.ok(r.hand.boxAus && r.hand.zeile, 'Reglage-Infobox ausgegraut mit Zusatzzeile');
   assert.ok(r.hand.knopfRechts, '«↺» rechts neben dem Feld, gleiche Höhe');
   assert.ok(!r.start.boxAus && !r.start.zeile, 'ohne freie Eingabe keine Markierung');
   assert.equal(r.nachT1.H, '4500', 'T₁-Änderung überschreibt den Handwert nicht');
   assert.equal(r.geladen.H, '4500', 'Handwert bleibt beim Speichern/Laden erhalten'); assert.ok(r.geladen.reset);
-  assert.equal(r.zurueck.H, '3100', '«↺» setzt auf den Reglagewert bei T₁ zurück'); assert.ok(!r.zurueck.reset);
+  assert.equal(r.zurueck.H, '2800', '«↺» setzt auf den Reglagewert bei T₁ zurück');   // Beispiel bei +25 °C assert.ok(!r.zurueck.reset);
   assert.ok(!r.zurueck.boxAus && !r.zurueck.zeile, 'nach «↺» Infobox wieder normal');
   assert.ok(!r.nfl.frei, 'N-FL: H bleibt an die Reglage gebunden');
   assert.deepEqual(fehler, []);
@@ -1680,9 +1682,9 @@ test('Reglage-Fenster: angepasste Reglagewerte gehören zum Projekt, Knöpfe ein
   assert.equal(r.getippt, 7000, 'Bearbeiten: «7000» kommt vollständig an');
   assert.ok(r.knoepfeGleich, 'Bearbeiten / Export / Import gleich hoch');
   assert.equal(r.angepasst, '4100'); assert.ok(r.markiert, 'Infobox zeigt «angepasst»');
-  assert.equal(r.ohne, '3700', 'anderes Projekt rechnet mit SBB-Werten');
+  assert.equal(r.ohne, '3200', 'anderes Projekt rechnet mit den Werten der Betreiberdaten');   // Beispiel Cu 95, 5 kN
   assert.equal(r.mitT11, '4040', 'geladenes Projekt rechnet bei neuem T₁ mit seinen angepassten Werten');
-  assert.equal(r.sbb, '3700', '«↺ SBB-Werte» stellt die SBB-Tabelle wieder her');
+  assert.equal(r.sbb, '3200', '«↺ Vorgabewerte» stellt die Tabelle der Betreiberdaten wieder her');
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
@@ -1701,7 +1703,7 @@ test('Einzelleiter «Starr»: nach Laden und Systemwechsel gilt weiter die Starr
     setBerechnungsart('ausgleichend');
     return { vorher, geladen, wechsel };
   });
-  assert.equal(r.vorher.H, '2800'); assert.match(r.vorher.box, /2'800 N.*25 m/);
+  assert.equal(r.vorher.H, '2400'); assert.match(r.vorher.box, /2'400 N.*25 m/);   // Beispiel Cu 95, 5 kN, Starr
   assert.deepEqual(r.geladen, r.vorher, 'nach dem Laden');
   assert.deepEqual(r.wechsel, r.vorher, 'nach Systemwechsel');
   assert.deepEqual(fehler, []);
@@ -1729,8 +1731,9 @@ test('Messpunkt-Bezug: Auswahl wirkt auf Diagramm, Karte, Leiste und PDF gleich 
     const alt = { ...st }; delete alt.mpBezug; setProjectState(alt);
     return { aus, geladen, altesProjekt: mpBezug };
   });
-  assert.equal(r.aus.hoch.karte, 1.23); assert.equal(r.aus.links.karte, 0.69);
-  assert.equal(r.aus.rechts.karte, 1.23); assert.equal(r.aus.sehne.karte, 0.90);
+  // Beispielwerte (Cu 95, 5 kN); rechts 0.54 m höher: links = hoch − 0.54, Sehne ≈ links + 0.54 · 19.5 / 50 (gerundet)
+  assert.equal(r.aus.hoch.karte, 1.32); assert.equal(r.aus.links.karte, 0.78);
+  assert.equal(r.aus.rechts.karte, 1.32); assert.equal(r.aus.sehne.karte, 1.00);
   for (const [m, v] of Object.entries(r.aus)) {
     assert.ok(Math.abs(v.pdf - v.karte) < 0.006, `${m}: PDF ${v.pdf} ≠ Karte ${v.karte}`);
     assert.ok(v.label, `${m}: Beschriftung sichtbar`);

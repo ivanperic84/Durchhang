@@ -1678,6 +1678,22 @@ details.reglage-info-box > summary .info-title { flex: 1; margin-bottom: 0; }
 .rgl-knopf-pri { background: var(--primary); border-color: var(--primary); color: var(--on-acc); }
 .rgl-knopf-pri:hover, .rgl-knopf-pri:focus-visible { color: var(--on-acc); filter: brightness(1.08); }
 @media (any-pointer: coarse) { .rgl-knopf { min-height: 40px; } }
+/* ── Betreiberdaten: Fenster und Hinweis «Beispielwerte» ── */
+.bd-inhalt-box { padding: .5rem 1.25rem 1.25rem; font-size: .8rem; }
+.bd-einleitung { color: var(--muted); margin: 0 0 .9rem; line-height: 1.5; }
+.bd-aktiv { border: 1px solid var(--border2); border-radius: 8px; padding: .6rem .75rem; margin-bottom: .8rem; background: var(--s2); }
+.bd-label { font-size: .65rem; font-weight: 600; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.bd-name { font-weight: 600; color: var(--text); margin-top: .15rem; }
+.bd-zeile { font-size: .72rem; color: var(--muted); margin-top: .15rem; }
+.bd-knoepfe { display: flex; flex-wrap: wrap; gap: .4rem; }
+.bd-fehler { margin-top: .7rem; padding: .5rem .7rem; border: 1px solid var(--warn); border-radius: 6px; background: var(--warn-s); color: var(--text); font-size: .72rem; }
+.bd-fehler ul { margin: .3rem 0 0 1.1rem; padding: 0; }
+.bd-hinweis { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .3rem .6rem;
+  margin-top: .5rem; padding: .3rem .55rem; border: 1px dashed var(--border2); border-radius: 6px;
+  font-size: .68rem; color: var(--muted); }
+.bd-hinweis-knopf { background: none; border: none; padding: 0; font: inherit; color: var(--primary); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.bd-hinweis-knopf:hover, .bd-hinweis-knopf:focus-visible { color: var(--primary-dk); }
+@media (any-pointer: coarse) { .bd-hinweis-knopf { min-height: 0; padding: .4rem 0; } }
 .rtbl { width: 100%; border-collapse: collapse; font-size: .68rem; margin-top: .35rem; }
 .rtbl th, .rtbl td { padding: .15rem .32rem; text-align: right; border-bottom: 1px solid var(--border); }
 .rtbl th { color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border2); }
