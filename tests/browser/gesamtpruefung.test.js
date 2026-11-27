@@ -39,7 +39,8 @@ test('Serienbericht: Knopf erzeugt ein PDF je Berechnung; aktuelle Eingabe bleib
     const e = document.getElementById('span'); e.value = '47.5'; berechnen();   // ungespeicherte Eingabe
     openProjectsModal(); toggleSelectCalc('b1'); toggleSelectCalc('b2');
   });
-  await seite.click('#projects-modal button.proj-btn.bulk[onclick="batchPdfExport()"]');
+  await seite.click('#projects-modal button.proj-btn.bulk[onclick="pdfMitPruefung(\'serie\')"]');
+  await seite.click('#rf-ok');   // Beispielwerte: «Trotzdem erstellen»
   await seite.waitForFunction(() => window.__fenster.length > 0, null, { timeout: 8000 });
   const r = await seite.evaluate(() => ({ html: window.__fenster[0].html, span: document.getElementById('span').value, L: calcState.L }));
   assert.equal((r.html.match(/class="pdf-section"/g) || []).length, 2, 'zwei Berechnungen');

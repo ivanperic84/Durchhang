@@ -1965,3 +1965,18 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 }
 /* Handbuch: Formelblöcke umbrechen statt seitlich scrollen (am Handy nicht per Tastatur erreichbar) */
 #hb-text pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* «Gerechnet mit»: Annahmen der Rechnung über den Ergebnissen */
+.annahmen { margin: 0 0 .7rem; padding: .5rem .75rem; border: 1px solid var(--border2); border-left: 3px solid var(--primary);
+  border-radius: 8px; background: var(--s2); font-size: .74rem; line-height: 1.6; color: var(--text2); }
+.annahmen .ann-titel { font-weight: 600; color: var(--text); }
+.annahmen .ann { white-space: nowrap; }
+.annahmen .ann-abw { color: var(--warn-text); font-weight: 600; }
+.annahmen .ann-krit { color: var(--fail); font-weight: 600; }
+.annahmen .ann-tr { color: var(--tertiary); }
+.annahmen .ann-legende { display: block; margin-top: .15rem; font-size: .68rem; color: var(--tertiary); }
+
+/* Vorgabewerte, die noch nicht geprüft wurden (gestrichelter Rahmen in Warnfarbe) */
+.input-wrap.ungeprueft, select.ungeprueft { outline: 1.5px dashed var(--warn); outline-offset: 2px; border-radius: 8px; }
+.ungeprueft-hw { margin: 0 0 .6rem; padding: .35rem .55rem; border: 1px dashed var(--warn); border-radius: 6px;
+  background: var(--warn-s); color: var(--warn-text); font-size: .7rem; line-height: 1.45; }
