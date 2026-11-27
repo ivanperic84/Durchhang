@@ -44,6 +44,15 @@ https://ivanperic84.github.io/Durchhang/ (wird aus `main` veröffentlicht).
 - Keine Modellbezeichnungen in Commits/PRs. Attributionszeilen so verwenden, wie die
   Umgebung sie vorgibt.
 
+## Vorschau-Kopie (neues Design)
+- Ordner `vorschau/` = Probe-Kopie der App für das neue Design (Systemdesign wie App Vierendeel, drei Bereiche),
+  online unter https://ivanperic84.github.io/Durchhang/vorschau/. Die produktive App im Stammordner bleibt
+  unverändert, bis der Nutzer das Design freigibt; dann wird es in die Stammdateien übernommen und `vorschau/`
+  entfernt oder neu aufgesetzt.
+- Eigener Speicher (Präfix `vorschau:` über `Storage.prototype`, Skript im `<head>`), kein Service Worker
+  (`window.DH_VORSCHAU`), kein Manifest, Schild «VORSCHAU». Nicht für Nachweise.
+- Nicht in den Tests, nicht in `APP_DATEIEN`. Version und `CACHE_VERSION` dort nicht nachführen.
+
 ## Aufbau
 | Datei | Inhalt |
 |---|---|
