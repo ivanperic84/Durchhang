@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v6.5.2';
+const APP_VERSION = 'v6.5.3';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -6043,14 +6043,13 @@ function ungeprueftBestaetigen(...schluessel) {
 }
 function ungeprueftAlleBestaetigen() { if (_ungeprueft.size) { _ungeprueft.clear(); ungeprueftAnzeigen(); } }
 function ungeprueftAnzeigen() {
-  document.querySelectorAll('.ungeprueft').forEach(e => { e.classList.remove('ungeprueft', 'mit-einheit'); e.removeAttribute('title'); delete e.dataset.vorgabe; });
+  document.querySelectorAll('.ungeprueft').forEach(e => { e.classList.remove('ungeprueft'); e.removeAttribute('title'); });
   const titel = t('ungeprueft.feld');
   const markiere = el => {
     if (!el || el.type === 'range') return;   // Schieber T₂: bestätigt, wird aber nicht eigens markiert
     const w = el.closest('.input-wrap') || el;
     if (w.getClientRects().length) {
-      w.classList.add('ungeprueft'); w.title = titel; w.dataset.vorgabe = t('ungeprueft.schild');
-      w.classList.toggle('mit-einheit', !!w.querySelector('.input-unit'));
+      w.classList.add('ungeprueft'); w.title = titel;
     }
   };
   for (const k of _ungeprueft) {
