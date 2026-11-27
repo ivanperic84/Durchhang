@@ -73,8 +73,29 @@ test('Sprachen DE / FR / IT: vollständig, keine rohen Schlüssel sichtbar', asy
   await kontext.close();
 });
 
-test('Foto-Ansicht: Hinweis einmal pro Start', async () => {
+test('Foto-Ansicht nur im Entwicklermodus; Ausschalten führt zurück zum Diagramm', async () => {
   const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const zustand = () => seite.evaluate(() => ({
+    knopf: !!document.getElementById('view-seg-foto').offsetParent,
+    foto: !!window._fotoTabActive,
+    diagramm: document.getElementById('view-seg-diagramm').classList.contains('active'),
+  }));
+  // Ohne Entwicklermodus: Reiter unsichtbar, Aufruf bleibt im Diagramm, kein Hinweisfenster
+  await seite.evaluate(() => setCanvasView('foto'));
+  assert.deepEqual(await zustand(), { knopf: false, foto: false, diagramm: true });
+  assert.equal(await seite.evaluate(() => document.getElementById('rueckfrage').classList.contains('open')), false);
+  // Mit Entwicklermodus: Reiter sichtbar und nutzbar
+  await seite.evaluate(() => { entwicklerModusSetzen(true); window._fotoHinweisGezeigt = true; setCanvasView('foto'); });
+  assert.deepEqual(await zustand(), { knopf: true, foto: true, diagramm: false });
+  // Entwicklermodus aus, während Foto offen ist → zurück zum Diagramm
+  await seite.evaluate(() => entwicklerModusSetzen(false));
+  assert.deepEqual(await zustand(), { knopf: false, foto: false, diagramm: true });
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
+
+test('Foto-Ansicht: Hinweis einmal pro Start', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true });
   const offen = () => seite.evaluate(() => document.getElementById('rueckfrage').classList.contains('open'));
   await seite.evaluate(() => setCanvasView('foto'));
   assert.equal(await offen(), true);
@@ -669,7 +690,7 @@ test('Handy 390 px: keine seitliche Verschiebung, Kopfzeile vollständig sichtba
 });
 
 test('Bereich «H-Punkte» nur in der Ansicht Diagramm und nur mit SOK m ü. M.', async () => {
-  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev: true });   // Foto-Ansicht nur im Entwicklermodus
   const r = await seite.evaluate(() => {
     const sichtbar = () => document.getElementById('obs-section').offsetParent !== null;
     document.getElementById('sok-mum-left').value = ''; document.getElementById('sok-mum-right').value = ''; berechnen();
