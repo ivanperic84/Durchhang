@@ -203,7 +203,7 @@ mit SOK-Differenz (seit v4.4.0; vorher wurde die SOK-Differenz ignoriert).
 ```bash
 npm ci
 npm test                                                     # 69 Node-Tests
-CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 95 Browser-Tests
+CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 98 Browser-Tests
 npm run test:sbb                                             # nur lokal: 42 Node + 12 Browser (SBB-Daten)
 ```
 - In der Claude-Cloud-Umgebung ist Chromium unter `/opt/pw-browsers/chromium`
@@ -297,5 +297,6 @@ npm run test:sbb                                             # nur lokal: 42 Nod
 | v6.4.0 | – | **Gesamtprüfung** (alle Ansichten/Fenster auf PC, Tablet, Handy, hell/dunkel, DE/FR/IT; PDFs, Exporte, Quervergleich der Werte, Robustheit). Behoben: Serienbericht-Knopf (Funktion war nicht global → Skriptfehler), Serienbericht stellt die ungespeicherte Eingabe wieder her; Abstandsnachweis H-Punkte im Berechnungs-PDF (`_pdfAbstandsnachweis`); Abschnitt am Handy verbreiterte die Seite (`.nur-vorlesen` in `.abs-scroll` ohne `position: relative`); harte Eingabegrenzen `VAL_GRENZE` (L ≤ 1000 m usw.); Rechengang, Serienbericht und PDF-Titel übersetzt; Achsenzahlen unter Mastbeschriftung im Diagramm weg; Kontraste (Infobox ohne opacity, `--warn-text`, `.btn-primary` mit `--on-acc`); Tippflächen ≥ 40 px; Lastfälle-Fenster am Handy; aria-labelledby für zl-eis, cm-wear, cm-sh, el-material-select; alle Fenster `role="dialog"`. SBB-Datei: Reglage-Notizen FR/IT ergänzt (lokal). Tests `tests/browser/gesamtpruefung.test.js`. Offen (optional): Zwischenspeicherung der Eingabe beim Neuladen, Erfolgsmeldung beim Import. |
 | v6.4.1 | – | Zeichnung: Masslinie Δh bzw. f an jedem Messpunkt wie im Diagramm (`mp-mass`, Werte = Tabelle), Tiefpunkt mit Messpunkten nur dezent; Betreiberdaten: Fenster schliesst nach erfolgreichem Laden, Meldung mit Datenstand und Inhalt (8 s). |
 | v6.4.2 | – | Entwicklermodus: Wasserzeichen «ENTWICKLERMODUS» im Diagramm (nur Bildschirm, `!_diagrammDruck`); Stränge: Spalte «System · Leiter» sofort aus den Einstellungen links (`_strangSystemText`), Hinweis zur Seitenleiste. |
+| v6.5.0 | – | **Zugänglichkeit für Projektleiter** (Vorschläge A–C): A «Gerechnet mit» über den Ergebnissen, im Berechnungs- und Zeichnungs-PDF (`annahmenListe()`, Abweichungen orange, Beispielwerte rot); B Vorgabewerte «ungeprüft» gestrichelt bis geändert/angetippt (`_ungeprueft`, `UNGEPRUEFT_FELDER`), Projekte gelten als geprüft; C Rückfrage vor dem PDF über die Menüknöpfe (`pdfMitPruefung`), Vermerk «Beispielwerte – kein Nachweis» auf jeder PDF-Seite (`_pdfVermerk` in `_druckfenster`). Programmatische PDF-Funktionen bleiben ohne Rückfrage (Tests). Weitere Vorschläge (D–K, u. a. Erklärungen, Stufe «Einfach», Assistent, Praxistest) mit dem Nutzer offen. |
 
 Issue #20: NIS (später).

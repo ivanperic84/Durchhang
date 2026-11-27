@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v6.4.2';
+const APP_VERSION = 'v6.5.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -4214,6 +4214,7 @@ function setProjectState(s) {
     meldung(t('msg.projekt.ungueltig') + ':\n' + pruefung.fehler, 'fehler');
     return false;
   }
+  ungeprueftAlleBestaetigen();   // Werte eines Projekts gelten als geprüft
   const rueckfall = _projektRuecknahmeLaeuft ? null : getProjectState();
   try {
     _setProjectStateIntern(pruefung.state);
@@ -4818,6 +4819,7 @@ async function batchPdfExport() {
   // kein Projekt geöffnet ist (sonst blieb danach das zuletzt exportierte stehen)
   const origId = currentProjectId;
   const origZustand = JSON.stringify(getProjectState());
+  const origUngeprueft = new Set(_ungeprueft);
 
   // Show progress indicator in modal
   const listEl = document.getElementById('proj-list-container');
@@ -4856,6 +4858,7 @@ async function batchPdfExport() {
   // Ausgangszustand wiederherstellen (auch ungespeicherte Eingaben)
   try { setProjectState(JSON.parse(origZustand)); currentProjectId = origId; updateProjectBadge(); }
   catch(e) { _spur('Projekt/Wiederherstellen nach Export', e); }
+  _ungeprueft = origUngeprueft; ungeprueftAnzeigen();
 
   if (sections.length === 0) return;
 
@@ -5181,7 +5184,7 @@ function renderProjectList() {
   const bulkBar = selectedIds.size > 0 ? `
     <div class="proj-bulk-bar">
       <span class="proj-bulk-label">${selectedIds.size} ${t('ui.ausgewaehlt')}</span>
-      <button class="proj-btn bulk" onclick="batchPdfExport()">
+      <button class="proj-btn bulk" onclick="pdfMitPruefung('serie')">
         <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style="vertical-align:-.1em;margin-right:.2rem"><path d="M3 12h10M8 3v7m0 0L5 7m3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         ${t('ui.pdf.serie')}
       </button>
@@ -6019,6 +6022,106 @@ const _FEHLER_FELD = { L: 'span', 'H.ts': 'tension', 'H.el': 'tension', 'H.fd': 
 const PLAUSIBEL = { L: 80, h: 15, T: [-30, 90] };
 // Harte Grenzen: darüber keine Rechnung (vorher rechnete z. B. L = 10⁹ m mit «NaN» in der Anzeige)
 const VAL_GRENZE = { L: 1000, h1: 200, h2: 200, T1: 200, T2: 200, sh: 20 };
+// ── Vorgabewerte «ungeprüft» ───────────────────────────────────────────────────
+// Beim Start stehen Vorgabewerte in den wichtigsten Feldern. Solange ein Feld weder
+// geändert noch angetippt und verlassen wurde, ist es markiert. Geladene Projekte
+// gelten als geprüft. Vor dem PDF fragt die App nach, falls noch Felder markiert sind.
+const UNGEPRUEFT_FELDER = {
+  span: ['span', 'lm-display'], h1: ['h1'], h2: ['h2'], temp1: ['temp1'], temp2: ['temp2', 'temp2-slider'],
+  leiter: ['preset-select', 'el-material-select'],
+};
+let _ungeprueft = new Set(Object.keys(UNGEPRUEFT_FELDER));
+function _ungeprueftSchluessel(el) {
+  const id = el?.id || '';
+  if (/^span-\d+$/.test(id)) return 'span';
+  return Object.keys(UNGEPRUEFT_FELDER).find(k => UNGEPRUEFT_FELDER[k].includes(id)) || null;
+}
+function ungeprueftBestaetigen(...schluessel) {
+  let geaendert = false;
+  for (const k of schluessel) if (_ungeprueft.delete(k)) geaendert = true;
+  if (geaendert) ungeprueftAnzeigen();
+}
+function ungeprueftAlleBestaetigen() { if (_ungeprueft.size) { _ungeprueft.clear(); ungeprueftAnzeigen(); } }
+function ungeprueftAnzeigen() {
+  document.querySelectorAll('.ungeprueft').forEach(e => { e.classList.remove('ungeprueft'); e.removeAttribute('title'); });
+  const titel = t('ungeprueft.feld');
+  const markiere = el => {
+    if (!el || el.type === 'range') return;   // Schieber T₂: bestätigt, wird aber nicht eigens markiert
+    const w = el.closest('.input-wrap') || el; if (w.getClientRects().length) { w.classList.add('ungeprueft'); w.title = titel; }
+  };
+  for (const k of _ungeprueft) {
+    UNGEPRUEFT_FELDER[k].forEach(id => markiere(document.getElementById(id)));
+    if (k === 'span') document.querySelectorAll('[id^="span-"]').forEach(e => { if (/^span-\d+$/.test(e.id)) markiere(e); });
+  }
+  const hw = document.getElementById('ungeprueft-hw');
+  if (hw) zeigeElement(hw, document.querySelector('.ungeprueft') !== null);
+}
+// Namen der noch ungeprüften Felder (für die Rückfrage vor dem PDF)
+function ungeprueftNamen() {
+  const name = { span: t('val.feld.L'), h1: t('val.feld.h1'), h2: t('val.feld.h2'), temp1: t('val.feld.T1'), temp2: t('val.feld.T2'), leiter: t('ungeprueft.leiter') };
+  return [..._ungeprueft].filter(k => UNGEPRUEFT_FELDER[k].some(id => document.getElementById(id)?.getClientRects().length)
+    || (k === 'span' && document.querySelector('[id^="span-"]')?.getClientRects().length)).map(k => name[k]);
+}
+['change', 'focusout'].forEach(typ => document.addEventListener(typ, e => {
+  const k = _ungeprueftSchluessel(e.target);
+  if (k) ungeprueftBestaetigen(k);
+}, true));
+
+// ── «Gerechnet mit»: alle Annahmen der aktuellen Rechnung in Klartext ──────────
+// art: '' = Standard, 'abw' = abweichend vom Standard (orange), 'krit' = keine
+// Betreiberdaten (rot). Gleiche Liste für Bildschirm, Berechnungs- und Zeichnungs-PDF.
+function annahmenListe() {
+  const c = calcState; if (!c) return [];
+  const L = [];
+  const add = (txt, art = '') => L.push({ txt, art });
+  const isEl = sysMode === 'el', isNfl = sysMode === 'nfl';
+  const T = v => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v)} °C`;
+  // System und Kettenwerk bzw. Leiter
+  const sel = document.getElementById(isEl ? 'el-material-select' : 'preset-select');
+  const opt = sel?.selectedOptions?.[0];
+  let leiter = opt?.textContent?.trim() || '—';
+  if (isEl) {
+    const m = MATERIALS[sel?.value]; const v = m?.H_reglage_variants?.[elBasiskraftIdx];
+    if (v?.label && m.H_reglage_variants.length > 1) leiter += ' · ' + v.label;
+  }
+  const ausProjekt = !!opt?.dataset?.ausProjekt, eigen = !isEl && String(sel?.value || '').startsWith('custom_');
+  add(`${sysName(sysMode)} · ${leiter.replace(/^★\s*/, '')}${ausProjekt ? ` (${t('bd.aus.projekt')})` : eigen ? ` (${t('ann.eigen')})` : ''}`, ausProjekt || eigen ? 'abw' : '');
+  if (isNfl || isEl) add(t(elBerechnungsart === 'starr' ? 'par.ba.starr' : 'par.ba.ausg'), elBerechnungsart === 'starr' ? 'abw' : '');
+  add(spanMode === 'ruling' ? `Lm = ${fN(c.Lm, 2)} m (${t('ann.felder').replace('{n}', spanCount)})` : `L = ${fN(c.L, 2)} m`);
+  if (sysMode !== 'rfl') add(`${t('ann.montage')} T₁ = ${T(c.T1)}`);
+  add(`${t('ann.nachweis')} T₂ = ${T(c.T2)}${c.ZL > 0 ? ` · ${t('ann.eis')} ${fN(c.ZL, 0)} N/m` : ''}`);
+  if (typeof _hFromFoto !== 'undefined' && _hFromFoto) add(t('ann.h.foto'), 'abw');
+  else if (isEl && _hVonHand) add(`${t('ann.h.hand')} ${fN(c.H_Ts, 0)} N`, 'abw');
+  else if (ausProjekt) add(`${t('ann.h.projekt')}`, 'abw');
+  else add(t('ann.h.reglage'));
+  if (Object.keys(_reglageAngepasst || {}).length) add(t('ann.rgl.angepasst'), 'abw');
+  if (!isEl) add(wearPct > 0 ? t('ann.fd.abg').replace('{p}', wearPct) : t('ann.fd.neu'), wearPct > 0 ? 'abw' : '');
+  if (_nachweis.some(n => n.best)) add(lastfaelleAktiv
+    ? t('ann.lf.alle').replace('{n}', lastfaelle(lastfallEinst, sysMode).length) : t('ann.lf.aktuell'), lastfaelleAktiv ? '' : 'abw');
+  add(`${t('pdf.quelle')}: ${betreiberdatenText()}`, betreiberDaten?.beispiel ? 'krit' : '');
+  return L;
+}
+function annahmenAnzeigen() {
+  const el = document.getElementById('annahmen');
+  if (!el) return;
+  const L = annahmenListe();
+  if (!L.length) { zeigeElement(el, false); return; }
+  const abw = L.some(x => x.art);
+  el.innerHTML = `<span class="ann-titel">${t('ann.titel')}:</span> `
+    + L.map(x => `<span class="ann${x.art ? ' ann-' + x.art : ''}">${escHtml(x.txt)}</span>`).join('<span class="ann-tr" aria-hidden="true"> · </span>')
+    + (abw ? `<span class="ann-legende">${t('ann.legende')}</span>` : '');
+  zeigeElement(el, true);
+}
+// PDF: gleicher Inhalt als Block (helle Druckfarben)
+function _annahmenPdf() {
+  const L = annahmenListe();
+  if (!L.length) return '';
+  const farbe = { abw: '#9a6b00', krit: '#c0392b' };
+  return `<div class="step" style="border-left:3px solid ${L.some(x => x.art === 'krit') ? farbe.krit : L.some(x => x.art) ? farbe.abw : '#4a5cb8'}"><p style="margin:0"><strong>${t('ann.titel')}:</strong> `
+    + L.map(x => x.art ? `<strong style="color:${farbe[x.art]}">${escHtml(x.txt)}</strong>` : escHtml(x.txt)).join(' &nbsp;·&nbsp; ')
+    + `</p>${L.some(x => x.art) ? `<p class="sub2" style="margin:2px 0 0">${t('ann.legende')}</p>` : ''}</div>`;
+}
+
 function _ergebnisVeraltet(ja, feldId = null) {
   document.body.classList.toggle('ergebnis-veraltet', ja);
   document.querySelectorAll('.feld-fehler').forEach(el => {
@@ -6150,6 +6253,8 @@ function berechnen() {
   _nachweisAktualisieren();
   drawCanvas(c1, c2, L, h1, h2, sh, false, z.c2_vem, z.c3_zeichnung, z.c_fd_ref);
   _hindernisErgebnisse();
+  annahmenAnzeigen();
+  ungeprueftAnzeigen();
   hfPruefzeile();
   hHfHinweis();
   _zugkraftSperre();
@@ -8144,6 +8249,8 @@ function buildPdfSectionHtml(projName, canvasImg) {
      ${!isEl ? `&nbsp;|&nbsp; sh = ${sh} m` : ''}</p>
 </div></div>
 
+${_annahmenPdf()}
+
 <!-- ── Eingabewerte ── -->
 <h2>${t('pdf.eingabewerte')}</h2>
 <div class="step"><table class="inp">
@@ -8539,7 +8646,7 @@ function _zeichnungBauen(stripInSvg) {
 
   // Layout in SVG mm — viewBox = 267 × 180 mm (A4 landscape usable at 15mm margin)
   const VW = 267, VH = 180;
-  const titleH = stripInSvg ? 20 : 2, footH = 14;
+  const titleH = stripInSvg ? 24 : 2, footH = 14;   // PDF: Kopf mit Zeile «Gerechnet mit»
   const axisL  = 22, axisR = 4;
   const drawX0 = axisL, drawX1 = VW - axisR;
   const drawY0 = titleH, drawY1 = VH - footH;
@@ -9278,7 +9385,8 @@ function _zeichnungBauen(stripInSvg) {
   <text x="3" y="7.8" font-size="4.2" font-weight="700" fill="#111218">${mainTitle}</text>
   <text x="${VW-3}" y="7.8" font-size="2.2" text-anchor="end" fill="#62656f">Durchhang ${APP_VERSION}  ·  ${dateS}  ·  ${escHtml(betreiberdatenText())}</text>
   ${_nameLine ? `<text x="3" y="12.5" font-size="2.7" fill="#3a3c48">${_nameLine}</text>` : ''}
-  <text x="3" y="${_nameLine ? '17.5' : '13'}" font-size="2.45" fill="#5f616c">${_paramLine}</text>` : '';
+  <text x="3" y="${_nameLine ? '17.5' : '13'}" font-size="2.45" fill="#5f616c">${_paramLine}</text>
+  <text x="3" y="${_nameLine ? '21.8' : '17.3'}" font-size="2.2" fill="#5f616c"><tspan font-weight="700">${escHtml(t('ann.titel'))}:</tspan> ${annahmenListe().map(x => x.art ? `<tspan fill="${x.art === 'krit' ? '#c0392b' : '#9a6b00'}" font-weight="700">${escHtml(x.txt)}</tspan>` : escHtml(x.txt)).join('  ·  ')}</text>` : '';
 
   // Frame and Y-axis
   const frameSvg   = stripInSvg ? `<rect x="${drawX0}" y="${drawY0}" width="${drawW}" height="${drawH}" fill="none" stroke="#d8d8d8" stroke-width="0.3"/>` : '';
@@ -10008,6 +10116,7 @@ const _fotoSidebarSync = Ansicht._fotoSidebarSync;
 var koordAktiv = false;   // var: vor der ersten Rechnung sicher lesbar
 
 function koordSchalten(an, { rechnen = true } = {}) {
+  if (an) ungeprueftBestaetigen('span');   // Spannweite aus den Koordinaten
   koordAktiv = !!an;
   const cb = document.getElementById('koord-aktiv');
   if (cb) cb.checked = koordAktiv;
@@ -10590,6 +10699,7 @@ function abschnittFeldOeffnen(i, { ansicht = true, koord = null } = {}) {
   const m = abschnitt.masten, a = m[i], b = m[i + 1];
   const fl = feldLaengen(m);
   if (!a || !b || !(fl[i]?.L > 0)) return false;
+  ungeprueftBestaetigen('span', 'h1', 'h2');   // Werte stammen aus der Masttabelle
   // Messpunkte je Feld: bisheriges Feld sichern, neues laden. Beim ersten
   // Öffnen ohne gespeicherte Punkte gehen die aktuellen Messpunkte mit.
   abschnitt.mp = abschnitt.mp || {};
@@ -11319,7 +11429,33 @@ function _pdfLogo(gr = 26) {
     <line x1="20" y1="56" x2="80" y2="56" stroke="#5f616c" stroke-width="3"/><path d="M20 30 Q50 59 80 30" stroke="#4a5cb8" stroke-width="6"/></svg>`;
 }
 // Druckfenster öffnen und drucken, sobald die Schrift geladen ist
+// Vermerk auf jeder PDF-Seite, solange nur Beispielwerte aktiv sind (keine Betreiberdaten)
+function _pdfVermerk(html) {
+  if (!betreiberDaten?.beispiel) return html;
+  const stil = `<style>.pdf-wz{position:fixed;top:46%;left:50%;transform:translate(-50%,-50%) rotate(-28deg);font:800 32pt Inter,Arial,sans-serif;
+    color:rgba(192,57,43,.14);white-space:nowrap;pointer-events:none;z-index:9999;letter-spacing:.03em}</style>`;
+  return html.replace('</head>', stil + '</head>')
+    .replace(/<body[^>]*>/, m => `${m}<div class="pdf-wz" aria-hidden="true">${escHtml(t('pdf.wz.beispiel'))}</div>`);
+}
+
+// Vor dem PDF (Knöpfe im Menü «Teilen» und Serienbericht): Beispielwerte und noch
+// ungeprüfte Vorgabewerte nachfragen. Die PDF-Funktionen selbst bleiben ohne Rückfrage.
+async function pdfMitPruefung(art) {
+  if (betreiberDaten?.beispiel) {
+    const w = await frageWahl(t('pdf.pruef.beispiel'), { titel: t('pdf.pruef.titel'), ok: t('pdf.pruef.trotzdem'), alt: t('bd.hinweis.laden') });
+    if (w === 'alt') { openBetreiberdaten(); return; }
+    if (w !== 'ok') return;
+  }
+  const offen = art === 'serie' ? [] : ungeprueftNamen();
+  if (offen.length && !await frageBestaetigung(t('pdf.pruef.ungeprueft').replace('{liste}', offen.join(', ')),
+      { titel: t('pdf.pruef.titel'), ok: t('pdf.pruef.trotzdem'), abbrechen: t('pdf.pruef.pruefen') })) return;
+  if (art === 'zeichnung') pdfExportDrawing();
+  else if (art === 'serie') batchPdfExport();
+  else pdfExport();
+}
+
 function _druckfenster(html) {
+  html = _pdfVermerk(html);
   const win = window.open('', '_blank');
   if (!win) { meldung(t('msg.popup.blockiert'), 'warnung'); return; }
   win.document.write(html);
