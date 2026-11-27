@@ -203,7 +203,7 @@ mit SOK-Differenz (seit v4.4.0; vorher wurde die SOK-Differenz ignoriert).
 ```bash
 npm ci
 npm test                                                     # 69 Node-Tests
-CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 79 Browser-Tests
+CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 85 Browser-Tests
 npm run test:sbb                                             # nur lokal: 42 Node + 12 Browser (SBB-Daten)
 ```
 - In der Claude-Cloud-Umgebung ist Chromium unter `/opt/pw-browsers/chromium`
@@ -248,6 +248,7 @@ npm run test:sbb                                             # nur lokal: 42 Nod
    SOK-Differenz (kann andere Werte als früher ergeben).
 7. **Betreiberdaten (v6.2)**: Handbuch Kap. 7 (Rechenbeispiel) rechnet noch mit H_Ts,ub 1 700 N und
    H_Fd 8 500 N — Rückfrage an den Nutzer offen, ob neutral neu gerechnet werden soll.
+   Gotthard geklärt (3.3 kN laut Reglagetabelle, App korrekt).
    Komplettsicherung («Alles sichern») enthält die Betreiberdaten nicht (sie kommen vom SharePoint).
    Lokale SBB-Tests in `tests-sbb/` haben keine Versionsgeschichte — Vorschlag an den Nutzer:
    privates GitHub-Repository für SBB-Daten und -Tests.
@@ -292,5 +293,6 @@ npm run test:sbb                                             # nur lokal: 42 Nod
 | v6.0.3 | #33 | Diagramm ohne Messpunkt: Masslinie am Tiefpunkt (T₁/T₂) und Referenzlinie folgen ebenfalls `mpBezug` (Δh bzw. f); Ergebnis «Durchhang f» der Rechnung unverändert |
 | v6.1.0 | – | Foto-Messung nur noch im **Entwicklermodus** (Reiter `.nur-dev`, `setCanvasView('foto')` fällt ohne Entwicklermodus auf das Diagramm zurück, Ausschalten verlässt die Foto-Ansicht; Handbuch-Stellen `nur-dev`). Gespeicherte Foto-Daten und H aus Foto bleiben im Projekt erhalten. |
 | v6.2.0 | – | **Betreiberdaten**: SBB-Reglagetabellen, Kettenwerk-Vorgaben, hf-Parameter und Dokumentnummern aus dem Code entfernt; Laden als Excel/JSON (Fenster «Betreiberdaten» im Menü «Mehr», `betreiberdaten.js`, `xlsx.js`), gespeichert im Gerät, Datenstand in Reglage-Fenster und PDFs. Ohne Datei neutrale Beispielwerte mit Hinweis. Reglage-Fenster aus den Daten erzeugt (vorher feste HTML-Tabelle). Projekte mit fehlendem Kettenwerk: Werte aus dem Projekt, Zugkraft frei. Handbuch Kap. 5.2 neu, SBB-Verweise neutral. SBB-Tests nach `tests-sbb/` (lokal), neutrale Tests und Referenzen für GitHub. |
+| v6.3.0 | – | **Zeichnung überarbeitet** (Audit): Zeichnungs-PDF «Kettenwerk» nicht mehr abgeschnitten (Zeichnung über dem Datenstreifen, `plotY1`), Massstab H/V überlappen nicht; Beschriftungen am Bildschirm in fester Pixelgrösse (`fs()` aus `_pxJeEinheit`), `_zeichnungEntflechten()` verschiebt bewegliche Texte (`zl-schieb`); Legende und Massstab unter der Zeichnung; Lotlinien enden an SOK/Ausschnitt; Mindestabstand als Band; T₃ = T₂ nur einmal (`t3gleichT2`); Mastname/KM über den Masten; Hänger schematisch; Tabellenzeilen «T₂ über SOK»; Einpassen ohne 25-%-Stufen, zweistufig; Handy: höheres Fenster, Tabellenwerte nicht hinter der Bezeichnung. Start-Hinweis einmal je Gerät ohne Betreiberdaten: Datenpaket auf dem SharePoint (Anlagedokumentation), `dh_bd_hinweis`; Tests mit `appOeffnen(…, { bdHinweis: true })`. Reglagetabelle 0161.1013.0001 mit der SBB-Datei verglichen: keine Abweichung (Gotthard 3.3 kN). |
 
 Issue #20: NIS (später).

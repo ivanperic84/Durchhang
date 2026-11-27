@@ -250,6 +250,7 @@
       <div id="bd-hinweis" class="bd-hinweis" role="note" style="display:none">
         <span data-i18n="bd.hinweis.beispiel">Beispielwerte – keine Vorgabe</span>
         <button type="button" class="bd-hinweis-knopf" onclick="openBetreiberdaten()" data-i18n="bd.hinweis.laden">Betreiberdaten laden</button>
+        <span class="bd-hinweis-ort" data-i18n="bd.hinweis.ort">Datenpaket: SharePoint – Anlagedokumentation</span>
       </div>
 
       <!-- Berechnungsart (Einzelleiter und N-FL) -->
@@ -839,7 +840,7 @@
           <!-- Überhöhung -->
           <div style="display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--muted)">
             <span id="drawing-ueberhoeung-lbl" data-i18n="draw.ueberhoeung" style="white-space:nowrap">Überhöhung</span>
-            <select id="vex-select" aria-labelledby="drawing-ueberhoeung-lbl" onchange="setDrawingVEx(this.value)"
+            <select id="vex-select" aria-labelledby="drawing-ueberhoeung-lbl" onpointerdown="this.dataset.maus = '1'" onchange="setDrawingVEx(this.value); if (this.dataset.maus) { this.dataset.maus = ''; this.blur(); }"
               style="font-size:.72rem;padding:.15rem .3rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer">
               <option value="1">1:1</option>
               <option value="2">2×</option>
@@ -1288,7 +1289,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="rueckfrage" role="dialog" aria-modal="true">
+<div class="modal-overlay" id="rueckfrage" role="dialog" aria-modal="true" aria-labelledby="rf-titel">
   <div class="modal-card">
     <div class="modal-header">
       <div class="modal-title" id="rf-titel"></div>
