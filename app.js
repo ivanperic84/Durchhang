@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v6.0.3';
+const APP_VERSION = 'v6.1.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -127,6 +127,8 @@ function entwicklerModusSetzen(an, { melden = false } = {}) {
   try { if (entwicklerModus) localStorage.setItem('dh_dev', '1'); else localStorage.removeItem('dh_dev'); } catch (e) {}
   document.documentElement.classList.toggle('dev', entwicklerModus);
   if (!entwicklerModus && document.getElementById('hf-modal')?.classList.contains('open')) closeHf();
+  // Foto-Messung ist seit v6.1 nur im Entwicklermodus: offene Foto-Ansicht verlassen
+  if (!entwicklerModus && window._fotoTabActive && typeof setCanvasView === 'function') setCanvasView('diagramm');
   if (melden) meldung(t(entwicklerModus ? 'dev.an' : 'dev.aus'), 'info');
   if (calcState) berechnen();
 }
@@ -9449,6 +9451,7 @@ function _syncHighlightFsVisibility() {
 }
 
 function setCanvasView(view) {
+  if (view === 'foto' && !entwicklerModus) view = 'diagramm';   // Foto nur im Entwicklermodus
   _abschnittAusblenden();
   setTimeout(() => { if (typeof feldWahlAktualisieren === 'function') feldWahlAktualisieren(); }, 0);
   _ansichtDiagramm = view !== 'zeichnung' && view !== 'foto';

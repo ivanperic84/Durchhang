@@ -10,7 +10,7 @@ ohne Rückfragen zur Vorgeschichte weiterarbeiten. Die Kurzregeln stehen in `CLA
 
 > **Lokal weiterarbeiten / anderer Account:** Startanleitung mit Start-Text und Abgleich-Skript
 > in `uebergabe/START.md` bzw. `uebergabe/abgleich.sh` (lokaler Ordner des Nutzers:
-> `~/projekte/claude-code-test` in WSL Ubuntu). Der Ordner `uebergabe/` gehört nicht zur App
+> `~/projekte/Durchhang` in WSL Ubuntu). Der Ordner `uebergabe/` gehört nicht zur App
 > und darf auf Wunsch des Nutzers wieder gelöscht werden.
 
 1. Repo `ivanperic84/Durchhang` ist eingebunden? Sonst muss der Nutzer im neuen Account
@@ -71,7 +71,7 @@ Einzelleiter (EL, z. B. Speise-/Rückleiter).
   auch negativ)**, Name/Nr., KM (Format 000.000), Schalter **Koordinaten LV95** (E/N des
   Aufhängepunkts → Spannweite L).
 - Ansichten (Reiter): **Diagramm**, **Zeichnung** (massstäblich, Überhöhung Start 5×),
-  **Abschnitt**, **Foto** (zuletzt, ausgegraut — nur Abschätzung, Info-Modal 1× pro Start).
+  **Abschnitt**, **Foto** (seit v6.1 nur im Entwicklermodus; zuletzt, ausgegraut — nur Abschätzung, Info-Modal 1× pro Start).
 - Mitlaufende Ergebnisleiste (Tablet hochkant), Feld-Schnellauswahl oben (mit Abschnitt).
 - **hf_min / hf_max** (Fahrdrahthöhe, **seit v6.0 nur im Entwicklermodus** — noch nicht final): eigene Ansicht (Knopf in der Kopfleiste), Werte
   live aus der Durchhang-Berechnung (nur c wählbar), Höhenleiter + Kurven über Spannweite,
@@ -278,5 +278,6 @@ CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 60 
 | v6.0.1 | #32 | Stränge: Auswahlkästchen (18 px, Touch mit unsichtbar grösserer Tippfläche) und Farbfeld kompakt; Farbfeld von der Touch-Mindesthöhe ausgenommen |
 | v6.0.2 | #33 | Entwicklermodus: App-Symbol wird zur Wäscheleine (T-Shirt, Socke, Hose am Seil; Hänger/Fahrdraht ausgeblendet), Wäsche schaukelt beim Einschalten und Antippen (`.waesche`, `.kette-teil`) |
 | v6.0.3 | #33 | Diagramm ohne Messpunkt: Masslinie am Tiefpunkt (T₁/T₂) und Referenzlinie folgen ebenfalls `mpBezug` (Δh bzw. f); Ergebnis «Durchhang f» der Rechnung unverändert |
+| v6.1.0 | – | Foto-Messung nur noch im **Entwicklermodus** (Reiter `.nur-dev`, `setCanvasView('foto')` fällt ohne Entwicklermodus auf das Diagramm zurück, Ausschalten verlässt die Foto-Ansicht; Handbuch-Stellen `nur-dev`). Gespeicherte Foto-Daten und H aus Foto bleiben im Projekt erhalten. |
 
 Issue #20: NIS (später).

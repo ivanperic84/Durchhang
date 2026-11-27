@@ -25,7 +25,7 @@
   try { if (localStorage.getItem('dh_dev') === '1') document.documentElement.classList.add('dev'); } catch (e) {}
 })();
 </script>
-<meta name="description" content="Berechnung des Durchhangs von Fahrleitungen und Einzelleitern mit Temperatureinfluss, Zeichnungsansicht und Foto-Auswertung.">
+<meta name="description" content="Berechnung des Durchhangs von Fahrleitungen und Einzelleitern mit Temperatureinfluss, Zeichnungsansicht und Abspannabschnitten.">
 <link rel="icon" type="image/svg+xml" href="icon-v2.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32-v2.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192-v2.png">
@@ -787,7 +787,7 @@
           <button class="seg-btn active" id="view-seg-diagramm" data-i18n="canvas.title"  onclick="ansichtWechseln(() => setCanvasView('diagramm'))">Diagramm</button>
           <button class="seg-btn"        id="view-seg-zeichnung" data-i18n="btn.drawing" onclick="ansichtWechseln(() => setCanvasView('zeichnung'))">Zeichnung</button>
           <button class="seg-btn"        id="view-seg-abschnitt" data-i18n="abs.tab"  onclick="ansichtWechseln(abschnittAnsicht)">Abschnitt</button>
-          <button class="seg-btn seg-neben" id="view-seg-foto" data-i18n="btn.foto" data-i18n-title="ui.foto.genau.kurz" title="Nur Abschätzung — keine präzise Berechnung" onclick="ansichtWechseln(() => setCanvasView('foto'))">Foto</button>
+          <button class="seg-btn seg-neben nur-dev" id="view-seg-foto" data-i18n="btn.foto" data-i18n-title="ui.foto.genau.kurz" title="Nur Abschätzung — keine präzise Berechnung" onclick="ansichtWechseln(() => setCanvasView('foto'))">Foto</button>
         </div>
         <!-- Schnellauswahl Feld (nur mit Abspannabschnitt): ◀ Liste ▶ -->
         <div class="feld-wahl" id="feld-wahl" style="display:none" role="group" aria-label="Feld" data-i18n-aria="abs.feldwahl">

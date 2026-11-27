@@ -16,7 +16,7 @@ Stand: 27. November 2026 · App-Version **v6.0.3** · alles auf `main`
 | Laufende App | https://ivanperic84.github.io/Durchhang/ (wird automatisch aus `main` veröffentlicht) |
 | Arbeitsregeln für Claude | `CLAUDE.md` – Claude liest sie bei jedem Start automatisch |
 | Ausführliche Übergabe | `docs/UEBERGABE.md` (Fachlogik, Entscheidungen, Verlauf, Offenes) |
-| Lokaler Ordner | `~/projekte/claude-code-test` (WSL Ubuntu) – im Windows-Explorer `\\wsl.localhost\Ubuntu\home\ivan_peric\projekte\claude-code-test` |
+| Lokaler Ordner | `~/projekte/Durchhang` (WSL Ubuntu) – im Windows-Explorer `\\wsl.localhost\Ubuntu\home\ivan_peric\projekte\claude-code-test` |
 | Cloud-Arbeitszweig | `claude/upbeat-davinci-47k73d` – identisch mit `main`. Kann auf GitHub gelöscht werden («Branches» → Papierkorb), muss aber nicht. |
 
 ---
@@ -26,7 +26,7 @@ Stand: 27. November 2026 · App-Version **v6.0.3** · alles auf `main`
 Im **Ubuntu-Terminal**:
 
 ```bash
-cd ~/projekte/claude-code-test
+cd ~/projekte/Durchhang
 bash uebergabe/abgleich.sh               # holt den aktuellen Stand von GitHub (main)
 bash uebergabe/abgleich.sh --einrichten  # dasselbe + Prüfwerkzeuge einrichten (einmalig)
 ```
@@ -35,7 +35,7 @@ Das Skript arbeitet vorsichtig: Gibt es lokal noch Änderungen, die nicht auf Gi
 hält es an und verändert nichts.
 
 > Allererster Abgleich (solange `uebergabe/` lokal noch fehlt):
-> `cd ~/projekte/claude-code-test && git fetch origin && git checkout main && git pull --ff-only origin main`
+> `cd ~/projekte/Durchhang && git fetch origin && git checkout main && git pull --ff-only origin main`
 
 ### Einmalig nötig (falls noch nicht vorhanden)
 - **Node.js** (LTS) und **Git** in Ubuntu
@@ -53,7 +53,7 @@ Referenzblätter prüfen.
 ## 3. Claude starten und Start-Text einfügen
 
 ```bash
-cd ~/projekte/claude-code-test
+cd ~/projekte/Durchhang
 claude
 ```
 Account wechseln: in Claude `/logout`, danach `/login`.
