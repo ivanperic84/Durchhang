@@ -236,3 +236,28 @@ test('Zeichnung: H-Punkte wie im Diagramm — Bereich Lastfälle, Masslinie zum 
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Zeichnung: Δh bzw. f an jedem Messpunkt wie im Diagramm, Werte gleich wie in der Tabelle', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { viewport: { width: 1440, height: 900 } });
+  const lies = () => seite.evaluate(() => ({
+    mass: [...document.querySelectorAll('#scale-svg-container text.mp-mass-text')].map(t => t.textContent.split('= ')[1].replace(' m', '')),
+    tabelle: [...document.querySelectorAll('#scale-data-strip .strip-row')][2].innerText.split(/\s+/).filter(x => /^-?\d+\.\d\d$/.test(x)),
+    tiefpunktBeschriftet: [...document.querySelectorAll('#scale-svg-container text')].some(t => /^(Δh|f) =/.test(t.textContent) && !t.classList.contains('mp-mass-text')),
+  }));
+  await seite.evaluate(() => {
+    const s = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); };
+    s('span', '45'); s('h1', '7.00'); s('h2', '6.50');
+    _mpSetzen({ x: [13.2, 19.87, 28.09, 33.29], h: [null, null, null, null], verbinden: false }); berechnen();
+    setCanvasView('zeichnung');
+  });
+  await seite.waitForTimeout(300);
+  for (const b of ['hoch', 'sehne']) {
+    await seite.selectOption('#draw-mp-bezug', b); await seite.waitForTimeout(200);
+    const r = await lies();
+    assert.equal(r.mass.length, 4, `${b}: vier Masslinien`);
+    assert.deepEqual(r.mass, r.tabelle, `${b}: gleiche Werte wie Tabelle`);
+    assert.equal(r.tiefpunktBeschriftet, false, 'mit Messpunkten Tiefpunkt ohne Beschriftung (wie Diagramm)');
+  }
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});

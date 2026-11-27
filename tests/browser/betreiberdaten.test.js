@@ -72,8 +72,12 @@ test('JSON laden: geprüft, im Gerät gespeichert, angewendet; bleibt nach Neula
       quellen: document.getElementById('bd-quellen').textContent,
       gespeichert: JSON.parse(localStorage.getItem('dh_betreiberdaten')).titel,
       auswahl: document.getElementById('preset-select').value, H: document.getElementById('tension').value,
-      pdf: window.__fenster[0]?.html || '' };
+      pdf: window.__fenster[0]?.html || '',
+      fensterOffen: document.getElementById('bd-modal').classList.contains('open'),
+      meldung: document.getElementById('meldungen').innerText };
   });
+  assert.equal(r.fensterOffen, false, 'Fenster schliesst nach erfolgreichem Laden');
+  assert.match(r.meldung, /Betreiberdaten übernommen: Testdaten, Stand 15\.01\.2025 \(2 Leiter mit Reglagetabelle, 4 Kettenwerke\)/);
   assert.equal(r.name, 'Testdaten, Stand 15.01.2025');
   assert.match(r.inhalt, /2 Leiter mit Reglagetabelle · 4 Kettenwerke/);
   assert.equal(r.quellen, 'Test-Reglage 1');
@@ -82,7 +86,9 @@ test('JSON laden: geprüft, im Gerät gespeichert, angewendet; bleibt nach Neula
   assert.equal(r.H, '1600', 'Ts unbelastet bei T₁ = 10 °C aus den neuen Daten');
   assert.match(r.pdf, /Betreiberdaten: Testdaten, Stand 15\.01\.2025/);
   assert.equal(await sichtbar(seite, 'bd-hinweis'), false, 'kein Beispiel-Hinweis mehr');
+  await seite.evaluate(() => openBetreiberdaten());
   assert.equal(await sichtbar(seite, 'bd-entfernen'), true);
+  await seite.evaluate(() => closeBetreiberdaten());
   // Neu laden: Daten bleiben im Gerät
   await seite.reload({ waitUntil: 'load' });
   await seite.waitForFunction(() => typeof calcState !== 'undefined' && calcState);
