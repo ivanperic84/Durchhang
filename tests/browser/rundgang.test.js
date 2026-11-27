@@ -801,7 +801,7 @@ test('Projektliste: Auswahl als normale Box; Kopfleiste kompakt mit «Teilen»',
   assert.deepEqual(r.auswahl, { klasse: true, appearance: 'none', quadratisch: true });
   assert.equal(r.teilenImKopf, true);
   assert.equal(r.teilenImDiagramm, false);
-  assert.equal(r.symbole.length, 5, 'Reglage, Betreiberdaten, Handbuch, Darstellung, Zurücksetzen');
+  assert.equal(r.symbole.length, 4, 'Reglage, Betreiberdaten, Darstellung, Zurücksetzen (Handbuch hat seit v6.6 einen eigenen Knopf)');
   for (const b of r.symbole) assert.deepEqual(b, { text: true, sichtbar: true });
   assert.equal(r.mehrOffen, true);
   assert.equal(r.mehrZu, true, 'Escape schliesst das Menü');

@@ -149,3 +149,37 @@ test('Mindestabstand Pflicht: ohne a kein ✓ (⚠ «kein Nachweis»), mit a erf
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Handbuch: eigener Knopf in der Kopfzeile; Abbildungen aus der App, nicht bedienbar, ohne doppelte ids', async () => {
+  for (const opt of [{}, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true }]) {
+    const { seite, fehler, kontext } = await appOeffnen(browser, url, opt);
+    const knopf = seite.locator('#hb-btn');
+    assert.equal(await knopf.isVisible(), true);
+    await knopf.click();
+    await seite.waitForFunction(() => document.querySelector('#hb-text figure.hb-abb:not([hidden]) .hb-abb-rahmen'));
+    const r = await seite.evaluate(() => {
+      const figs = [...document.querySelectorAll('#hb-text figure.hb-abb')];
+      const sichtbar = figs.filter(f => f.getClientRects().length);
+      return {
+        arten: [...new Set(sichtbar.map(f => f.dataset.abb))].sort(),
+        ids: document.querySelectorAll('#hb-text .hb-abb [id]').length,
+        inert: sichtbar.every(f => f.querySelector('.hb-abb-rahmen').inert),
+        bild: !!sichtbar.find(f => f.dataset.abb === 'diagramm')?.querySelector('img[src^="data:image/png"]'),
+        breit: sichtbar.every(f => f.querySelector('.hb-abb-rahmen > *').getBoundingClientRect().right <= f.getBoundingClientRect().right + 1),
+        markiert: document.querySelectorAll('.ungeprueft').length,
+        text: sichtbar[0].querySelector('figcaption').textContent,
+      };
+    });
+    assert.deepEqual(r.arten, ['diagramm', 'ergebnisse', 'kopf', 'spannweite', 'system', 'temperatur']);
+    assert.equal(r.ids, 0);
+    assert.equal(r.inert, true);
+    assert.equal(r.bild, true, 'Diagramm als Bild');
+    assert.equal(r.breit, true, 'Abbildung passt in die Breite');
+    assert.equal(r.markiert, 6, 'Kopien zählen nicht als Vorgabefelder');
+    assert.match(r.text, /^Abbildung: /);
+    await seite.evaluate(() => setLang('fr')); await seite.waitForTimeout(100);
+    assert.match(await seite.evaluate(() => [...document.querySelectorAll('#hb-text figure.hb-abb figcaption')].find(f => f.getClientRects().length).textContent), /^Illustration : /);
+    assert.deepEqual(fehler, []);
+    await kontext.close();
+  }
+});

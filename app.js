@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v6.5.3';
+const APP_VERSION = 'v6.6.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -522,6 +522,60 @@ function _handbuchLaden() {
     .catch(e => { _hbLaden = null; throw e; });
   return _hbLaden;
 }
+// ── Handbuch: Abbildungen aus der laufenden App ────────────────────────────────
+// Platzhalter <figure class="hb-abb" data-abb="…"> im Handbuch werden beim Öffnen
+// (und beim Sprachwechsel) mit einer Kopie des echten Bedienteils gefüllt: immer
+// aktuell, in der gewählten Sprache und Darstellung, ohne Bilddateien. Die Kopie
+// ist nicht bedienbar (inert), ohne ids und ohne Markierungen.
+const HB_ABB = {
+  kopf:       { q: () => document.querySelector('.header'), maxBreite: 900 },   // als schmale Kopfzeile kopiert, gut lesbar
+  system:     { q: () => document.getElementById('card-title-sys')?.closest('.card'), schmal: true },
+  temperatur: { q: () => document.getElementById('temp-card'), schmal: true },
+  spannweite: { q: () => document.getElementById('span')?.closest('.card'), schmal: true },
+  diagramm:   { q: () => document.querySelector('.canvas-card') },
+  ergebnisse: { q: () => document.getElementById('result-card') },
+};
+const _HB_ABB_STIL = ['display', 'color', 'background-color', 'outline', 'outline-offset', 'border', 'border-radius', 'font-style', 'font-weight', 'padding'];
+const _HB_ABB_WEG = ['id', 'onclick', 'oninput', 'onchange', 'onkeydown', 'onfocus', 'onblur', 'onpointerdown', 'for', 'name', 'role', 'title',
+  'aria-labelledby', 'aria-describedby', 'aria-controls', 'aria-live', 'data-i18n', 'data-i18n-html', 'data-i18n-title', 'data-i18n-ph', 'data-i18n-aria'];
+function _hbAbbKopie(orig) {
+  const kopie = orig.cloneNode(true);
+  const o = [orig, ...orig.querySelectorAll('*')], k = [kopie, ...kopie.querySelectorAll('*')];
+  o.forEach((e, i) => {
+    const n = k[i];
+    if (e.id) { const cs = getComputedStyle(e); _HB_ABB_STIL.forEach(p => n.style.setProperty(p, cs.getPropertyValue(p))); }
+    if (e.tagName === 'SELECT') n.selectedIndex = e.selectedIndex;
+    _HB_ABB_WEG.forEach(a => n.removeAttribute(a));
+    n.classList.remove('ungeprueft');
+    if (e.tagName === 'CANVAS') {
+      const img = document.createElement('img'); img.alt = '';
+      try { img.src = e.toDataURL('image/png'); } catch (_) { /* leer lassen */ }
+      n.replaceWith(img);
+    }
+  });
+  return kopie;
+}
+function _hbAbbildungen() {
+  document.querySelectorAll('#hb-text figure.hb-abb[data-abb]').forEach(fig => {
+    const art = HB_ABB[fig.dataset.abb], orig = art?.q();
+    fig.textContent = '';
+    if (!orig || !orig.getClientRects().length) { fig.hidden = true; return; }
+    fig.hidden = false;
+    const rahmen = document.createElement('div');
+    rahmen.className = 'hb-abb-rahmen' + (art.schmal ? ' schmal' : '');
+    rahmen.inert = true; rahmen.setAttribute('aria-hidden', 'true');
+    const kopie = _hbAbbKopie(orig), breite = Math.min(orig.getBoundingClientRect().width, art.maxBreite || Infinity);
+    kopie.style.width = breite + 'px';
+    rahmen.appendChild(kopie);
+    const unter = document.createElement('figcaption');
+    unter.textContent = t('hb.abb.' + fig.dataset.abb) + ' — ' + t('hb.abb.hinweis');
+    fig.append(rahmen, unter);
+    // zu breit (z. B. am Handy): als verkleinertes Abbild zeigen
+    const platz = rahmen.clientWidth - 16;
+    if (platz > 0 && breite > platz) kopie.style.zoom = (platz / breite).toFixed(3);
+  });
+}
+
 async function openHandbuch()  {
   document.getElementById('handbuch-modal').classList.add('open');
   try { await _handbuchLaden(); }
@@ -531,9 +585,12 @@ async function openHandbuch()  {
     if (el) el.textContent = t('hb.laden.fehler');
   }
   translateHandbuch();
+  try { _hbAbbildungen(); } catch (e) { _spur('Handbuch-Abbildungen', e); }
 }
 function closeHandbuch() {
   document.getElementById('handbuch-modal').classList.remove('open');
+  // Abbildungen wieder leeren: keine zweite Kopie der Bedienteile im Dokument
+  document.querySelectorAll('#hb-text figure.hb-abb').forEach(f => { f.textContent = ''; f.hidden = true; });
   document.getElementById('hb-seite')?.classList.remove('offen');
 }
 
@@ -550,7 +607,7 @@ function _hbNavBauen() {
   text.querySelectorAll('[data-hb-kap]').forEach(el => { el.removeAttribute('data-hb-kap'); if (el.id.startsWith('hb-k-')) el.removeAttribute('id'); });
   _hbKapitel = [];
   text.querySelectorAll('h3[id^="hb-"], p, h4').forEach(el => {
-    if (!el.getClientRects().length) return;
+    if (!el.getClientRects().length || el.closest('.hb-abb')) return;
     const txt = el.textContent.replace(/\s+/g, ' ').trim();
     const haupt = el.tagName === 'H3';
     const m = haupt ? txt.match(/^(\d+)\s+(.+)$/) : txt.match(/^(\d+\.\d+)\s+(.+)$/);
@@ -659,7 +716,7 @@ function hbSuchen() {
     const w = document.createTreeWalker(text, NodeFilter.SHOW_TEXT, {
       acceptNode: n => {
         const el = n.parentElement;
-        if (!el || !n.nodeValue.trim() || el.closest('style, script') || !el.getClientRects().length) return NodeFilter.FILTER_REJECT;
+        if (!el || !n.nodeValue.trim() || el.closest('style, script, .hb-abb') || !el.getClientRects().length) return NodeFilter.FILTER_REJECT;
         re.lastIndex = 0;
         return re.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
       },
@@ -12194,6 +12251,8 @@ function setLang(lang) {
 
   // ── Handbuch modal (if open or preload) ───────────────────────
   translateHandbuch();
+  // Abbildungen nach dem Umschalten der ganzen Oberfläche neu kopieren
+  if (document.getElementById('handbuch-modal')?.classList.contains('open')) requestAnimationFrame(() => { try { _hbAbbildungen(); } catch (e) { _spur('Handbuch-Abbildungen', e); } });
 
   // ── Preset-Infobox in neuer Sprache neu aufbauen ──────────────
   const _presetSel = document.getElementById('preset-select');
