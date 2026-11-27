@@ -206,7 +206,7 @@
           <label id="el-material-label" data-i18n="sys.material">Leitermaterial</label>
           <div style="display:flex;gap:.4rem;align-items:stretch">
             <div class="input-wrap" style="flex:1">
-              <select id="el-material-select" onchange="elMaterialChanged()" style="padding-right:.75rem">
+              <select id="el-material-select" aria-labelledby="el-material-label" onchange="elMaterialChanged()" style="padding-right:.75rem">
                 <option value="cu95">Cu 95 mm²</option>
                 <option value="cu107">Cu 107 mm²</option>
                 <option value="cu150">Cu 150 mm²</option>
@@ -392,7 +392,7 @@
               onmouseout="this.style.background = 'none';this.style.color = 'var(--muted)'">15 N/m</button>
           </div>
           <div class="input-wrap">
-            <input type="number" id="zl-eis" value="0" step="0.1" min="0"
+            <input type="number" id="zl-eis" aria-labelledby="eis-label-main eis-label-sub" value="0" step="0.1" min="0"
                    oninput="berechnenEntprellt()" onchange="berechnen()">
             <span class="input-unit">N/m</span>
           </div>
@@ -1327,7 +1327,7 @@
 <script src="app.js"></script>
 
 <!-- ── Modal: Projekte ── -->
-<div class="modal-overlay" id="projects-modal" onclick="if(event.target===this)closeProjectsModal()">
+<div class="modal-overlay" id="projects-modal" role="dialog" aria-modal="true" aria-labelledby="proj-modal-title-txt" onclick="if(event.target===this)closeProjectsModal()">
   <div class="modal-card" style="max-width:560px">
     <div class="modal-header">
       <div class="modal-title">
@@ -1449,7 +1449,7 @@
 </div>
 
 <!-- ── Modal: Benutzerdefiniertes Kettenwerk ── -->
-<div class="modal-overlay" id="custom-modal" onclick="if(event.target===this)closeCustomModal()">
+<div class="modal-overlay" id="custom-modal" role="dialog" aria-modal="true" aria-labelledby="cm-modal-title" onclick="if(event.target===this)closeCustomModal()">
   <div class="modal-card">
     <div class="modal-header">
       <div class="modal-title" id="cm-modal-title" data-i18n="cm.title">Eigenes Kettenwerk</div>
@@ -1508,7 +1508,7 @@
       <div class="field">
         <label id="cm-wear-modal-label" data-i18n="cm.abnutzung">Abnutzung max</label>
         <div class="input-wrap">
-          <input type="number" id="cm-wear" step="1" min="0" max="100" value="30">
+          <input type="number" id="cm-wear" aria-labelledby="cm-wear-modal-label" step="1" min="0" max="100" value="30">
           <span class="input-unit">%</span>
         </div>
       </div>
@@ -1537,7 +1537,7 @@
       <div class="field">
         <label id="cm-sh-label" data-i18n="cm.sh">Systemhöhe sh</label>
         <div class="input-wrap">
-          <input type="number" id="cm-sh" step="0.05" min="0.1" value="2.40">
+          <input type="number" id="cm-sh" aria-labelledby="cm-sh-label" step="0.05" min="0.1" value="2.40">
           <span class="input-unit">m</span>
         </div>
       </div>
@@ -1568,7 +1568,7 @@
 </div>
 
 <!-- ── Modal: Benutzerdefiniertes Leitermaterial ── -->
-<div class="modal-overlay" id="el-material-modal" onclick="if(event.target===this)closeElMaterialModal()">
+<div class="modal-overlay" id="el-material-modal" role="dialog" aria-modal="true" aria-labelledby="elm-modal-title" onclick="if(event.target===this)closeElMaterialModal()">
   <div class="modal-card">
     <div class="modal-header">
       <div class="modal-title" id="elm-modal-title" data-i18n="ui.elm.titel">Eigenes Leitermaterial</div>
@@ -1646,7 +1646,7 @@
 </div>
 
 <!-- ── Modal: Reglagetabelle ── -->
-<div class="modal-overlay" id="reglage-modal" onclick="if(event.target===this)closeReglageModal()" style="align-items:flex-start;padding:2rem 1rem;overflow-y:auto">
+<div class="modal-overlay" id="reglage-modal" role="dialog" aria-modal="true" aria-labelledby="reglage-modal-title" onclick="if(event.target===this)closeReglageModal()" style="align-items:flex-start;padding:2rem 1rem;overflow-y:auto">
   <div class="modal-card" style="max-width:720px;width:100%;max-height:none">
     <div class="modal-header">
       <div class="modal-title" id="reglage-modal-title" data-i18n="reglage.modal.title">Reglagewerte — Übersicht</div>
@@ -1672,8 +1672,8 @@
 
       <!-- N-FL -->
       <div style="margin-bottom:1.3rem">
-        <div class="rgl-section" data-i18n="ui.rgl.nfl.titel">N-FL — Normale Fahrleitung</div>
-        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <div class="rgl-section" id="rgl-nfl-titel" data-i18n="ui.rgl.nfl.titel">N-FL — Normale Fahrleitung</div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch" tabindex="0" role="region" aria-labelledby="rgl-nfl-titel">
         <table class="rgl-tbl" style="min-width:580px">
           <colgroup>
             <col style="width:32%">
@@ -1701,8 +1701,8 @@
 
       <!-- R-FL -->
       <div style="margin-bottom:1.3rem">
-        <div class="rgl-section" data-i18n="ui.rgl.rfl.titel">R-FL — Regelfahrleitung</div>
-        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <div class="rgl-section" id="rgl-rfl-titel" data-i18n="ui.rgl.rfl.titel">R-FL — Regelfahrleitung</div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch" tabindex="0" role="region" aria-labelledby="rgl-rfl-titel">
         <table class="rgl-tbl" style="min-width:580px">
           <colgroup>
             <col style="width:32%">
@@ -1730,7 +1730,7 @@
       <!-- Einzelleiter -->
       <div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.45rem">
-          <div class="rgl-section" style="margin-bottom:0" data-i18n="ui.rgl.el.titel">Einzelleiter — Reglagezugkraft</div>
+          <div class="rgl-section" id="rgl-el-titel" style="margin-bottom:0" data-i18n="ui.rgl.el.titel">Einzelleiter — Reglagezugkraft</div>
           <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;justify-content:flex-end">
             <button type="button" id="rgl-el-sbb-btn" class="rgl-knopf rgl-knopf-warn" onclick="reglageSbbWiederherstellen()" style="display:none" data-i18n="ui.rgl.sbb">↺ Vorgabewerte</button>
             <button type="button" id="rgl-el-edit-btn" class="rgl-knopf" onclick="toggleReglageElEdit()" data-i18n="ui.bearbeiten">Bearbeiten</button>
@@ -1739,7 +1739,7 @@
             <label class="rgl-knopf" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.querySelector('input').click()}"><span data-i18n="ui.import.csv">Import CSV</span><input type="file" accept=".csv,.txt" onchange="importMaterialsCSV(event)" style="display:none"></label>
           </div>
         </div>
-        <div id="rgl-el-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
+        <div id="rgl-el-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch" tabindex="0" role="region" aria-labelledby="rgl-el-titel"></div>
         <p class="rgl-note" id="rgl-el-note" data-i18n-html="ui.rgl.el.note">Reglagezugkraft bei +10 °C, Lm = 45 m, Berechnungsart «Ausgleichend»</p>
       </div>
 
