@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v6.4.0';
+const APP_VERSION = 'v6.4.1';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -2766,7 +2766,12 @@ async function betreiberdatenLaden(ev) {
   catch (e) { _bdFehlerZeigen([t('bd.fehler.lesen'), e.message]); return; }
   _betreiberdatenNeuAnwenden();
   _bdDialogFuellen();
-  meldung(t('bd.geladen').replace('{d}', betreiberdatenText()), 'erfolg');
+  // Rückmeldung: Fenster schliessen und deutlich melden (vorher blieb das Fenster
+  // offen, die kurze Meldung oben rechts wurde leicht übersehen)
+  closeBetreiberdaten();
+  meldung(t('bd.geladen').replace('{d}', betreiberdatenText()) + ' ' + t('bd.geladen.inhalt')
+    .replace('{l}', Object.values(betreiberDaten.einzelleiter.leiter).filter(l => l.varianten.some(v => v.werte)).length)
+    .replace('{k}', betreiberDaten.kettenwerke.length), 'erfolg', 8000);
 }
 
 // Aktive Daten als Excel-Mappe oder JSON herunterladen (Beispielwerte = Vorlage)
@@ -8761,7 +8766,11 @@ function _zeichnungBauen(stripInSvg) {
   const _fY = (sy(yRefT2) + sy(y0T2)) / 2 + 0.9;
   const _pf = (y, dir) => { const a = 1.0 * symSc, b = 1.9 * symSc, x = sx(x0T2);
     return `<polygon points="${x.toFixed(2)},${y.toFixed(2)} ${(x - a).toFixed(2)},${(y - dir * b).toFixed(2)} ${(x + a).toFixed(2)},${(y - dir * b).toFixed(2)}" fill="${t2clr}" opacity="0.85"/>`; };
-  const sagSvg   = _tm && Math.abs(yRefT2 - y0T2) > 0.01 ? `
+  const _mitMp  = _probesEarlyCount > 0;
+  const sagSvg   = _tm && Math.abs(yRefT2 - y0T2) > 0.01 && _mitMp ? `
+  <line x1="${sx(x0T2).toFixed(2)}" y1="${sy(yRefT2).toFixed(2)}" x2="${sx(x0T2).toFixed(2)}" y2="${sy(y0T2).toFixed(2)}"
+    stroke="${t2clr}" stroke-width="${(0.2*symSc).toFixed(3)}" stroke-dasharray="${(1.2*symSc).toFixed(2)},${(0.8*symSc).toFixed(2)}" opacity="0.4"/>`
+    : _tm && Math.abs(yRefT2 - y0T2) > 0.01 ? `
   <line x1="${sx(x0T2).toFixed(2)}" y1="${sy(yRefT2).toFixed(2)}" x2="${sx(x0T2).toFixed(2)}" y2="${sy(y0T2).toFixed(2)}"
     stroke="${t2clr}" stroke-width="${(0.25*symSc).toFixed(3)}" stroke-dasharray="${(1.2*symSc).toFixed(2)},${(0.8*symSc).toFixed(2)}" opacity="0.7"/>
   ${_pf(sy(y0T2) - 0.15 * symSc, -1)}${_pf(sy(yRefT2) + 0.15 * symSc, 1)}
@@ -8919,6 +8928,21 @@ function _zeichnungBauen(stripInSvg) {
     <line x1="${px.toFixed(2)}" y1="${(py + 1.3*symSc).toFixed(2)}" x2="${px.toFixed(2)}" y2="${_lotEnde(xv).toFixed(2)}"
       stroke="${t2clr}" stroke-width="${(0.5*symSc).toFixed(3)}" stroke-dasharray="${(2.0*symSc).toFixed(2)},${(1.5*symSc).toFixed(2)}" opacity="0.45"/>`;
 
+
+      // Masslinie vom Bezug (Horizontale bzw. Sehne) bis zum Leiter, Wert links daneben —
+      // wie im Diagramm (Auswahl «Bezug»); weicht bei Platzmangel nach rechts aus
+      {
+        const yRef = mpBezugHoehe(xv, h1abs, h2abs, L), ry = sy(yRef);
+        if (Math.abs(yRef - y2abs) > 0.005) {
+          const dir = ry < py ? 1 : -1, a = 0.9 * symSc, b = 1.7 * symSc;
+          const pfeil = (y, d) => `<polygon points="${px.toFixed(2)},${y.toFixed(2)} ${(px - a).toFixed(2)},${(y - d * b).toFixed(2)} ${(px + a).toFixed(2)},${(y - d * b).toFixed(2)}" fill="${t2clr}"/>`;
+          probesSvg += `
+    <line class="mp-mass" x1="${px.toFixed(2)}" y1="${ry.toFixed(2)}" x2="${px.toFixed(2)}" y2="${py.toFixed(2)}" stroke="${t2clr}" stroke-width="${(0.35*symSc).toFixed(3)}" stroke-dasharray="${(1.6*symSc).toFixed(2)},${(1.0*symSc).toFixed(2)}"/>
+    ${pfeil(ry, -dir)}${pfeil(py - dir * 1.3 * symSc, dir)}
+    <text class="zl-schieb mp-mass-text" data-x2="${(px + 1.4 * symSc).toFixed(2)}" data-a2="start" x="${(px - 1.4 * symSc).toFixed(2)}" y="${((ry + py) / 2 + 0.8 * symSc).toFixed(2)}" text-anchor="end"
+      font-size="${fs(2.1)}" font-weight="600" fill="${t2clr}" stroke="${Z.hg}" stroke-width="${(0.45*symSc).toFixed(3)}" paint-order="stroke">${mpBezugKurz()} = ${(yRef - y2abs).toFixed(2)} m</text>`;
+        }
+      }
 
       // Circle on curve
       probesSvg += `
