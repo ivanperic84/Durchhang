@@ -1980,3 +1980,8 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 .input-wrap.ungeprueft, select.ungeprueft { outline: 1.5px dashed var(--warn); outline-offset: 2px; border-radius: 8px; }
 .ungeprueft-hw { margin: 0 0 .6rem; padding: .35rem .55rem; border: 1px dashed var(--warn); border-radius: 6px;
   background: var(--warn-s); color: var(--warn-text); font-size: .7rem; line-height: 1.45; }
+/* Abstandsnachweis ohne Mindestabstand a: kein Urteil (⚠, Warnfarbe), Feld als Pflicht markiert */
+.abs-offen { color: var(--warn-text); font-weight: 700; }
+.abs-svg .abs-hind.offen { stroke: var(--warn); } .abs-svg .abs-hind-pkt.offen { fill: var(--warn); }
+.hind-erg.offen { color: var(--warn-text); font-weight: 600; }
+#hind-min.feld-pflicht { outline: 2px solid var(--warn); outline-offset: 1px; border-color: var(--warn); }

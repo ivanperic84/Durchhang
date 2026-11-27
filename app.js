@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v6.5.0';
+const APP_VERSION = 'v6.5.1';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -30,7 +30,7 @@ const DIAGRAMM_FARBEN = {
     box: 'rgba(255,255,255,.93)', boxLeicht: 'rgba(255,255,255,.88)', boxRand: 'rgba(148,163,184,.45)',
     text: '#111218', text2: '#3a3c48', dim: '#5f616c', rahmen: '#d5d9e0',
     marke: '#1e2a4a', markeText: '#e8ecfb', hpunkt: '#3a3c48',
-    gut: '#2f7a3d', hindernisFlaeche: 'rgba(95,97,108,.14)',
+    gut: '#2f7a3d', warn: '#8a6100', hindernisFlaeche: 'rgba(95,97,108,.14)',
     hfMin: '#4a5cb8', hfMax: '#8a6d10', hfBand: 'rgba(47,158,84,.10)', fd: '#3a3c48',
     lastfallBand: 'rgba(95,97,108,.13)', hindernis: '#3a3c48',
   },
@@ -41,7 +41,7 @@ const DIAGRAMM_FARBEN = {
     box: 'rgba(28,29,34,.93)', boxLeicht: 'rgba(28,29,34,.88)', boxRand: 'rgba(68,70,79,.8)',
     text: '#e1e2e8', text2: '#b8bac4', dim: '#8b8d97', rahmen: '#44464f',
     marke: '#7c8de0', markeText: '#0e0f11', hpunkt: '#b8bac4',
-    gut: '#6fcf8e', hindernisFlaeche: 'rgba(139,141,151,.18)',
+    gut: '#6fcf8e', warn: '#d6b25a', hindernisFlaeche: 'rgba(139,141,151,.18)',
     hfMin: '#7c8de0', hfMax: '#d4b04a', hfBand: 'rgba(111,207,142,.12)', fd: '#b8bac4',
     lastfallBand: 'rgba(184,186,196,.14)', hindernis: '#b8bac4',
   },
@@ -55,7 +55,7 @@ const ZEICHNUNG_FARBEN = {
     sok: '#aaa', sokText: '#bbb', mast: '#666', anker: '#555', ankerLeise: '#888',
     mass: '#bbb', massStrich: '#aaa', massText: '#888', massL: '#666',
     t1: '#c0c0c0', t1Text: '#999', t3: '#6b7280', fd: '#888888', rfl: '#eb0000',
-    hindernis: '#3a3a3a', gut: '#2f7a3d', schlecht: '#dc2626',
+    hindernis: '#3a3a3a', gut: '#2f7a3d', schlecht: '#dc2626', warnung: '#8a6100',
     hfMin: '#4a5cb8', hfMax: '#9a7b1a', hfBand: 'rgba(47,158,84,.09)',
     lastfallBand: 'rgba(95,97,108,.13)',   // wie Diagramm
   },
@@ -64,7 +64,7 @@ const ZEICHNUNG_FARBEN = {
     sok: '#6b6e76', sokText: '#8b8d97', mast: '#8b8d97', anker: '#b8bac4', ankerLeise: '#8b8d97',
     mass: '#4e5058', massStrich: '#6b6e76', massText: '#9a9ca6', massL: '#b8bac4',
     t1: '#5e616b', t1Text: '#8b8d97', t3: '#9aa3b5', fd: '#9a9ca6', rfl: '#ff6b6b',
-    hindernis: '#b8bac4', gut: '#6fcf8e', schlecht: '#ef6b6b',
+    hindernis: '#b8bac4', gut: '#6fcf8e', schlecht: '#ef6b6b', warnung: '#d6b25a',
     hfMin: '#7c8de0', hfMax: '#d4b04a', hfBand: 'rgba(111,207,142,.12)',
     lastfallBand: 'rgba(184,186,196,.14)',
   },
@@ -6096,6 +6096,7 @@ function annahmenListe() {
   else add(t('ann.h.reglage'));
   if (Object.keys(_reglageAngepasst || {}).length) add(t('ann.rgl.angepasst'), 'abw');
   if (!isEl) add(wearPct > 0 ? t('ann.fd.abg').replace('{p}', wearPct) : t('ann.fd.neu'), wearPct > 0 ? 'abw' : '');
+  if (_nachweis.some(n => n.best)) add(minClearance > 0 ? t('ann.mindest').replace('{v}', fN(minClearance, 2)) : t('hind.mindest.fehlt'), minClearance > 0 ? '' : 'krit');
   if (_nachweis.some(n => n.best)) add(lastfaelleAktiv
     ? t('ann.lf.alle').replace('{n}', lastfaelle(lastfallEinst, sysMode).length) : t('ann.lf.aktuell'), lastfaelleAktiv ? '' : 'abw');
   add(`${t('pdf.quelle')}: ${betreiberdatenText()}`, betreiberDaten?.beispiel ? 'krit' : '');
@@ -6876,7 +6877,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   }
   _nachweis.forEach(({ h, best, ok, unten }) => {
     if (!best) return;
-    const farbe = ok ? DF.gut : DF.fehler;
+    const farbe = ok === true ? DF.gut : ok === false ? DF.fehler : DF.warn;
     const P = hindernisPunkte(h.punkte);
     const seite = unten ? 1 : -1;   // Schraffur auf der Seite des Hindernisses
     ctx.strokeStyle = DF.hindernis; ctx.fillStyle = DF.hindernis;
@@ -6907,7 +6908,7 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     ctx.moveTo(bxp - 5, yk); ctx.lineTo(bxp + 5, yk); ctx.moveTo(bxp - 5, yl); ctx.lineTo(bxp + 5, yl); ctx.stroke();
     ctx.beginPath(); ctx.arc(bxp, yl, 3, 0, 2 * Math.PI); ctx.fill();
     ctx.font = `600 10px ${DIAGRAMM_SCHRIFT}`;
-    const txt = `${h.name ? h.name + ': ' : ''}a = ${best.abstand.toFixed(2)} m ${ok ? '✓' : '✗'}`;
+    const txt = `${h.name ? h.name + ': ' : ''}a = ${best.abstand.toFixed(2)} m ${nachweisZeichen(ok)}${ok === null ? ' ' + t('hind.mindest.fehlt.kurz') : ''}`;
     const tw = ctx.measureText(txt).width, links = bxp + 8 + tw > padL + plotW;
     const tx = links ? bxp - 8 - tw : bxp + 8, ty = (yk + yl) / 2 + 3.5;
     ctx.textAlign = 'left'; ctx.lineWidth = 3; ctx.strokeStyle = DF.hg1; ctx.lineJoin = 'round';
@@ -7826,8 +7827,10 @@ function abstandsNachweis(liste, ov = {}, sokFn = null) {
         if (p.abstand === null || a < p.abstand) p.abstand = a;
       });
     }
-    const grenze = minClearance ?? 0;
-    return { h, best, ok: best ? best.abstand >= grenze : null, jePunkt, unten, huelle };
+    // Ohne Mindestabstand a gibt es kein Urteil (ok = null): früher galt «a ≥ 0» als
+    // erfüllt — ein Nachweis mit grünem ✓ ohne Mindestabstand war möglich.
+    const ohneMindest = !(minClearance > 0);
+    return { h, best, ok: best && !ohneMindest ? best.abstand >= minClearance : null, ohneMindest: !!best && ohneMindest, jePunkt, unten, huelle };
   });
 }
 
@@ -7911,9 +7914,17 @@ function _hindernisErgebnisse() {
   if (!n || !n.best) { el.textContent = t('hind.ausserhalb'); return; }
   const je = (n.jePunkt || []).filter(p => p.abstand !== null)
     .map(p => `H${p.m} ${fN(p.abstand, 2)} m`).join(' · ');
-  el.classList.add(n.ok ? 'ok' : 'nok');
-  el.textContent = `${n.ok ? '✓' : '✗'} ${t('hind.massgebend')}: a = ${fN(n.best.abstand, 2)} m${minClearance !== null ? ` (≥ ${fN(minClearance, 2)})` : ''} · ${_lastfallText(n.best.fall)} · x = ${fN(n.best.x, 1)} m${je ? `  |  ${je}` : ''}`;
+  el.classList.add(nachweisKlasse(n.ok));
+  el.textContent = `${nachweisZeichen(n.ok)} ${n.ohneMindest ? t('hind.mindest.fehlt') + ' · ' : ''}${t('hind.massgebend')}: a = ${fN(n.best.abstand, 2)} m${minClearance > 0 ? ` (≥ ${fN(minClearance, 2)})` : ''} · ${_lastfallText(n.best.fall)} · x = ${fN(n.best.x, 1)} m${je ? `  |  ${je}` : ''}`;
+  const mi = document.getElementById('hind-min');
+  if (mi) { mi.classList.toggle('feld-pflicht', !!n.ohneMindest); mi.title = n.ohneMindest ? t('hind.mindest.fehlt') : ''; }
 }
+
+// Urteil als Zeichen: ✓ erfüllt, ✗ nicht erfüllt, ⚠ ohne Mindestabstand (kein Nachweis)
+const nachweisZeichen = ok => ok === true ? '✓' : ok === false ? '✗' : '⚠';
+const nachweisKlasse = ok => ok === true ? 'ok' : ok === false ? 'nok' : 'offen';
+// Mindestabstand fehlt, obwohl H-Punkte geprüft werden
+const mindestabstandFehlt = () => _nachweis.some(n => n.best && n.ohneMindest);
 
 // Abstandsnachweis der H-Punkte für das Berechnungs-PDF (vorher fehlte er dort ganz;
 // nur das Zeichnungs-PDF zeigte H und a). Gleiche Werte wie die Zeile unter dem Diagramm.
@@ -7922,8 +7933,8 @@ function _pdfAbstandsnachweis() {
   if (!n || !n.best) return '';
   const ok = n.ok, MUM = t('pdf.mum.short');
   const zeilen = (n.jePunkt || []).filter(p => p.abstand !== null).map(p => {
-    const gut = p.abstand >= (minClearance ?? 0);
-    return `<tr><td>H${p.m}</td><td>${fN(p.x, 2)}</td><td>${fN(p.h, 2)}</td><td style="color:${gut ? 'var(--ok)' : 'var(--fail)'};font-weight:600">${fN(p.abstand, 2)}</td></tr>`;
+    const farbe = !(minClearance > 0) ? 'var(--warn)' : p.abstand >= minClearance ? 'var(--ok)' : 'var(--fail)';
+    return `<tr><td>H${p.m}</td><td>${fN(p.x, 2)}</td><td>${fN(p.h, 2)}</td><td style="color:${farbe};font-weight:600">${fN(p.abstand, 2)}</td></tr>`;
   }).join('');
   const faelle = lastfaelleAktiv
     ? t('pdf.hind.lastfaelle').replace('{liste}', lastfaelle(lastfallEinst, sysMode).map(_lastfallText).join(' · '))
@@ -7932,7 +7943,8 @@ function _pdfAbstandsnachweis() {
 <!-- ── Abstandsnachweis H-Punkte ── -->
 <h2 class="green">${t('pdf.hind.titel')}</h2>
 <div class="step">
-  <p><strong style="color:${ok ? 'var(--ok)' : 'var(--fail)'}">${ok ? '✓' : '✗'}</strong> ${t('hind.massgebend')}: a = <strong>${fN(n.best.abstand, 2)} m</strong>${minClearance !== null ? ` (${t('hind.mindest')} ≥ ${fN(minClearance, 2)} m)` : ''} · ${escHtml(_lastfallText(n.best.fall))} · x = ${fN(n.best.x, 1)} m</p>
+  ${n.ohneMindest ? `<p style="color:var(--warn);font-weight:700;margin-bottom:4px">⚠ ${t('hind.mindest.fehlt')}</p>` : ''}
+  <p><strong style="color:${ok === true ? 'var(--ok)' : ok === false ? 'var(--fail)' : 'var(--warn)'}">${nachweisZeichen(ok)}</strong> ${ok === true ? `<strong>${t('pdf.hind.erfuellt')}</strong> · ` : ok === false ? `<strong>${t('pdf.hind.nicht')}</strong> · ` : ''}${t('hind.massgebend')}: a = <strong>${fN(n.best.abstand, 2)} m</strong>${minClearance > 0 ? ` (${t('hind.mindest')} ≥ ${fN(minClearance, 2)} m)` : ''} · ${escHtml(_lastfallText(n.best.fall))} · x = ${fN(n.best.x, 1)} m</p>
   ${zeilen ? `<table class="cmp"><tr><th>${t('pdf.mp.punkt')}</th><th>x [m]</th><th>H [m ${MUM}]</th><th>a [m]</th></tr>${zeilen}</table>` : ''}
   <p class="sub2" style="margin-top:4px">${escHtml(faelle)}${n.unten ? ' · ' + escHtml(t('pdf.hind.unten')) : ''}</p>
 </div>`;
@@ -9093,9 +9105,9 @@ function _zeichnungBauen(stripInSvg) {
       if (_hBand) {
         const i = +badge.slice(1), hW = probeHWerte[i - 1];
         const a = (_nachweis[0]?.jePunkt || []).find(p => p.m === i)?.abstand;
-        const aOk = Number.isFinite(a) && a >= (minClearance ?? 0);
+        const aFarbe = !Number.isFinite(a) ? '#888' : !(minClearance > 0) ? Z.warnung : a >= minClearance ? Z.gut : Z.schlecht;
         cellVals.push([hW !== null ? hW.toFixed(2) : '—', '2.0', '400', Z.hindernis]);
-        cellVals.push([Number.isFinite(a) ? a.toFixed(2) : '—', '2.0', '600', Number.isFinite(a) ? (aOk ? Z.gut : Z.schlecht) : '#888']);
+        cellVals.push([Number.isFinite(a) ? a.toFixed(2) : '—', '2.0', '600', aFarbe]);
       }
 
       // SVG-Texte nur im PDF-Modus
@@ -9183,7 +9195,7 @@ function _zeichnungBauen(stripInSvg) {
   _nachweis.forEach(({ h, best, ok, unten }) => {
     if (!best) return;
     const P = hindernisPunkte(h.punkte);
-    const farbe = ok ? Z.gut : Z.schlecht;
+    const farbe = ok === true ? Z.gut : ok === false ? Z.schlecht : Z.warnung;
     const sw = (0.55 * symSc).toFixed(3);
     const seite = unten ? 1 : -1;   // Schraffur auf der Seite des Hindernisses (oberhalb: nach oben, unterhalb: nach unten)
     if (h.verbinden && P.length > 1) {
@@ -9216,7 +9228,7 @@ function _zeichnungBauen(stripInSvg) {
     const _ax = (bx + (links ? -1.6 : 1.6) * symSc).toFixed(2), _ax2 = (bx + (links ? 1.6 : -1.6) * symSc).toFixed(2);
     const _ae = parseFloat(fs(2.2)), _fall = best.fall ? escHtml(_lastfallText(best.fall)) : '';
     const _ay = (by + ly) / 2 + 0.8 * symSc - (_fall ? _ae * 0.55 : 0);
-    obstSvg += `<text class="zl-schieb" data-x2="${_ax2}" data-a2="${links ? 'start' : 'end'}" x="${_ax}" y="${_ay.toFixed(2)}" text-anchor="${links ? 'end' : 'start'}" font-size="${fs(2.2)}" font-weight="700" fill="${farbe}" stroke="${Z.hg}" stroke-width="${(0.5 * symSc).toFixed(3)}" paint-order="stroke">${escHtml(h.name ? h.name + ': ' : '')}a = ${best.abstand.toFixed(2)} m ${ok ? '✓' : '✗'}${_fall ? `<tspan data-zeile="2" x="${_ax}" dy="${(_ae * 1.15).toFixed(2)}" font-size="${fs(1.9)}" font-weight="500">${_fall}</tspan>` : ''}</text>`;
+    obstSvg += `<text class="zl-schieb" data-x2="${_ax2}" data-a2="${links ? 'start' : 'end'}" x="${_ax}" y="${_ay.toFixed(2)}" text-anchor="${links ? 'end' : 'start'}" font-size="${fs(2.2)}" font-weight="700" fill="${farbe}" stroke="${Z.hg}" stroke-width="${(0.5 * symSc).toFixed(3)}" paint-order="stroke">${escHtml(h.name ? h.name + ': ' : '')}a = ${best.abstand.toFixed(2)} m ${nachweisZeichen(ok)}${_fall ? `<tspan data-zeile="2" x="${_ax}" dy="${(_ae * 1.15).toFixed(2)}" font-size="${fs(1.9)}" font-weight="500">${_fall}</tspan>` : ''}</text>`;
   });
 
   // Footer: scale bars + legend (PDF only)
@@ -9666,7 +9678,7 @@ function updateStripVisibility() {
   const mcNote = document.getElementById('scale-min-clearance-note');
   if (mcNote) {
     if (minClearance !== null && minClearance > 0) {
-      const anyVio = _nachweis.some(n => n.best && !n.ok);
+      const anyVio = _nachweis.some(n => n.best && n.ok === false);
       mcNote.textContent = t('draw.minabstand').replace('{v}', minClearance.toFixed(2));
       mcNote.style.color  = anyVio ? 'var(--fail)' : 'var(--muted)';
       zeigeElement(mcNote, true);
@@ -10925,7 +10937,7 @@ function abschnittAktualisieren() {
     if (!e) { nw.textContent = '…'; return; }
     const best = e.felder.filter(f => !f.fehler && _teilFeld(s.masten, f.i)).flatMap(f => f.nachweis.filter(x => x.best));
     const min = best.reduce((a, x) => (!a || x.best.abstand < a.best.abstand ? x : a), null);
-    nw.innerHTML = !min ? '—' : `<span class="${min.ok ? 'abs-ok' : 'abs-nok'}">${min.ok ? '✓' : '✗'} ${fN(min.best.abstand, 2)} m</span>`;
+    nw.innerHTML = !min ? '—' : `<span class="abs-${nachweisKlasse(min.ok)}"${min.ok === null ? ` title="${escHtml(t('hind.mindest.fehlt'))}"` : ''}>${nachweisZeichen(min.ok)} ${fN(min.best.abstand, 2)} m</span>`;
   });
   if (alle.some(x => !x.erg)) _straengeNachrechnenPlanen();
   const absolut = m.every(x => mastSok(x) !== null);
@@ -10952,7 +10964,7 @@ function abschnittAktualisieren() {
     const hind = !f.nachweis.length ? '—'
       : f.nachweis.some(x => x.ohneSok) ? `<span class="abs-fehlt">${t('hind.sok.fehlt.kurz')}</span>`
       : !schlecht ? `<span class="abs-fehlt">${t('hind.unvollstaendig')}</span>`
-      : `<span class="${schlecht.ok ? 'abs-ok' : 'abs-nok'}">${schlecht.ok ? '✓' : '✗'} ${fN(schlecht.best.abstand, 2)} m</span>`;
+      : `<span class="abs-${nachweisKlasse(schlecht.ok)}"${schlecht.ok === null ? ` title="${escHtml(t('hind.mindest.fehlt'))}"` : ''}>${nachweisZeichen(schlecht.ok)} ${fN(schlecht.best.abstand, 2)} m</span>`;
     html += `<tr${offen ? ' class="offen"' : ''}><td>${name}</td>
       <td>${fN(f.L, 2)}</td><td>${fN(f.oben.sag, 3)} m</td><td>${fN(f.z.c2.H, 0)} N</td>
       <td>${hoehe(f.tief, f.tiefRel)}</td>${sysMode !== 'el' ? `<td>${hoehe(f.fdTief, f.fdTiefRel)}</td>` : ''}
@@ -11057,8 +11069,8 @@ function _abschnittProfil(alle, absolut) {
     const px = x => sx(s0 + (s1 - s0) * x / f.L).toFixed(1);
     const titel = `<title>${escHtml(n.h.name || t('hind.titel'))}: a = ${fN(n.best.abstand, 2)} m</title>`;
     if (n.h.verbinden && P.length > 1)
-      svg += `<polyline points="${P.map(p => `${px(p.x)},${sy(p.h).toFixed(1)}`).join(' ')}" fill="none" class="abs-hind ${n.ok ? 'ok' : 'nok'}">${titel}</polyline>`;
-    else P.forEach(p => { svg += `<circle cx="${px(p.x)}" cy="${sy(p.h).toFixed(1)}" r="4" class="abs-hind-pkt ${n.ok ? 'ok' : 'nok'}">${titel}</circle>`; });
+      svg += `<polyline points="${P.map(p => `${px(p.x)},${sy(p.h).toFixed(1)}`).join(' ')}" fill="none" class="abs-hind ${nachweisKlasse(n.ok)}">${titel}</polyline>`;
+    else P.forEach(p => { svg += `<circle cx="${px(p.x)}" cy="${sy(p.h).toFixed(1)}" r="4" class="abs-hind-pkt ${nachweisKlasse(n.ok)}">${titel}</circle>`; });
   }));
   // Masten (Basis) im Bereich: bis zum höchsten Aufhängepunkt aller Stränge
   basis.forEach(mast => {
@@ -11444,6 +11456,12 @@ async function pdfMitPruefung(art) {
   if (betreiberDaten?.beispiel) {
     const w = await frageWahl(t('pdf.pruef.beispiel'), { titel: t('pdf.pruef.titel'), ok: t('pdf.pruef.trotzdem'), alt: t('bd.hinweis.laden') });
     if (w === 'alt') { openBetreiberdaten(); return; }
+    if (w !== 'ok') return;
+  }
+  // Abstandsnachweis ohne Mindestabstand a: kein Nachweis
+  if (art !== 'serie' && mindestabstandFehlt()) {
+    const w = await frageWahl(t('pdf.pruef.mindest'), { titel: t('pdf.pruef.titel'), ok: t('pdf.pruef.trotzdem'), alt: t('pdf.pruef.mindest.eingeben') });
+    if (w === 'alt') { setCanvasView('diagramm'); const f = document.getElementById('hind-min'); if (f) { f.scrollIntoView({ block: 'center' }); f.focus(); } return; }
     if (w !== 'ok') return;
   }
   const offen = art === 'serie' ? [] : ungeprueftNamen();

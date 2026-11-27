@@ -203,7 +203,7 @@ mit SOK-Differenz (seit v4.4.0; vorher wurde die SOK-Differenz ignoriert).
 ```bash
 npm ci
 npm test                                                     # 69 Node-Tests
-CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 98 Browser-Tests
+CHROMIUM_PFAD=/opt/pw-browsers/chromium timeout 900 npm run test:browser   # 99 Browser-Tests
 npm run test:sbb                                             # nur lokal: 42 Node + 12 Browser (SBB-Daten)
 ```
 - In der Claude-Cloud-Umgebung ist Chromium unter `/opt/pw-browsers/chromium`
@@ -298,5 +298,6 @@ npm run test:sbb                                             # nur lokal: 42 Nod
 | v6.4.1 | – | Zeichnung: Masslinie Δh bzw. f an jedem Messpunkt wie im Diagramm (`mp-mass`, Werte = Tabelle), Tiefpunkt mit Messpunkten nur dezent; Betreiberdaten: Fenster schliesst nach erfolgreichem Laden, Meldung mit Datenstand und Inhalt (8 s). |
 | v6.4.2 | – | Entwicklermodus: Wasserzeichen «ENTWICKLERMODUS» im Diagramm (nur Bildschirm, `!_diagrammDruck`); Stränge: Spalte «System · Leiter» sofort aus den Einstellungen links (`_strangSystemText`), Hinweis zur Seitenleiste. |
 | v6.5.0 | – | **Zugänglichkeit für Projektleiter** (Vorschläge A–C): A «Gerechnet mit» über den Ergebnissen, im Berechnungs- und Zeichnungs-PDF (`annahmenListe()`, Abweichungen orange, Beispielwerte rot); B Vorgabewerte «ungeprüft» gestrichelt bis geändert/angetippt (`_ungeprueft`, `UNGEPRUEFT_FELDER`), Projekte gelten als geprüft; C Rückfrage vor dem PDF über die Menüknöpfe (`pdfMitPruefung`), Vermerk «Beispielwerte – kein Nachweis» auf jeder PDF-Seite (`_pdfVermerk` in `_druckfenster`). Programmatische PDF-Funktionen bleiben ohne Rückfrage (Tests). Weitere Vorschläge (D–K, u. a. Erklärungen, Stufe «Einfach», Assistent, Praxistest) mit dem Nutzer offen. |
+| v6.5.1 | – | **Mindestabstand Pflicht**: ohne `minClearance > 0` kein Urteil (`ok = null`, `ohneMindest`), Anzeige ⚠ «Mindestabstand a fehlt – kein Nachweis» in Diagramm, Zeichnung, Abschnitt, PDF und «Gerechnet mit» (rot); Feld `#hind-min` markiert; Rückfrage vor dem PDF mit «Mindestabstand eingeben». Vorher galt «a ≥ 0» als erfüllt (grünes ✓ ohne Mindestabstand). Offen: Mindestabstände als Auswahl aus den Betreiberdaten (Rückfrage an Nutzer, Herkunft der Werte). |
 
 Issue #20: NIS (später).

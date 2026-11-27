@@ -101,3 +101,51 @@ test('C: PDF mit Beispielwerten — Rückfrage, Vermerk auf jeder Seite; mit Dat
   assert.doesNotMatch(r.html, /pdf-wz/);
   await b.kontext.close();
 });
+
+test('Mindestabstand Pflicht: ohne a kein ✓ (⚠ «kein Nachweis»), mit a erfüllt/nicht erfüllt; Rückfrage vor dem PDF', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { daten: testdaten() });
+  await fensterAbfangen(seite);
+  await seite.evaluate(() => {
+    const s = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); };
+    s('sok-mum-left', '500'); onSokMumLeftInput();
+    _mpSetzen({ x: [15, null, null, null], h: [508.6, null, null, null], verbinden: false });
+    setMindestabstand(''); ungeprueftAlleBestaetigen(); berechnen();
+  });
+  const stand = () => seite.evaluate(() => {
+    window.__fenster.length = 0; pdfExport();
+    setCanvasView('zeichnung');
+    const zeichnung = [...document.querySelectorAll('#scale-svg-container text')].map(t => t.textContent).find(t => /a = /.test(t)) || '';
+    setCanvasView('diagramm');
+    return { zeile: document.getElementById('hind-erg-H').textContent, klasse: document.getElementById('hind-erg-H').className,
+      pflicht: document.getElementById('hind-min').classList.contains('feld-pflicht'),
+      ann: [...document.querySelectorAll('#annahmen .ann')].map(e => e.textContent + (e.classList.contains('ann-krit') ? ' [krit]' : '')).join(' | '),
+      pdf: window.__fenster.pop().html.replace(/<[^>]+>/g, ' '), zeichnung };
+  });
+  // ohne Mindestabstand
+  let r = await stand();
+  assert.match(r.zeile, /^⚠ Mindestabstand a fehlt – kein Nachweis/);
+  assert.match(r.klasse, /offen/);
+  assert.equal(r.pflicht, true, 'Feld Mindestabstand markiert');
+  assert.match(r.ann, /Mindestabstand a fehlt – kein Nachweis \[krit\]/);
+  assert.match(r.pdf, /⚠ Mindestabstand a fehlt – kein Nachweis/);
+  assert.doesNotMatch(r.pdf, /Nachweis erfüllt/);
+  assert.match(r.zeichnung, /⚠/); assert.doesNotMatch(r.zeichnung, /✓/);
+  // Rückfrage vor dem PDF → «Mindestabstand eingeben» setzt den Fokus ins Feld
+  await seite.click('#share-btn'); await seite.click('#share-item-calc-pdf');
+  assert.match(await seite.evaluate(() => document.getElementById('rf-text').textContent), /kein Mindestabstand a/);
+  await seite.click('#rf-alt');
+  assert.equal(await seite.evaluate(() => document.activeElement?.id), 'hind-min');
+  // mit Mindestabstand: erfüllt bzw. nicht erfüllt
+  await seite.evaluate(() => setMindestabstand('0.5')); await seite.waitForTimeout(150);
+  r = await stand();
+  assert.match(r.zeile, /^✓ massgebend/);
+  assert.equal(r.pflicht, false);
+  assert.match(r.ann, /Mindestabstand a = 0\.50 m/);
+  assert.match(r.pdf, /Nachweis erfüllt/);
+  await seite.evaluate(() => setMindestabstand('5')); await seite.waitForTimeout(150);
+  r = await stand();
+  assert.match(r.zeile, /^✗ massgebend/);
+  assert.match(r.pdf, /Nachweis nicht erfüllt/);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
