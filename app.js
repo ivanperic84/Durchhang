@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v6.2.0';
+const APP_VERSION = 'v6.3.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -57,6 +57,7 @@ const ZEICHNUNG_FARBEN = {
     t1: '#c0c0c0', t1Text: '#999', t3: '#6b7280', fd: '#888888', rfl: '#eb0000',
     hindernis: '#3a3a3a', gut: '#2f7a3d', schlecht: '#dc2626',
     hfMin: '#4a5cb8', hfMax: '#9a7b1a', hfBand: 'rgba(47,158,84,.09)',
+    lastfallBand: 'rgba(95,97,108,.13)',   // wie Diagramm
   },
   dunkel: {
     hg: '#15161a', raster: '#2a2c32', rasterText: '#6b6e76', achse: '#8b8d97', bruch: '#6b6e76',
@@ -65,6 +66,7 @@ const ZEICHNUNG_FARBEN = {
     t1: '#5e616b', t1Text: '#8b8d97', t3: '#9aa3b5', fd: '#9a9ca6', rfl: '#ff6b6b',
     hindernis: '#b8bac4', gut: '#6fcf8e', schlecht: '#ef6b6b',
     hfMin: '#7c8de0', hfMax: '#d4b04a', hfBand: 'rgba(111,207,142,.12)',
+    lastfallBand: 'rgba(184,186,196,.14)',
   },
 };
 function zeichnungFarben(druck = false) {
@@ -2808,6 +2810,17 @@ function bdHinweisAktualisieren() {
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bdHinweisAktualisieren);
 else bdHinweisAktualisieren();
+
+// Einmal pro Gerät beim Start ohne Betreiberdaten: wo das Datenpaket zu finden ist
+const BD_HINWEIS_KEY = 'dh_bd_hinweis';
+async function bdStartHinweis() {
+  if (!betreiberDaten?.beispiel) return;
+  try { if (localStorage.getItem(BD_HINWEIS_KEY)) return; localStorage.setItem(BD_HINWEIS_KEY, '1'); } catch (e) { return; }
+  if (document.querySelector('.modal-overlay.open')) return;   // anderes Fenster hat Vorrang
+  const ja = await frageBestaetigung(t('bd.start.text'), { titel: t('bd.start.titel'), ok: t('bd.start.oeffnen'), abbrechen: t('bd.start.spaeter') });
+  if (ja) openBetreiberdaten();
+}
+window.addEventListener('load', () => setTimeout(bdStartHinweis, 400));
 function closeReglageModal() { document.getElementById('reglage-modal').classList.remove('open'); }
 
 // Dropdown mit den zum aktiven Systemmodus passenden Kombinationen befüllen
@@ -4224,7 +4237,7 @@ function _setProjectStateIntern(s) {
   _reglageAngepasst = JSON.parse(JSON.stringify(s.reglageAngepasst || {}));
   // Messpunkt-Bezug (ab v5.3; ältere Projekte: Vorgabe «höchster Punkt»)
   mpBezug = MP_BEZUEGE.includes(s.mpBezug) ? s.mpBezug : 'hoch';
-  { const sel = document.getElementById('mp-bezug'); if (sel) sel.value = mpBezug; }
+  for (const id of ['mp-bezug', 'draw-mp-bezug']) { const sel = document.getElementById(id); if (sel) sel.value = mpBezug; }
   _reglageAnpassungenAnwenden();
   // Globals (mode3pt + yCInputMode werden nach updateSysModeUI gesetzt)
   spanMode       = s.spanMode       ?? 'single';
@@ -6345,11 +6358,30 @@ function mpBezugHoehe(x, A1, A2, L) {
   if (mpBezug === 'sehne')  return A1 + (A2 - A1) * x / L;
   return Math.max(A1, A2);
 }
+// Masslinie am Tiefpunkt — gemeinsam für Diagramm und Zeichnung.
+// yAt(x): angezeigte Höhe der Kurve (inkl. SOK-Anstieg), A1/A2: angezeigte Aufhängepunkte.
+// Sehne: grösster Abstand zur Sehne (= f, Stelle x_low). Δh-Bezüge: am angezeigten
+// Tiefpunkt (bei steigender SOK nicht x_low). Liegt der Tiefpunkt an einem Mast
+// (kein Durchhang im Feld), gibt es keine Masslinie (null).
+function tiefpunktMass(yAt, c, A1, A2, L, n = 240) {
+  let x0;
+  if (mpBezug === 'sehne') x0 = Math.max(0, Math.min(L, c.x_low));
+  else {
+    let yMin = Infinity; x0 = 0;
+    for (let i = 0; i <= n; i++) { const x = L * i / n, y = yAt(x); if (y < yMin) { yMin = y; x0 = x; } }
+  }
+  if (x0 <= L * 0.005 || x0 >= L * 0.995) return null;
+  const yBot = yAt(x0), yRef = mpBezugHoehe(x0, A1, A2, L);
+  const wert = mpBezug === 'sehne' ? c.sag : yRef - yBot;
+  return Math.abs(yRef - yBot) < 0.001 ? null : { x0, yBot, yRef, wert };
+}
 function mpBezugKurz() { return mpBezug === 'sehne' ? 'f' : 'Δh'; }
 function mpBezugText() { return t('mp.bezug.' + mpBezug); }
 function setMpBezug(wert) {
   mpBezug = MP_BEZUEGE.includes(wert) ? wert : 'hoch';
-  const sel = document.getElementById('mp-bezug'); if (sel && sel.value !== mpBezug) sel.value = mpBezug;
+  for (const id of ['mp-bezug', 'draw-mp-bezug']) {
+    const sel = document.getElementById(id); if (sel && sel.value !== mpBezug) sel.value = mpBezug;
+  }
   berechnen();
 }
 
@@ -6792,10 +6824,9 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   // Masslinie am Tiefpunkt — Bezug wie bei den Messpunkten (Auswahl mpBezug):
   // Sehne (f) oder Horizontale durch den höchsten / linken / rechten Aufhängepunkt (Δh)
   function sagAnnotation(c, color, side) {
-    const x0     = Math.max(0, Math.min(L, c.x_low));
-    const yBot   = catYD(x0, c);
-    const yChord = mpBezugHoehe(x0, h1d, h2d, L);
-    if (Math.abs(yChord - yBot) < 0.001) return;
+    const m = tiefpunktMass(x => catYD(x, c), c, h1d, h2d, L);
+    if (!m) return;
+    const { x0, yBot, yRef: yChord } = m;
     const [bx, by, ty] = [cx(x0), cy(yBot), cy(yChord)];
     // Arrow line
     ctx.setLineDash([3, 3]); ctx.strokeStyle = color; ctx.lineWidth = 1.2;
@@ -6814,16 +6845,14 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     const mid = (by + ty) / 2;
     ctx.fillStyle = color; ctx.font = `bold 10px ${DIAGRAMM_SCHRIFT}`;
     ctx.textAlign = side === 'left' ? 'right' : 'left';
-    const wert = mpBezug === 'sehne' ? c.sag : yChord - yBot;
-    ctx.fillText(`${mpBezugKurz()} = ${wert.toFixed(2)} m`, bx + (side === 'left' ? -6 : 6), mid + 4);
+    ctx.fillText(`${mpBezugKurz()} = ${m.wert.toFixed(2)} m`, bx + (side === 'left' ? -6 : 6), mid + 4);
   }
 
   // Gestrichelte Linie (Sehne → Tiefpunkt) ohne Dreiecke und Label — immer sichtbar bei Messpunkt
   function sagLine(c, color) {
-    const x0     = Math.max(0, Math.min(L, c.x_low));
-    const yBot   = catYD(x0, c);
-    const yChord = mpBezugHoehe(x0, h1d, h2d, L);
-    if (Math.abs(yChord - yBot) < 0.001) return;
+    const m = tiefpunktMass(x => catYD(x, c), c, h1d, h2d, L);
+    if (!m) return;
+    const { x0, yBot, yRef: yChord } = m;
     const [bx, by, ty] = [cx(x0), cy(yBot), cy(yChord)];
     ctx.setLineDash([3, 3]); ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.5;
     ctx.beginPath(); ctx.moveTo(bx, ty); ctx.lineTo(bx, by); ctx.stroke();
@@ -8378,6 +8407,10 @@ ${(() => {
 // Kennwerte — diese wurden vorher quer durch die Datei beschrieben.
 // Nach aussen geht nur, was HTML-Handler oder anderer Code wirklich braucht.
 // ═══════════════════════════════════════════════════════════════
+// Zeilen der Messpunkt-Tabelle: T₂- bzw. T₃-Zeile erkennen (Farbe)
+const _istT2 = lbl => /^T[2₂]\b|^T₂/.test(lbl);
+const _istT3 = lbl => /^T[3₃]\b|^T₃/.test(lbl);
+
 const Ansicht = (() => {
 
 // Zeichnung am Bildschirm im Thema (hell/dunkel); PDF (stripInSvg) immer hell.
@@ -8398,8 +8431,11 @@ function _zeichnungBauen(stripInSvg) {
   const isRFL  = sysMode === 'rfl';
   const isEl   = sysMode === 'el';
   const showFd = !isEl; // Fahrdraht für NFL und RFL
-  const c3data = (showT3 && calcState.c3) ? (calcState.c3_vem ?? calcState.c3) : null;
   const cDisp  = (isNFL && calcState.c2_vem) ? calcState.c2_vem : c2;
+  const _c3roh = (showT3 && calcState.c3) ? (calcState.c3_vem ?? calcState.c3) : null;
+  // T₃ deckungsgleich mit T₂ (z. B. beide 80 °C): Kurve und Tabellenzeilen nicht doppelt
+  const t3gleichT2 = !!_c3roh && Math.abs(_c3roh.sag - cDisp.sag) < 5e-4 && Math.abs((_c3roh.H ?? 0) - (cDisp.H ?? 0)) < 0.5;
+  const c3data = t3gleichT2 ? null : _c3roh;
   const catY   = (x, c) => kettenY(c, x);
 
   // SOK
@@ -8455,6 +8491,19 @@ function _zeichnungBauen(stripInSvg) {
   const drawW  = drawX1 - drawX0;  // 241 mm
   const drawH  = drawY1 - drawY0;  // 153 mm
 
+  // Strip dimensions — declared early so grid and spanDim can reference them
+  const _probesEarlyCount = [probeX1, probeX2, probeX3, probeX4].filter(x => x !== null).length;
+  const _stripRowH_early  = 5.5;
+  // H-Punkte (Hindernis) im Band: Kote H und Abstand a je Messpunkt (nur mit SOK)
+  const _hBand = hasSok && [probeX1, probeX2, probeX3, probeX4].some((x, i) => x !== null && probeHWerte[i] !== null);
+  const _stripNRows_early = 2 + 2 + (c3data ? 1 : 0) + (hasSok ? 2 : 0) + (hasSok && c3data ? 1 : 0) + (_hBand ? 2 : 0);
+  const _stripH_early     = _stripNRows_early * _stripRowH_early + 0.5;
+  // PDF: Datenstreifen steht unten im Rahmen — die Zeichnung erhält nur den Platz darüber
+  // (vorher überdeckte der Streifen bei «Kettenwerk» den Fahrdraht).
+  const _stripPdf = stripInSvg && _probesEarlyCount > 0;
+  const plotY1    = _stripPdf ? drawY1 - _stripH_early - 4 : drawY1;
+  const plotH     = plotY1 - drawY0;
+
   // Auto-scale (horizontal: fit L in drawW)
   const scaleOpts = [100, 150, 200, 250, 300, 400, 500];
   let scale = 500;
@@ -8465,28 +8514,45 @@ function _zeichnungBauen(stripInSvg) {
   const ppm   = 1000 / scale;          // horizontal: mm per metre
   const vEx   = drawingVEx || 1;
   // Vertical: ppm * vEx, capped so yRange fits in drawH
-  const ppm_v = Math.min(ppm * vEx, drawH / (yRange * 1.08));
+  const ppm_v = Math.min(ppm * vEx, plotH / (yRange * 1.08));
 
   // Symbol scale: in interactive view divide by zoom so symbols stay constant size
   const symSc = stripInSvg ? 1 : (1 / (drawingZoom || 1));
   const isFs = !stripInSvg && !!document.querySelector('.canvas-card.canvas-fullscreen');
-  // Beschriftung am Bildschirm grösser als im PDF (dort 1.0, massstäblicher Plan)
-  const lblSc = stripInSvg ? 1.0 : isFs ? 1.6 : 1.35;
-  const fs = n => (n * lblSc).toFixed(2);
+  // Beschriftung: im PDF massstäblich (n mm), am Bildschirm in fester Pixelgrösse —
+  // unabhängig von Zoom und Gerät (Grundgrösse 2.2 ≈ 12 px, im Vollbild ≈ 13 px).
+  let _pxJeEinheit = 3;
+  if (!stripInSvg) {
+    const _c = document.getElementById('scale-svg-container');
+    if (_c && _c.offsetHeight > 0) _pxJeEinheit = _c.offsetHeight * (drawingZoom || 1) / ZEICH_VB_HOEHE;
+  }
+  const _pxJeN = isFs ? 5.9 : 5.4;
+  const fs = n => (stripInSvg ? n : n * _pxJeN / _pxJeEinheit).toFixed(2);
+
+  // Mastangaben (Name / KM) für die Beschriftung über den Masten
+  const _mastInfo = seite => {
+    const n = (document.getElementById('mast-num-' + seite)?.value || '').trim();
+    const k = (document.getElementById('mast-km-' + seite)?.value || '').trim();
+    return [n, k ? 'km ' + k : ''].filter(Boolean).join(' · ');
+  };
+  const mastInfoL = _mastInfo('left'), mastInfoR = _mastInfo('right');
+  const _mastInfoDa = !!(mastInfoL || mastInfoR);
 
   // Drawing proper centred in available area
   const dW   = L * ppm;
   const dH   = yRange * ppm_v;
   const xOff = drawX0 + (drawW - dW) / 2;
-  const yOff = drawY0 + (drawH - dH) / 2;
+  const yOff = drawY0 + (plotH - dH) / 2;
 
   // Store content bounds for auto-fit (interactive only)
   if (!stripInSvg) {
+    const _e = parseFloat(fs(2.2));   // Höhe einer Beschriftungszeile in SVG-Einheiten
+    const _oben = 3 + _e * (_mastInfoDa ? 3.2 : 2);
     _drawingContentBounds = {
       x: 1,                           // include y-axis label area
-      y: yOff - 5,
-      w: xOff + L * ppm + 7,          // y-axis area to right mast + margin
-      h: dH + 18,
+      y: yOff - _oben,
+      w: xOff + L * ppm + 4 + _e * 2.2,   // bis rechter Mast + Beschriftung «SOK»
+      h: dH + _oben + 6 + _e * 2.4,       // darunter die Masskette
     };
   }
 
@@ -8514,14 +8580,6 @@ function _zeichnungBauen(stripInSvg) {
   };
   const catPath = (c, dash='', sw='0.55') => makePath(x => absY(x, catY(x, c)), dash, sw);
 
-  // Strip dimensions — declared early so grid and spanDim can reference them
-  const _probesEarlyCount = [probeX1, probeX2, probeX3, probeX4].filter(x => x !== null).length;
-  const _stripRowH_early  = 5.5;
-  // H-Punkte (Hindernis) im Band: Kote H und Abstand a je Messpunkt (nur mit SOK)
-  const _hBand = hasSok && [probeX1, probeX2, probeX3, probeX4].some((x, i) => x !== null && probeHWerte[i] !== null);
-  const _stripNRows_early = 2 + 1 + (c3data ? 1 : 0) + (hasSok ? 2 : 0) + (hasSok && c3data ? 1 : 0) + (_hBand ? 2 : 0);
-  const _stripH_early     = _stripNRows_early * _stripRowH_early + 0.5;
-
   // Grid lines
   const rawStep = yRange / 5;
   const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
@@ -8529,16 +8587,25 @@ function _zeichnungBauen(stripInSvg) {
   const gridStep = niceSteps.find(s => yRange / s >= 3 && yRange / s <= 8) || mag;
   const gridStart = Math.ceil(yMin / gridStep) * gridStep;
   let gridSvg = '';
+  let _gridLblMax = 4;   // längste Höhenzahl (Zeichen) — für die Lage des Achsentitels
   for (let y = gridStart; y <= yMax + 1e-9; y = Math.round((y + gridStep) * 1e6) / 1e6) {
     const gy = sy(y);
     const _gridBottom = (stripInSvg && _probesEarlyCount > 0) ? drawY1 - _stripH_early : drawY1;
     if (gy < drawY0 - 0.1 || gy > _gridBottom + 0.1) continue;
     gridSvg += `<line x1="${drawX0}" y1="${gy.toFixed(2)}" x2="${drawX1}" y2="${gy.toFixed(2)}" stroke="${Z.raster}" stroke-width="0.2"/>`;
     const lbl = hasSok ? y.toFixed(y < 10 ? 2 : 1) : y.toFixed(2);
+    _gridLblMax = Math.max(_gridLblMax, lbl.length);
     gridSvg += `<text x="${(drawX0-1).toFixed(2)}" y="${(gy+0.9).toFixed(2)}" font-size="${fs(2.4)}" text-anchor="end" fill="${Z.rasterText}">${lbl}</text>`;
   }
 
   const yAxisLbl = hasSok ? t('canvas.y.mum') : t('canvas.y.sok');
+  // Achsentitel links der breitesten Höhenzahl; Einpassen schliesst ihn ein
+  const _gfs = parseFloat(fs(2.4));
+  const _achseX = Math.min(8, drawX0 - 1.5 - _gridLblMax * 0.58 * _gfs - _gfs * 0.75);
+  if (_drawingContentBounds && !stripInSvg) {
+    const dx = Math.min(1, _achseX - _gfs * 0.8) - _drawingContentBounds.x;
+    _drawingContentBounds.x += dx; _drawingContentBounds.w -= dx;
+  }
 
   // Ausschnitt «Kettenwerk»: SOK liegt ausserhalb — Masten enden am unteren
   // Rand des Ausschnitts (Bruchzeichen), die SOK-Linie entfällt.
@@ -8550,12 +8617,12 @@ function _zeichnungBauen(stripInSvg) {
   // SOK line
   const sokSvg = nurKw ? `
   ${bruch(sx(0), sy(mastUL))}${bruch(sx(L), sy(mastUR))}
-  <text x="${(sx(0)-1).toFixed(2)}" y="${(sy(mastUL)+0.9).toFixed(2)}" font-size="${fs(2.0)}" text-anchor="end" fill="${Z.sokText}">${SOK} ↓</text>
-  <text x="${(sx(L)+1).toFixed(2)}" y="${(sy(mastUR)+0.9).toFixed(2)}" font-size="${fs(2.0)}" text-anchor="start" fill="${Z.sokText}">${SOK} ↓</text>` : `
+  <text class="zl-schieb" x="${(sx(0)+1.2).toFixed(2)}" y="${(sy(mastUL)-0.9).toFixed(2)}" font-size="${fs(2.0)}" text-anchor="start" fill="${Z.sokText}">${SOK} ↓</text>
+  <text class="zl-schieb" x="${(sx(L)-1.2).toFixed(2)}" y="${(sy(mastUR)-0.9).toFixed(2)}" font-size="${fs(2.0)}" text-anchor="end" fill="${Z.sokText}">${SOK} ↓</text>` : `
   <line x1="${sx(0).toFixed(2)}" y1="${sy(sokYL).toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${sy(sokYR).toFixed(2)}"
     stroke="${Z.sok}" stroke-width="${(0.65*symSc).toFixed(3)}"/>
-  <text x="${(sx(0)-1).toFixed(2)}" y="${(sy(sokYL)+0.9).toFixed(2)}" font-size="${fs(2.2)}" text-anchor="end" fill="${Z.sokText}">${SOK}</text>
-  <text x="${(sx(L)+1).toFixed(2)}" y="${(sy(sokYR)+0.9).toFixed(2)}" font-size="${fs(2.2)}" text-anchor="start" fill="${Z.sokText}">${SOK}</text>`;
+  <text class="zl-schieb" x="${(sx(0)+1.2).toFixed(2)}" y="${(sy(sokYL)-0.9).toFixed(2)}" font-size="${fs(2.1)}" text-anchor="start" fill="${Z.sokText}">${SOK}</text>
+  <text class="zl-schieb" x="${(sx(L)-1.2).toFixed(2)}" y="${(sy(sokYR)-0.9).toFixed(2)}" font-size="${fs(2.1)}" text-anchor="end" fill="${Z.sokText}">${SOK}</text>`;
 
   // Masts — solid thin lines, no circles
   const mastSvg = `
@@ -8583,6 +8650,25 @@ function _zeichnungBauen(stripInSvg) {
   <text x="${(sx(L)-2).toFixed(2)}" y="${(sy(h2abs)-2).toFixed(2)}" font-size="${fs(2.3)}" text-anchor="end" fill="${Z.anker}">h&#x2082; = ${h2.toFixed(2)} m</text>`;
   }
 
+  // Mastname / KM aus den Mastangaben über der Beschriftung des Aufhängepunkts
+  if (_mastInfoDa) {
+    const _e = parseFloat(fs(2.2));
+    if (mastInfoL) anchLbl += `
+  <text x="${(sx(0)+2).toFixed(2)}" y="${(sy(h1abs)-2-_e*1.4).toFixed(2)}" font-size="${fs(2.1)}" font-weight="600" fill="${Z.anker}">${escHtml(mastInfoL)}</text>`;
+    if (mastInfoR) anchLbl += `
+  <text x="${(sx(L)-2).toFixed(2)}" y="${(sy(h2abs)-2-_e*1.4).toFixed(2)}" font-size="${fs(2.1)}" font-weight="600" text-anchor="end" fill="${Z.anker}">${escHtml(mastInfoR)}</text>`;
+  }
+
+  // Hänger (schematisch, gleichmässig höchstens alle 5 m) zwischen Tragseil und Fahrdraht bei T₂
+  let haengerSvg = '';
+  if (showFd) {
+    const n = Math.max(2, Math.ceil(L / HAENGER_ABSTAND_MAX));
+    for (let i = 1; i < n; i++) {
+      const x = L * i / n;
+      haengerSvg += `<line class="haenger" x1="${sx(x).toFixed(2)}" y1="${sy(absY(x, catY(x, cDisp))).toFixed(2)}" x2="${sx(x).toFixed(2)}" y2="${sy(fdY(x)).toFixed(2)}" stroke="${fdClr}" stroke-width="${(0.18*symSc).toFixed(3)}" opacity="0.55"/>`;
+    }
+  }
+
   // Probe list and strip dimensions — reuse early-computed values
   const _probesEarly = [
     { xv: probeX1 }, { xv: probeX2 }, { xv: probeX3 }, { xv: probeX4 },
@@ -8595,7 +8681,7 @@ function _zeichnungBauen(stripInSvg) {
   // Span dimension line — segmented between probes, or full L if no probes
   const _stripY0ref = drawY1 - _stripH;
   const spanDimYraw = sy(yMin) + 5;
-  const spanDimYmax = (_probesEarly.length > 0 ? _stripY0ref : drawY1) - 6;
+  const spanDimYmax = (_stripPdf ? _stripY0ref : drawY1) - 3;
   const spanDimY = Math.min(spanDimYraw, spanDimYmax);
   let spanDim = '';
   if (_probesEarly.length > 0) {
@@ -8624,16 +8710,29 @@ function _zeichnungBauen(stripInSvg) {
   <text x="${((sx(0)+sx(L))/2).toFixed(2)}" y="${(spanDimY-1.5).toFixed(2)}" font-size="${fs(2.4)}" text-anchor="middle" fill="${Z.massL}">L = ${L.toFixed(2)} m</text>`;
   }
 
-  // Sag annotation at T2 lowest point
-  const x0T2     = cDisp.x_low;
-  const y0T2     = absY(x0T2, catY(x0T2, cDisp));
-  const yChordT2 = h1abs + (h2abs - h1abs) * x0T2 / L;
-  const sagVal   = cDisp.sag;
-  const sagSvg   = sagVal > 0.01 ? `
-  <line x1="${sx(x0T2).toFixed(2)}" y1="${sy(yChordT2).toFixed(2)}" x2="${sx(x0T2).toFixed(2)}" y2="${sy(y0T2).toFixed(2)}"
+  // Masslinie am Tiefpunkt (T₂) — Bezug wie im Diagramm und bei den Messpunkten (mpBezug):
+  // Sehne → f, sonst Δh zur Horizontalen durch den höchsten / linken / rechten Aufhängepunkt.
+  const _tm   = tiefpunktMass(x => absY(x, catY(x, cDisp)), cDisp, h1abs, h2abs, L);
+  const x0T2  = _tm ? _tm.x0 : 0;
+  const y0T2  = _tm ? _tm.yBot : 0;
+  const yRefT2 = _tm ? _tm.yRef : 0;
+  const sagVal = _tm ? _tm.wert : 0;
+  // Bezugslinie: Sehne zwischen den Aufhängepunkten bzw. Horizontale auf Höhe des Bezugspunkts
+  const _refY = mpBezug === 'sehne' ? null : mpBezugHoehe(0, h1abs, h2abs, L);
+  const refSvg = `<line x1="${sx(0).toFixed(2)}" y1="${sy(mpBezug === 'sehne' ? h1abs : _refY).toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${sy(mpBezug === 'sehne' ? h2abs : _refY).toFixed(2)}"
+    stroke="${Z.t1}" stroke-width="${(0.25*symSc).toFixed(3)}" stroke-dasharray="${(3.5*symSc).toFixed(2)},${(2.2*symSc).toFixed(2)}" opacity="0.55"/>`;
+  // Beschriftung rechts der Linie; überlappt sie eine andere, weicht sie nach dem
+  // Zeichnen aus (_zeichnungEntflechten: links der Linie bzw. nach oben/unten)
+  const _fTxt = `${mpBezugKurz()} = ${sagVal.toFixed(2)} m`;
+  const _fY = (sy(yRefT2) + sy(y0T2)) / 2 + 0.9;
+  const _pf = (y, dir) => { const a = 1.0 * symSc, b = 1.9 * symSc, x = sx(x0T2);
+    return `<polygon points="${x.toFixed(2)},${y.toFixed(2)} ${(x - a).toFixed(2)},${(y - dir * b).toFixed(2)} ${(x + a).toFixed(2)},${(y - dir * b).toFixed(2)}" fill="${t2clr}" opacity="0.85"/>`; };
+  const sagSvg   = _tm && Math.abs(yRefT2 - y0T2) > 0.01 ? `
+  <line x1="${sx(x0T2).toFixed(2)}" y1="${sy(yRefT2).toFixed(2)}" x2="${sx(x0T2).toFixed(2)}" y2="${sy(y0T2).toFixed(2)}"
     stroke="${t2clr}" stroke-width="${(0.25*symSc).toFixed(3)}" stroke-dasharray="${(1.2*symSc).toFixed(2)},${(0.8*symSc).toFixed(2)}" opacity="0.7"/>
-  <text x="${(sx(x0T2)+1.5).toFixed(2)}" y="${((sy(yChordT2)+sy(y0T2))/2+0.9).toFixed(2)}"
-    font-size="${fs(2.2)}" fill="${t2clr}" opacity="0.85">f = ${sagVal.toFixed(2)} m</text>` : '';
+  ${_pf(sy(y0T2) - 0.15 * symSc, -1)}${_pf(sy(yRefT2) + 0.15 * symSc, 1)}
+  <text class="zl-schieb" data-x2="${(sx(x0T2) - 1.5).toFixed(2)}" data-a2="end" x="${(sx(x0T2) + 1.5).toFixed(2)}" y="${_fY.toFixed(2)}" text-anchor="start"
+    font-size="${fs(2.2)}" font-weight="600" fill="${t2clr}" opacity="0.9" stroke="${Z.hg}" stroke-width="${(0.45*symSc).toFixed(3)}" paint-order="stroke">${_fTxt}</text>` : '';
 
   // Mindestabstand-Kurven (parallel zur T2-Kurve, versetzt) — mit Schraffur-Füllung
   let minClearSvg = '';
@@ -8680,28 +8779,14 @@ function _zeichnungBauen(stripInSvg) {
           const y = absY(x, catY(x, c)) + off;
           d += (i === 0 ? 'M' : 'L') + sx(x).toFixed(2) + ',' + sy(y).toFixed(2) + ' ';
         }
-        if (!_isEl && off > 0) {
-          // NFL/RFL: Polygon bis SOK-Linie (oder Zeichnungsunterrand wenn nur Kettenwerk)
-          if (hasSok && drawingExtent !== 'catenary') {
-            // Entlang SOK von rechts nach links
-            for (let i = N; i >= 0; i--) {
-              const x = L * i / N;
-              d += `L${sx(x).toFixed(2)},${sy(sokAt(x)).toFixed(2)} `;
-            }
-          } else {
-            // Zeichnungsunterrand (flach)
-            const flatY = (sy(yMin) + 1).toFixed(2);
-            d += `L${sx(L).toFixed(2)},${flatY} L${sx(0).toFixed(2)},${flatY} `;
-          }
-        } else {
-          // Einzelleiter: Rückweg entlang der Kettenlinie
-          for (let i = N; i >= 0; i--) {
-            const x = L * i / N;
-            d += `L${sx(x).toFixed(2)},${sy(absY(x, catY(x, c))).toFixed(2)} `;
-          }
+        // Band zwischen Leiter und Leiter ± a (vorher bei N-FL/R-FL Fläche bis zur SOK —
+        // überdeckte das ganze Feld)
+        for (let i = N; i >= 0; i--) {
+          const x = L * i / N;
+          d += `L${sx(x).toFixed(2)},${sy(absY(x, catY(x, c))).toFixed(2)} `;
         }
         d += 'Z';
-        s += `<path d="${d.trim()}" fill="url(#${pid})" opacity="0.15" stroke="none"/>`;
+        s += `<path d="${d.trim()}" fill="url(#${pid})" opacity="0.35" stroke="none"/>`;
       });
       return s;
     };
@@ -8723,7 +8808,7 @@ function _zeichnungBauen(stripInSvg) {
     // Label am rechten Rand der oberen Kurve
     const _xLbl   = L * 0.97;
     const _yLblAbs = absY(_xLbl, catY(_xLbl, cDisp)) + _minC;
-    const _fsLbl  = (2.0 * symSc).toFixed(2);
+    const _fsLbl  = fs(2.0);
     minClearSvg += `<text x="${(sx(_xLbl)-1).toFixed(2)}" y="${(sy(_yLblAbs)-1.2).toFixed(2)}"
       font-size="${_fsLbl}" text-anchor="end" fill="${t2clr}" opacity="0.55">⌀ ${_minC.toFixed(2)} m</text>`;
   }
@@ -8737,10 +8822,11 @@ function _zeichnungBauen(stripInSvg) {
   // Data strip — reuse dimensions declared before spanDim
   const stripRowH      = _stripRowH;
   const stripRowLabels = [
-    t('draw.punkt'), 'x [m]', `T2-${SOK} [m]`,
-    ...(c3data ? [`T3-${SOK} [m]`] : []),
-    ...(hasSok ? [`T2 [${MUM}]`] : []),
-    ...(hasSok && c3data ? [`T3 [${MUM}]`] : []),
+    // T₂ / T₃ mit tiefgestellter Ziffer; Farbe der Zeile über _istT2 / _istT3
+    t('draw.punkt'), 'x [m]', `${mpBezugKurz()} T₂ [m]`, `T₂ ${t('draw.ueber')} ${SOK} [m]`,
+    ...(c3data ? [`T₃ ${t('draw.ueber')} ${SOK} [m]`] : []),
+    ...(hasSok ? [`T₂ [${MUM}]`] : []),
+    ...(hasSok && c3data ? [`T₃ [${MUM}]`] : []),
     ...(hasSok ? [`${SOK} [${MUM}]`] : []),
     ...(_hBand ? [`H [${MUM}]`, 'a [m]'] : []),
   ];
@@ -8776,14 +8862,15 @@ function _zeichnungBauen(stripInSvg) {
       // Row labels — styled like HTML strip
       stripRowLabels.forEach((lbl, r) => {
         const ty  = (stripY0 + r * stripRowH + stripRowH * 0.65).toFixed(2);
-        const clr = lbl.includes('T2') ? t2clr : lbl.includes('T3') ? t3clr : '#999';
+        const clr = _istT2(lbl) ? t2clr : _istT3(lbl) ? t3clr : '#999';
         const fw  = r === 0 ? '600' : '600';
         probesSvg += `<text x="${(drawX0 + 2).toFixed(2)}" y="${ty}" font-size="2.3" font-weight="${fw}" fill="${clr}">${lbl}</text>`;
       });
     }
 
-    // Lotlinie reicht im interaktiven Modus bis zum unteren Zeichnungsrand
-    const plumbEndY = stripInSvg ? stripY0 : drawY1;
+    // Lotlinie: im PDF bis zum Datenstreifen, am Bildschirm bis zur SOK bzw. zum
+    // unteren Rand des Ausschnitts «Kettenwerk» (ragte vorher aus der Zeichnung)
+    const _lotEnde = xv => stripInSvg ? stripY0 : sy(nurKw ? Math.max(sokAt(xv), yMin) : sokAt(xv));
 
     // Each probe: plumb line + SOK tick + circle + data cells
     probes.forEach(({ xv, badge }) => {
@@ -8795,7 +8882,7 @@ function _zeichnungBauen(stripInSvg) {
 
       // Dashed plumb line
       probesSvg += `
-    <line x1="${px.toFixed(2)}" y1="${(py + 1.3*symSc).toFixed(2)}" x2="${px.toFixed(2)}" y2="${plumbEndY.toFixed(2)}"
+    <line x1="${px.toFixed(2)}" y1="${(py + 1.3*symSc).toFixed(2)}" x2="${px.toFixed(2)}" y2="${_lotEnde(xv).toFixed(2)}"
       stroke="${t2clr}" stroke-width="${(0.5*symSc).toFixed(3)}" stroke-dasharray="${(2.0*symSc).toFixed(2)},${(1.5*symSc).toFixed(2)}" opacity="0.45"/>`;
 
 
@@ -8804,9 +8891,11 @@ function _zeichnungBauen(stripInSvg) {
     <circle cx="${px.toFixed(2)}" cy="${py.toFixed(2)}" r="${(1.2*symSc).toFixed(2)}" fill="${t2clr}" stroke="${Z.hg}" stroke-width="${(0.35*symSc).toFixed(3)}"/>`;
 
       // Zellwerte (für SVG-Strip und HTML-Tabelle) [val, fontSize, fontWeight, color]
+      const _dh = mpBezugHoehe(xv, h1abs, h2abs, L) - y2abs;   // wie Karte und Diagramm
       const cellVals = [
         [badge,               '2.4', '700', t2clr],
         [xv.toFixed(2),       '2.0', '400', '#666'],
+        [_dh.toFixed(2),      '2.0', '600', t2clr],
         [tsHeight.toFixed(2), '2.0', '400', t2clr],
       ];
       if (c3data) cellVals.push([catY(xv, c3data).toFixed(2), '2.0', '400', t3clr]);
@@ -8860,13 +8949,13 @@ function _zeichnungBauen(stripInSvg) {
     const px       = sx(xv);
     const py       = sy(y2abs);
 
-    // Dashed plumb line + circle in SVG
-    const plumbEndY = drawY1;
+    // Dashed plumb line + circle in SVG (bis SOK bzw. unterer Rand des Ausschnitts)
+    const plumbEndY = sy(nurKw ? Math.max(sokAt(xv), yMin) : sokAt(xv));
     probesSvg += `
-    <line x1="${px.toFixed(2)}" y1="${(py + 1.3).toFixed(2)}" x2="${px.toFixed(2)}" y2="${plumbEndY.toFixed(2)}"
-      stroke="${t2clr}" stroke-width="0.5" stroke-dasharray="2.0,1.5" opacity="0.45"/>`;
+    <line x1="${px.toFixed(2)}" y1="${(py + 1.3*symSc).toFixed(2)}" x2="${px.toFixed(2)}" y2="${plumbEndY.toFixed(2)}"
+      stroke="${t2clr}" stroke-width="${(0.5*symSc).toFixed(3)}" stroke-dasharray="${(2.0*symSc).toFixed(2)},${(1.5*symSc).toFixed(2)}" opacity="0.45"/>`;
     probesSvg += `
-    <circle cx="${px.toFixed(2)}" cy="${py.toFixed(2)}" r="1.2" fill="${t2clr}" stroke="${Z.hg}" stroke-width="0.35"/>`;
+    <circle cx="${px.toFixed(2)}" cy="${py.toFixed(2)}" r="${(1.2*symSc).toFixed(2)}" fill="${t2clr}" stroke="${Z.hg}" stroke-width="${(0.35*symSc).toFixed(3)}"/>`;
     if (c3data) {
       const y3abs = absY(xv, catY(xv, c3data));
       const dx = px, dy = sy(y3abs), s = 1.3;
@@ -8877,15 +8966,16 @@ function _zeichnungBauen(stripInSvg) {
 
     // Strip cell values
     const cellVals = [
-      ['f',               '2.4', '700'],
+      [mpBezugKurz(),     '2.4', '700'],
       [xv.toFixed(2),     '2.0', '400'],
+      [(mpBezugHoehe(xv, h1abs, h2abs, L) - y2abs).toFixed(2), '2.0', '600'],
       [tsHeight.toFixed(2),'2.0','400'],
     ];
     if (c3data) cellVals.push([catY(xv, c3data).toFixed(2), '2.0', '400']);
-    if (hasSok) {
-      cellVals.push([y2abs.toFixed(2),   '2.0', '400']);
-      cellVals.push([sokKote.toFixed(2), '2.0', '400']);
-    }
+    // Reihenfolge wie die Zeilenbezeichnungen (T₃ in m ü. M. fehlte vorher → Werte verrutscht)
+    if (hasSok) cellVals.push([y2abs.toFixed(2), '2.0', '400']);
+    if (hasSok && c3data) cellVals.push([absY(xv, catY(xv, c3data)).toFixed(2), '2.0', '400']);
+    if (hasSok) cellVals.push([sokKote.toFixed(2), '2.0', '400']);
     _drawingProbeData.push({ xFrac: px / VW, cells: cellVals.map(([v]) => v) });
   }
 
@@ -8900,6 +8990,15 @@ function _zeichnungBauen(stripInSvg) {
   // Abstand im massgebenden Lastfall. Farben je Thema (PDF immer hell).
   const obsClr = Z.hindernis;
   let obstSvg = '';
+  // Bereich aller Lastfälle (höchste bis tiefste Leiterlage) als leichtes Band — wie im
+  // Diagramm. Die Masslinie misst zum Leiter im massgebenden Lastfall (Rand des Bands).
+  const _huelle = _nachweis.find(n => n.best && n.huelle)?.huelle;
+  let lastfallSvg = '';   // unter den Kurven gezeichnet
+  if (_huelle) {
+    const pts = [..._huelle.map(p => `${sx(p.x).toFixed(2)},${sy(p.max).toFixed(2)}`),
+                 ...[..._huelle].reverse().map(p => `${sx(p.x).toFixed(2)},${sy(p.min).toFixed(2)}`)];
+    lastfallSvg = `<polygon class="lastfall-band" points="${pts.join(' ')}" fill="${Z.lastfallBand}" stroke="none"/>`;
+  }
   _nachweis.forEach(({ h, best, ok, unten }) => {
     if (!best) return;
     const P = hindernisPunkte(h.punkte);
@@ -8928,9 +9027,15 @@ function _zeichnungBauen(stripInSvg) {
     const tk = 1.2 * symSc, msw = (0.45 * symSc).toFixed(3);
     obstSvg += `<line x1="${bx.toFixed(2)}" y1="${by.toFixed(2)}" x2="${bx.toFixed(2)}" y2="${ly.toFixed(2)}" stroke="${farbe}" stroke-width="${msw}"/>`
       + `<line x1="${(bx - tk).toFixed(2)}" y1="${by.toFixed(2)}" x2="${(bx + tk).toFixed(2)}" y2="${by.toFixed(2)}" stroke="${farbe}" stroke-width="${msw}"/>`
-      + `<line x1="${(bx - tk).toFixed(2)}" y1="${ly.toFixed(2)}" x2="${(bx + tk).toFixed(2)}" y2="${ly.toFixed(2)}" stroke="${farbe}" stroke-width="${msw}"/>`;
+      + `<line x1="${(bx - tk).toFixed(2)}" y1="${ly.toFixed(2)}" x2="${(bx + tk).toFixed(2)}" y2="${ly.toFixed(2)}" stroke="${farbe}" stroke-width="${msw}"/>`
+      + `<circle cx="${bx.toFixed(2)}" cy="${ly.toFixed(2)}" r="${(0.9 * symSc).toFixed(2)}" fill="${farbe}"/>`;   // Leiter im massgebenden Lastfall
     const links = best.x > L * 0.7;
-    obstSvg += `<text x="${(bx + (links ? -1.6 : 1.6) * symSc).toFixed(2)}" y="${((by + ly) / 2 + 0.8 * symSc).toFixed(2)}" text-anchor="${links ? 'end' : 'start'}" font-size="${(2.3 * symSc).toFixed(2)}" font-weight="700" fill="${farbe}" stroke="${Z.hg}" stroke-width="${(0.5 * symSc).toFixed(3)}" paint-order="stroke">${escHtml(h.name ? h.name + ': ' : '')}a = ${best.abstand.toFixed(2)} m ${ok ? '✓' : '✗'}</text>`;
+    // Zweizeilig: Abstand, darunter der massgebende Lastfall (die Zeile «massgebend …» unter dem
+    // Diagramm ist in der Zeichnung nicht sichtbar). Zeile 2 folgt beim Ausweichen (tspan[data-zeile]).
+    const _ax = (bx + (links ? -1.6 : 1.6) * symSc).toFixed(2), _ax2 = (bx + (links ? 1.6 : -1.6) * symSc).toFixed(2);
+    const _ae = parseFloat(fs(2.2)), _fall = best.fall ? escHtml(_lastfallText(best.fall)) : '';
+    const _ay = (by + ly) / 2 + 0.8 * symSc - (_fall ? _ae * 0.55 : 0);
+    obstSvg += `<text class="zl-schieb" data-x2="${_ax2}" data-a2="${links ? 'start' : 'end'}" x="${_ax}" y="${_ay.toFixed(2)}" text-anchor="${links ? 'end' : 'start'}" font-size="${fs(2.2)}" font-weight="700" fill="${farbe}" stroke="${Z.hg}" stroke-width="${(0.5 * symSc).toFixed(3)}" paint-order="stroke">${escHtml(h.name ? h.name + ': ' : '')}a = ${best.abstand.toFixed(2)} m ${ok ? '✓' : '✗'}${_fall ? `<tspan data-zeile="2" x="${_ax}" dy="${(_ae * 1.15).toFixed(2)}" font-size="${fs(1.9)}" font-weight="500">${_fall}</tspan>` : ''}</text>`;
   });
 
   // Footer: scale bars + legend (PDF only)
@@ -8960,7 +9065,7 @@ function _zeichnungBauen(stripInSvg) {
 
     // ── Vertical scale ──
     const vScale = Math.round(scale / (vEx || 1));
-    const vbX = bx0 + barW + 9;
+    const vbX = bx0 + Math.max(barW, 26) + 6;   // Platz für «Massstab H 1:…» (überlappte vorher)
     s += `<text x="${vbX.toFixed(1)}" y="${(fy+3.8).toFixed(1)}" font-size="2.1" font-weight="600" fill="#444">${t('draw.masstab')} V  1:${vScale}${vEx > 1 ? `   (${t('draw.ueberhoeung')} ${vEx}×)` : ''}</text>`;
 
     // ── SOK info ──
@@ -8992,6 +9097,15 @@ function _zeichnungBauen(stripInSvg) {
     if (c3data && _t3v_foot !== null) {
       s += `<line x1="${lx.toFixed(1)}" y1="${lY.toFixed(1)}" x2="${(lx+lw).toFixed(1)}" y2="${lY.toFixed(1)}" stroke="${t3clr}" stroke-width="0.6" stroke-dasharray="3,2"/>`;
       s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="${t3clr}">${subUni(t(sysMode === 'el' ? 'leg.leiter3' : 'leg.ts3'))} = ${_t3v_foot}°C</text>`;
+      lx += 34;
+    }
+    if (_huelle) {
+      s += `<rect x="${lx.toFixed(1)}" y="${(lY - 1.2).toFixed(1)}" width="${lw}" height="2.4" fill="${Z.lastfallBand}" stroke="#ccc" stroke-width="0.2"/>`;
+      s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="#888">${t('leg.lastfaelle')}</text>`;
+      lx += 34;
+    }
+    if (t3gleichT2) {
+      s += `<text x="${lx.toFixed(1)}" y="${ltY}" font-size="2.2" fill="#999">${subUni(t(sysMode === 'el' ? 'leg.leiter3' : 'leg.ts3'))} = ${(v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value))}°C (= T₂)</text>`;
       lx += 34;
     }
     if (hfOk) {
@@ -9046,12 +9160,17 @@ function _zeichnungBauen(stripInSvg) {
     };
     const t3v = c3data ? (v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value)) : null;
     const _el = sysMode === 'el';
-    let legHtml = `<div class="dl-item">${_legLine(Z.t1, '5 3')} <span style="color:${Z.t1Text}">${t(_el ? 'leg.leiter1' : 'leg.ts1')} = ${T1}°C</span></div>`;
+    let legHtml = `<div class="dl-item">${_legLine(Z.t1, '5 3')} <span style="color:var(--muted)">${t(_el ? 'leg.leiter1' : 'leg.ts1')} = ${T1}°C</span></div>`;
     legHtml += `<div class="dl-item">${_legLine(t2clr, '', true)} <span style="color:${t2clr};font-weight:600">${t(_el ? 'leg.leiter2' : 'leg.ts2')} = ${T2}°C</span></div>`;
     if (showFd) legHtml += `<div class="dl-item">${_legLine(fdClr, '', false, true)} <span>${t('leg.fd2')}</span></div>`;
     if (c3data) legHtml += `<div class="dl-item">${_legLine(t3clr, '4 2.5')} <span style="color:${t3clr}">${t(_el ? 'leg.leiter3' : 'leg.ts3')} = ${t3v}°C</span></div>`;
-    if (hfOk) legHtml += `<div class="dl-item">${_legLine(Z.hfMin, '4 2')} <span style="color:${Z.hfMin}">hf<sub>min</sub></span> / <span style="color:${Z.hfMax}">hf<sub>max</sub></span> <span style="color:${Z.t1Text}">(${escHtml(sysName(hfEingabe.typ))}, c = ${hfEingabe.c} m)</span></div>`;
+    else if (t3gleichT2) legHtml += `<div class="dl-item"><span style="color:var(--muted)">${t(_el ? 'leg.leiter3' : 'leg.ts3')} = ${(v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value))}°C ${t('draw.t3.gleich')}</span></div>`;
+    if (_huelle) legHtml += `<div class="dl-item"><span style="display:inline-block;width:22px;height:9px;border-radius:2px;background:${Z.lastfallBand};border:1px solid var(--border)"></span> <span>${t('leg.lastfaelle')}</span></div>`;
+    if (hfOk) legHtml += `<div class="dl-item">${_legLine(Z.hfMin, '4 2')} <span style="color:${Z.hfMin}">hf<sub>min</sub></span> / <span style="color:${Z.hfMax}">hf<sub>max</sub></span> <span style="color:var(--muted)">(${escHtml(sysName(hfEingabe.typ))}, c = ${hfEingabe.c} m)</span></div>`;
     else if (hfZ?.fehler) legHtml += `<div class="dl-item"><span style="color:${Z.schlecht}">${escHtml(t('draw.hf.fehler'))}</span></div>`;
+    // Massstab am Bildschirm (wie im PDF)
+    const _vSc = Math.round(scale / (vEx || 1));
+    legHtml += `<div class="dl-item dl-massstab">${t('draw.masstab')} H 1:${scale} · V 1:${_vSc}${vEx > 1 ? ` (${t('draw.ueberhoeung')} ${vEx}×)` : ''}</div>`;
     const legEl = document.getElementById('drawing-legend-overlay');
     if (legEl) { legEl.style.display = 'flex'; legEl.innerHTML = legHtml; }
   }
@@ -9077,6 +9196,7 @@ function _zeichnungBauen(stripInSvg) {
   const _sagPdf    = cDisp.sag;
   let _paramLine = `h&#x2081; = ${h1.toFixed(2)} m    h&#x2082; = ${h2.toFixed(2)} m    f = ${_sagPdf.toFixed(2)} m    L = ${L.toFixed(2)} m    ${t('draw.masstab')} H 1:${scale}    ${t('draw.masstab')} V 1:${_vScalePdf}${vEx > 1 ? `  (${vEx}×)` : ''}    T&#x2081; = ${T1}°C    T&#x2082; = ${T2}°C`;
   if (c3data && t3v_pdf !== null) _paramLine += `    T&#x2083; = ${t3v_pdf}°C`;
+  _paramLine += `    ${escHtml(mpBezugText())}`;
   const titleSvg = stripInSvg ? `
   <rect x="0" y="0" width="${VW}" height="${titleH}" fill="#ffffff"/>
   <rect x="0" y="0" width="${VW}" height="0.8" fill="#4a5cb8"/>
@@ -9088,7 +9208,8 @@ function _zeichnungBauen(stripInSvg) {
 
   // Frame and Y-axis
   const frameSvg   = stripInSvg ? `<rect x="${drawX0}" y="${drawY0}" width="${drawW}" height="${drawH}" fill="none" stroke="#d8d8d8" stroke-width="0.3"/>` : '';
-  const yAxisSvg   = `<text transform="rotate(-90,8,${((drawY0+drawY1)/2).toFixed(1)})" x="8" y="${((drawY0+drawY1)/2).toFixed(1)}" font-size="${fs(2.4)}" text-anchor="middle" fill="${Z.achse}">${yAxisLbl}</text>`;
+  const _ayM = ((drawY0 + plotY1) / 2).toFixed(1);
+  const yAxisSvg   = `<text transform="rotate(-90,${_achseX.toFixed(2)},${_ayM})" x="${_achseX.toFixed(2)}" y="${_ayM}" font-size="${fs(2.4)}" text-anchor="middle" fill="${Z.achse}">${yAxisLbl}</text>`;
 
   const svgSize = stripInSvg ? `width="267mm" height="180mm"` : `width="100%" height="100%"`;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg"
@@ -9102,13 +9223,16 @@ function _zeichnungBauen(stripInSvg) {
   ${yAxisSvg}
   ${sokSvg}
   ${mastSvg}
+  ${lastfallSvg}
   ${catPath(c1, `${(5.5*symSc).toFixed(2)},${(3.5*symSc).toFixed(2)}`, (0.5*symSc).toFixed(3))} stroke="${Z.t1}" opacity="0.7"/>
   ${catPath(cDisp, '', (1.0*symSc).toFixed(3))} stroke="${t2clr}"/>
+  ${haengerSvg}
   ${showFd ? makePath(fdY, '', (0.32*symSc).toFixed(3)) + ` stroke="${fdClr}"/>` : ''}
   ${c3data ? catPath(c3data, `${(2.5*symSc).toFixed(2)},${(1.5*symSc).toFixed(2)}`, (0.65*symSc).toFixed(3)) + ` stroke="${t3clr}"/>` : ''}
   ${hfSvg}
   ${minClearSvg}
   ${anchLbl}
+  ${refSvg}
   ${sagSvg}
   ${probesSvg}
   ${obstSvg}
@@ -9191,10 +9315,39 @@ function _zeichnungEinpassen() {
   const { x: cx, y: cy, w: cw, h: ch } = _drawingContentBounds;
   const ar = _zeichAR();
   const fz = Math.min((ZEICH_VB_HOEHE * ar) / cw, ZEICH_VB_HOEHE / ch) * 0.97;
-  drawingZoom = _zoomKlemmen(fz, true);
+  drawingZoom = Math.max(ZEICH_ZOOM_MIN, Math.min(ZEICH_ZOOM_MAX, fz));   // genau einpassen, nicht auf Stufen abrunden
   _panX = cx - (ZEICH_VB_HOEHE * ar / drawingZoom - cw) / 2;
   _panY = cy - (ZEICH_VB_HOEHE / drawingZoom - ch) / 2;
   return true;
+}
+
+// Bewegliche Beschriftungen (Klasse zl-schieb) weichen anderen Texten aus: zuerst auf
+// die Ausweichseite (data-x2 / data-a2), dann schrittweise nach oben bzw. unten.
+function _zeichnungEntflechten() {
+  const svg = document.querySelector('#scale-svg-container svg');
+  if (!svg || !svg.getClientRects().length) return;
+  const texte = [...svg.querySelectorAll('text')].filter(e => e.textContent.trim());
+  const ueber = (a, b) => a.x < b.x + b.width - 0.2 && b.x < a.x + a.width - 0.2 && a.y < b.y + b.height - 0.2 && b.y < a.y + a.height - 0.2;
+  // frei = keine Überlappung und ganz im sichtbaren Ausschnitt (viewBox)
+  const vb = svg.viewBox.baseVal;
+  const drin = b => !vb || !vb.width || (b.x >= vb.x - 0.2 && b.x + b.width <= vb.x + vb.width + 0.2);
+  const frei = e => { const b = e.getBBox(); return drin(b) && !texte.some(o => o !== e && ueber(b, o.getBBox())); };
+  svg.querySelectorAll('text.zl-schieb').forEach(e => {
+    if (frei(e)) return;
+    const x0 = e.getAttribute('x'), y0 = +e.getAttribute('y'), a0 = e.getAttribute('text-anchor') || 'start';
+    const h = e.getBBox().height || 3;
+    const lagen = [[x0, a0]];
+    if (e.dataset.x2) lagen.push([e.dataset.x2, e.dataset.a2 || a0]);
+    for (const dy of [0, -1.1 * h, 1.1 * h, -2.2 * h, 2.2 * h]) {
+      for (const [x, a] of lagen) {
+        e.setAttribute('x', x); e.setAttribute('text-anchor', a); e.setAttribute('y', (y0 + dy).toFixed(2));
+        e.querySelectorAll('tspan[data-zeile]').forEach(z => z.setAttribute('x', x));
+        if (frei(e)) return;
+      }
+    }
+    e.setAttribute('x', x0); e.setAttribute('text-anchor', a0); e.setAttribute('y', y0.toFixed(2));
+    e.querySelectorAll('tspan[data-zeile]').forEach(z => z.setAttribute('x', x0));
+  });
 }
 
 function applyViewBox() {
@@ -9224,6 +9377,7 @@ function applyViewBox() {
     _panY = Math.max(0, Math.min(Math.max(0, ZEICH_VB_HOEHE - vbH), _panY));
   }
   svgEl.setAttribute('viewBox', `${_panX.toFixed(3)} ${_panY.toFixed(3)} ${vbW.toFixed(3)} ${vbH.toFixed(3)}`);
+  _zeichnungEntflechten();
 }
 
 function adjustDrawingZoom(newZoom) {
@@ -9232,7 +9386,11 @@ function adjustDrawingZoom(newZoom) {
 
   // Zurücksetzen (Zoom 1.0) passt wieder auf den Inhalt ein; sonst wird um die
   // Mitte des aktuellen Ausschnitts gezoomt.
-  if (!(newZoom === 1.0 && _zeichnungEinpassen())) {
+  if (newZoom === 1.0 && _zeichnungEinpassen()) {
+    // wie beim Wechsel in die Zeichnung: mit den endgültigen Rändern nochmals einpassen
+    const c = document.getElementById('scale-svg-container'), svg = buildScaleDrawingPage();
+    if (svg && c) { c.innerHTML = svg; _zeichnungEinpassen(); }
+  } else {
     const ar = _zeichAR();
     const cx = _panX + (ZEICH_VB_HOEHE * ar / prevZoom) / 2;
     const cy = _panY + (ZEICH_VB_HOEHE / prevZoom) / 2;
@@ -9283,11 +9441,25 @@ function updateStripVisibility() {
   }
   zeigeElement(strip, true);
 
+  // Werte stehen unter ihrem Messpunkt. Lägen sie hinter der Bezeichnungsspalte oder zu
+  // dicht beieinander (Handy, Messpunkt nahe am Mast), gleichmässig rechts davon verteilen.
+  const _rowW = strip.offsetWidth || (_cont ? _cont.offsetWidth : 0);
+  const _lblW = parseFloat(getComputedStyle(strip).getPropertyValue('--strip-lbl-w')) || 155;
+  if (_rowW > 0) {
+    const pos = visibleProbes.map(v => v.frac * _rowW).sort((a, b) => a - b);
+    const eng = pos.some((p, i) => p < _lblW + 22 || (i > 0 && p - pos[i - 1] < 52));
+    if (eng) {
+      const n = visibleProbes.length, frei = _rowW - _lblW;
+      visibleProbes.sort((a, b) => a.frac - b.frac)
+        .forEach((v, i) => { v.frac = (_lblW + frei * (i + 0.5) / n) / _rowW; });
+    }
+  }
+
   // ── M-probe rows ──
   let html = '';
   _drawingStripLabels.forEach((lbl, r) => {
-    const isT2    = lbl.includes('T2');
-    const isT3    = lbl.includes('T3');
+    const isT2    = _istT2(lbl);
+    const isT3    = _istT3(lbl);
     const isAbst  = lbl.startsWith('Abst.');
     const color   = isT2 ? _drawingT2Clr : isT3 ? _drawingT3Clr : 'var(--text2)';
     const lblClr  = isT2 ? _drawingT2Clr : isT3 ? _drawingT3Clr : isAbst ? '#2563eb' : 'var(--muted)';
@@ -9570,8 +9742,10 @@ function setCanvasView(view) {
 
     // Ausschnitt auf den Zeichnungsinhalt einpassen
     drawingZoom = 1.0; _panX = 0; _panY = 0;
-    if (_zeichnungEinpassen()) {
-      // SVG mit der zum neuen Zoom passenden Symbolgrösse neu aufbauen
+    // Zweimal: Die Schriftgrösse hängt vom Zoom ab und verändert die Ränder (Achsentitel,
+    // Beschriftungen) — der zweite Durchgang passt mit den endgültigen Rändern ein.
+    for (let i = 0; i < 2 && _zeichnungEinpassen(); i++) {
+      // SVG mit der zum neuen Zoom passenden Symbol- und Schriftgrösse neu aufbauen
       const svgFit = buildScaleDrawingPage();
       if (svgFit && svgCont) svgCont.innerHTML = svgFit;
     }

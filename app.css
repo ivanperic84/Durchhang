@@ -512,10 +512,11 @@ body {
 .canvas-card.canvas-fullscreen .canvas-header { padding: .75rem 1.5rem; }
 .canvas-card.canvas-fullscreen #scale-toolbar { padding: .55rem 1.2rem; }
 .canvas-card.canvas-fullscreen .strip-row { height: 34px; }
-.canvas-card.canvas-fullscreen .strip-label { font-size: 14px; width: 175px; min-width: 175px; max-width: 175px; }
+.canvas-card.canvas-fullscreen { --strip-lbl-w: 175px; }
+.canvas-card.canvas-fullscreen .strip-label { font-size: 14px; }
 .canvas-card.canvas-fullscreen .strip-val { font-size: 13px; }
 .canvas-card.canvas-fullscreen .strip-val.bold { font-size: 15px; }
-.canvas-card.canvas-fullscreen #drawing-legend-overlay { font-size: .78rem; padding: .4rem .8rem; gap: .3rem; }
+.canvas-card.canvas-fullscreen #drawing-legend-overlay { font-size: .8rem; padding: .45rem .9rem; }
 .canvas-card.canvas-fullscreen #scale-sok-note { font-size: .72rem; padding: .4rem .9rem; }
 .canvas-card.canvas-fullscreen #scale-view {
   flex: 1;
@@ -586,9 +587,6 @@ body {
 }
 .zoom-controls {
   display: flex; align-items: center; gap: .4rem;
-  padding: .3rem .7rem;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 .zoom-btn {
@@ -638,24 +636,20 @@ body {
   position: relative;
   flex-shrink: 0;
 }
+/* Legende unter der Zeichnung (früher darübergelegt — verdeckte Mast und Fahrdraht) */
 #drawing-legend-overlay {
-  position: absolute;
-  bottom: 8px;
-  right: 10px;
-  background: color-mix(in srgb, var(--card) 90%, transparent);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: .3rem .6rem;
-  font-size: .68rem;
-  color: var(--text2);
   display: none;
-  flex-direction: column;
-  gap: .22rem;
-  pointer-events: none;
-  backdrop-filter: blur(4px);
-  z-index: 10;
-  box-shadow: 0 1px 6px rgba(0,0,0,.08);
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: .3rem 1.1rem;
+  padding: .35rem .8rem .45rem;
+  font-size: .72rem;
+  color: var(--text2);
+  border-top: 1px solid var(--border);
 }
+#drawing-legend-overlay .dl-massstab { color: var(--muted); font-variant-numeric: tabular-nums; }
 #drawing-legend-overlay .dl-item {
   display: flex;
   align-items: center;
@@ -734,11 +728,13 @@ body {
   align-items: center;
   flex-shrink: 0;
   white-space: nowrap;
-  width: 155px;
-  min-width: 155px;
-  max-width: 155px;
+  width: var(--strip-lbl-w);
+  min-width: var(--strip-lbl-w);
+  max-width: var(--strip-lbl-w);
   box-sizing: border-box;
 }
+:root { --strip-lbl-w: 155px; }
+@media (max-width: 600px) { :root { --strip-lbl-w: 118px; } .strip-label { font-size: 11px; padding: 0 7px; } }
 .strip-val {
   position: absolute;
   top: 50%;
@@ -1410,8 +1406,9 @@ input.feld-gesperrt { color: var(--muted) !important; cursor: default; backgroun
 .abs-hinweis-box[open] > summary::before { content: '\25BE  '; }
 /* Handy: Legende der Zeichnung unter die Zeichnung statt darüber */
 @media (max-width: 600px) {
-  #drawing-legend-overlay { position: static; flex-direction: row; flex-wrap: wrap; justify-content: center; column-gap: .9rem;
-    margin: .35rem .5rem .2rem; background: none; border: none; box-shadow: none; backdrop-filter: none; }
+  #drawing-legend-overlay { column-gap: .9rem; padding: .35rem .5rem .3rem; }
+  /* Handy: Zeichnungsfenster höher, damit die Zeichnung die Breite nutzt */
+  #scale-svg-container { aspect-ratio: 4 / 3; max-height: 60vh; }
 }
 .abs-leer { font-size: .8rem; color: var(--muted); padding: 1.2rem 0; text-align: center; }
 .abs-scroll { overflow-x: auto; margin-bottom: .6rem; }
@@ -1691,6 +1688,7 @@ details.reglage-info-box > summary .info-title { flex: 1; margin-bottom: 0; }
 .bd-hinweis { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .3rem .6rem;
   margin-top: .5rem; padding: .3rem .55rem; border: 1px dashed var(--border2); border-radius: 6px;
   font-size: .68rem; color: var(--muted); }
+.bd-hinweis-ort { flex-basis: 100%; color: var(--tertiary); }
 .bd-hinweis-knopf { background: none; border: none; padding: 0; font: inherit; color: var(--primary); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 .bd-hinweis-knopf:hover, .bd-hinweis-knopf:focus-visible { color: var(--primary-dk); }
 @media (any-pointer: coarse) { .bd-hinweis-knopf { min-height: 0; padding: .4rem 0; } }

@@ -67,7 +67,7 @@ https://ivanperic84.github.io/Durchhang/ (wird aus `main` veröffentlicht).
 ## Prüfen vor jedem Commit
 ```bash
 npm test                                   # Node-Tests (Stand: 69, alle grün)
-CHROMIUM_PFAD=/opt/pw-browsers/chromium npm run test:browser   # Browser (Stand: 79)
+CHROMIUM_PFAD=/opt/pw-browsers/chromium npm run test:browser   # Browser (Stand: 87)
 npm run test:sbb                           # nur lokal: SBB-Fälle (Node 42, Browser 12 inkl. 288 Rechenfälle)
 ```
 - Browser-Tests mit `timeout` starten (z. B. `timeout 900 …`); in Prüfskripten Playwright-
@@ -89,6 +89,9 @@ npm run test:sbb                           # nur lokal: SBB-Fälle (Node 42, Bro
 - Alle Checkboxen sind app-weit Schalter (Toggle); Ausnahme Klasse `.auswahl` (Auswahlkästchen).
 - Touch-Geräte: alle Knöpfe haben min. 40 px Höhe (`@media (any-pointer: coarse)`). Kleine runde Knöpfe
   brauchen `min-height: 0` und eine unsichtbar vergrösserte Tippfläche (`::after`), sonst werden sie gestreckt.
+- Zeichnung: Beschriftungen am Bildschirm nur über `fs(n)` (feste Pixelgrösse), bewegliche Texte mit
+  Klasse `zl-schieb` (+ `data-x2`/`data-a2` als Ausweichlage); Tests in `tests/browser/zeichnung.test.js`
+  prüfen Mindestschrift 10 px, keine Überlappung, nichts abgeschnitten (PC und Handy).
 - Neue Fenster (Dialoge) als `.modal-overlay` mit Klasse `open` öffnen, keine eigene `z-index` setzen:
   der Fensterstapel in app.js legt das zuletzt geöffnete nach oben (Ebenen in app.css beschrieben).
 - App ist **produktiv** (v6.0): kein Wasserzeichen mehr (Bildschirm und PDFs), so vom Nutzer entschieden.
