@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v6.3.0';
+const APP_VERSION = 'v6.4.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -3125,9 +3125,9 @@ function updateSokMumUI() {
     zeigeElement(info, true);
     let parts = [];
     if (sokL !== null && !isNaN(h1_raw))
-      parts.push(`<span style="white-space:nowrap">${t('bp.befestigung.li')} = <span style="color:var(--text)">${(sokL + h1_raw).toFixed(2)} ${t('bp.mum.abbrev')}</span></span><span style="white-space:nowrap;opacity:.65">(${t('ui.sok.kurz')} ${sokL.toFixed(2)} + ${h1_raw.toFixed(2)} m)</span>`);
+      parts.push(`<span style="white-space:nowrap">${t('bp.befestigung.li')} = <span style="color:var(--text)">${(sokL + h1_raw).toFixed(2)} ${t('bp.mum.abbrev')}</span></span><span style="white-space:nowrap;color:var(--tertiary)">(${t('ui.sok.kurz')} ${sokL.toFixed(2)} + ${h1_raw.toFixed(2)} m)</span>`);
     if (sokR !== null && !isNaN(h2_raw))
-      parts.push(`<span style="white-space:nowrap">${t('bp.befestigung.re')} = <span style="color:var(--text)">${(sokR + h2_raw).toFixed(2)} ${t('bp.mum.abbrev')}</span></span><span style="white-space:nowrap;opacity:.65">(${t('ui.sok.kurz')} ${sokR.toFixed(2)} + ${h2_raw.toFixed(2)} m)</span>`);
+      parts.push(`<span style="white-space:nowrap">${t('bp.befestigung.re')} = <span style="color:var(--text)">${(sokR + h2_raw).toFixed(2)} ${t('bp.mum.abbrev')}</span></span><span style="white-space:nowrap;color:var(--tertiary)">(${t('ui.sok.kurz')} ${sokR.toFixed(2)} + ${h2_raw.toFixed(2)} m)</span>`);
     info.innerHTML = parts.map(p => `<div style="display:flex;align-items:baseline;gap:.4rem;flex-wrap:wrap;color:var(--muted);font-size:.75rem;line-height:1.6;margin-bottom:.1rem">${p}</div>`).join('');
     zeigeElement(mumBtn, true);
   } else {
@@ -4809,15 +4809,17 @@ async function batchPdfExport() {
   const meta = getProjMeta();
   const ids = [...selectedIds];
 
-  // Save original project ID to restore later
+  // Save original project ID to restore later — und den aktuellen Zustand, falls
+  // kein Projekt geöffnet ist (sonst blieb danach das zuletzt exportierte stehen)
   const origId = currentProjectId;
+  const origZustand = JSON.stringify(getProjectState());
 
   // Show progress indicator in modal
   const listEl = document.getElementById('proj-list-container');
   const origHtml = listEl ? listEl.innerHTML : '';
   if (listEl) listEl.innerHTML = `<div class="proj-empty" style="padding:2rem 0">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="display:block;margin:0 auto .6rem;opacity:.4"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    PDF wird generiert… (${ids.length} Berechnung${ids.length>1?'en':''})</div>`;
+    ${escHtml(t('proj.serie.laeuft').replace('{n}', ids.length))}</div>`;
 
   const sections = [];
 
@@ -4829,7 +4831,7 @@ async function batchPdfExport() {
       const state = JSON.parse(raw);
       const projName = meta.find(m => m.id === id)?.name || '';
       // Update progress
-      if (listEl) { const pe = listEl.querySelector('.proj-empty'); if(pe) pe.textContent = `PDF wird generiert… ${i+1}/${ids.length}: ${projName}`; }
+      if (listEl) { const pe = listEl.querySelector('.proj-empty'); if(pe) pe.textContent = `${t('proj.serie.laeuft').replace('{n}', `${i+1}/${ids.length}`)}: ${projName}`; }
       // Load state (runs berechnen() internally)
       setProjectState(state);
       // Wait for canvas render
@@ -4846,17 +4848,14 @@ async function batchPdfExport() {
   if (listEl) listEl.innerHTML = origHtml;
 
   // Restore original project
-  if (origId) {
-    const origRaw = localStorage.getItem(PROJ_KEY_PREFIX + origId);
-    if (origRaw) { try { setProjectState(JSON.parse(origRaw)); currentProjectId = origId;
-                         updateProjectBadge(); }
-                   catch(e) { _spur('Projekt/Wiederherstellen nach Export', e); } }
-  }
+  // Ausgangszustand wiederherstellen (auch ungespeicherte Eingaben)
+  try { setProjectState(JSON.parse(origZustand)); currentProjectId = origId; updateProjectBadge(); }
+  catch(e) { _spur('Projekt/Wiederherstellen nach Export', e); }
 
   if (sections.length === 0) return;
 
   const combinedHtml = `<!DOCTYPE html><html lang="${currentLang}"><head><meta charset="utf-8">
-<title>Serienbericht — Kettenwerk</title>
+<title>${escHtml(t('proj.serie.titel'))}</title>
 <style>${_pdfStil()}
   .pdf-section { page-break-after: always; }
   .pdf-section:last-child { page-break-after: avoid; }
@@ -5226,6 +5225,7 @@ return {
     importProjectFile,
     batchDelete,
     batchJsonExport,
+    batchPdfExport,
     deleteProjectById,
     exportProjectById,
     exportWholeProject,
@@ -5259,6 +5259,7 @@ window.onProjGroupSelChange = Projekte.onProjGroupSelChange;
 window.importProjectFile = Projekte.importProjectFile;
 window.batchDelete = Projekte.batchDelete;
 window.batchJsonExport = Projekte.batchJsonExport;
+window.batchPdfExport = Projekte.batchPdfExport;   // Knopf «Serienbericht» (fehlte: Skriptfehler, kein PDF)
 window.sicherungExportieren = Projekte.sicherungExportieren;
 window._sicherungsErinnerung = Projekte._sicherungsErinnerung;
 window._speicherStatus = Projekte._speicherStatus;
@@ -6011,6 +6012,8 @@ const _FEHLER_FELD = { L: 'span', 'H.ts': 'tension', 'H.el': 'tension', 'H.fd': 
                        h1: 'h1', h2: 'h2', T1: 'temp1', T2: 'temp2', sh: 'sh' };
 // Übliche Bereiche: ausserhalb rechnet die App weiter, zeigt aber einen Hinweis
 const PLAUSIBEL = { L: 80, h: 15, T: [-30, 90] };
+// Harte Grenzen: darüber keine Rechnung (vorher rechnete z. B. L = 10⁹ m mit «NaN» in der Anzeige)
+const VAL_GRENZE = { L: 1000, h1: 200, h2: 200, T1: 200, T2: 200, sh: 20 };
 function _ergebnisVeraltet(ja, feldId = null) {
   document.body.classList.toggle('ergebnis-veraltet', ja);
   document.querySelectorAll('.feld-fehler').forEach(el => {
@@ -6081,9 +6084,11 @@ function berechnen() {
        ['H.ts', H_Ts, true], ['H.fd', H_Fd, true], ['h1', h1, true],
        ['h2', h2, true], ['T1', T1, false], ['T2', T2, false], ['sh', sh, true]];
   for (const [feld, wert, positiv] of pflichtfelder) {
-    const grund = isNaN(wert) ? 'val.fehlt' : (positiv && wert <= 0 ? 'val.positiv' : null);
+    const grenze = VAL_GRENZE[feld];
+    const grund = isNaN(wert) || !isFinite(wert) ? 'val.fehlt' : (positiv && wert <= 0 ? 'val.positiv'
+      : grenze != null && Math.abs(wert) > grenze ? 'val.zugross' : null);
     if (grund) {
-      errorBox.innerHTML = `${t('val.feld.' + feld)}: ${t(grund)}`;
+      errorBox.innerHTML = `${t('val.feld.' + feld)}: ${t(grund).replace('{max}', fN(grenze ?? 0, 0))}`;
       errorBox.classList.remove('hidden');
       _ergebnisVeraltet(true, _FEHLER_FELD[feld]);
       return;
@@ -6662,7 +6667,11 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
 
   // X-axis labels
   ctx.textAlign = 'center'; ctx.fillStyle = DF.achse; ctx.font = `10px ${DIAGRAMM_SCHRIFT}`;
+  // An den Masten stehen bei Mastangaben Name/KM — dort keine Achsenzahl (überlappten sich)
+  const _mkLx = _buildMastParts('left'), _mkRx = _buildMastParts('right');
   [0, .25, .5, .75, 1].forEach(t => {
+    if (t === 0 && (_mkLx.num || _mkLx.km)) return;
+    if (t === 1 && (_mkRx.num || _mkRx.km)) return;
     const xv = t * L;
     ctx.fillText(xv.toFixed(1), cx(xv), padT + plotH + 18);
   });
@@ -7780,6 +7789,29 @@ function _hindernisErgebnisse() {
   el.textContent = `${n.ok ? '✓' : '✗'} ${t('hind.massgebend')}: a = ${fN(n.best.abstand, 2)} m${minClearance !== null ? ` (≥ ${fN(minClearance, 2)})` : ''} · ${_lastfallText(n.best.fall)} · x = ${fN(n.best.x, 1)} m${je ? `  |  ${je}` : ''}`;
 }
 
+// Abstandsnachweis der H-Punkte für das Berechnungs-PDF (vorher fehlte er dort ganz;
+// nur das Zeichnungs-PDF zeigte H und a). Gleiche Werte wie die Zeile unter dem Diagramm.
+function _pdfAbstandsnachweis() {
+  const n = _nachweis[0];
+  if (!n || !n.best) return '';
+  const ok = n.ok, MUM = t('pdf.mum.short');
+  const zeilen = (n.jePunkt || []).filter(p => p.abstand !== null).map(p => {
+    const gut = p.abstand >= (minClearance ?? 0);
+    return `<tr><td>H${p.m}</td><td>${fN(p.x, 2)}</td><td>${fN(p.h, 2)}</td><td style="color:${gut ? 'var(--ok)' : 'var(--fail)'};font-weight:600">${fN(p.abstand, 2)}</td></tr>`;
+  }).join('');
+  const faelle = lastfaelleAktiv
+    ? t('pdf.hind.lastfaelle').replace('{liste}', lastfaelle(lastfallEinst, sysMode).map(_lastfallText).join(' · '))
+    : t('pdf.hind.aktuell');
+  return `
+<!-- ── Abstandsnachweis H-Punkte ── -->
+<h2 class="green">${t('pdf.hind.titel')}</h2>
+<div class="step">
+  <p><strong style="color:${ok ? 'var(--ok)' : 'var(--fail)'}">${ok ? '✓' : '✗'}</strong> ${t('hind.massgebend')}: a = <strong>${fN(n.best.abstand, 2)} m</strong>${minClearance !== null ? ` (${t('hind.mindest')} ≥ ${fN(minClearance, 2)} m)` : ''} · ${escHtml(_lastfallText(n.best.fall))} · x = ${fN(n.best.x, 1)} m</p>
+  ${zeilen ? `<table class="cmp"><tr><th>${t('pdf.mp.punkt')}</th><th>x [m]</th><th>H [m ${MUM}]</th><th>a [m]</th></tr>${zeilen}</table>` : ''}
+  <p class="sub2" style="margin-top:4px">${escHtml(faelle)}${n.unten ? ' · ' + escHtml(t('pdf.hind.unten')) : ''}</p>
+</div>`;
+}
+
 // Kopfzeile der H-Punkte: Mindestabstand, Zone, Punkte verbinden, Lastfälle, Ergebnis
 function renderObstacleList() {
   const sec = document.getElementById('obs-section');
@@ -8102,7 +8134,7 @@ function buildPdfSectionHtml(projName, canvasImg) {
        <tr><td>${t('pdf.befhoehen')}</td><td>h<sub>1</sub> = ${f3(h1)} m &nbsp;|&nbsp; h<sub>2</sub> = ${f3(h2)} m</td></tr>
        ${hasSok ? `<tr><td>${t('pdf.sok.links')}</td><td>${sokLv.toFixed(2)} m ${t('pdf.mum.short')} &nbsp;→ li = <strong>${(sokLv+h1).toFixed(2)} m ${t('pdf.mum.short')}</strong></td></tr>
        <tr><td>${t('pdf.sok.rechts')}</td><td>${sokRv.toFixed(2)} m ${t('pdf.mum.short')} &nbsp;→ re = <strong>${(sokRv+h2).toFixed(2)} m ${t('pdf.mum.short')}</strong></td></tr>` : ''}
-       <tr><td>${t('pdf.zugkraft.direkt')}</td><td><strong>H = ${fN(H_Ts,0)} N &nbsp;(bei T<sub>1</sub> = ${T1} °C)</strong></td></tr>
+       <tr><td>${t('pdf.zugkraft.direkt')}</td><td><strong>H = ${fN(H_Ts,0)} N &nbsp;(${t('pdf.bei')} T<sub>1</sub> = ${T1} °C)</strong></td></tr>
        <tr><td>${t('pdf.temperaturen')}</td><td><strong>T<sub>1</sub> = ${T1} °C &nbsp;→&nbsp; T<sub>2</sub> = ${T2} °C &nbsp;(ΔT = ${sign(deltaT)}${deltaT} K)</strong></td></tr>`
     : `<tr><td>${t('pdf.ts.label')} (Ts)</td><td><strong>${matTs}</strong> &nbsp; q<sub>Ts</sub> = ${q_Ts.toFixed(4)} N/m${EA !== null ? ` &nbsp;|&nbsp; (E·A)${isNFL ? '<sub>kombi</sub>' : ''} = ${(EA/1e6).toFixed(1)} MN &nbsp;|&nbsp; α${isNFL ? '<sub>kombi</sub>' : ''} = ${(alpha*1e6).toFixed(1)}×10⁻⁶ /K` : ''}</td></tr>
        <tr><td>${t('res.fd.title')}</td><td><strong>${matFd}</strong> &nbsp; q<sub>Fd</sub> = ${q_Fd.toFixed(4)} N/m &nbsp;${wearPct > 0 ? `<em style="color:var(--akz)">(${t('pdf.abnutzung')} ${wearPct} %: ${(q_Fd/(1-wearPct/100)).toFixed(4)} N/m)</em>` : `(0 % ${t('pdf.abnutzung')})`} &nbsp;|&nbsp; H<sub>Fd</sub> = ${fN(H_Fd,0)} N</td></tr>
@@ -8112,7 +8144,7 @@ function buildPdfSectionHtml(projName, canvasImg) {
        ${hasSok ? `<tr><td>${t('pdf.sok.links')}</td><td>${sokLv.toFixed(2)} m ${t('pdf.mum.short')} &nbsp;→ li = <strong>${(sokLv+h1).toFixed(2)} m ${t('pdf.mum.short')}</strong></td></tr>
        <tr><td>${t('pdf.sok.rechts')}</td><td>${sokRv.toFixed(2)} m ${t('pdf.mum.short')} &nbsp;→ re = <strong>${(sokRv+h2).toFixed(2)} m ${t('pdf.mum.short')}</strong></td></tr>` : ''}
        ${isNFL
-         ? `<tr><td>${t('pdf.h.ub')}</td><td><strong>H<sub>ub</sub> = ${fN(H_Ts_ub,0)} N &nbsp;(bei T<sub>1</sub> = ${T1} °C)</strong></td></tr>
+         ? `<tr><td>${t('pdf.h.ub')}</td><td><strong>H<sub>ub</sub> = ${fN(H_Ts_ub,0)} N &nbsp;(${t('pdf.bei')} T<sub>1</sub> = ${T1} °C)</strong></td></tr>
             <tr><td>${t('pdf.h.b')}</td><td><strong>H<sub>Ts,1</sub> = ${fN(H_Ts,0)} N &nbsp;</strong><em style="color:var(--muted)">(via Zustandsgl. unbelastet→belastet, EA<sub>Ts</sub>)</em></td></tr>
             <tr><td>${t('pdf.temperaturen')}</td><td><strong>T<sub>1</sub> = ${T1} °C &nbsp;→&nbsp; T<sub>2</sub> = ${T2} °C &nbsp;(ΔT = ${sign(deltaT)}${deltaT} K)</strong></td></tr>
             ${ZL > 0 ? `<tr><td>${t('pdf.eislast')}</td><td><strong style="color:var(--akz)">Z<sub>L</sub> = ${ZL.toFixed(2)} N/m &nbsp;(T<sub>2</sub> = ${T2} °C)</strong></td></tr>` : ''}`
@@ -8136,8 +8168,8 @@ function buildPdfSectionHtml(projName, canvasImg) {
     : `<p class="sub"><em>q<sub>ges</sub> = q<sub>Ts</sub> + q<sub>Fd</sub> + q<sub>Hänger</sub></em></p>
        <p class="sub">q<sub>ges</sub> = ${q_Ts.toFixed(4)} + ${q_Fd.toFixed(4)} + ${q_H.toFixed(4)}
          = <strong class="r">${q_ges.toFixed(4)} N/m</strong></p>
-       <p class="sub2">Die Hängerlast wird als gleichmässig verteilte Last über die Spannweite angesetzt.</p>
-       ${ZL > 0 ? `<p class="sub" style="margin-top:5px"><em style="color:var(--akz)">Zielzustand T<sub>2</sub> mit Eislast:</em>
+       <p class="sub2">${t('pdf.r.haengerlast')}</p>
+       ${ZL > 0 ? `<p class="sub" style="margin-top:5px"><em style="color:var(--akz)">${t('pdf.r.ziel.eis')}</em>
          q<sub>ges,ZL</sub> = q<sub>ges</sub> + Z<sub>L</sub> = ${q_ges.toFixed(4)} + ${ZL.toFixed(4)}
          = <strong style="color:var(--warn)">${(q_ges + ZL).toFixed(4)} N/m</strong></p>` : ''}`}
 </div>
@@ -8153,7 +8185,7 @@ ${isNFL_ub ? `
   <p><strong>${t('pdf.zustgl.ub')}</strong></p>
   <p class="sub"><em class="r">q<sub>ges</sub>²·Lm²/(24·H<sub>b</sub>²) − H<sub>b</sub>/(E·A)<sub>Ts</sub>
     = q<sub>Ts</sub>²·Lm²/(24·H<sub>ub</sub>²) − H<sub>ub</sub>/(E·A)<sub>Ts</sub></em></p>
-  <p class="sub2">Umgeformt: C·H<sub>b</sub>³ + K·H<sub>b</sub>² − G = 0 &nbsp;mit:</p>
+  <p class="sub2">${t('pdf.r.umgeformt')}: C·H<sub>b</sub>³ + K·H<sub>b</sub>² − G = 0 &nbsp;${t('pdf.r.mit')}:</p>
   <p class="sub">G = (q<sub>ges</sub>·Lm)² / 24
     = (${q_ges.toFixed(4)} × ${f3(Lm)})² / 24
     = <strong class="r">${G_ub.toFixed(3)} N²·m</strong></p>
@@ -8163,7 +8195,7 @@ ${isNFL_ub ? `
   <p class="sub">K = (q<sub>Ts</sub>·Lm)²/(24·H<sub>ub</sub>²) − H<sub>ub</sub>/(E·A)<sub>Ts</sub>
     = (${q_Ts.toFixed(4)}×${f3(Lm)})²/(24×${fN(H_Ts_ub,0)}²) − ${fN(H_Ts_ub,0)}/${(EA_Ts/1e6).toFixed(3)} MN
     = <strong class="r">${K_ub.toExponential(4)}</strong></p>
-  <p class="sub2">Lösung mit Newton-Raphson (Startwert H<sub>ub</sub> = ${fN(H_Ts_ub,0)} N):</p>
+  <p class="sub2">${t('pdf.r.newton')} (${t('pdf.r.startwert')} H<sub>ub</sub> = ${fN(H_Ts_ub,0)} N):</p>
   <p class="sub">H<sub>Ts,belastet</sub> = <strong class="r">${fN(H_Ts,0)} N</strong></p>
 </div>` : ''}
 
@@ -8174,12 +8206,12 @@ ${isNFL_xl ? `
   <p class="sub2">${t('pdf.bezug.text')}</p>
   <p class="sub"><em class="r">(gk<sub>x</sub> / x)² − (gk<sub>0</sub> / H<sub>ub</sub>)² − G · (α·(10 °C − T<sub>1</sub>) + (x − H<sub>ub</sub>) / (E·A)) = 0</em></p>
   <p class="sub2">G = 24/Lm² + (gk<sub>0</sub>/H<sub>ub</sub>)² &nbsp;|&nbsp; gk<sub>x</sub> = MFL = ${flCombo.MFL.toFixed(4)} N/m &nbsp;|&nbsp; gk<sub>0</sub> = MTS = ${flCombo.MTS.toFixed(4)} N/m &nbsp;|&nbsp; Lm = ${f3(Lm)} m</p>
-  <p class="sub">H<sub>ub</sub> = ${fN(H_Ts_ub,0)} N bei T<sub>1</sub> = ${T1} °C &nbsp;→&nbsp; H<sub>Ts,10 °C</sub> = <strong class="r">${fN(H_Ts,0)} N</strong> &nbsp;<em style="color:var(--muted);font-size:.82em">(${t('pdf.gerundet.10')})</em></p>
+  <p class="sub">H<sub>ub</sub> = ${fN(H_Ts_ub,0)} N ${t('pdf.bei')} T<sub>1</sub> = ${T1} °C &nbsp;→&nbsp; H<sub>Ts,10 °C</sub> = <strong class="r">${fN(H_Ts,0)} N</strong> &nbsp;<em style="color:var(--muted);font-size:.82em">(${t('pdf.gerundet.10')})</em></p>
 </div>
 <div class="step">
   <p><strong>${t('pdf.nfl.zustgl')}</strong></p>
   <p class="sub"><em class="w">((gk<sub>x</sub> + gk<sub>0</sub>·H<sub>Fd</sub>/H<sub>0</sub>) / (H<sub>Fd</sub> + x))² − (gk<sub>0</sub>/H<sub>0</sub>)² − G · (α·(T − 10 °C) + (x − H<sub>0</sub>)/(E·A)) = 0</em></p>
-  <p class="sub2">H<sub>0</sub> = H<sub>Ts,10 °C</sub> &nbsp;|&nbsp; gk<sub>x</sub> = q<sub>ges</sub>${ZL > 0 ? ' + Z<sub>L</sub>' : ''} &nbsp;|&nbsp; gk<sub>0</sub> = MFL (neuer Fahrdraht) &nbsp;|&nbsp; ${t('pdf.gerundet.5')}</p>
+  <p class="sub2">H<sub>0</sub> = H<sub>Ts,10 °C</sub> &nbsp;|&nbsp; gk<sub>x</sub> = q<sub>ges</sub>${ZL > 0 ? ' + Z<sub>L</sub>' : ''} &nbsp;|&nbsp; gk<sub>0</sub> = MFL (${t('pdf.r.fd.neu')}) &nbsp;|&nbsp; ${t('pdf.gerundet.5')}</p>
   <p class="sub">T<sub>1</sub> = ${T1} °C &nbsp;→&nbsp; H<sub>Ts,1</sub> = <strong class="r">${fN(c1.H,0)} N</strong></p>
   <p class="sub">T<sub>2</sub> = ${T2} °C &nbsp;→&nbsp; H<sub>Ts,2</sub> = <strong class="w">${fN(c2.H,0)} N</strong></p>
 </div>` : ''}
@@ -8194,15 +8226,15 @@ ${isNFL_xl ? `
 <div class="step">
   <p><strong>${t('pdf.katenlin.geo')}</strong></p>
   <p class="sub"><em>y(x) = a · cosh((x − x<sub>0</sub>) / a) + C<sub>0</sub></em></p>
-  <p class="sub2">mit &nbsp; u = L/(2a) &nbsp;|&nbsp; n = arcsinh(Δh / (2a·sinh(u)))</p>
+  <p class="sub2">${t('pdf.r.mit')} &nbsp; u = L/(2a) &nbsp;|&nbsp; n = arcsinh(Δh / (2a·sinh(u)))</p>
   <p class="sub">u = ${f3(L)} / (2 × ${f3(c1.a)}) = ${f4(c1.u)}</p>
   <p class="sub">n = arcsinh(${f3(dh)} / (2 × ${f3(c1.a)} × sinh(${f4(c1.u)}))) = ${f4(c1.n)}</p>
-  <p class="sub">Tiefpunkt: x<sub>0</sub> = a · (u − n) = ${f3(c1.a)} × (${f4(c1.u)} − ${f4(c1.n)}) = <strong class="r">${f3(c1.x_low)} m</strong></p>
-  <p class="sub">Durchhang: f<sub>1</sub> = y<sub>Sehne</sub>(x<sub>0</sub>) − y<sub>Ts</sub>(x<sub>0</sub>) = <strong class="r">${f3(c1.sag)} m</strong></p>
+  <p class="sub">${t('pdf.r.tiefpunkt')}: x<sub>0</sub> = a · (u − n) = ${f3(c1.a)} × (${f4(c1.u)} − ${f4(c1.n)}) = <strong class="r">${f3(c1.x_low)} m</strong></p>
+  <p class="sub">${t('pdf.r.durchhang')}: f<sub>1</sub> = y<sub>Sehne</sub>(x<sub>0</sub>) − y<sub>Ts</sub>(x<sub>0</sub>) = <strong class="r">${f3(c1.sag)} m</strong></p>
 </div>
 <div class="step">
   <p><strong>${t('pdf.seillange.kraft')}</strong></p>
-  <p class="sub"><em>s = 2a · sinh(u) · cosh(n) &nbsp;|&nbsp; T<sub>max</sub> = H · cosh(x<sub>max</sub> / a), x<sub>max</sub> = grösster Abstand Tiefpunkt–Mast</em></p>
+  <p class="sub"><em>s = 2a · sinh(u) · cosh(n) &nbsp;|&nbsp; T<sub>max</sub> = H · cosh(x<sub>max</sub> / a), x<sub>max</sub> = ${t('pdf.r.xmax')}</em></p>
   <p class="sub">s = 2 × ${f3(c1.a)} × sinh(${f4(c1.u)}) × cosh(${f4(c1.n)}) = <strong class="r">${f3(c1.s)} m</strong></p>
   <p class="sub">T<sub>max,1</sub> = ${fN(c1.H,1)} × cosh(${f3(Math.max(Math.abs(c1.x_low), Math.abs(L - c1.x_low)))} / ${f3(c1.a)})
     = <strong class="r">${fN(c1.T_max,1)} N</strong></p>
@@ -8214,9 +8246,9 @@ ${(isEl || (isNFL && !flCombo)) && C !== null && K !== null ? `
 <div class="step">
   <p><strong>${t('pdf.allg.zustgl')}</strong></p>
   <p class="sub"><em class="w">(q·Lm)² / (24·H<sub>2</sub>²) − H<sub>2</sub>/(E·A) = (q·Lm)² / (24·H<sub>1</sub>²) − H<sub>1</sub>/(E·A) + α·ΔT</em></p>
-  <p class="sub2">Umgeformt in kubisches Polynom (Multiplikation mit H<sub>2</sub>²):</p>
+  <p class="sub2">${t('pdf.r.kubisch')}:</p>
   <p class="sub"><em class="w">C·H<sub>2</sub>³ + K·H<sub>2</sub>² − G = 0</em></p>
-  <p class="sub2">mit &nbsp; G = (q<sub>ges</sub>·Lm)²/24 &nbsp;|&nbsp; C = 1/(E·A) &nbsp;|&nbsp; K = G/H<sub>1</sub>² − C·H<sub>1</sub> + α·ΔT</p>
+  <p class="sub2">${t('pdf.r.mit')} &nbsp; G = (q<sub>ges</sub>·Lm)²/24 &nbsp;|&nbsp; C = 1/(E·A) &nbsp;|&nbsp; K = G/H<sub>1</sub>² − C·H<sub>1</sub> + α·ΔT</p>
 </div>
 <div class="step">
   <p><strong>${t('pdf.koeff')}</strong></p>
@@ -8231,7 +8263,7 @@ ${(isEl || (isNFL && !flCombo)) && C !== null && K !== null ? `
 <div class="step">
   <p><strong>${t('pdf.kub.poly')}</strong></p>
   <p class="sub"><em class="w">${C.toExponential(4)} · H<sub>2</sub>³ + ${K.toExponential(4)} · H<sub>2</sub>² − ${G.toFixed(2)} = 0</em></p>
-  <p class="sub2">Lösung mit Newton-Raphson-Iteration (Startwert H<sub>2</sub> = H<sub>1</sub>):</p>
+  <p class="sub2">${t('pdf.r.newton')} (${t('pdf.r.startwert')} H<sub>2</sub> = H<sub>1</sub>):</p>
   <p class="sub">H<sub>Ts,2</sub> = <strong class="w">${fN(c2.H,1)} N</strong></p>
 </div>
 
@@ -8241,16 +8273,16 @@ ${isNFL && flCombo ? `
 <div class="step">
   <p><strong>${t('pdf.fd.kombi')}</strong></p>
   <p class="sub2">${t('pdf.fd.kombibody')}</p>
-  <p class="sub"><em class="w">q<sub>vem</sub> = gk<sub>x</sub> + gk<sub>0</sub>·H<sub>Fd</sub>/F<sub>0</sub>${ZL > 0 ? ' + Z<sub>L</sub>' : ''}</em> &nbsp;&nbsp;F<sub>0</sub> = H<sub>Ts</sub> belastet bei 10 °C</p>
-  <p class="sub"><em class="w">L<sub>T1</sub> = L + 2·|Δh|·(H<sub>Ts,2</sub>+H<sub>Fd</sub>) / (L·q<sub>vem</sub>)</em> &nbsp;&nbsp;[VEM 7.82] &nbsp;|Δh| = |h<sub>2</sub>−h<sub>1</sub>| &nbsp;→ L<sub>T1</sub> ≥ L immer</p>
+  <p class="sub"><em class="w">q<sub>vem</sub> = gk<sub>x</sub> + gk<sub>0</sub>·H<sub>Fd</sub>/F<sub>0</sub>${ZL > 0 ? ' + Z<sub>L</sub>' : ''}</em> &nbsp;&nbsp;F<sub>0</sub> = ${t('pdf.r.f0')}</p>
+  <p class="sub"><em class="w">L<sub>T1</sub> = L + 2·|Δh|·(H<sub>Ts,2</sub>+H<sub>Fd</sub>) / (L·q<sub>vem</sub>)</em> &nbsp;&nbsp;[VEM 7.82] &nbsp;|Δh| = |h<sub>2</sub>−h<sub>1</sub>| &nbsp;→ L<sub>T1</sub> ≥ L ${t('pdf.r.immer')}</p>
   <p class="sub"><em class="w">f<sub>Fd</sub> = L<sub>T1</sub>² / 8 · q<sub>vem</sub> / (H<sub>Ts,2</sub> + H<sub>Fd</sub>)</em> &nbsp;&nbsp;[VEM 7.66]</p>
-  <p class="sub2" style="color:var(--akz)">Die im Diagramm angezeigte Ts-Kurve bei T<sub>2</sub> entspricht der kombinierten Kettenlinie des Ts+Fd-Systems mit den Parametern q<sub>vem</sub> und H<sub>Ts,2</sub>+H<sub>Fd</sub>. Dieser Ansatz stimmt mit der VEM-Parabel überein (Abweichung &lt; 5 mm für übliche Spannweiten).</p>
+  <p class="sub2" style="color:var(--akz)">${t('pdf.r.kombiniert')}</p>
 </div>
 <div class="step">
   <p><strong>${t('pdf.berechn.werte')}</strong></p>
   <p class="sub">MFL = ${flCombo.MFL.toFixed(5)} N/m</p>
-  <p class="sub">F<sub>0</sub> = ${fN(H_Ts,0)} N &nbsp;(Ts belastet bei 10 °C, Bezugszustand)</p>
-  <p class="sub">H<sub>Ts,2</sub> = ${fN(c2.H,0)} N &nbsp;(Ts-Zug bei T<sub>2</sub> = ${T2} °C)</p>
+  <p class="sub">F<sub>0</sub> = ${fN(H_Ts,0)} N &nbsp;(${t('pdf.r.f0.bezug')})</p>
+  <p class="sub">H<sub>Ts,2</sub> = ${fN(c2.H,0)} N &nbsp;(${t('pdf.r.tszug')} T<sub>2</sub> = ${T2} °C)</p>
   <p class="sub">H<sub>Fd</sub> = ${fN(H_Fd,0)} N &nbsp;(konstant)</p>
   <p class="sub">q<sub>vem</sub> = gk<sub>x</sub> + gk<sub>0</sub>·H<sub>Fd</sub>/F<sub>0</sub>${ZL > 0 ? ' + Z<sub>L</sub>' : ''}
     = ${q_ges.toFixed(4)} + ${flCombo.MFL.toFixed(4)} × ${fN(H_Fd,0)}/${fN(H_Ts,0)}${ZL > 0 ? ` + ${ZL.toFixed(4)}` : ''}
@@ -8271,8 +8303,8 @@ ${isNFL && flCombo ? `
 <div class="step">
   <p class="sub"><em class="w">a<sub>2</sub> = H<sub>2</sub> / q</em></p>
   <p class="sub">a<sub>2</sub> = ${fN(c2.H,1)} / ${q_ges.toFixed(4)} = <strong class="w">${f3(c2.a)} m</strong></p>
-  <p class="sub">Tiefpunkt: x<sub>0,2</sub> = <strong class="w">${f3(c2.x_low)} m</strong></p>
-  <p class="sub">Durchhang: f<sub>2</sub> = <strong class="w">${f3(c2.sag)} m</strong>
+  <p class="sub">${t('pdf.r.tiefpunkt')}: x<sub>0,2</sub> = <strong class="w">${f3(c2.x_low)} m</strong></p>
+  <p class="sub">${t('pdf.r.durchhang')}: f<sub>2</sub> = <strong class="w">${f3(c2.sag)} m</strong>
     &nbsp;(Δf = ${sign(c2.sag-c1.sag)}${f3(Math.abs(c2.sag-c1.sag))} m &nbsp;|&nbsp;
     ${sign(c2.sag-c1.sag)}${((c2.sag-c1.sag)/c1.sag*100).toFixed(1)}%)</p>
   <p class="sub">T<sub>max,2</sub> = <strong class="w">${fN(c2.T_max,1)} N</strong></p>
@@ -8280,7 +8312,7 @@ ${isNFL && flCombo ? `
 ` : (isNFL || isEl) ? `
 <h2 class="warm">${t('pdf.step3')} &nbsp;—&nbsp; (${sysName(isEl ? 'el' : 'nfl')})</h2>
 <div class="step">
-  <p>Keine E·A-Angabe — Berechnung über Seillängenzunahme.</p>
+  <p>${t('pdf.r.ohne.ea')}</p>
   <p class="sub"><em class="w">s<sub>2</sub> = s<sub>1</sub> · (1 + α·ΔT)</em></p>
   <p class="sub">s<sub>2</sub> = ${f3(c1.s)} × (1 + ${(alpha*1e6).toFixed(1)}×10⁻⁶ × ${sign(deltaT)}${deltaT})
     = <strong class="w">${f3(c2.s)} m</strong></p>
@@ -8343,6 +8375,8 @@ ${hasAnyProbe ? `
   </table>
   <p class="sub2" style="margin-top:4px">${t('pdf.ausgangszustand')}: ${isNFL || isEl ? `T<sub>2</sub> = ${T2} °C` : `T = ${T1} °C`} &nbsp;|&nbsp; ${isEl ? `H` : `H<sub>Ts</sub>`}${isNFL || isEl ? `<sub>2</sub>` : ``} = ${fN(cIstPdf.H,0)} N</p>
 </div>` : ''}
+
+${_pdfAbstandsnachweis()}
 
 ${mode3pt && threePtMark ? `
 <!-- ── 3-Punkte-Messung ── -->
@@ -9465,12 +9499,15 @@ function updateStripVisibility() {
     const lblClr  = isT2 ? _drawingT2Clr : isT3 ? _drawingT3Clr : isAbst ? '#2563eb' : 'var(--muted)';
     const isBold  = r === 0 || isAbst;
     html += `<div class="strip-row">`;
-    html += `<div class="strip-label" style="color:${lblClr}">${lbl}</div>`;
+    const _lk = String(lblClr).startsWith('var(') ? lblClr : `color-mix(in srgb, ${lblClr} 78%, var(--text))`;
+    html += `<div class="strip-label" style="color:${_lk}">${lbl}</div>`;
     visibleProbes.forEach(({ probe, frac }) => {
       // Grautöne der Papier-Zeichnung im (hell/dunkel) Datenstreifen durch Themenfarben ersetzen
       const grau = { '#555': 'var(--text2)', '#666': 'var(--text2)', '#888': 'var(--muted)' };
       const cellClr = (probe.colors && probe.colors[r]) ? (grau[probe.colors[r]] || probe.colors[r]) : color;
-      html += `<div class="strip-val${isBold ? ' bold' : ''}" style="left:${(frac*100).toFixed(2)}%;color:${cellClr}">${probe.cells[r] ?? ''}</div>`;
+      // Leicht zur Textfarbe gemischt: Temperaturfarben (z. B. Rot bei R-FL) auf grauem Grund lesbar
+      const _klr = String(cellClr).startsWith('var(') ? cellClr : `color-mix(in srgb, ${cellClr} 78%, var(--text))`;
+      html += `<div class="strip-val${isBold ? ' bold' : ''}" style="left:${(frac*100).toFixed(2)}%;color:${_klr}">${probe.cells[r] ?? ''}</div>`;
     });
     html += '</div>';
   });
@@ -9522,7 +9559,7 @@ function pdfExportDrawing() {
   const svg = buildScaleDrawingPage(true);   // mit SVG-Datenstreifen für Druck
   if (!svg) return;
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>Massstäbliche Zeichnung</title>
+<title>${escHtml(t('pdf.zeichnung.titel'))}</title>
 <style>
 ${_pdfSchriften()}
 @page { size: A4 landscape; margin: 15mm; }

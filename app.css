@@ -45,6 +45,7 @@
   --warm: var(--primary);
   --ok: #2f9e54;    --ok-s: rgba(47,158,84,.09);  --ok-text: #1f7a3c;
   --warn: #9a7b1a;  --warn-s: rgba(154,123,26,.10);
+  --warn-text: #7a6114;   /* Schrift in Warnfarbe auf hellem Grund (Kontrast ≥ 4.5 : 1) */
   --fail: #a02020;  --fail-s: rgba(160,32,32,.08);
   --scrim: rgba(0,0,0,.35);
   --shadow: 0 1px 2px rgba(16,18,24,.05);
@@ -76,6 +77,7 @@
   --on-acc: #0e0f11;
   --ok: #6fcf8e;    --ok-s: rgba(111,207,142,.10);  --ok-text: #6fcf8e;
   --warn: #c9a84c;  --warn-s: rgba(201,168,76,.10);
+  --warn-text: #c9a84c;
   --fail: #cf7070;  --fail-s: rgba(207,112,112,.10);
   --scrim: rgba(0,0,0,.55);
   --shadow: none;
@@ -395,7 +397,7 @@ body {
   letter-spacing: -.01em;
 }
 .btn:active { opacity: .75; }
-.btn-primary { background: var(--primary); color: white; }
+.btn-primary { background: var(--primary); color: var(--on-acc); }   /* dunkel: dunkle Schrift auf hellem Blau */
 .btn-primary:hover { background: var(--primary-dk); }
 
 /* ── Segmented control ── */
@@ -1411,7 +1413,7 @@ input.feld-gesperrt { color: var(--muted) !important; cursor: default; backgroun
   #scale-svg-container { aspect-ratio: 4 / 3; max-height: 60vh; }
 }
 .abs-leer { font-size: .8rem; color: var(--muted); padding: 1.2rem 0; text-align: center; }
-.abs-scroll { overflow-x: auto; margin-bottom: .6rem; }
+.abs-scroll { overflow-x: auto; margin-bottom: .6rem; position: relative; }   /* Bezug für absolut gesetzte Teile (z. B. .nur-vorlesen) — sonst verbreiterten sie am Handy die ganze Seite */
 .abs-tab { border-collapse: collapse; font-size: .72rem; width: 100%; font-variant-numeric: tabular-nums; }
 .abs-tab th { text-align: left; font-weight: 600; font-size: .64rem; color: var(--tertiary); padding: .2rem .3rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
 .abs-tab td { padding: .16rem .3rem; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--text); }
@@ -1617,7 +1619,7 @@ input.aus-koord { background: var(--acc-s) !important; color: var(--text) !impor
   border: 1px solid var(--border2);
   border-radius: 10px;
   font-size: .72rem;
-  opacity: .75;
+  /* früher opacity .75 — Schrift dadurch unter dem Mindestkontrast (3.3 : 1) */
 }
 .reglage-info-box .info-title {
   font-weight: 500;
@@ -1668,8 +1670,8 @@ details.reglage-info-box > summary .info-title { flex: 1; margin-bottom: 0; }
   cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s;
 }
 .rgl-knopf:hover, .rgl-knopf:focus-visible { color: var(--text); border-color: var(--primary); }
-.rgl-knopf-warn { color: var(--warn); border-color: var(--warn); }
-.rgl-knopf-warn:hover, .rgl-knopf-warn:focus-visible { color: var(--warn); background: var(--warn-s); }
+.rgl-knopf-warn { color: var(--warn-text); border-color: var(--warn); }
+.rgl-knopf-warn:hover, .rgl-knopf-warn:focus-visible { color: var(--warn-text); background: var(--warn-s); }
 .rgl-angepasst { display: inline-block; margin-left: .3rem; padding: 0 .3rem; border: 1px solid var(--warn); border-radius: 4px; color: var(--warn); font-size: .62rem; line-height: 1.4; }
 .rgl-angepasst-hw { color: var(--warn); }
 .rgl-knopf-pri { background: var(--primary); border-color: var(--primary); color: var(--on-acc); }
@@ -1945,3 +1947,21 @@ body.ergebnis-veraltet #main-canvas { opacity: .25; filter: grayscale(1); }
 /* Messpunkte: Auswahl des Bezugs (Durchhang / Δh links / rechts / höchster Punkt) */
 .mp-bezug { font: inherit; font-size: .72rem; padding: .22rem .4rem; border-radius: 7px; border: 1px solid var(--border);
   background: var(--bg); color: var(--text); cursor: pointer; flex-shrink: 0; max-width: 13rem; margin-left: auto; }
+/* Seitlich scrollbare Bereiche: Bezug für absolut gesetzte Teile (sonst ragen sie über die Seite) */
+[style*="overflow-x:auto"], [style*="overflow-x: auto"] { position: relative; }
+/* Touch: Tippflächen mindestens ~40 px (Gesamtprüfung v6.4) */
+@media (any-pointer: coarse) {
+  #temp2-slider { min-height: 40px; }
+  #span-info-btn, #eis-info-btn { position: relative; }
+  #span-info-btn::after, #eis-info-btn::after { content: ''; position: absolute; inset: -13px; }
+  .zoom-reset-btn, #vex-select, #draw-mp-bezug { min-height: 40px; }
+  .hb-nav a { min-height: 40px; align-items: center; }
+}
+/* Lastfälle am Handy: Zeilen umbrechen, Hinweise ohne Einzug (Z_L-Feld ragte heraus) */
+@media (max-width: 600px) {
+  #lastfall-modal .lf-zeile { flex-wrap: wrap; row-gap: .4rem; }
+  #lastfall-modal .lf-zeile > span, #lastfall-modal .lf-zeile > label { min-width: 0 !important; }
+  #lastfall-modal p[data-i18n="lf.temps.hinweis"], #lastfall-modal p[data-i18n="lf.zl.hinweis"] { margin-left: 0 !important; }
+}
+/* Handbuch: Formelblöcke umbrechen statt seitlich scrollen (am Handy nicht per Tastatur erreichbar) */
+#hb-text pre { white-space: pre-wrap; overflow-wrap: anywhere; }
