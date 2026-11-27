@@ -204,3 +204,35 @@ test('Zeichnung: Durchhang-Vermassung nach Bezug wie im Diagramm; Auswahl gekopp
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Zeichnung: H-Punkte wie im Diagramm — Bereich Lastfälle, Masslinie zum massgebenden Lastfall', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { viewport: { width: 1440, height: 900 } });
+  const r = await seite.evaluate(async () => {
+    const w = ms => new Promise(res => setTimeout(res, ms));
+    setSysMode('el');
+    const setze = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); };
+    setze('span', '60'); setze('sok-mum-left', '500'); onSokMumLeftInput();
+    setze('sok-mum-right', '503'); document.getElementById('sok-mum-right').dataset.userEdited = '1'; onSokMumRightInput();
+    _mpSetzen({ x: [20, 40, null, null], h: [505.5, 506.2, null, null], verbinden: true }); berechnen();
+    setCanvasView('zeichnung'); await w(300);
+    const svg = document.querySelector('#scale-svg-container svg');
+    const n = _nachweis[0];
+    const label = [...svg.querySelectorAll('text')].map(t => t.textContent).find(t => /a = /.test(t));
+    // Punkt am Leiter des massgebenden Lastfalls liegt auf dem Rand des Bands
+    const band = svg.querySelector('polygon.lastfall-band');
+    const legende = document.getElementById('drawing-legend-overlay').innerText;
+    setLastfaelleAktiv(false); await w(200);
+    const ohne = { band: !!document.querySelector('#scale-svg-container polygon.lastfall-band'),
+      label: [...document.querySelectorAll('#scale-svg-container text')].map(t => t.textContent).find(t => /a = /.test(t)) };
+    setLastfaelleAktiv(true);
+    return { label, band: !!band, legende, fall: _lastfallText(n.best.fall), a: n.best.abstand, ohne };
+  });
+  assert.equal(r.band, true, 'Bereich Lastfälle als Band');
+  assert.match(r.legende, /Bereich Lastfälle/);
+  assert.ok(r.label.includes(`a = ${r.a.toFixed(2)} m`) && r.label.includes(r.fall), `Beschriftung mit Abstand und Lastfall: ${r.label}`);
+  assert.match(r.fall, /\+80 °C/, 'Einzelleiter über Hindernis: Wärme massgebend');
+  assert.equal(r.ohne.band, false, 'ohne Lastfälle kein Band');
+  assert.match(r.ohne.label, /aktuell/);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});

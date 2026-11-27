@@ -57,6 +57,7 @@ const ZEICHNUNG_FARBEN = {
     t1: '#c0c0c0', t1Text: '#999', t3: '#6b7280', fd: '#888888', rfl: '#eb0000',
     hindernis: '#3a3a3a', gut: '#2f7a3d', schlecht: '#dc2626',
     hfMin: '#4a5cb8', hfMax: '#9a7b1a', hfBand: 'rgba(47,158,84,.09)',
+    lastfallBand: 'rgba(95,97,108,.13)',   // wie Diagramm
   },
   dunkel: {
     hg: '#15161a', raster: '#2a2c32', rasterText: '#6b6e76', achse: '#8b8d97', bruch: '#6b6e76',
@@ -65,6 +66,7 @@ const ZEICHNUNG_FARBEN = {
     t1: '#5e616b', t1Text: '#8b8d97', t3: '#9aa3b5', fd: '#9a9ca6', rfl: '#ff6b6b',
     hindernis: '#b8bac4', gut: '#6fcf8e', schlecht: '#ef6b6b',
     hfMin: '#7c8de0', hfMax: '#d4b04a', hfBand: 'rgba(111,207,142,.12)',
+    lastfallBand: 'rgba(184,186,196,.14)',
   },
 };
 function zeichnungFarben(druck = false) {
@@ -8988,6 +8990,15 @@ function _zeichnungBauen(stripInSvg) {
   // Abstand im massgebenden Lastfall. Farben je Thema (PDF immer hell).
   const obsClr = Z.hindernis;
   let obstSvg = '';
+  // Bereich aller Lastfälle (höchste bis tiefste Leiterlage) als leichtes Band — wie im
+  // Diagramm. Die Masslinie misst zum Leiter im massgebenden Lastfall (Rand des Bands).
+  const _huelle = _nachweis.find(n => n.best && n.huelle)?.huelle;
+  let lastfallSvg = '';   // unter den Kurven gezeichnet
+  if (_huelle) {
+    const pts = [..._huelle.map(p => `${sx(p.x).toFixed(2)},${sy(p.max).toFixed(2)}`),
+                 ...[..._huelle].reverse().map(p => `${sx(p.x).toFixed(2)},${sy(p.min).toFixed(2)}`)];
+    lastfallSvg = `<polygon class="lastfall-band" points="${pts.join(' ')}" fill="${Z.lastfallBand}" stroke="none"/>`;
+  }
   _nachweis.forEach(({ h, best, ok, unten }) => {
     if (!best) return;
     const P = hindernisPunkte(h.punkte);
@@ -9016,9 +9027,15 @@ function _zeichnungBauen(stripInSvg) {
     const tk = 1.2 * symSc, msw = (0.45 * symSc).toFixed(3);
     obstSvg += `<line x1="${bx.toFixed(2)}" y1="${by.toFixed(2)}" x2="${bx.toFixed(2)}" y2="${ly.toFixed(2)}" stroke="${farbe}" stroke-width="${msw}"/>`
       + `<line x1="${(bx - tk).toFixed(2)}" y1="${by.toFixed(2)}" x2="${(bx + tk).toFixed(2)}" y2="${by.toFixed(2)}" stroke="${farbe}" stroke-width="${msw}"/>`
-      + `<line x1="${(bx - tk).toFixed(2)}" y1="${ly.toFixed(2)}" x2="${(bx + tk).toFixed(2)}" y2="${ly.toFixed(2)}" stroke="${farbe}" stroke-width="${msw}"/>`;
+      + `<line x1="${(bx - tk).toFixed(2)}" y1="${ly.toFixed(2)}" x2="${(bx + tk).toFixed(2)}" y2="${ly.toFixed(2)}" stroke="${farbe}" stroke-width="${msw}"/>`
+      + `<circle cx="${bx.toFixed(2)}" cy="${ly.toFixed(2)}" r="${(0.9 * symSc).toFixed(2)}" fill="${farbe}"/>`;   // Leiter im massgebenden Lastfall
     const links = best.x > L * 0.7;
-    obstSvg += `<text x="${(bx + (links ? -1.6 : 1.6) * symSc).toFixed(2)}" y="${((by + ly) / 2 + 0.8 * symSc).toFixed(2)}" text-anchor="${links ? 'end' : 'start'}" font-size="${fs(2.2)}" font-weight="700" fill="${farbe}" stroke="${Z.hg}" stroke-width="${(0.5 * symSc).toFixed(3)}" paint-order="stroke">${escHtml(h.name ? h.name + ': ' : '')}a = ${best.abstand.toFixed(2)} m ${ok ? '✓' : '✗'}</text>`;
+    // Zweizeilig: Abstand, darunter der massgebende Lastfall (die Zeile «massgebend …» unter dem
+    // Diagramm ist in der Zeichnung nicht sichtbar). Zeile 2 folgt beim Ausweichen (tspan[data-zeile]).
+    const _ax = (bx + (links ? -1.6 : 1.6) * symSc).toFixed(2), _ax2 = (bx + (links ? 1.6 : -1.6) * symSc).toFixed(2);
+    const _ae = parseFloat(fs(2.2)), _fall = best.fall ? escHtml(_lastfallText(best.fall)) : '';
+    const _ay = (by + ly) / 2 + 0.8 * symSc - (_fall ? _ae * 0.55 : 0);
+    obstSvg += `<text class="zl-schieb" data-x2="${_ax2}" data-a2="${links ? 'start' : 'end'}" x="${_ax}" y="${_ay.toFixed(2)}" text-anchor="${links ? 'end' : 'start'}" font-size="${fs(2.2)}" font-weight="700" fill="${farbe}" stroke="${Z.hg}" stroke-width="${(0.5 * symSc).toFixed(3)}" paint-order="stroke">${escHtml(h.name ? h.name + ': ' : '')}a = ${best.abstand.toFixed(2)} m ${ok ? '✓' : '✗'}${_fall ? `<tspan data-zeile="2" x="${_ax}" dy="${(_ae * 1.15).toFixed(2)}" font-size="${fs(1.9)}" font-weight="500">${_fall}</tspan>` : ''}</text>`;
   });
 
   // Footer: scale bars + legend (PDF only)
@@ -9082,6 +9099,11 @@ function _zeichnungBauen(stripInSvg) {
       s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="${t3clr}">${subUni(t(sysMode === 'el' ? 'leg.leiter3' : 'leg.ts3'))} = ${_t3v_foot}°C</text>`;
       lx += 34;
     }
+    if (_huelle) {
+      s += `<rect x="${lx.toFixed(1)}" y="${(lY - 1.2).toFixed(1)}" width="${lw}" height="2.4" fill="${Z.lastfallBand}" stroke="#ccc" stroke-width="0.2"/>`;
+      s += `<text x="${(lx+lw+2).toFixed(1)}" y="${ltY}" font-size="2.2" fill="#888">${t('leg.lastfaelle')}</text>`;
+      lx += 34;
+    }
     if (t3gleichT2) {
       s += `<text x="${lx.toFixed(1)}" y="${ltY}" font-size="2.2" fill="#999">${subUni(t(sysMode === 'el' ? 'leg.leiter3' : 'leg.ts3'))} = ${(v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value))}°C (= T₂)</text>`;
       lx += 34;
@@ -9143,6 +9165,7 @@ function _zeichnungBauen(stripInSvg) {
     if (showFd) legHtml += `<div class="dl-item">${_legLine(fdClr, '', false, true)} <span>${t('leg.fd2')}</span></div>`;
     if (c3data) legHtml += `<div class="dl-item">${_legLine(t3clr, '4 2.5')} <span style="color:${t3clr}">${t(_el ? 'leg.leiter3' : 'leg.ts3')} = ${t3v}°C</span></div>`;
     else if (t3gleichT2) legHtml += `<div class="dl-item"><span style="color:var(--muted)">${t(_el ? 'leg.leiter3' : 'leg.ts3')} = ${(v => isNaN(v) ? 80 : v)(parseFloat(document.getElementById('temp3')?.value))}°C ${t('draw.t3.gleich')}</span></div>`;
+    if (_huelle) legHtml += `<div class="dl-item"><span style="display:inline-block;width:22px;height:9px;border-radius:2px;background:${Z.lastfallBand};border:1px solid var(--border)"></span> <span>${t('leg.lastfaelle')}</span></div>`;
     if (hfOk) legHtml += `<div class="dl-item">${_legLine(Z.hfMin, '4 2')} <span style="color:${Z.hfMin}">hf<sub>min</sub></span> / <span style="color:${Z.hfMax}">hf<sub>max</sub></span> <span style="color:var(--muted)">(${escHtml(sysName(hfEingabe.typ))}, c = ${hfEingabe.c} m)</span></div>`;
     else if (hfZ?.fehler) legHtml += `<div class="dl-item"><span style="color:${Z.schlecht}">${escHtml(t('draw.hf.fehler'))}</span></div>`;
     // Massstab am Bildschirm (wie im PDF)
@@ -9200,6 +9223,7 @@ function _zeichnungBauen(stripInSvg) {
   ${yAxisSvg}
   ${sokSvg}
   ${mastSvg}
+  ${lastfallSvg}
   ${catPath(c1, `${(5.5*symSc).toFixed(2)},${(3.5*symSc).toFixed(2)}`, (0.5*symSc).toFixed(3))} stroke="${Z.t1}" opacity="0.7"/>
   ${catPath(cDisp, '', (1.0*symSc).toFixed(3))} stroke="${t2clr}"/>
   ${haengerSvg}
@@ -9304,7 +9328,10 @@ function _zeichnungEntflechten() {
   if (!svg || !svg.getClientRects().length) return;
   const texte = [...svg.querySelectorAll('text')].filter(e => e.textContent.trim());
   const ueber = (a, b) => a.x < b.x + b.width - 0.2 && b.x < a.x + a.width - 0.2 && a.y < b.y + b.height - 0.2 && b.y < a.y + a.height - 0.2;
-  const frei = e => { const b = e.getBBox(); return !texte.some(o => o !== e && ueber(b, o.getBBox())); };
+  // frei = keine Überlappung und ganz im sichtbaren Ausschnitt (viewBox)
+  const vb = svg.viewBox.baseVal;
+  const drin = b => !vb || !vb.width || (b.x >= vb.x - 0.2 && b.x + b.width <= vb.x + vb.width + 0.2);
+  const frei = e => { const b = e.getBBox(); return drin(b) && !texte.some(o => o !== e && ueber(b, o.getBBox())); };
   svg.querySelectorAll('text.zl-schieb').forEach(e => {
     if (frei(e)) return;
     const x0 = e.getAttribute('x'), y0 = +e.getAttribute('y'), a0 = e.getAttribute('text-anchor') || 'start';
@@ -9314,10 +9341,12 @@ function _zeichnungEntflechten() {
     for (const dy of [0, -1.1 * h, 1.1 * h, -2.2 * h, 2.2 * h]) {
       for (const [x, a] of lagen) {
         e.setAttribute('x', x); e.setAttribute('text-anchor', a); e.setAttribute('y', (y0 + dy).toFixed(2));
+        e.querySelectorAll('tspan[data-zeile]').forEach(z => z.setAttribute('x', x));
         if (frei(e)) return;
       }
     }
     e.setAttribute('x', x0); e.setAttribute('text-anchor', a0); e.setAttribute('y', y0.toFixed(2));
+    e.querySelectorAll('tspan[data-zeile]').forEach(z => z.setAttribute('x', x0));
   });
 }
 
