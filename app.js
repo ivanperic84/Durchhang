@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v6.4.1';
+const APP_VERSION = 'v6.4.2';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -6643,6 +6643,22 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, CW, CH);
 
+  // ── Wasserzeichen im Entwicklermodus (nur Bildschirm, nicht im PDF) ──
+  if (entwicklerModus && !_diagrammDruck) {
+    ctx.save();
+    ctx.translate(padL + plotW / 2, padT + plotH / 2);
+    ctx.rotate(-Math.atan2(plotH, plotW) * 0.75);
+    const txt = t('dev.wasserzeichen');
+    let gr = Math.min(64, plotW / 9);
+    ctx.font = `700 ${gr}px ${DIAGRAMM_SCHRIFT}`;
+    const b = ctx.measureText(txt).width, max = Math.hypot(plotW, plotH) * 0.8;
+    if (b > max) { gr *= max / b; ctx.font = `700 ${gr}px ${DIAGRAMM_SCHRIFT}`; }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = DF.text; ctx.globalAlpha = 0.07;
+    ctx.fillText(txt, 0, 0);
+    ctx.restore();
+  }
+
   // ── Grid ──
   ctx.strokeStyle = DF.raster; ctx.lineWidth = 1;
   for (let i = 0; i <= 6; i++) {
@@ -10260,6 +10276,10 @@ function _strangZustandLesen() {
   z.leiter = sel?.selectedOptions?.[0]?.textContent?.trim() || '';
   return z;
 }
+// «N-FL · StCu 50 + Cu 107 · 6 kN» — System und Leiter eines Strangs (… = noch nicht festgelegt)
+function _strangSystemText(z) {
+  return z && z.sysMode ? `${sysName(z.sysMode)} · ${z.leiter || '—'}` : '…';
+}
 // System für einen neuen Strang: Fahrleitung wie eingestellt, sonst Einzelleiter
 function _strangSystemVorgabe(s) {
   if (s.rolle === 'fahrleitung') return sysMode === 'el' ? 'nfl' : sysMode;
@@ -10692,7 +10712,7 @@ function _straengeHtml() {
       <td><input class="abs-inp" style="width:5.5rem" value="${escHtml(s.kennung)}" placeholder="${name}" onchange="strangKennung(${k},this.value)" aria-label="${escHtml(t('abs.strang'))} ${k + 1}"></td>
       <td><select class="abs-inp" onchange="strangRolle(${k},this.value)" aria-label="${escHtml(t('abs.str.rolle'))} ${name}">${
         STRANG_ROLLEN.map(r => `<option value="${r}"${r === s.rolle ? ' selected' : ''}>${escHtml(t('rolle.' + r))}</option>`).join('')}</select></td>
-      <td id="abs-str-sys-${k}" class="abs-str-sys">…</td>
+      <td id="abs-str-sys-${k}" class="abs-str-sys"${aktiv ? ` title="${escHtml(t('abs.str.system.hw'))}"` : ''}>${escHtml(_strangSystemText(aktiv ? _strangZustandLesen() : s.zustand))}</td>
       <td>${s.masten.length ? `${escHtml(s.masten[0].name)}–${escHtml(s.masten[s.masten.length - 1].name)}` : '—'}</td>
       <td>${L > 0 ? fN(L, 0) + ' m' : '—'}</td>
       <td id="abs-str-nw-${k}">…</td>
@@ -10701,6 +10721,7 @@ function _straengeHtml() {
   });
   const T = A.teil || {};
   h += `</tbody></table></div>
+    <p class="abs-hinweis abs-str-hw">${t('abs.str.system.hw')}</p>
     <div class="abs-leiste">
       <button class="${knopf}" onclick="strangHinzu()" ${S.length >= STRANG_MAX ? 'disabled' : ''}>${t('abs.str.hinzu')}</button>
       <span class="abs-trenner"></span>
@@ -10778,6 +10799,8 @@ function abschnittAktualisieren() {
   const felderBox = document.getElementById('abs-felder');
   const profilBox = document.getElementById('abs-profil');
   if (!felderBox) return;
+  // System des aktiven Strangs sofort zeigen — auch wenn noch kein Feld rechenbar ist
+  { const z = document.getElementById(`abs-str-sys-${abschnitt.aktiv}`); if (z) z.textContent = _strangSystemText(_strangZustandLesen()); }
   const erg = abschnittRechnen();
   if (!erg) { felderBox.innerHTML = ''; if (profilBox) profilBox.innerHTML = ''; return; }
   // Aktiver Strang: Einstellungen und Ergebnis merken; übrige aus dem Zwischenspeicher
@@ -10787,7 +10810,7 @@ function abschnittAktualisieren() {
   const alle = _straengeErgebnisse(erg);
   alle.forEach(({ s, k, erg: e }) => {
     const sys = document.getElementById(`abs-str-sys-${k}`), nw = document.getElementById(`abs-str-nw-${k}`);
-    if (sys) sys.textContent = s.zustand ? `${sysName(s.zustand.sysMode)} · ${s.zustand.leiter || '—'}` : '…';
+    if (sys) sys.textContent = _strangSystemText(s.zustand);
     if (!nw) return;
     if (!e) { nw.textContent = '…'; return; }
     const best = e.felder.filter(f => !f.fehler && _teilFeld(s.masten, f.i)).flatMap(f => f.nachweis.filter(x => x.best));

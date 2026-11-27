@@ -105,3 +105,40 @@ test('Bezeichnungen für Bildschirmleser und Fenster als Dialog', async () => {
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Entwicklermodus: Wasserzeichen im Diagramm (nicht im PDF); ohne Entwicklermodus keines', async () => {
+  for (const dev of [true, false]) {
+    const { seite, fehler, kontext } = await appOeffnen(browser, url, { dev });
+    const r = await seite.evaluate(() => {
+      const ctx = document.getElementById('main-canvas').getContext('2d');
+      const texte = [], f = ctx.fillText.bind(ctx);
+      ctx.fillText = (txt, ...a) => { texte.push((_diagrammDruck ? 'pdf:' : '') + txt); return f(txt, ...a); };
+      berechnen();
+      const bildschirm = texte.includes(t('dev.wasserzeichen'));
+      texte.length = 0; diagrammBildHell();
+      return { bildschirm, pdf: texte.includes('pdf:' + t('dev.wasserzeichen')) };
+    });
+    assert.deepEqual(r, { bildschirm: dev, pdf: false }, `dev=${dev}`);
+    assert.deepEqual(fehler, []);
+    await kontext.close();
+  }
+});
+
+test('Stränge: System und Leiter sofort sichtbar (auch mit einem Mast), Hinweis zur Seitenleiste', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url);
+  const r = await seite.evaluate(async () => {
+    abschnittAnsicht();
+    abschnitt.masten = [{ name: '1', e: null, n: null, z: null, delta: null, h: null, km: '', L: null }];
+    renderAbschnitt();
+    const vorher = document.getElementById(`abs-str-sys-${abschnitt.aktiv}`).textContent;
+    setSysMode('el'); await new Promise(r => setTimeout(r, 100));
+    renderAbschnitt();
+    return { vorher, nachher: document.getElementById(`abs-str-sys-${abschnitt.aktiv}`).textContent,
+      hinweis: document.querySelector('.abs-str-hw')?.textContent || '' };
+  });
+  assert.match(r.vorher, /^N-FL · /);
+  assert.match(r.nachher, /^Einzelleiter · /);
+  assert.match(r.hinweis, /links in der Seitenleiste/);
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});
