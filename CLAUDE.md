@@ -84,6 +84,9 @@ npm run test:sbb                           # nur lokal: SBB-Fälle (Node 42, Bro
   `tests/browser/hilfe.js` (`TYPEN`) eintragen.
 - Funktionen im Modul `Projekte` (IIFE in app.js) sind nur über `window.…` global erreichbar —
   neue, per `onclick` aufgerufene Funktionen dort exportieren.
+- **Systemdesign** (gemeinsam mit der App Vierendeel): docs/SYSTEMDESIGN.md — Schrift `--f-ui`/`--f-mono`
+  (Zahlen in Mono), Schriftstufen `--fs-xs … --fs-zahl`, Abstände `--sp-*`, Rundungen `--r-*`, Hinweisfarbe
+  `--hinweis`. Keine neuen festen Schriftgrössen in rem, sondern Stufen verwenden.
 - Hell-/Dunkelmodus: Farben nur über CSS-Variablen (`:root` / `:root[data-thema="dunkel"]`).
   Canvas/SVG-Farben aus den Hilfsfunktionen (z. B. `diagrammFarben()`).
 - Alle Checkboxen sind app-weit Schalter (Toggle); Ausnahme Klasse `.auswahl` (Auswahlkästchen).

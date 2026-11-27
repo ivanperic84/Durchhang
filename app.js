@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v6.6.1';
+const APP_VERSION = 'v6.7.0';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -18,7 +18,7 @@ function sysName(mode) {
 // ═══════════════════════════════════════════════════════════════
 // Schrift für Beschriftungen im Diagramm (Canvas). Früher nur «Segoe UI» —
 // die gibt es nur unter Windows, auf iPad/Mac erschien dann eine Serifenschrift.
-const DIAGRAMM_SCHRIFT = "Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
+const DIAGRAMM_SCHRIFT = "ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";   // wie --f-ui (Systemdesign)
 
 // Farben des Diagramms (Canvas) je Thema. Canvas kennt keine CSS-Variablen,
 // deshalb hier als Werte. Für PDF-Bild immer hell (_diagrammDruck).
