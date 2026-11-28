@@ -1,5 +1,73 @@
 <!-- Handbuch der App «Durchhang» (DE / FR / IT) — wird beim ersten Öffnen des Handbuchs
      in #hb-text geladen (openHandbuch). Je Sprache ein Block hb-de / hb-fr / hb-it. -->
+      <!-- ══ 0 Erste Schritte (Vorschau) ══ -->
+      <div class="hb-lang hb-de">
+        <h3 id="hb-erste-de" style="font-size:.95rem;font-weight:700;color:var(--text);margin:.6rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem">0 &nbsp;Erste Schritte</h3>
+        <p><strong>Aufbau des Bildschirms (PC):</strong> links die <strong>Eingabe</strong>, in der Mitte die <strong>Ansicht</strong> (Reiter Diagramm, Zeichnung, Abschnitt), rechts die <strong>Übersicht</strong> mit Ergebnis, Eingabeparametern, Kennwerten und den Knöpfen «Bericht (PDF)» und «Zeichnung (PDF)». Unten zeigt die <strong>Statuszeile</strong> laufend das Urteil, T₂, Durchhang f, Zugkraft H und den Datenstand.</p>
+        <figure class="hb-abb" data-abb="bildschirm" hidden></figure>
+        <ul class="hb-schritte">
+          <li><strong>Seiten ein- und ausklappen:</strong> Griff in der Mitte der Ränder (beim Überfahren erscheint ein Pfeil) oder Klick auf die schmale Leiste.</li>
+          <li><strong>Vollbild:</strong> Knopf oben rechts in der Ansicht klappt beide Seiten ein; nochmals drücken stellt sie wieder her.</li>
+          <li><strong>Markierte Felder</strong> enthalten noch Startwerte. Antippen genügt, wenn der Wert stimmt. Die Erklärung erscheint beim Start und danach über den i-Knopf oben in der Eingabe.</li>
+          <li><strong>i-Knöpfe</strong> (z. B. bei den H-Punkten oder in der Ergebnis-Kachel) blenden Erläuterungen ein und aus.</li>
+        </ul>
+        <p style="font-weight:600;margin:.7rem 0 .2rem">In fünf Schritten zum Abstandsnachweis</p>
+        <ol class="hb-schritte">
+          <li><strong>Betreiberdaten laden</strong> (Menü «Mehr» → Betreiberdaten). Ohne Datei rechnet die App mit Beispielwerten – kein Nachweis.</li>
+          <li><strong>System und Kombination</strong> wählen, Berechnungsart und Fahrdraht prüfen; <strong>T₁</strong> (Montage) und <strong>T₂</strong> (Nachweis) eingeben.</li>
+          <li><strong>Spannweite</strong> und Aufhängehöhen <strong>h₁, h₂</strong> eingeben; unter «Mastangaben» die <strong>SOK m ü. M.</strong> links und rechts eintragen.</li>
+          <li><strong>Messpunkt M1</strong> an die Stelle des Hindernisses setzen (ins Diagramm klicken oder x eingeben), <strong>H1</strong> = Unterkante des Hindernisses in m ü. M. und den <strong>Mindestabstand a</strong> eintragen.</li>
+          <li><strong>Urteil prüfen</strong> (Ergebnis-Kachel und Statuszeile: ✓ erfüllt, ✗ nicht erfüllt, ⚠ Mindestabstand fehlt) und den <strong>Bericht (PDF)</strong> erstellen.</li>
+        </ol>
+        <p>Ein fertiges Beispiel dient als Vorlage: Feld 48 m, Hindernis bei x = 20 m, Mindestabstand 0.50 m. Es ist auch im Menü «Mehr» zu finden.</p>
+        <button type="button" class="hb-beispiel-knopf" onclick="beispielAbstandLaden()">Beispiel «Abstandsnachweis» laden</button>
+        <figure class="hb-abb" data-abb="uebersicht" hidden></figure>
+      </div>
+      <div class="hb-lang hb-fr" style="display:none">
+        <h3 id="hb-erste-fr" style="font-size:.95rem;font-weight:700;color:var(--text);margin:.6rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem">0 &nbsp;Premiers pas</h3>
+        <p><strong>Organisation de l’écran (PC) :</strong> à gauche la <strong>saisie</strong>, au centre la <strong>vue</strong> (onglets diagramme, dessin, canton), à droite l’<strong>aperçu</strong> avec résultat, paramètres d’entrée, valeurs et les boutons «Rapport (PDF)» et «Dessin (PDF)». En bas, la <strong>ligne d’état</strong> indique en permanence le verdict, T₂, la flèche f, la traction H et l’état des données.</p>
+        <figure class="hb-abb" data-abb="bildschirm" hidden></figure>
+        <ul class="hb-schritte">
+          <li><strong>Replier / déplier les côtés :</strong> poignée au milieu des bords (une flèche apparaît au survol) ou clic sur la barre étroite.</li>
+          <li><strong>Plein écran :</strong> le bouton en haut à droite de la vue replie les deux côtés ; un second clic les rétablit.</li>
+          <li>Les <strong>champs marqués</strong> contiennent encore des valeurs de départ ; un simple toucher suffit si la valeur est juste. L’explication apparaît au démarrage puis via le bouton i en haut de la saisie.</li>
+          <li>Les <strong>boutons i</strong> (p. ex. points H ou carte du résultat) affichent ou masquent des explications.</li>
+        </ul>
+        <p style="font-weight:600;margin:.7rem 0 .2rem">La vérification des distances en cinq étapes</p>
+        <ol class="hb-schritte">
+          <li><strong>Charger les données de l’exploitant</strong> (menu «Plus» → Données de l’exploitant). Sans fichier, l’application calcule avec des valeurs d’exemple – pas de justificatif.</li>
+          <li>Choisir <strong>système et combinaison</strong>, contrôler mode de calcul et fil de contact ; saisir <strong>T₁</strong> (montage) et <strong>T₂</strong> (justificatif).</li>
+          <li>Saisir la <strong>portée</strong> et les hauteurs <strong>h₁, h₂</strong> ; sous «Données des mâts», indiquer le <strong>DRS m s.n.m.</strong> à gauche et à droite.</li>
+          <li>Placer le <strong>point de mesure M1</strong> à l’endroit de l’obstacle (clic dans le diagramme ou saisie de x), saisir <strong>H1</strong> = sous-face de l’obstacle en m s.n.m. et la <strong>distance minimale a</strong>.</li>
+          <li><strong>Contrôler le verdict</strong> (carte du résultat et ligne d’état : ✓ satisfait, ✗ non satisfait, ⚠ distance minimale manquante) et créer le <strong>rapport (PDF)</strong>.</li>
+        </ol>
+        <p>Un exemple complet sert de modèle : portée 48 m, obstacle à x = 20 m, distance minimale 0.50 m. Il se trouve aussi dans le menu «Plus».</p>
+        <button type="button" class="hb-beispiel-knopf" onclick="beispielAbstandLaden()">Charger l’exemple «Vérification des distances»</button>
+        <figure class="hb-abb" data-abb="uebersicht" hidden></figure>
+      </div>
+      <div class="hb-lang hb-it" style="display:none">
+        <h3 id="hb-erste-it" style="font-size:.95rem;font-weight:700;color:var(--text);margin:.6rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem">0 &nbsp;Primi passi</h3>
+        <p><strong>Struttura dello schermo (PC):</strong> a sinistra l’<strong>immissione</strong>, al centro la <strong>vista</strong> (schede diagramma, disegno, tratta), a destra la <strong>panoramica</strong> con risultato, parametri di input, valori e i pulsanti «Rapporto (PDF)» e «Disegno (PDF)». In basso la <strong>riga di stato</strong> mostra sempre il giudizio, T₂, la freccia f, la trazione H e lo stato dei dati.</p>
+        <figure class="hb-abb" data-abb="bildschirm" hidden></figure>
+        <ul class="hb-schritte">
+          <li><strong>Chiudere / aprire i lati:</strong> maniglia al centro dei bordi (al passaggio appare una freccia) o clic sulla barra stretta.</li>
+          <li><strong>Schermo intero:</strong> il pulsante in alto a destra della vista chiude entrambi i lati; un secondo clic li ripristina.</li>
+          <li>I <strong>campi evidenziati</strong> contengono ancora valori iniziali; basta toccarli se il valore è corretto. La spiegazione appare all’avvio e poi tramite il pulsante i in alto nell’immissione.</li>
+          <li>I <strong>pulsanti i</strong> (p. es. punti H o scheda del risultato) mostrano o nascondono le spiegazioni.</li>
+        </ul>
+        <p style="font-weight:600;margin:.7rem 0 .2rem">La verifica delle distanze in cinque passi</p>
+        <ol class="hb-schritte">
+          <li><strong>Caricare i dati del gestore</strong> (menu «Altro» → Dati del gestore). Senza file l’applicazione calcola con valori di esempio – nessuna verifica.</li>
+          <li>Scegliere <strong>sistema e combinazione</strong>, controllare modalità di calcolo e filo di contatto; inserire <strong>T₁</strong> (montaggio) e <strong>T₂</strong> (verifica).</li>
+          <li>Inserire la <strong>campata</strong> e le altezze <strong>h₁, h₂</strong>; in «Dati dei pali» indicare il <strong>PRF m s.l.m.</strong> a sinistra e a destra.</li>
+          <li>Posizionare il <strong>punto di misura M1</strong> nel punto dell’ostacolo (clic nel diagramma o inserire x), inserire <strong>H1</strong> = intradosso dell’ostacolo in m s.l.m. e la <strong>distanza minima a</strong>.</li>
+          <li><strong>Controllare il giudizio</strong> (scheda del risultato e riga di stato: ✓ soddisfatta, ✗ non soddisfatta, ⚠ distanza minima mancante) e creare il <strong>rapporto (PDF)</strong>.</li>
+        </ol>
+        <p>Un esempio completo serve da modello: campata 48 m, ostacolo a x = 20 m, distanza minima 0.50 m. Si trova anche nel menu «Altro».</p>
+        <button type="button" class="hb-beispiel-knopf" onclick="beispielAbstandLaden()">Caricare l’esempio «Verifica delle distanze»</button>
+        <figure class="hb-abb" data-abb="uebersicht" hidden></figure>
+      </div>
+
       <!-- ══ 1 Übersicht ══ -->
       <h3 id="hb-uebersicht" style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.2rem 0 .4rem;border-bottom:2px solid var(--border);padding-bottom:.25rem">1 &nbsp;<span id="hb-s1">Übersicht</span></h3>
       <div class="hb-lang hb-de">
