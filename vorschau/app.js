@@ -12871,21 +12871,8 @@ function _kartenTitel() {
 (function () {
   const hw = document.getElementById('ungeprueft-hw'), leiste = document.querySelector('.karten-leiste');
   if (hw && leiste) leiste.after(hw);
-  let zu = [];
-  try { zu = JSON.parse(localStorage.getItem(_KARTEN_KEY) || '[]'); } catch (_) { /* leer */ }
-  _karten().forEach((k, i) => {
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'karte-klapp';
-    b.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    b.addEventListener('click', () => { _karteSetzen(k, !k.classList.contains('zu')); _kartenMerken(); });
-    k.querySelector(':scope > .card-title').addEventListener('click', e => {
-      if (e.target.closest('button, a, input, select, label, summary')) return;
-      b.click();
-    });
-    k.appendChild(b);
-    _karteSetzen(k, zu.includes(i));
-  });
-  _kartenTitel();
+  // Abschnitte sind nicht mehr einklappbar (Wunsch des Nutzers): alter Zustand weg
+  try { localStorage.removeItem(_KARTEN_KEY); } catch (_) { /* egal */ }
   if (typeof calcState !== 'undefined' && calcState) statuszeileAktualisieren();
 })();
 
