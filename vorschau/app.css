@@ -2402,3 +2402,22 @@ input.ungeprueft:not(.input-wrap input) {
 .hw-knopf { transition: transform var(--t-schnell), background var(--t-schnell); }
 .hw-knopf:hover { transform: scale(1.08); }
 .hw-knopf:active { transform: scale(.92); }
+/* ══ Untergeordnete Knöpfe und Auswahlen: kompakt (Systemdesign «klein») ══
+   löschen (SOK), Δh-Bezug, Reset der Messpunkte, Auswahlen der Zeichnungsleiste.
+   Sichtbar 26 px hoch; auf Touch-Geräten bleibt die Tippfläche unsichtbar ≥ 40 px. */
+#sok-clear-btn, #probe-reset-btn, #mp-bezug, #draw-mp-bezug, #vex-select {
+  height: 26px !important; min-height: 0 !important; padding: 0 .5rem !important; line-height: 24px !important;
+  font-size: var(--fs-xs) !important; font-weight: 500 !important; border-radius: var(--r-1) !important;
+  border: 1px solid var(--border) !important; background: var(--card) !important; color: var(--muted) !important;
+  display: inline-flex; align-items: center; gap: .25rem; box-shadow: none !important;
+  transition: border-color var(--t-schnell), color var(--t-schnell);
+}
+#mp-bezug, #draw-mp-bezug, #vex-select { color: var(--text) !important; padding-right: 1.4rem !important; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M2 3.5l3 3 3-3' fill='none' stroke='%235f616c' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important; background-position: right .45rem center !important; }
+#sok-clear-btn:hover, #probe-reset-btn:hover, #mp-bezug:hover, #draw-mp-bezug:hover, #vex-select:hover { border-color: var(--primary) !important; color: var(--primary) !important; }
+#sok-clear-btn, #probe-reset-btn { position: relative; }
+@media (any-pointer: coarse) {
+  #sok-clear-btn::after, #probe-reset-btn::after { content: ''; position: absolute; inset: -8px -4px; }
+  #mp-bezug, #draw-mp-bezug, #vex-select { height: 32px !important; }   /* Auswahlliste: etwas höher zum Antippen */
+}
