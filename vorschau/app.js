@@ -8921,7 +8921,10 @@ function _zeichnungBauen(stripInSvg) {
   let spanDim = '';
   if (_probesEarly.length > 0) {
     // Segments: mast A → M1 → M2 → … → mast B
-    const dimPts = [0, ..._probesEarly.map(p => p.xv), L];
+    // Nach x sortiert (die Messpunkte M1–M4 liegen in beliebiger Reihenfolge), doppelte weg
+    const dimPts = [...new Set([0, ..._probesEarly.map(p => p.xv), L].map(v => +v.toFixed(3)))].sort((a, b) => a - b);
+    const _fsDim = parseFloat(fs(2.2)), _platz = txt => txt.length * _fsDim * 0.56 + _fsDim * 0.8;
+    let _unten = false;
     // Draw the full baseline once
     spanDim += `<line x1="${sx(0).toFixed(2)}" y1="${spanDimY.toFixed(2)}" x2="${sx(L).toFixed(2)}" y2="${spanDimY.toFixed(2)}" stroke="${Z.mass}" stroke-width="${(0.25*symSc).toFixed(3)}"/>`;
     dimPts.forEach((xv, i) => {
@@ -8933,7 +8936,15 @@ function _zeichnungBauen(stripInSvg) {
         const xNext  = dimPts[i + 1];
         const midPx  = ((sx(xv) + sx(xNext)) / 2).toFixed(2);
         const distM  = (xNext - xv).toFixed(2);
-        spanDim += `<text x="${midPx}" y="${(spanDimY - 2).toFixed(2)}" font-size="${fs(2.2)}" text-anchor="middle" fill="${Z.massText}">${distM} m</text>`;
+        const _txt = `${distM} m`, _breite = sx(xNext) - sx(xv);
+        if (_breite >= _platz(_txt)) {
+          spanDim += `<text x="${midPx}" y="${(spanDimY - _fsDim * 0.45).toFixed(2)}" font-size="${fs(2.2)}" text-anchor="middle" fill="${Z.massText}">${_txt}</text>`;
+          _unten = false;
+        } else if (!_unten) {
+          // zu eng über der Linie: einmal versetzt unter die Linie, sonst weglassen (Wert steht im Band)
+          spanDim += `<text x="${midPx}" y="${(spanDimY + _fsDim * 1.15).toFixed(2)}" font-size="${fs(2.0)}" text-anchor="middle" fill="${Z.massText}">${_txt}</text>`;
+          _unten = true;
+        }
       }
     });
   } else {
@@ -9134,9 +9145,7 @@ function _zeichnungBauen(stripInSvg) {
           const pfeil = (y, d) => `<polygon points="${px.toFixed(2)},${y.toFixed(2)} ${(px - a).toFixed(2)},${(y - d * b).toFixed(2)} ${(px + a).toFixed(2)},${(y - d * b).toFixed(2)}" fill="${t2clr}"/>`;
           probesSvg += `
     <line class="mp-mass" x1="${px.toFixed(2)}" y1="${ry.toFixed(2)}" x2="${px.toFixed(2)}" y2="${py.toFixed(2)}" stroke="${t2clr}" stroke-width="${(0.35*symSc).toFixed(3)}" stroke-dasharray="${(1.6*symSc).toFixed(2)},${(1.0*symSc).toFixed(2)}"/>
-    ${pfeil(ry, -dir)}${pfeil(py - dir * 1.3 * symSc, dir)}
-    <text class="zl-schieb mp-mass-text" data-x2="${(px + 1.4 * symSc).toFixed(2)}" data-a2="start" x="${(px - 1.4 * symSc).toFixed(2)}" y="${((ry + py) / 2 + 0.8 * symSc).toFixed(2)}" text-anchor="end"
-      font-size="${fs(2.1)}" font-weight="600" fill="${t2clr}" stroke="${Z.hg}" stroke-width="${(0.45*symSc).toFixed(3)}" paint-order="stroke">${mpBezugKurz()} = ${(yRef - y2abs).toFixed(2)} m</text>`;
+    ${pfeil(ry, -dir)}${pfeil(py - dir * 1.3 * symSc, dir)}`;
         }
       }
 
@@ -9504,7 +9513,7 @@ let scaleViewActive   = false;
 let _lastDrawingScale = null;
 let drawingZoom       = 1.0;
 let drawingVEx        = 5;   // Überhöhungsfaktor (1 = keine Überhöhung); Startwert 5×
-let drawingExtent     = 'sok'; // 'sok' = bis SOK | 'catenary' = nur Kettenwerk/Leiter
+let drawingExtent     = 'catenary'; // 'sok' = bis SOK | 'catenary' = nur Kettenwerk/Leiter (Vorschau: Start mit Kettenwerk)
 var drawingHf         = false; // hf_min / hf_max als Band in der Zeichnung (Werte aus der hf-Ansicht)
 
 function setDrawingHf(an) {
@@ -10151,6 +10160,9 @@ return {
     get zeichnungHf()     { return drawingHf; },
     // Setzt beide Einstellungen samt Bedienelementen, ohne Neuaufbau
     // (der Aufrufer baut nach dem Laden ohnehin komplett neu auf).
+    // Zoom-Tasten: Schritt relativ zum aktuellen Zoom (drawingZoom ist nur hier erreichbar)
+    // genau 1.0 bedeutet in adjustDrawingZoom «Einpassen» — ein Schritt auf 100 % soll aber nur zoomen
+    zoomSchritt(d) { const z = _zoomKlemmen(drawingZoom + d); adjustDrawingZoom(z === 1 ? 1.000001 : z); },
     zeichnungsEinstellungenSetzen(vEx, extent) {
       drawingVEx = parseInt(vEx) || 5;
       const vexSel = document.getElementById('vex-select');
@@ -10166,6 +10178,7 @@ return {
 
 // HTML-Handler werden im globalen Geltungsbereich ausgewertet.
 window.adjustDrawingZoom = Ansicht.adjustDrawingZoom;
+window.zeichnungZoomSchritt = d => Ansicht.zoomSchritt(d);
 window.setDrawingVEx = Ansicht.setDrawingVEx;
 window.setDrawingExtent = Ansicht.setDrawingExtent;
 window.setDrawingHf = Ansicht.setDrawingHf;

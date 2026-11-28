@@ -857,8 +857,8 @@ window.DH_VORSCHAU = true;
     <div id="scale-view">
       <div id="scale-toolbar">
         <div class="zoom-controls">
-          <button class="zoom-btn" onclick="adjustDrawingZoom(drawingZoom - 0.25)" title="Verkleinern" data-i18n-title="ui.verkleinern">−</button>
-          <button class="zoom-btn" onclick="adjustDrawingZoom(drawingZoom + 0.25)" title="Vergrössern" data-i18n-title="ui.vergroessern">+</button>
+          <button class="zoom-btn" onclick="zeichnungZoomSchritt(-0.25)" title="Verkleinern" data-i18n-title="ui.verkleinern">−</button>
+          <button class="zoom-btn" onclick="zeichnungZoomSchritt(0.25)" title="Vergrössern" data-i18n-title="ui.vergroessern">+</button>
           <span class="zoom-level-lbl" id="drawing-zoom-label">100%</span>
           <button class="zoom-reset-btn" onclick="adjustDrawingZoom(1)" title="Zoom zurücksetzen" data-i18n-title="ui.zoom.reset">↺</button>
         </div>
@@ -894,10 +894,10 @@ window.DH_VORSCHAU = true;
             <span id="drawing-darstellung-lbl" data-i18n="draw.darstellung" style="white-space:nowrap">Darstellung</span>
             <div style="display:flex;gap:.2rem">
               <button id="seg-ext-sok" data-i18n="draw.bis.sok" onclick="setDrawingExtent('sok')"
-                class="zoom-btn active" style="width:auto;padding:0 .45rem;font-size:.65rem"
+                class="zoom-btn" style="width:auto;padding:0 .45rem;font-size:.65rem"
                 title="Vollständige Darstellung bis SOK" data-i18n-title="ui.bis.sok.titel">bis SOK</button>
               <button id="seg-ext-cat" data-i18n="draw.kettenwerk" onclick="setDrawingExtent('catenary')"
-                class="zoom-btn" style="width:auto;padding:0 .45rem;font-size:.65rem"
+                class="zoom-btn active" style="width:auto;padding:0 .45rem;font-size:.65rem"
                 title="Nur Kettenwerk / Einzelleiter" data-i18n-title="ui.nur.kw.titel">Kettenwerk</button>
             </div>
           </div>
