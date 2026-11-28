@@ -7240,8 +7240,13 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
     const label = { probe1:'M1', probe2:'M2', probe3:'M3', probe4:'M4' }[which] ?? which;
     ctx.font = `bold 14px ${DIAGRAMM_SCHRIFT}`;
     const labelW = ctx.measureText(label).width;
-    const boxW = labelW + 18;
-    const boxH = 26, gap = 8;
+    // Vorschau: Höhe des Leiters am Messpunkt im Schild (statt Kacheln in der Übersicht)
+    const _mitSok = getSokMumLeft() !== null || getSokMumRight() !== null;
+    const hoeheTxt = `${y2.toFixed(2)} ${_mitSok ? t('dyn.ueber.mum') : 'm ' + t('dyn.ueber.sok')}`;
+    ctx.font = `600 10px ${DIAGRAMM_SCHRIFT}`;
+    const hoeheW = ctx.measureText(hoeheTxt).width;
+    const boxW = Math.max(labelW, hoeheW) + 18;
+    const boxH = 38, gap = 8;
 
     let onRight;
     if (clusterIdx > 0) {
@@ -7276,7 +7281,9 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
 
     ctx.textAlign = 'left';
     ctx.font = `bold 14px ${DIAGRAMM_SCHRIFT}`; ctx.fillStyle = dotColor;
-    ctx.fillText(label, bx + 8, by + boxH / 2 + 5);
+    ctx.fillText(label, bx + 8, by + 17);
+    ctx.font = `600 10px ${DIAGRAMM_SCHRIFT}`; ctx.fillStyle = DF.achse;
+    ctx.fillText(hoeheTxt, bx + 8, by + 31);
 
     // Δh-Annotation: Seite gegenüber Callout, vertikal versetzt bei Cluster
     const refY  = cy(refD);
@@ -7342,9 +7349,14 @@ function drawCanvas(c1, c2, L, h1, h2, sh, keepScale = false, c2_vem_draw = null
       ctx.fillStyle   = t3Clr; ctx.fill();
       ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.stroke();
       ctx.font = `bold 10px ${DIAGRAMM_SCHRIFT}`; ctx.fillStyle = t3Clr;
-      const onRight = dpx + 36 < padL + plotW;
+      const _ref3 = mpBezugHoehe(xv, h1d, h2d, L);
+      const txt3 = `${lbl} ${mpBezugKurz()} = ${(_ref3 - y3).toFixed(2)} m`;
+      const onRight = dpx + 14 + ctx.measureText(txt3).width < padL + plotW;
       ctx.textAlign = onRight ? 'left' : 'right';
-      ctx.fillText(lbl, onRight ? dpx + 9 : dpx - 9, dpy + 4);
+      ctx.lineWidth = 3; ctx.strokeStyle = DF.hg1; ctx.lineJoin = 'round';
+      ctx.strokeText(txt3, onRight ? dpx + 9 : dpx - 9, dpy + 4);
+      ctx.fillText(txt3, onRight ? dpx + 9 : dpx - 9, dpy + 4);
+      ctx.textAlign = 'left';
     });
   }
 
@@ -12834,6 +12846,13 @@ var _sokOffen = false;   // SOK-Hinweis in der Ergebnis-Kachel aufgeklappt?
 // Kennzahlkarte als Urteil-Kachel (auch nach jedem Neuaufbau der Karte)
 function _urteilKachel(u = _urteil()) {
   const karte = document.querySelector('#highlight-card .istzustand-card');
+  const _mpDa = [probeX1, probeX2, probeX3, probeX4].some(x => x !== null && x !== undefined);
+  if (karte) karte.classList.toggle('nur-urteil', _mpDa);
+  const hcEl = document.getElementById('highlight-card');
+  if (hcEl) {
+    hcEl.querySelector('.mp-im-diagramm')?.remove();
+    if (_mpDa) { const p = document.createElement('p'); p.className = 'mp-im-diagramm'; p.textContent = t('mp.im.diagramm'); hcEl.appendChild(p); }
+  }
   if (karte && !karte.querySelector('.sok-knopf')) {
     const zeile = karte.querySelector('.sok-hinweis')?.parentElement;
     if (zeile) {
@@ -12893,9 +12912,12 @@ function _kartenTitel() {
 
 
 // Drei Bereiche: Seiten ein- und ausklappen (Zustand bleibt im Gerät)
-const _SEITEN_KEY = 'dh_seiten_zu_v3';   // v3: Übersicht mit Ergebnis, beim Start offen
+const _SEITEN_KEY = 'dh_seiten_zu_v4';   // v4: eine Seite zur Zeit, Start mit der Eingabe
 function seiteKlappen(seite) {
   const lay = document.querySelector('.layout');
+  // Vorschau: immer nur eine Seite offen (am PC) — die geöffnete Seite wird breiter
+  if (lay.classList.contains('zu-' + seite) && matchMedia('(min-width: 1200px)').matches)
+    lay.classList.add('zu-' + (seite === 'links' ? 'rechts' : 'links'));
   if (typeof _vollVorher !== 'undefined' && _vollVorher !== null) { _vollVorher = null; _vollSymbol(false); }
   lay.classList.toggle('zu-' + seite);
   try { localStorage.setItem(_SEITEN_KEY, JSON.stringify(['links', 'rechts'].filter(s => lay.classList.contains('zu-' + s)))); } catch (_) { /* voll */ }
@@ -12903,7 +12925,8 @@ function seiteKlappen(seite) {
 }
 (function () {
   let zu = [];
-  try { const g = localStorage.getItem(_SEITEN_KEY); zu = g === null ? [] : JSON.parse(g); } catch (_) { zu = []; }
+  try { const g = localStorage.getItem(_SEITEN_KEY); zu = g === null ? ['rechts'] : JSON.parse(g); } catch (_) { zu = ['rechts']; }
+  if (!zu.includes('links') && !zu.includes('rechts')) zu.push('rechts');
   const lay = document.querySelector('.layout');
   // Mitte: Ansicht und Ergebnis untereinander in einem eigenen Bereich
   const cc = document.querySelector('.layout > .canvas-card'), rc = document.getElementById('result-card');
@@ -12911,6 +12934,17 @@ function seiteKlappen(seite) {
   const info = document.getElementById('info-seite'); if (lay && info) lay.appendChild(info);
   // Ergebnis gehört in die Übersicht rechts: die Mitte zeigt nur die Ansicht und scrollt nicht
   const ii = document.getElementById('info-inhalt'); if (rc && ii) ii.before(rc);
+  if (rc && ii && !document.querySelector('.info-scroll')) {
+    const sc = document.createElement('div'); sc.className = 'info-scroll';
+    rc.before(sc); sc.append(rc, ii);
+    const fade = () => {
+      sc.style.setProperty('--oben', sc.scrollTop > 4 ? '56px' : '0px');
+      sc.style.setProperty('--unten', sc.scrollTop + sc.clientHeight < sc.scrollHeight - 4 ? '56px' : '0px');
+    };
+    sc.addEventListener('scroll', fade, { passive: true });
+    new ResizeObserver(fade).observe(sc);
+    new MutationObserver(fade).observe(sc, { childList: true, subtree: true });
+  }
   const hc = document.getElementById('highlight-card');
   if (hc && !document.getElementById('ep-box')) { const e = document.createElement('section'); e.id = 'ep-box'; e.className = 'info-abschnitt ep-box'; hc.after(e); }
   // Legende in die Kopfzeile der Messpunkte (spart eine Zeile); Hinweis als Tooltip
