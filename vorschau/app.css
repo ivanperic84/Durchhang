@@ -2372,3 +2372,8 @@ body { font-variant-numeric: tabular-nums; }
 .istzustand-card[class*="urteil-"] .istzustand-value { color: var(--text) !important; }
 /* auch in der Handbuch-Abbildung (Kopie ohne ids): Ergebnis einspaltig */
 .info-seite .results-card .results-grid { grid-template-columns: 1fr; gap: .9rem; }
+
+/* Infofeld Kombination / Leiter: immer offen, ohne Aufklapp-Dreieck */
+#combo-info > summary, #el-reglage-info > summary { cursor: default; list-style: none; }
+#combo-info > summary::-webkit-details-marker, #el-reglage-info > summary::-webkit-details-marker { display: none; }
+#combo-info > summary::before, #el-reglage-info > summary::before { content: none; }

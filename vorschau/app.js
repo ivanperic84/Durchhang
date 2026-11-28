@@ -13093,3 +13093,12 @@ async function beispielAbstandLaden() {
   meldung(t('bsp.geladen'), 'info', 8000);
 }
 const BEISPIEL_H1 = 507.40;   // Unterkante Hindernis in m ü. M.
+
+// Infofeld der Kombination bzw. des Leiters immer offen (nicht zuklappbar)
+['combo-info', 'el-reglage-info'].forEach(id => {
+  const d = document.getElementById(id);
+  if (!d) return;
+  d.open = true;
+  d.querySelector('summary')?.addEventListener('click', e => e.preventDefault());
+  d.addEventListener('toggle', () => { if (!d.open) d.open = true; });
+});
