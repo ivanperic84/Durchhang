@@ -2286,3 +2286,11 @@ body { font-variant-numeric: tabular-nums; }
   .layout.zu-links { grid-template-columns: 44px minmax(0, 1fr) var(--sp-r, 330px); }
   .layout.zu-rechts { grid-template-columns: var(--sp-l, 320px) minmax(0, 1fr) 44px; }
 }
+
+/* H-Punkte: i-Knopf neben dem Titel, Erklärtext nur auf Wunsch */
+.hind-info { display: inline-flex; align-items: center; justify-content: center; width: 1.4rem; height: 1.4rem; padding: 0; margin-left: .35rem;
+  vertical-align: middle; border: none; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; position: relative; }
+.hind-info:hover, .hind-info[aria-expanded="true"] { color: var(--primary); background: var(--acc-s); }
+@media (any-pointer: coarse) { .hind-info { min-height: 0; } .hind-info::after { content: ''; position: absolute; inset: -.5rem; } }
+.hind-info-text { margin-top: .35rem; padding: .45rem .6rem; border-left: 3px solid var(--primary); background: var(--s2); border-radius: 0 var(--r-1) var(--r-1) 0; }
+.hind-info-text[hidden] { display: none; }
