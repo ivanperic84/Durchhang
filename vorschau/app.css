@@ -2394,3 +2394,11 @@ input.ungeprueft:not(.input-wrap input) {
   background-repeat: no-repeat; background-size: 12px 12px; background-position: .45rem center;
 }
 .ungeprueft-muster { box-shadow: none; }
+
+/* Schmale Leisten: Pfeil und Beschriftung auf Höhe des Griffs (Mitte) */
+@media (min-width: 1200px) {
+  .layout.zu-links > .schiene-links, .layout.zu-rechts > .schiene-rechts { justify-content: center; padding-bottom: calc(.6rem + 12px + .6rem); }   /* Ausgleich für den Pfeil darüber */
+}
+.hw-knopf { transition: transform var(--t-schnell), background var(--t-schnell); }
+.hw-knopf:hover { transform: scale(1.08); }
+.hw-knopf:active { transform: scale(.92); }

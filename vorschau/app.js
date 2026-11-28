@@ -13017,7 +13017,20 @@ function _hwEinklappen() {
   ], { duration: 550, easing: 'cubic-bezier(.4, 0, .2, 1)' }).onfinish = () => { k.style.visibility = ''; fertig(); };
 }
 function hwOeffnen() {
+  const hw = document.getElementById('ungeprueft-hw'), k = document.getElementById('hw-knopf');
+  const b = k && !k.hidden ? k.getBoundingClientRect() : null;
   _hwZu = false; _hwStand();
+  // Umkehrung des Einklappens: der Hinweis wächst aus dem i-Knopf heraus
+  if (hw && b && b.width && hw.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const a = hw.getBoundingClientRect();
+    if (a.width) {
+      const dx = (b.left + b.width / 2) - (a.left + a.width / 2), dy = (b.top + b.height / 2) - (a.top + a.height / 2);
+      hw.animate([
+        { transform: `translate(${dx}px, ${dy}px) scale(${(b.width / a.width).toFixed(3)}, ${(b.height / a.height).toFixed(3)})`, opacity: .2, borderRadius: '50%' },
+        { transform: 'none', opacity: 1, borderRadius: '6px' },
+      ], { duration: 450, easing: 'cubic-bezier(.22, 1, .3, 1)' });
+    }
+  }
   clearTimeout(_hwTimer); _hwTimer = setTimeout(_hwEinklappen, 6000);
 }
 _hwStand();
