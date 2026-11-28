@@ -832,8 +832,8 @@
     <div id="scale-view">
       <div id="scale-toolbar">
         <div class="zoom-controls">
-          <button class="zoom-btn" onclick="adjustDrawingZoom(drawingZoom - 0.25)" title="Verkleinern" data-i18n-title="ui.verkleinern">−</button>
-          <button class="zoom-btn" onclick="adjustDrawingZoom(drawingZoom + 0.25)" title="Vergrössern" data-i18n-title="ui.vergroessern">+</button>
+          <button class="zoom-btn" onclick="zeichnungZoomSchritt(-0.25)" title="Verkleinern" data-i18n-title="ui.verkleinern">−</button>
+          <button class="zoom-btn" onclick="zeichnungZoomSchritt(0.25)" title="Vergrössern" data-i18n-title="ui.vergroessern">+</button>
           <span class="zoom-level-lbl" id="drawing-zoom-label">100%</span>
           <button class="zoom-reset-btn" onclick="adjustDrawingZoom(1)" title="Zoom zurücksetzen" data-i18n-title="ui.zoom.reset">↺</button>
         </div>

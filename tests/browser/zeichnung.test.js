@@ -261,3 +261,26 @@ test('Zeichnung: Δh bzw. f an jedem Messpunkt wie im Diagramm, Werte gleich wie
   assert.deepEqual(fehler, []);
   await kontext.close();
 });
+
+test('Zeichnung: Zoom-Tasten + / − / ↺ wirken (ohne Skriptfehler); Schrift bleibt beim Zoom gleich gross', async () => {
+  const { seite, fehler, kontext } = await appOeffnen(browser, url, { viewport: { width: 1440, height: 900 } });
+  await seite.evaluate(() => setCanvasView('zeichnung'));
+  await seite.waitForTimeout(400);
+  const stand = () => seite.evaluate(() => {
+    const t = [...document.querySelectorAll('#scale-svg-container svg text')].filter(e => e.getClientRects().length && e.textContent.trim() && !e.getAttribute('transform'));
+    const h = t.map(e => e.getBoundingClientRect().height).sort((a, b) => a - b);
+    return { zoom: parseInt(document.getElementById('drawing-zoom-label').textContent, 10), schrift: Math.round(h[Math.floor(h.length / 2)]) };
+  });
+  const knopf = i => seite.locator('#scale-toolbar .zoom-controls button').nth(i);
+  const start = await stand();
+  await knopf(1).click(); await seite.waitForTimeout(200); await knopf(1).click(); await seite.waitForTimeout(200);
+  const gross = await stand();
+  assert.ok(gross.zoom > start.zoom, `+ vergrössert: ${start.zoom} → ${gross.zoom}`);
+  assert.ok(Math.abs(gross.schrift - start.schrift) <= 1, `Schrift gleich: ${start.schrift} / ${gross.schrift} px`);
+  await knopf(0).click(); await seite.waitForTimeout(200);
+  assert.ok((await stand()).zoom < gross.zoom, '− verkleinert');
+  await knopf(2).click(); await seite.waitForTimeout(300);
+  assert.equal((await stand()).zoom, start.zoom, '↺ passt wieder ein');
+  assert.deepEqual(fehler, []);
+  await kontext.close();
+});

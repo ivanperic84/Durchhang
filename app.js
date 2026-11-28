@@ -3,7 +3,7 @@
    Rechenmodulen und i18n.js, vor den Dialogen). Funktionen bleiben global, weil die
    Bedienelemente sie über onclick="…" aufrufen. */
 // Programmversion — erscheint in PDF und Exporten (auch in sw.js / package.json nachführen)
-const APP_VERSION = 'v6.7.0';
+const APP_VERSION = 'v6.7.1';
 // Versionsnummer in Fusszeile und Handbuch immer aus APP_VERSION (stand vorher fest auf v3.9.3)
 document.addEventListener('DOMContentLoaded', () =>
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; }));
@@ -10150,6 +10150,10 @@ return {
     get zeichnungHf()     { return drawingHf; },
     // Setzt beide Einstellungen samt Bedienelementen, ohne Neuaufbau
     // (der Aufrufer baut nach dem Laden ohnehin komplett neu auf).
+    // Zoom-Tasten: Schritt relativ zum aktuellen Zoom (drawingZoom ist nur in diesem Modul
+    // erreichbar — ein onclick mit «drawingZoom ± 0.25» brach mit einem Fehler ab).
+    // Genau 1.0 bedeutet in adjustDrawingZoom «Einpassen»; ein Schritt auf 100 % soll nur zoomen.
+    zoomSchritt(d) { const z = _zoomKlemmen(drawingZoom + d); adjustDrawingZoom(z === 1 ? 1.000001 : z); },
     zeichnungsEinstellungenSetzen(vEx, extent) {
       drawingVEx = parseInt(vEx) || 5;
       const vexSel = document.getElementById('vex-select');
@@ -10165,6 +10169,7 @@ return {
 
 // HTML-Handler werden im globalen Geltungsbereich ausgewertet.
 window.adjustDrawingZoom = Ansicht.adjustDrawingZoom;
+window.zeichnungZoomSchritt = d => Ansicht.zoomSchritt(d);
 window.setDrawingVEx = Ansicht.setDrawingVEx;
 window.setDrawingExtent = Ansicht.setDrawingExtent;
 window.setDrawingHf = Ansicht.setDrawingHf;
