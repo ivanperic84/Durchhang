@@ -12894,6 +12894,7 @@ function _kartenTitel() {
 const _SEITEN_KEY = 'dh_seiten_zu_v3';   // v3: Übersicht mit Ergebnis, beim Start offen
 function seiteKlappen(seite) {
   const lay = document.querySelector('.layout');
+  if (typeof _vollVorher !== 'undefined' && _vollVorher !== null) { _vollVorher = null; _vollSymbol(false); }
   lay.classList.toggle('zu-' + seite);
   try { localStorage.setItem(_SEITEN_KEY, JSON.stringify(['links', 'rechts'].filter(s => lay.classList.contains('zu-' + s)))); } catch (_) { /* voll */ }
   requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
@@ -13021,3 +13022,44 @@ function hindInfoUmschalten() {
   if (p) p.hidden = !_hindInfoOffen;
   if (k) k.setAttribute('aria-expanded', String(_hindInfoOffen));
 }
+
+
+// Griffe in der Mitte der Ränder: ein- und ausklappen (Hover: Griff wächst, wie «Vierendeel»)
+(function () {
+  const lay = document.querySelector('.layout');
+  if (!lay) return;
+  const pfeil = '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5L4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  [['links', 'griff.links'], ['rechts', 'griff.rechts']].forEach(([s, k]) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'griff griff-' + s;
+    b.dataset.i18nAria = k; b.dataset.i18nTitle = k;
+    b.setAttribute('aria-label', t(k)); b.title = t(k);
+    b.innerHTML = s === 'links' ? pfeil : pfeil.replace('M7.5 2.5L4 6l3.5 3.5', 'M4.5 2.5L8 6 4.5 9.5');
+    b.addEventListener('click', () => seiteKlappen(s));
+    lay.appendChild(b);
+  });
+})();
+
+// Vollbild am PC: beide Seiten einklappen, damit das Diagramm die ganze Breite erhält;
+// nochmals drücken stellt den vorherigen Zustand wieder her. Schmal: bisheriges Vollbild.
+var _vollVorher = null;
+function _vollSymbol(an) {
+  zeigeElement(document.getElementById('fullscreen-icon-enter'), !an);
+  zeigeElement(document.getElementById('fullscreen-icon-exit'), an);
+}
+const _vollbildOrig = window.toggleCanvasFullscreen;
+window.toggleCanvasFullscreen = function () {
+  if (!matchMedia('(min-width: 1200px)').matches || document.querySelector('.canvas-card.canvas-fullscreen')) return _vollbildOrig.apply(this, arguments);
+  const lay = document.querySelector('.layout');
+  if (_vollVorher === null) {
+    _vollVorher = ['links', 'rechts'].filter(s => lay.classList.contains('zu-' + s));
+    lay.classList.add('zu-links', 'zu-rechts');
+    _vollSymbol(true);
+  } else {
+    lay.classList.remove('zu-links', 'zu-rechts');
+    _vollVorher.forEach(s => lay.classList.add('zu-' + s));
+    _vollVorher = null;
+    _vollSymbol(false);
+  }
+  requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+};
