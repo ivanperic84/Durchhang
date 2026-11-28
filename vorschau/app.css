@@ -2251,3 +2251,38 @@ body { font-variant-numeric: tabular-nums; }
   .info-seite { padding-bottom: 0; }
   .info-fuss { position: sticky; bottom: 0; padding-bottom: .9rem; }
 }
+
+/* ══ Vorschau · Runde 5: Mitte ohne Scrollen, Ergebnis in der Übersicht, schlanke PDF-Knöpfe ══ */
+.info-seite #result-card { padding: 0; border: 0; box-shadow: none; background: transparent; margin: 0 0 1rem; }
+.info-seite #result-card .results-grid { grid-template-columns: 1fr; gap: .9rem; }
+@media (min-width: 1200px) {
+  .mitte { overflow: hidden; }
+  .mitte > .canvas-card { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .mitte > .canvas-card > * { flex-shrink: 0; }
+  .mitte > .canvas-card > #main-canvas { flex: 1 1 0; height: auto; min-height: 220px; }
+  .mitte > .canvas-card > #scale-view { flex: 1 1 auto; min-height: 0; }
+  .layout { grid-template-columns: var(--sp-l, 350px) minmax(0, 1fr) var(--sp-r, 360px); }
+  .layout.zu-links { grid-template-columns: 44px minmax(0, 1fr) var(--sp-r, 360px); }
+}
+.info-fuss { gap: .4rem; }
+.info-pdf { flex: 0 1 auto; font-size: var(--fs-xs); font-weight: 500; padding: .3rem .65rem; border-radius: var(--r-1); gap: .3rem; }
+.info-pdf svg { width: 12px; height: 12px; }
+.info-pdf.haupt { background: var(--card); border-color: var(--primary); color: var(--primary); }
+.info-pdf.haupt:hover { background: var(--acc-s); color: var(--primary); }
+
+/* Erläuterung der Abstandsprüfung aufklappbar (spart Höhe in der Mitte) */
+.hind-erl { margin-top: .3rem; }
+.hind-erl > summary { cursor: pointer; font-size: var(--fs-xs); color: var(--muted); list-style-position: inside; }
+.hind-erl > summary:hover { color: var(--text); }
+.hind-erl[open] > summary { margin-bottom: .25rem; }
+/* Messpunkte: bei schmaler Mitte zu zweit pro Zeile */
+.canvas-card { container-type: inline-size; container-name: mitte; }
+@container mitte (max-width: 700px) {
+  .probe-m-zeile, .probe-h-zeile { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: .45rem; }
+}
+/* Laptop (bis 1400 px): Seiten etwas schmaler, damit die Mitte Platz hat */
+@media (min-width: 1200px) and (max-width: 1400px) {
+  .layout { grid-template-columns: var(--sp-l, 320px) minmax(0, 1fr) var(--sp-r, 330px); }
+  .layout.zu-links { grid-template-columns: 44px minmax(0, 1fr) var(--sp-r, 330px); }
+  .layout.zu-rechts { grid-template-columns: var(--sp-l, 320px) minmax(0, 1fr) 44px; }
+}

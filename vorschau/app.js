@@ -8033,7 +8033,7 @@ function renderObstacleList() {
   </div>
   <p id="hind-sok-fehlt" class="hind-legende abs-fehlt" style="display:none">${t('hind.sok.hinweis')}</p>
   <span class="hind-erg" id="hind-erg-H" aria-live="polite"></span>
-  <p class="hind-legende">${t('hind.legende')}</p>`;
+  <details class="hind-erl"><summary>${t('hind.erl')}</summary><p class="hind-legende">${t('hind.legende')}</p></details>`;
   _mpAnzeigen();
   _hindernisErgebnisse();
 }
@@ -12891,7 +12891,7 @@ function _kartenTitel() {
 
 
 // Drei Bereiche: Seiten ein- und ausklappen (Zustand bleibt im Gerät)
-const _SEITEN_KEY = 'dh_seiten_zu_v2';
+const _SEITEN_KEY = 'dh_seiten_zu_v3';   // v3: Übersicht mit Ergebnis, beim Start offen
 function seiteKlappen(seite) {
   const lay = document.querySelector('.layout');
   lay.classList.toggle('zu-' + seite);
@@ -12900,12 +12900,14 @@ function seiteKlappen(seite) {
 }
 (function () {
   let zu = [];
-  try { const g = localStorage.getItem(_SEITEN_KEY); zu = g === null ? ['rechts'] : JSON.parse(g); } catch (_) { zu = ['rechts']; }
+  try { const g = localStorage.getItem(_SEITEN_KEY); zu = g === null ? [] : JSON.parse(g); } catch (_) { zu = []; }
   const lay = document.querySelector('.layout');
   // Mitte: Ansicht und Ergebnis untereinander in einem eigenen Bereich
   const cc = document.querySelector('.layout > .canvas-card'), rc = document.getElementById('result-card');
   if (lay && cc && rc && !document.querySelector('.mitte')) { const m = document.createElement('div'); m.className = 'mitte'; cc.before(m); m.append(cc, rc); }
   const info = document.getElementById('info-seite'); if (lay && info) lay.appendChild(info);
+  // Ergebnis gehört in die Übersicht rechts: die Mitte zeigt nur die Ansicht und scrollt nicht
+  const ii = document.getElementById('info-inhalt'); if (rc && ii) ii.before(rc);
   const sr = document.querySelector('.schiene-rechts'); if (lay && sr) lay.appendChild(sr);
   zu.forEach(s => lay?.classList.add('zu-' + s));
   if (zu.length) requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
