@@ -6315,6 +6315,7 @@ function berechnen() {
   drawCanvas(c1, c2, L, h1, h2, sh, false, z.c2_vem, z.c3_zeichnung, z.c_fd_ref);
   _hindernisErgebnisse();
   annahmenAnzeigen();
+  statuszeileAktualisieren();
   ungeprueftAnzeigen();
   hfPruefzeile();
   hHfHinweis();
@@ -12788,3 +12789,108 @@ function applyCustomPreset(p) {
 
 // Obstacle-Liste beim Start initialisieren
 renderObstacleList();
+
+
+// ══ Vorschau · Bausteine wie «Vierendeel» ═══════════════════════════════════
+// Urteil des Abstandsnachweises für Statuszeile und Kennzahlkarte
+function _urteil() {
+  const n = (typeof _nachweis !== 'undefined' ? _nachweis : []).find(x => x && x.best);
+  if (!n) return { art: '', text: t('sz.kein') };
+  if (n.ok === true) return { art: 'ok', text: `✓ ${t('sz.ok')} · a = ${fN(n.best.abstand, 2)} m` };
+  if (n.ok === false) return { art: 'nok', text: `✗ ${t('sz.nok')} · a = ${fN(n.best.abstand, 2)} m` };
+  return { art: 'offen', text: `⚠ ${t('hind.mindest.fehlt')}` };
+}
+function statuszeileAktualisieren() {
+  const u = _urteil();
+  _urteilKachel(u);
+  const sz = document.getElementById('statuszeile');
+  if (!sz) return;
+  if (!calcState) { sz.textContent = ''; return; }
+  const c = calcState, f = (c.c2_vem ?? c.c2).sag;
+  const T = v => `${v > 0 ? '+' : ''}${v} °C`;
+  const daten = (!betreiberDaten || betreiberDaten.beispiel)
+    ? `<span class="sz-beispiel">${escHtml(betreiberdatenText())}</span>` : escHtml(betreiberdatenText());
+  const sw = document.querySelector('.schiene-werte');
+  if (sw) sw.innerHTML = `<span class="wert ${u.art}">${u.art ? escHtml(nachweisZeichen(u.art === 'ok' ? true : u.art === 'nok' ? false : null)) + ' a' : '–'}</span>`
+    + `<span class="wert">f <b>${f3(f)}</b> m</span><span class="wert">H <b>${fN(c.c2.H, 0)}</b> N</span>`;
+  sz.innerHTML = `<span class="sz-urteil ${u.art}">${escHtml(u.text)}</span>`
+    + `<span>T₂ <b>${T(c.T2)}</b></span><span>f <b>${f3(f)}</b> m</span><span>H <b>${fN(c.c2.H, 0)}</b> N</span>`
+    + `<span class="sz-rechts">${t('sz.daten')}: ${daten} · ${APP_VERSION}</span>`;
+}
+// Kennzahlkarte als Urteil-Kachel (auch nach jedem Neuaufbau der Karte)
+function _urteilKachel(u = _urteil()) {
+  const karte = document.querySelector('#highlight-card .istzustand-card');
+  if (karte) {
+    karte.classList.remove('urteil-ok', 'urteil-nok', 'urteil-offen');
+    karte.querySelector('.urteil-zeile')?.remove();
+    if (u.art) {
+      karte.classList.add('urteil-' + u.art);
+      const z = document.createElement('div');
+      z.className = 'urteil-zeile'; z.textContent = u.text;
+      karte.prepend(z);
+    }
+  }
+}
+// Kennzahlkarte wird bei Messpunkt-Änderungen neu aufgebaut → Urteil wieder anbringen
+const _updateHighlightCardOrig = updateHighlightCard;
+updateHighlightCard = function () { const r = _updateHighlightCardOrig.apply(this, arguments); try { _urteilKachel(); } catch (_) { /* vor der ersten Rechnung */ } return r; };
+
+// Abschnitte der Seitenleiste einklappbar (Zustand bleibt im Gerät)
+const _KARTEN_KEY = 'dh_karten_zu';
+function _karten() { return [...document.querySelectorAll('.sidebar .card')].filter(k => k.querySelector(':scope > .card-title')); }
+function _kartenMerken() {
+  try { localStorage.setItem(_KARTEN_KEY, JSON.stringify(_karten().map((k, i) => k.classList.contains('zu') ? i : -1).filter(i => i >= 0))); } catch (_) { /* voll */ }
+}
+function _karteSetzen(k, zu) {
+  k.classList.toggle('zu', zu);
+  const b = k.querySelector(':scope > .karte-klapp');
+  if (b) b.setAttribute('aria-expanded', String(!zu));
+}
+function kartenAlle() {
+  const k = _karten(), alleZu = k.every(x => x.classList.contains('zu'));
+  k.forEach(x => _karteSetzen(x, !alleZu));
+  _kartenMerken();
+}
+function _kartenTitel() {
+  _karten().forEach(k => {
+    const b = k.querySelector(':scope > .karte-klapp'), ti = k.querySelector(':scope > .card-title');
+    if (b) b.setAttribute('aria-label', `${t('karten.klappen')}: ${ti.textContent.trim()}`);
+  });
+}
+(function () {
+  const hw = document.getElementById('ungeprueft-hw'), leiste = document.querySelector('.karten-leiste');
+  if (hw && leiste) leiste.after(hw);
+  let zu = [];
+  try { zu = JSON.parse(localStorage.getItem(_KARTEN_KEY) || '[]'); } catch (_) { /* leer */ }
+  _karten().forEach((k, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'karte-klapp';
+    b.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    b.addEventListener('click', () => { _karteSetzen(k, !k.classList.contains('zu')); _kartenMerken(); });
+    k.querySelector(':scope > .card-title').addEventListener('click', e => {
+      if (e.target.closest('button, a, input, select, label, summary')) return;
+      b.click();
+    });
+    k.appendChild(b);
+    _karteSetzen(k, zu.includes(i));
+  });
+  _kartenTitel();
+  if (typeof calcState !== 'undefined' && calcState) statuszeileAktualisieren();
+})();
+
+
+// Drei Bereiche: Seiten ein- und ausklappen (Zustand bleibt im Gerät)
+const _SEITEN_KEY = 'dh_seiten_zu';
+function seiteKlappen(seite) {
+  const lay = document.querySelector('.layout');
+  lay.classList.toggle('zu-' + seite);
+  try { localStorage.setItem(_SEITEN_KEY, JSON.stringify(['links', 'rechts'].filter(s => lay.classList.contains('zu-' + s)))); } catch (_) { /* voll */ }
+  requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+}
+(function () {
+  let zu = [];
+  try { zu = JSON.parse(localStorage.getItem(_SEITEN_KEY) || '[]'); } catch (_) { /* leer */ }
+  const lay = document.querySelector('.layout');
+  zu.forEach(s => lay?.classList.add('zu-' + s));
+  if (zu.length) requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+})();
