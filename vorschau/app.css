@@ -2421,3 +2421,27 @@ input.ungeprueft:not(.input-wrap input) {
   #sok-clear-btn::after, #probe-reset-btn::after { content: ''; position: absolute; inset: -8px -4px; }
   #mp-bezug, #draw-mp-bezug, #vex-select { height: 32px !important; }   /* Auswahlliste: etwas höher zum Antippen */
 }
+
+/* ══ Vorschau · Runde 8: eine Seite zur Zeit (breiter), Werte im Diagramm, Überblendung rechts ══ */
+@media (min-width: 1200px) {
+  .layout { --gl: 440px; --gr: 440px; }
+  .layout.zu-links { --gl: 44px; } .layout.zu-rechts { --gr: 44px; }
+  .info-seite { overflow: hidden; }
+  .info-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; margin: 0 -.6rem; padding: 0 .6rem; scrollbar-width: thin;
+    --oben: 0px; --unten: 0px;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--oben), #000 calc(100% - var(--unten)), transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 var(--oben), #000 calc(100% - var(--unten)), transparent 100%); }
+  .info-fuss { position: static; }
+}
+@media (min-width: 1200px) and (max-width: 1400px) {
+  .layout { --gl: 400px; --gr: 400px; }
+  .layout.zu-links { --gl: 44px; } .layout.zu-rechts { --gr: 44px; }
+}
+/* Messpunkte: Werte stehen im Diagramm — in der Übersicht nur das Urteil */
+.istzustand-card.nur-urteil > :not(.urteil-zeile) { display: none !important; }
+.istzustand-card.nur-urteil:not([class*="urteil-o"]):not(.urteil-nok) { display: none; }
+.mp-im-diagramm { font-size: var(--fs-xs); color: var(--muted); margin: -.3rem 0 .8rem; }
+.istzustand-card.nur-urteil:not([class*="urteil-o"]):not(.urteil-nok) { display: none !important; }
+.istzustand-card.nur-urteil { display: block !important; }
+.istzustand-card.nur-urteil:not([class*="urteil-o"]):not(.urteil-nok) { display: none !important; }
+.info-seite .results-grid { grid-template-columns: 1fr !important; }
