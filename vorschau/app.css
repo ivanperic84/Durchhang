@@ -2377,3 +2377,20 @@ body { font-variant-numeric: tabular-nums; }
 #combo-info > summary, #el-reglage-info > summary { cursor: default; list-style: none; }
 #combo-info > summary::-webkit-details-marker, #el-reglage-info > summary::-webkit-details-marker { display: none; }
 #combo-info > summary::before, #el-reglage-info > summary::before { content: none; }
+/* Startwerte: Punkt links im Feld statt senkrechtem Balken (Form statt Farbe, auch für Farbenblinde) */
+:root { --hinweis-punkt: #2f8f6a; }
+:root[data-thema="dunkel"] { --hinweis-punkt: #6fd3a8; }
+@media (prefers-color-scheme: dark) { :root:not([data-thema="hell"]) { --hinweis-punkt: #6fd3a8; } }
+.ungeprueft input, .ungeprueft select, input.ungeprueft, select.ungeprueft,
+.ungeprueft #temp2, .ungeprueft #span, .ungeprueft #preset-select, .ungeprueft #el-material-select {
+  box-shadow: none; padding-left: 1.45rem !important;
+}
+.input-wrap.ungeprueft::before {
+  content: ''; position: absolute; left: .6rem; top: 50%; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--hinweis-punkt); transform: translateY(-50%); pointer-events: none; z-index: 1;
+}
+input.ungeprueft:not(.input-wrap input) {
+  background-image: radial-gradient(circle, var(--hinweis-punkt) 3.5px, transparent 4px);
+  background-repeat: no-repeat; background-size: 12px 12px; background-position: .45rem center;
+}
+.ungeprueft-muster { box-shadow: none; }
