@@ -2335,3 +2335,40 @@ body { font-variant-numeric: tabular-nums; }
 @media (max-width: 860px) {
   .sidebar-scroll .card { border: 1px solid var(--border); border-radius: var(--radius); }   /* Handy: Karten bleiben einzeln */
 }
+
+/* ══ Vorschau · Runde 7: kompakte Ergebnis-Kachel, Legende in der Messpunkt-Zeile ══ */
+.info-seite .istzustand-card { position: relative; padding: .7rem .85rem; gap: .3rem; border-radius: var(--r-2); }
+.info-seite .istzustand-main { display: grid; grid-template-columns: 1fr 1fr; column-gap: .9rem; row-gap: .05rem; align-items: end; }
+.info-seite .istzustand-main > :nth-child(1) { grid-column: 1 / -1; grid-row: 1; margin-bottom: .2rem; padding-right: 1.6rem; }
+.info-seite .istzustand-main > :nth-child(2) { grid-column: 1; grid-row: 2; }
+.info-seite .istzustand-main > :nth-child(3) { grid-column: 1; grid-row: 3; margin-top: 0 !important; }
+.info-seite .istzustand-main > :nth-child(4) { grid-column: 2; grid-row: 3; margin-top: 0 !important; }
+.info-seite .istzustand-main > :nth-child(5) { grid-column: 2; grid-row: 2; }
+.info-seite .istzustand-main > :nth-child(n+3) { font-size: var(--fs-xs) !important; line-height: 1.35; }
+.info-seite .istzustand-value { font-size: var(--fs-xxl) !important; line-height: 1.1; }
+.info-seite .istzustand-main > :nth-child(5).istzustand-value { font-size: var(--fs-xl) !important; }
+.info-seite .istzustand-label { font-size: var(--fs-xs); }
+.info-seite .istzustand-unit { font-size: var(--fs-s); }
+.sok-knopf { position: absolute; top: .55rem; right: .55rem; width: 1.3rem; height: 1.3rem; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+  border: none; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; }
+.sok-knopf:hover, .sok-knopf[aria-expanded="true"] { color: var(--primary); background: var(--acc-s); }
+@media (any-pointer: coarse) { .sok-knopf { min-height: 0; } .sok-knopf::after { content: ''; position: absolute; inset: -.5rem; } }
+.sok-zeile[hidden] { display: none !important; }
+.sok-zeile .sok-hinweis { font-style: normal !important; }
+.ep-box { margin: 0 0 1rem; }
+.ep-box h2 { font-size: var(--fs-xs); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--primary);
+  border-left: 3px solid var(--primary); padding-left: .5rem; margin: 0 0 .55rem; }
+.hint-weg { display: none !important; }
+.legend.legend-kopf { padding: 0; border: none; flex: 1 1 auto; gap: .9rem; min-width: 0; }
+
+.info-seite .istzustand-card[class*="urteil-"] .istzustand-label { color: var(--text) !important; }
+/* Handbuch: Erste Schritte */
+.hb-schritte { margin: .4rem 0 .6rem 1.2rem; }
+.hb-schritte li { margin: .25rem 0; }
+.hb-beispiel-knopf { font: inherit; font-size: var(--fs-s); font-weight: 600; margin: .3rem 0 .6rem; padding: .4rem .8rem; border-radius: var(--r-2);
+  border: 1px solid var(--primary); background: var(--card); color: var(--primary); cursor: pointer; }
+.hb-beispiel-knopf:hover { background: var(--acc-s); }
+/* Urteil-Kachel: Werte in Textfarbe (Temperaturfarbe auf grüner/roter Fläche zu schwach) */
+.istzustand-card[class*="urteil-"] .istzustand-value { color: var(--text) !important; }
+/* auch in der Handbuch-Abbildung (Kopie ohne ids): Ergebnis einspaltig */
+.info-seite .results-card .results-grid { grid-template-columns: 1fr; gap: .9rem; }

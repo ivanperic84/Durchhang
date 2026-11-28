@@ -528,7 +528,9 @@ function _handbuchLaden() {
 // aktuell, in der gewählten Sprache und Darstellung, ohne Bilddateien. Die Kopie
 // ist nicht bedienbar (inert), ohne ids und ohne Markierungen.
 const HB_ABB = {
-  kopf:       { q: () => document.querySelector('.header'), maxBreite: 900 },   // als schmale Kopfzeile kopiert, gut lesbar
+  kopf:       { q: () => document.querySelector('.header'), maxBreite: 900 },
+  bildschirm: { q: () => document.querySelector('.layout') },   // ganzer Arbeitsbereich, verkleinert
+  uebersicht: { q: () => document.getElementById('info-seite'), schmal: true },   // als schmale Kopfzeile kopiert, gut lesbar
   system:     { q: () => document.getElementById('card-title-sys')?.closest('.card'), schmal: true },
   temperatur: { q: () => document.getElementById('temp-card'), schmal: true },
   spannweite: { q: () => document.getElementById('span')?.closest('.card'), schmal: true },
@@ -12828,9 +12830,22 @@ function statuszeileAktualisieren() {
     + `<span>T₂ <b>${T(c.T2)}</b></span><span>f <b>${f3(f)}</b> m</span><span>H <b>${fN(c.c2.H, 0)}</b> N</span>`
     + `<span class="sz-rechts">${t('sz.daten')}: ${daten} · ${APP_VERSION}</span>`;
 }
+var _sokOffen = false;   // SOK-Hinweis in der Ergebnis-Kachel aufgeklappt?
 // Kennzahlkarte als Urteil-Kachel (auch nach jedem Neuaufbau der Karte)
 function _urteilKachel(u = _urteil()) {
   const karte = document.querySelector('#highlight-card .istzustand-card');
+  if (karte && !karte.querySelector('.sok-knopf')) {
+    const zeile = karte.querySelector('.sok-hinweis')?.parentElement;
+    if (zeile) {
+      zeile.classList.add('sok-zeile'); zeile.hidden = !_sokOffen; zeile.id = 'sok-zeile';
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'sok-knopf'; b.title = t('ui.sok.hinweis'); b.setAttribute('aria-label', t('ui.sok.hinweis'));
+      b.setAttribute('aria-controls', 'sok-zeile'); b.setAttribute('aria-expanded', String(_sokOffen));
+      b.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4M8 4.8v.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+      b.addEventListener('click', () => { _sokOffen = !_sokOffen; zeile.hidden = !_sokOffen; b.setAttribute('aria-expanded', String(_sokOffen)); });
+      karte.appendChild(b);
+    }
+  }
   if (karte) {
     karte.classList.remove('urteil-ok', 'urteil-nok', 'urteil-offen');
     karte.querySelector('.urteil-zeile')?.remove();
@@ -12896,6 +12911,11 @@ function seiteKlappen(seite) {
   const info = document.getElementById('info-seite'); if (lay && info) lay.appendChild(info);
   // Ergebnis gehört in die Übersicht rechts: die Mitte zeigt nur die Ansicht und scrollt nicht
   const ii = document.getElementById('info-inhalt'); if (rc && ii) ii.before(rc);
+  const hc = document.getElementById('highlight-card');
+  if (hc && !document.getElementById('ep-box')) { const e = document.createElement('section'); e.id = 'ep-box'; e.className = 'info-abschnitt ep-box'; hc.after(e); }
+  // Legende in die Kopfzeile der Messpunkte (spart eine Zeile); Hinweis als Tooltip
+  const leg = document.getElementById('legend'), hint = document.getElementById('probe-hint');
+  if (leg && hint) { hint.parentElement.title = hint.textContent; hint.before(leg); hint.classList.add('hint-weg'); leg.classList.add('legend-kopf'); }
   const sr = document.querySelector('.schiene-rechts'); if (lay && sr) lay.appendChild(sr);
   zu.forEach(s => lay?.classList.add('zu-' + s));
   if (zu.length) requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
@@ -12923,9 +12943,11 @@ function infoSeiteAktualisieren() {
     .map(([id, k]) => `<button type="button" onclick="infoHandbuch('${id}')">${escHtml(t(k))}</button>`).join('');
   const ep = eingabeparameterListe();
   const epZeilen = ep.map(p => `<tr${p.art ? ` class="ep-${p.art}"` : ''}><td>${escHtml(p.lbl)}</td><td>${escHtml(p.wert)}</td></tr>`).join('');
-  el.innerHTML = `<section class="info-abschnitt"><h2>${t('ep.titel')}</h2><table class="info-tab ep-tab">${epZeilen}</table>`
+  const epBox = document.getElementById('ep-box');
+  if (epBox) epBox.innerHTML = `<h2>${t('ep.titel')}</h2><table class="info-tab ep-tab">${epZeilen}</table>`
     + (ep.some(p => p.art) ? `<p class="info-legende">${t('ann.legende')}</p>` : '')
-    + `<button type="button" class="info-knopf" onclick="openBetreiberdaten()">${t('info.bd.oeffnen')}</button></section>`
+    + `<button type="button" class="info-knopf" onclick="openBetreiberdaten()">${t('info.bd.oeffnen')}</button>`;
+  el.innerHTML = ''
     + `<section class="info-abschnitt"><h2>${t('info.kennwerte')}</h2><table class="info-tab">${zeilen.join('')}</table></section>`
     + `<section class="info-abschnitt"><h2>${t('info.hinweise')}</h2><p class="info-text">${hinweise}</p></section>`
     + `<section class="info-abschnitt"><h2>${t('info.handbuch')}</h2><div class="info-links">${links}</div></section>`;
@@ -13050,3 +13072,24 @@ window.toggleCanvasFullscreen = function () {
   }
   requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
 };
+
+
+// Beispiel «Abstandsnachweis» als Vorlage: Feld mit SOK, Messpunkt unter einem Hindernis
+// (z. B. Unterkante Brücke), Mindestabstand. Neutrale Werte, keine Betreiberdaten.
+async function beispielAbstandLaden() {
+  if (typeof closeMehrMenu === 'function') closeMehrMenu();
+  if (document.getElementById('handbuch-modal')?.classList.contains('open')) closeHandbuch();
+  const w = ms => new Promise(r => setTimeout(r, ms));
+  const setze = (id, v) => { const e = document.getElementById(id); if (!e) return; e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); };
+  setSysMode('nfl'); await w(80);
+  if (spanMode !== 'single') { setSpanMode('single'); await w(40); }
+  setze('span', '48'); setze('h1', '7.00'); setze('h2', '7.20'); setze('temp1', '10'); setze('temp2', '40');
+  setze('mast-num-left', '101'); setze('mast-num-right', '102'); setze('mast-km-left', '12.300'); setze('mast-km-right', '12.348');
+  setze('sok-mum-left', '500.00'); onSokMumLeftInput();
+  setze('sok-mum-right', '500.20'); onSokMumRightInput();
+  _mpSetzen({ x: [20, null, null, null], h: [BEISPIEL_H1, null, null, null], verbinden: false });
+  setMindestabstand('0.5');
+  ungeprueftAlleBestaetigen(); berechnen(); setCanvasView('diagramm');
+  meldung(t('bsp.geladen'), 'info', 8000);
+}
+const BEISPIEL_H1 = 507.40;   // Unterkante Hindernis in m ü. M.
