@@ -188,7 +188,7 @@ window.DH_VORSCHAU = true;
   <!-- ── Sidebar ── -->
   <aside class="sidebar">
     <div class="sidebar-scroll">
-    <div class="karten-leiste"><span class="panel-name" data-i18n="seite.eingabe">Eingabe</span><button type="button" class="seite-knopf" onclick="seiteKlappen('links')" data-i18n-title="seite.links.zu" title="Eingabe einklappen" data-i18n-aria="seite.links.zu" aria-label="Eingabe einklappen"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5L4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" id="hw-knopf" class="hw-knopf" onclick="hwOeffnen()" hidden data-i18n-title="ungeprueft.knopf" title="Hinweis zu den Startwerten" data-i18n-aria="ungeprueft.knopf" aria-label="Hinweis zu den Startwerten"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4M8 4.8v.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><button type="button" class="karten-alle" onclick="kartenAlle()" data-i18n="karten.alle">Alle zu / auf</button></div>
+    <div class="karten-leiste"><span class="panel-name" data-i18n="seite.eingabe">Eingabe</span><button type="button" class="seite-knopf" onclick="seiteKlappen('links')" data-i18n-title="seite.links.zu" title="Eingabe einklappen" data-i18n-aria="seite.links.zu" aria-label="Eingabe einklappen"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5L4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" id="hw-knopf" class="hw-knopf" onclick="hwOeffnen()" hidden data-i18n-title="ungeprueft.knopf" title="Hinweis zu den Startwerten" data-i18n-aria="ungeprueft.knopf" aria-label="Hinweis zu den Startwerten"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4M8 4.8v.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
 
     <!-- 1. System & Kombination -->
     <div class="card">
@@ -814,7 +814,7 @@ window.DH_VORSCHAU = true;
     </div><!-- /sidebar-scroll -->
   </aside>
   <button type="button" class="schiene schiene-links" onclick="seiteKlappen('links')" data-i18n-title="seite.links.auf" title="Eingabe ausklappen"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5L8 6 4.5 9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="senkrecht" data-i18n="seite.eingabe">Eingabe</span></button>
-  <button type="button" class="schiene schiene-rechts" onclick="seiteKlappen('rechts')" data-i18n-title="seite.rechts.auf" title="Weitere Infos ausklappen"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5L4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="senkrecht" data-i18n="seite.info">Weitere Infos</span></button>
+  <button type="button" class="schiene schiene-rechts" onclick="seiteKlappen('rechts')" data-i18n-title="seite.rechts.auf" title="Weitere Infos ausklappen"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5L4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="senkrecht" data-i18n="seite.info">Übersicht</span></button>
 
   <!-- ── Canvas ── -->
   <div class="canvas-card">
@@ -1280,10 +1280,14 @@ window.DH_VORSCHAU = true;
 <div id="meldungen" aria-live="polite"></div>
 <!-- Mitlaufende Ergebnisleiste (nur schmale Bildschirme, siehe updateErgebnisleiste) -->
 <aside id="info-seite" class="results-card info-seite" aria-labelledby="info-titel">
-  <div class="panel-kopf"><span class="panel-name" id="info-titel" data-i18n="info.titel">Weitere Infos</span>
+  <div class="panel-kopf"><span class="panel-name" id="info-titel" data-i18n="info.titel">Übersicht</span>
     <button type="button" class="seite-knopf" onclick="seiteKlappen('rechts')" data-i18n-title="seite.rechts.zu" title="Weitere Infos einklappen" data-i18n-aria="seite.rechts.zu" aria-label="Weitere Infos einklappen"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5L8 6 4.5 9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
   <div id="info-inhalt"></div>
+  <div class="info-fuss">
+    <button type="button" class="info-pdf haupt" onclick="pdfMitPruefung('berechnung')"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M4 1.5h5.5L13 5v9.5H4z M9.5 1.5V5H13 M6 8.5h5 M6 11h5"/></svg><span data-i18n="info.bericht">Bericht (PDF)</span></button>
+    <button type="button" class="info-pdf" onclick="pdfMitPruefung('zeichnung')"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M1.5 4.5C5 11 11 11 14.5 4.5 M1.5 13.5h13"/></svg><span data-i18n="info.zeichnung">Zeichnung (PDF)</span></button>
+  </div>
 </aside>
 <div id="statuszeile" role="status" aria-live="polite"></div>
 <button id="ergebnisleiste" type="button" onclick="zumDiagramm()" data-i18n-title="ui.leiste.titel" title="Zum Diagramm">

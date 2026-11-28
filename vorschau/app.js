@@ -12931,11 +12931,46 @@ function infoSeiteAktualisieren() {
   const hinweise = wb && !wb.classList.contains('hidden') && wb.textContent.trim() ? escHtml(wb.innerText.trim()).replace(/\n/g, '<br>') : t('info.keine');
   const links = [['hb-eingabe', 'hb.toc.2'], ['hb-verfahren', 'hb.toc.3'], ['hb-werkzeuge', 'hb.toc.6'], ['hb-beispiel', 'hb.toc.7']]
     .map(([id, k]) => `<button type="button" onclick="infoHandbuch('${id}')">${escHtml(t(k))}</button>`).join('');
-  el.innerHTML = `<section class="info-abschnitt"><h3>${t('info.kennwerte')}</h3><table class="info-tab">${zeilen.join('')}</table></section>`
-    + `<section class="info-abschnitt"><h3>${t('info.hinweise')}</h3><p class="info-text">${hinweise}</p></section>`
-    + `<section class="info-abschnitt"><h3>${t('info.daten')}</h3><p class="info-text">${escHtml(betreiberdatenText())}</p>`
+  const ep = eingabeparameterListe();
+  const epZeilen = ep.map(p => `<tr${p.art ? ` class="ep-${p.art}"` : ''}><td>${escHtml(p.lbl)}</td><td>${escHtml(p.wert)}</td></tr>`).join('');
+  el.innerHTML = `<section class="info-abschnitt"><h2>${t('ep.titel')}</h2><table class="info-tab ep-tab">${epZeilen}</table>`
+    + (ep.some(p => p.art) ? `<p class="info-legende">${t('ann.legende')}</p>` : '')
     + `<button type="button" class="info-knopf" onclick="openBetreiberdaten()">${t('info.bd.oeffnen')}</button></section>`
-    + `<section class="info-abschnitt"><h3>${t('info.handbuch')}</h3><div class="info-links">${links}</div></section>`;
+    + `<section class="info-abschnitt"><h2>${t('info.kennwerte')}</h2><table class="info-tab">${zeilen.join('')}</table></section>`
+    + `<section class="info-abschnitt"><h2>${t('info.hinweise')}</h2><p class="info-text">${hinweise}</p></section>`
+    + `<section class="info-abschnitt"><h2>${t('info.handbuch')}</h2><div class="info-links">${links}</div></section>`;
+}
+// Eingabeparameter als Liste (Bezeichnung / Wert); art wie «Gerechnet mit»:
+// 'abw' = abweichend vom Standard, 'krit' = fehlt bzw. nur Beispielwerte
+function eingabeparameterListe() {
+  const c = calcState; if (!c) return [];
+  const L = [], add = (lbl, wert, art = '') => L.push({ lbl, wert, art });
+  const isEl = sysMode === 'el', isNfl = sysMode === 'nfl';
+  const T = v => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v)} °C`;
+  const sel = document.getElementById(isEl ? 'el-material-select' : 'preset-select');
+  const opt = sel?.selectedOptions?.[0];
+  let leiter = (opt?.textContent?.trim() || '—').replace(/^★\s*/, '');
+  if (isEl) { const m = MATERIALS[sel?.value]; const v = m?.H_reglage_variants?.[elBasiskraftIdx]; if (v?.label && m.H_reglage_variants.length > 1) leiter += ' · ' + v.label; }
+  const ausProjekt = !!opt?.dataset?.ausProjekt, eigen = !isEl && String(sel?.value || '').startsWith('custom_');
+  add(t('card.system'), sysName(sysMode));
+  add(t('ungeprueft.leiter'), leiter + (ausProjekt ? ` (${t('bd.aus.projekt')})` : eigen ? ` (${t('ann.eigen')})` : ''), ausProjekt || eigen ? 'abw' : '');
+  if (isNfl || isEl) add(t('ep.ba'), t(elBerechnungsart === 'starr' ? 'par.ba.starr' : 'par.ba.ausg'), elBerechnungsart === 'starr' ? 'abw' : '');
+  if (spanMode === 'ruling') add(t('info.lm'), `${fN(c.Lm, 2)} m (${t('ann.felder').replace('{n}', spanCount)})`);
+  else add(t('val.feld.L'), `${fN(c.L, 2)} m`);
+  if (sysMode !== 'rfl') add(t('val.feld.T1'), T(c.T1));
+  add(t('val.feld.T2'), T(c.T2));
+  if (c.ZL > 0) add(t('ann.eis'), `${fN(c.ZL, 0)} N/m`, 'abw');
+  if (typeof _hFromFoto !== 'undefined' && _hFromFoto) add(t('ep.zug'), t('ann.h.foto'), 'abw');
+  else if (isEl && _hVonHand) add(t('ep.zug'), `${fN(c.H_Ts, 0)} N`, 'abw');
+  else if (ausProjekt) add(t('ep.zug'), t('ann.h.projekt'), 'abw');
+  else add(t('ep.zug'), t('ep.reglage') + (Object.keys(_reglageAngepasst || {}).length ? ' · ' + t('ann.rgl.angepasst') : ''), Object.keys(_reglageAngepasst || {}).length ? 'abw' : '');
+  if (!isEl) add(t('ep.fd'), wearPct > 0 ? `${t('ep.abg')} ${wearPct} %` : t('ep.neu'), wearPct > 0 ? 'abw' : '');
+  if (_nachweis.some(n => n.best)) {
+    add(t('ep.mindest'), minClearance > 0 ? `${fN(minClearance, 2)} m` : t('ep.fehlt'), minClearance > 0 ? '' : 'krit');
+    add(t('ep.lf'), lastfaelleAktiv ? t('ep.lf.alle').replace('{n}', lastfaelle(lastfallEinst, sysMode).length) : t('ep.lf.aktuell'), lastfaelleAktiv ? '' : 'abw');
+  }
+  add(t('info.daten'), betreiberdatenText(), (!betreiberDaten || betreiberDaten.beispiel) ? 'krit' : '');
+  return L;
 }
 async function infoHandbuch(id) {
   await openHandbuch();

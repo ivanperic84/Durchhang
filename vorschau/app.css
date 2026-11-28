@@ -2204,7 +2204,7 @@ body { font-variant-numeric: tabular-nums; }
   .layout.zu-rechts > .info-seite { display: none; }
 }
 .info-abschnitt + .info-abschnitt { margin-top: 1rem; padding-top: .9rem; border-top: 1px solid var(--border); }
-.info-abschnitt h3 { font-size: var(--fs-xs); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--primary);
+.info-abschnitt h2, .info-abschnitt h3 { font-size: var(--fs-xs); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--primary);
   border-left: 3px solid var(--primary); padding-left: .5rem; margin: 0 0 .55rem; }
 .info-tab { width: 100%; border-collapse: collapse; font-size: var(--fs-s); }
 .info-tab td { padding: .25rem 0; border-bottom: 1px solid var(--s3); color: var(--text2); }
@@ -2226,3 +2226,28 @@ body { font-variant-numeric: tabular-nums; }
 @keyframes hw-puls { 0% { transform: scale(1.35); } 60% { transform: scale(.95); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .hw-knopf.hw-puls { animation: none; } }
 @media (any-pointer: coarse) { .hw-knopf { min-height: 0; position: relative; } .hw-knopf::after { content: ''; position: absolute; inset: -.5rem; } }
+
+/* ══ Vorschau · Runde 4: Eingabeparameter rechts, PDF-Knöpfe, «Gerechnet mit» nur rechts ══ */
+#result-card #annahmen { display: none !important; }
+.ep-tab td:first-child { color: var(--muted); }
+.ep-tab td:last-child { white-space: normal; text-align: right; }
+.ep-tab tr.ep-abw td:last-child { color: var(--warn-text); }
+.ep-tab tr.ep-krit td:last-child { color: var(--fail); }
+.info-legende { font-size: var(--fs-xs); color: var(--tertiary); margin: .35rem 0 0; }
+.info-seite { display: flex; flex-direction: column; }
+#info-inhalt { flex: 1 0 auto; }
+.info-fuss { position: sticky; bottom: -1px; display: flex; gap: .5rem; flex-wrap: wrap; margin: 1rem -1px 0; padding: .75rem 0 .1rem;
+  background: var(--card); border-top: 1px solid var(--border); }
+.info-pdf { flex: 1 1 8rem; display: inline-flex; align-items: center; justify-content: center; gap: .4rem; font: inherit; font-size: var(--fs-m); font-weight: 600;
+  padding: .55rem .8rem; border-radius: var(--r-2); border: 1px solid var(--border2); background: var(--card); color: var(--text); cursor: pointer; }
+.info-pdf:hover { border-color: var(--primary); color: var(--primary); }
+.info-pdf.haupt { background: var(--primary); border-color: var(--primary); color: var(--on-acc); }
+.info-pdf.haupt:hover { background: var(--primary-dk); color: var(--on-acc); }
+.hw-knopf { margin-left: auto; }
+/* PDF-Knöpfe einzeilig; nur in der Seitenleiste am PC unten angeheftet */
+.info-pdf { white-space: nowrap; font-size: var(--fs-s); padding: .55rem .6rem; flex-basis: 0; min-width: 0; }
+.info-fuss { position: static; }
+@media (min-width: 1200px) {
+  .info-seite { padding-bottom: 0; }
+  .info-fuss { position: sticky; bottom: 0; padding-bottom: .9rem; }
+}
