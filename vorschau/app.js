@@ -12810,9 +12810,7 @@ function statuszeileAktualisieren() {
   const T = v => `${v > 0 ? '+' : ''}${v} °C`;
   const daten = (!betreiberDaten || betreiberDaten.beispiel)
     ? `<span class="sz-beispiel">${escHtml(betreiberdatenText())}</span>` : escHtml(betreiberdatenText());
-  const sw = document.querySelector('.schiene-werte');
-  if (sw) sw.innerHTML = `<span class="wert ${u.art}">${u.art ? escHtml(nachweisZeichen(u.art === 'ok' ? true : u.art === 'nok' ? false : null)) + ' a' : '–'}</span>`
-    + `<span class="wert">f <b>${f3(f)}</b> m</span><span class="wert">H <b>${fN(c.c2.H, 0)}</b> N</span>`;
+  infoSeiteAktualisieren();
   sz.innerHTML = `<span class="sz-urteil ${u.art}">${escHtml(u.text)}</span>`
     + `<span>T₂ <b>${T(c.T2)}</b></span><span>f <b>${f3(f)}</b> m</span><span>H <b>${fN(c.c2.H, 0)}</b> N</span>`
     + `<span class="sz-rechts">${t('sz.daten')}: ${daten} · ${APP_VERSION}</span>`;
@@ -12880,7 +12878,7 @@ function _kartenTitel() {
 
 
 // Drei Bereiche: Seiten ein- und ausklappen (Zustand bleibt im Gerät)
-const _SEITEN_KEY = 'dh_seiten_zu';
+const _SEITEN_KEY = 'dh_seiten_zu_v2';
 function seiteKlappen(seite) {
   const lay = document.querySelector('.layout');
   lay.classList.toggle('zu-' + seite);
@@ -12889,8 +12887,78 @@ function seiteKlappen(seite) {
 }
 (function () {
   let zu = [];
-  try { zu = JSON.parse(localStorage.getItem(_SEITEN_KEY) || '[]'); } catch (_) { /* leer */ }
+  try { const g = localStorage.getItem(_SEITEN_KEY); zu = g === null ? ['rechts'] : JSON.parse(g); } catch (_) { zu = ['rechts']; }
   const lay = document.querySelector('.layout');
+  // Mitte: Ansicht und Ergebnis untereinander in einem eigenen Bereich
+  const cc = document.querySelector('.layout > .canvas-card'), rc = document.getElementById('result-card');
+  if (lay && cc && rc && !document.querySelector('.mitte')) { const m = document.createElement('div'); m.className = 'mitte'; cc.before(m); m.append(cc, rc); }
+  const info = document.getElementById('info-seite'); if (lay && info) lay.appendChild(info);
+  const sr = document.querySelector('.schiene-rechts'); if (lay && sr) lay.appendChild(sr);
   zu.forEach(s => lay?.classList.add('zu-' + s));
   if (zu.length) requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
 })();
+
+
+// Weitere Infos (rechte Seite): Kennwerte, Hinweise, Datenstand, Handbuch
+function infoSeiteAktualisieren() {
+  const el = document.getElementById('info-inhalt');
+  if (!el || !calcState) return;
+  const c = calcState, zeilen = [];
+  const z = (n, v) => { if (v !== null && v !== undefined && v !== '') zeilen.push(`<tr><td>${n}</td><td>${v}</td></tr>`); };
+  const ok = v => typeof v === 'number' && Number.isFinite(v);
+  if (ok(c.q_Ts)) z(sysMode === 'el' ? 'q' : 'q Ts', `${c.q_Ts.toFixed(3)} N/m`);
+  if (sysMode !== 'el' && ok(c.q_Fd)) z('q Fd', `${c.q_Fd.toFixed(3)} N/m`);
+  if (sysMode !== 'el' && ok(c.q_ges)) z(t('info.q.ges'), `${c.q_ges.toFixed(3)} N/m`);
+  if (ok(c.EA)) z('E·A', `${(c.EA / 1e6).toFixed(2)} MN`);
+  if (ok(c.alpha)) z('α', `${(c.alpha * 1e6).toFixed(1)}·10⁻⁶ /K`);
+  if (ok(c.H_Ts_ub)) z(t('info.hts'), `${fN(c.H_Ts_ub, 0)} N`);
+  if (sysMode !== 'el' && ok(c.H_Fd)) z(t('info.hfd'), `${fN(c.H_Fd, 0)} N`);
+  if (ok(c.Lm) && c.spanMode === 'ruling') z(t('info.lm'), `${f3(c.Lm)} m`);
+  const wb = document.getElementById('warn-box');
+  const hinweise = wb && !wb.classList.contains('hidden') && wb.textContent.trim() ? escHtml(wb.innerText.trim()).replace(/\n/g, '<br>') : t('info.keine');
+  const links = [['hb-eingabe', 'hb.toc.2'], ['hb-verfahren', 'hb.toc.3'], ['hb-werkzeuge', 'hb.toc.6'], ['hb-beispiel', 'hb.toc.7']]
+    .map(([id, k]) => `<button type="button" onclick="infoHandbuch('${id}')">${escHtml(t(k))}</button>`).join('');
+  el.innerHTML = `<section class="info-abschnitt"><h3>${t('info.kennwerte')}</h3><table class="info-tab">${zeilen.join('')}</table></section>`
+    + `<section class="info-abschnitt"><h3>${t('info.hinweise')}</h3><p class="info-text">${hinweise}</p></section>`
+    + `<section class="info-abschnitt"><h3>${t('info.daten')}</h3><p class="info-text">${escHtml(betreiberdatenText())}</p>`
+    + `<button type="button" class="info-knopf" onclick="openBetreiberdaten()">${t('info.bd.oeffnen')}</button></section>`
+    + `<section class="info-abschnitt"><h3>${t('info.handbuch')}</h3><div class="info-links">${links}</div></section>`;
+}
+async function infoHandbuch(id) {
+  await openHandbuch();
+  document.getElementById(id)?.scrollIntoView({ block: 'start' });
+}
+
+// Startwert-Hinweis: beim Start offen, nach einigen Sekunden animiert in den i-Knopf
+let _hwZu = false, _hwTimer = 0;
+function _hwStand() {
+  const hw = document.getElementById('ungeprueft-hw'), k = document.getElementById('hw-knopf');
+  if (!hw || !k) return;
+  const offen = !!document.querySelector('.ungeprueft');
+  if (!offen) { hw.classList.add('hw-weg'); k.hidden = true; return; }
+  hw.classList.toggle('hw-weg', _hwZu);
+  k.hidden = !_hwZu;
+}
+const _ungeprueftAnzeigenOrig = ungeprueftAnzeigen;
+ungeprueftAnzeigen = function () { const r = _ungeprueftAnzeigenOrig.apply(this, arguments); _hwStand(); return r; };
+function _hwEinklappen() {
+  const hw = document.getElementById('ungeprueft-hw'), k = document.getElementById('hw-knopf');
+  if (!hw || !k || _hwZu) return;
+  const fertig = () => { _hwZu = true; _hwStand(); k.classList.remove('hw-puls'); void k.offsetWidth; k.classList.add('hw-puls'); };
+  if (hw.classList.contains('hw-weg') || hw.style.display === 'none' || !hw.getClientRects().length) { fertig(); return; }
+  k.hidden = false;
+  const a = hw.getBoundingClientRect(), b = k.getBoundingClientRect();
+  if (!hw.animate || matchMedia('(prefers-reduced-motion: reduce)').matches || !b.width) { fertig(); return; }
+  const dx = (b.left + b.width / 2) - (a.left + a.width / 2), dy = (b.top + b.height / 2) - (a.top + a.height / 2);
+  k.style.visibility = 'hidden';
+  hw.animate([
+    { transform: 'none', opacity: 1, borderRadius: '6px' },
+    { transform: `translate(${dx}px, ${dy}px) scale(${(b.width / a.width).toFixed(3)}, ${(b.height / a.height).toFixed(3)})`, opacity: .2, borderRadius: '50%' },
+  ], { duration: 550, easing: 'cubic-bezier(.4, 0, .2, 1)' }).onfinish = () => { k.style.visibility = ''; fertig(); };
+}
+function hwOeffnen() {
+  _hwZu = false; _hwStand();
+  clearTimeout(_hwTimer); _hwTimer = setTimeout(_hwEinklappen, 6000);
+}
+_hwStand();
+_hwTimer = setTimeout(_hwEinklappen, 5000);
