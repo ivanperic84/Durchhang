@@ -2326,3 +2326,12 @@ body { font-variant-numeric: tabular-nums; }
   .karten-leiste { padding-top: 1.24rem; }
   .info-seite .panel-kopf { margin-top: -.61rem; min-height: 1.7rem; }
 }
+
+/* Abschnitte links: kein Kasten, kein Einklappen — nur eine feine Trennlinie */
+.sidebar .card { border: none; border-radius: 0; box-shadow: none; }
+.sidebar .card + .card, .sidebar .card ~ .card { border-top: 1px solid var(--border); }
+.sidebar .card > .card-title { cursor: default; padding-right: 0; }
+.karte-klapp { display: none !important; }
+@media (max-width: 860px) {
+  .sidebar-scroll .card { border: 1px solid var(--border); border-radius: var(--radius); }   /* Handy: Karten bleiben einzeln */
+}
