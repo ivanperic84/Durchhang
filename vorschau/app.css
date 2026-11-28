@@ -2183,3 +2183,46 @@ body { font-variant-numeric: tabular-nums; }
 .karten-leiste .panel-name { display: inline; }
 .karten-alle { border-radius: var(--r-2); }
 @media (max-width: 860px) { .karten-leiste { padding: 0 .2rem; } .sidebar-scroll > #ungeprueft-hw { margin: .4rem 0 0; } }
+
+/* ══ Vorschau · Runde 3: Ergebnis in der Mitte, Info-Seite rechts, i-Knopf ══ */
+.mitte { display: contents; }
+.info-seite { margin: 0; }
+.info-seite .panel-kopf { display: flex; align-items: center; justify-content: space-between; margin: 0 0 .6rem; }
+.info-seite .seite-knopf { display: none; }
+@media (min-width: 861px) and (max-width: 1199px) { .info-seite { grid-column: 2; } }
+@media (min-width: 1200px) {
+  .layout { grid-template-columns: var(--sp-l, 350px) minmax(0, 1fr) var(--sp-r, 340px); }
+  .layout.zu-links  { grid-template-columns: 44px minmax(0, 1fr) var(--sp-r, 340px); }
+  .layout.zu-rechts { grid-template-columns: var(--sp-l, 350px) minmax(0, 1fr) 44px; }
+  .layout.zu-links.zu-rechts { grid-template-columns: 44px minmax(0, 1fr) 44px; }
+  .mitte { display: flex; flex-direction: column; gap: .75rem; grid-column: 2; grid-row: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+  .mitte > .canvas-card, .mitte > #result-card { flex-shrink: 0; overflow: visible; margin: 0; }
+  /* A: Diagramm füllt die Höhe, Messpunkte bleiben im Bild; Ergebnis folgt darunter (B) */
+  #main-canvas { height: max(360px, calc(100dvh - var(--kopf-h, 64px) - 26px - 1.5rem - 255px)); }
+  .info-seite { grid-column: 3; grid-row: 1; min-height: 0; overflow-y: auto; }
+  .info-seite .seite-knopf { display: inline-flex; }
+  .layout.zu-rechts > .info-seite { display: none; }
+}
+.info-abschnitt + .info-abschnitt { margin-top: 1rem; padding-top: .9rem; border-top: 1px solid var(--border); }
+.info-abschnitt h3 { font-size: var(--fs-xs); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--primary);
+  border-left: 3px solid var(--primary); padding-left: .5rem; margin: 0 0 .55rem; }
+.info-tab { width: 100%; border-collapse: collapse; font-size: var(--fs-s); }
+.info-tab td { padding: .25rem 0; border-bottom: 1px solid var(--s3); color: var(--text2); }
+.info-tab td:last-child { text-align: right; color: var(--text); font-weight: 600; white-space: nowrap; }
+.info-text { font-size: var(--fs-s); color: var(--text2); line-height: 1.5; margin: 0; }
+.info-knopf { font: inherit; font-size: var(--fs-s); margin-top: .45rem; padding: .3rem .7rem; border-radius: var(--r-2);
+  border: 1px solid var(--border2); background: var(--card); color: var(--text); cursor: pointer; }
+.info-knopf:hover { border-color: var(--primary); color: var(--primary); }
+.info-links { display: flex; flex-direction: column; gap: .3rem; }
+.info-links button { font: inherit; font-size: var(--fs-s); text-align: left; background: none; border: none; padding: 0; color: var(--primary); text-decoration: underline; cursor: pointer; }
+
+/* Startwert-Hinweis: erst offen, dann animiert zum i-Knopf */
+.hw-weg { display: none !important; }
+.hw-knopf { display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem; padding: 0; margin-left: auto;
+  border-radius: 50%; border: 1px solid var(--hinweis); background: var(--hinweis-s); color: var(--text); cursor: pointer; }
+.hw-knopf[hidden] { display: none; }
+.hw-knopf + .karten-alle { margin-left: .5rem; }
+.hw-knopf.hw-puls { animation: hw-puls .9s var(--t-kurve); }
+@keyframes hw-puls { 0% { transform: scale(1.35); } 60% { transform: scale(.95); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .hw-knopf.hw-puls { animation: none; } }
+@media (any-pointer: coarse) { .hw-knopf { min-height: 0; position: relative; } .hw-knopf::after { content: ''; position: absolute; inset: -.5rem; } }
