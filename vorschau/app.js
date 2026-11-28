@@ -8017,7 +8017,7 @@ function renderObstacleList() {
   if (!sec) return;
   const knopf = 'font-size:.7rem;padding:.14rem .45rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer';
   sec.innerHTML = `<div class="hind-kopf">
-    <span class="hind-titel">${t('hind.titel')}</span>
+    <span class="hind-titel">${t('hind.titel')}</span><button type="button" class="hind-info" id="hind-info-knopf" aria-expanded="false" aria-controls="hind-legende" onclick="hindInfoUmschalten()" title="${t('hind.erl')}" aria-label="${t('hind.erl')}"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4M8 4.8v.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
     <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center">
       <label class="hind-min-lbl" for="hind-min">${t('hind.mindest')}
         <input type="number" id="hind-min" class="hind-inp hind-num" step="0.01" min="0" placeholder="—"
@@ -8033,7 +8033,7 @@ function renderObstacleList() {
   </div>
   <p id="hind-sok-fehlt" class="hind-legende abs-fehlt" style="display:none">${t('hind.sok.hinweis')}</p>
   <span class="hind-erg" id="hind-erg-H" aria-live="polite"></span>
-  <details class="hind-erl"><summary>${t('hind.erl')}</summary><p class="hind-legende">${t('hind.legende')}</p></details>`;
+  <p class="hind-legende hind-info-text" id="hind-legende"${_hindInfoOffen ? '' : ' hidden'}>${t('hind.legende')}</p>`;
   _mpAnzeigen();
   _hindernisErgebnisse();
 }
@@ -13012,3 +13012,12 @@ function hwOeffnen() {
 }
 _hwStand();
 _hwTimer = setTimeout(_hwEinklappen, 5000);
+
+// H-Punkte: Erklärtext hinter dem i-Knopf (Zustand bleibt beim Neuaufbau der Zeile)
+var _hindInfoOffen = false;
+function hindInfoUmschalten() {
+  _hindInfoOffen = !_hindInfoOffen;
+  const p = document.getElementById('hind-legende'), k = document.getElementById('hind-info-knopf');
+  if (p) p.hidden = !_hindInfoOffen;
+  if (k) k.setAttribute('aria-expanded', String(_hindInfoOffen));
+}
