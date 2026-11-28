@@ -2294,3 +2294,35 @@ body { font-variant-numeric: tabular-nums; }
 @media (any-pointer: coarse) { .hind-info { min-height: 0; } .hind-info::after { content: ''; position: absolute; inset: -.5rem; } }
 .hind-info-text { margin-top: .35rem; padding: .45rem .6rem; border-left: 3px solid var(--primary); background: var(--s2); border-radius: 0 var(--r-1) var(--r-1) 0; }
 .hind-info-text[hidden] { display: none; }
+
+/* ══ Vorschau · Runde 6: Griffe an den Rändern, weiches Ein-/Ausfahren (wie «Vierendeel»), Vollbild ══ */
+.seite-knopf { display: none !important; }
+.griff { display: none; }
+@media (min-width: 1200px) {
+  .layout { --gl: 350px; --gr: 360px; position: relative;
+    grid-template-columns: var(--gl) minmax(0, 1fr) var(--gr) !important;
+    transition: grid-template-columns var(--t-ruhig); }
+  .layout.zu-links { --gl: 44px; }
+  .layout.zu-rechts { --gr: 44px; }
+  .griff {
+    display: flex; align-items: center; justify-content: center; position: absolute; top: 50%; z-index: 6;
+    width: 6px; height: 44px; padding: 0; border: none; border-radius: 999px; background: var(--border2); color: transparent; cursor: pointer;
+    transform: translate(-50%, -50%);
+    transition: width var(--t-mittel), height var(--t-mittel), background var(--t-schnell), color var(--t-schnell), left var(--t-ruhig), right var(--t-ruhig);
+  }
+  .griff-links { left: calc(1rem + var(--gl) + .375rem); }
+  .griff-rechts { left: auto; right: calc(1rem + var(--gr) + .375rem); transform: translate(50%, -50%); }
+  .griff:hover, .griff:focus-visible { width: 20px; height: 64px; background: var(--primary); color: var(--on-acc); outline: none; }
+  .griff svg { transition: transform var(--t-mittel); }
+  .layout.zu-links .griff-links svg, .layout.zu-rechts .griff-rechts svg { transform: rotate(180deg); }
+}
+@media (min-width: 1200px) and (max-width: 1400px) {
+  .layout { --gl: 320px; --gr: 330px; }
+  .layout.zu-links { --gl: 44px; } .layout.zu-rechts { --gr: 44px; }
+}
+@media (prefers-reduced-motion: reduce) { .layout, .griff, .griff svg { transition: none !important; } }
+/* Titel der drei Bereiche auf gleicher Höhe wie die Reiter der Mitte */
+@media (min-width: 1200px) {
+  .karten-leiste { padding-top: 1.24rem; }
+  .info-seite .panel-kopf { margin-top: -.61rem; min-height: 1.7rem; }
+}
